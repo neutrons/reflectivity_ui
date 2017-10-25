@@ -1,0 +1,4 @@
+include README.md
+include reflectivity_ui/*
+recursive-include icons *.png *.svg *.ico
+

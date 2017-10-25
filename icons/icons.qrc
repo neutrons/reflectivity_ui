@@ -1,0 +1,37 @@
+<RCC>
+  <qresource prefix="General">
+    <file>autoNorm.png</file>
+    <file>logo_hq.png</file>
+    <file>autoRef.png</file>
+    <file>stripOverlap.png</file>
+    <file>cutPoints.png</file>
+    <file>clearNorm.png</file>
+    <file>document-open.png</file>
+    <file>listUp.png</file>
+    <file>listDown.png</file>
+    <file>clearRef.png</file>
+    <file>addRef.png</file>
+    <file>delRef.png</file>
+    <file>findXauto.png</file>
+    <file>limitYauto.png</file>
+    <file>reduce.png</file>
+    <file>fitXPos.png</file>
+    <file>logo.png</file>
+    <file>exportRawData.png</file>
+    <file>totalReflection.png</file>
+    <file>tthZero.png</file>
+    <file>extractNormalization.png</file>
+  </qresource>
+  <qresource prefix="MPL Toolbar">
+    <file>toggle-log.png</file>
+    <file>edit-guides.png</file>
+    <file>go-home.png</file>
+    <file>zoom-original.png</file>
+    <file>zoom-next.png</file>
+    <file>zoom-previous.png</file>
+    <file>zoom-select.png</file>
+    <file>transform-move.png</file>
+    <file>document-save.png</file>
+    <file>document-print.png</file>
+  </qresource>
+</RCC>
