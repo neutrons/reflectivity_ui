@@ -9,15 +9,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import tempfile
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import matplotlib.cm
 import matplotlib.colors
 from reflectivity_ui.config import plotting
 
 # set the default backend to be compatible with Qt in case someone uses pylab from IPython console
-matplotlib.use('Qt4Agg')
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+matplotlib.use('Qt5Agg')
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.cbook import Stack
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.figure import Figure
@@ -104,10 +104,10 @@ class NavigationToolbar(NavigationToolbar2QT):
         # Add the x,y location widget at the right side of the toolbar
         # The stretch factor is 1 which means any resizing of the toolbar
         # will resize this label instead of the buttons.
-        self.locLabel=QtGui.QLabel("", self)
+        self.locLabel=QtWidgets.QLabel("", self)
         self.locLabel.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop)
         self.locLabel.setSizePolicy(
-            QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored))
+            QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored))
         self.labelAction=self.addWidget(self.locLabel)
         if self.coordinates:
             self.labelAction.setVisible(True)
@@ -208,8 +208,8 @@ class MplCanvas(FigureCanvas):
         self.format_labels()
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,
-                                  QtGui.QSizePolicy.Expanding,
-                                  QtGui.QSizePolicy.Expanding)
+                                  QtWidgets.QSizePolicy.Expanding,
+                                  QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
     def format_labels(self):
@@ -228,16 +228,15 @@ class MplCanvas(FigureCanvas):
         return 'png'
 
 
-class MPLWidget(QtGui.QWidget):
+class MPLWidget(QtWidgets.QWidget):
     cplot=None
     cbar=None
 
     def __init__(self, parent=None, with_toolbar=True, coordinates=False):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.canvas=MplCanvas()
         self.canvas.ax2=None
-        self.vbox=QtGui.QVBoxLayout()
-        self.vbox.setMargin(1)
+        self.vbox=QtWidgets.QVBoxLayout()
         self.vbox.addWidget(self.canvas)
         if with_toolbar:
             self.toolbar=NavigationToolbar(self.canvas, self)
@@ -253,9 +252,9 @@ class MPLWidget(QtGui.QWidget):
         In some cases the zoom cursor does not reset when leaving the plot.
         '''
         if self.toolbar:
-            QtGui.QApplication.restoreOverrideCursor()
+            QtWidgets.QApplication.restoreOverrideCursor()
             self.toolbar._lastCursor=None
-        return QtGui.QWidget.leaveEvent(self, event)
+        return QtWidgets.QWidget.leaveEvent(self, event)
 
     def set_config(self, config):
         self.canvas.fig.subplots_adjust(**config)

@@ -4,8 +4,18 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 import sys
+import logging
 
-from PyQt4.QtGui import QApplication 
+
+def no_abort_excepthook(type, value, tback):
+    # log the exception here
+    logging.error("Abort-type of error %s:\n%s", value, tback)
+    # then call the default handler
+    sys.__excepthook__(type, value, tback)
+
+sys.excepthook = no_abort_excepthook
+
+from PyQt5.QtWidgets import QApplication
 from reflectivity_ui.interfaces.main_window import MainWindow
 
 def main():

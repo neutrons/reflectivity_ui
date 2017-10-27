@@ -5,9 +5,15 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import os
 from numpy import *
-from PyQt4.QtGui import QWidget, QFileDialog, QTableWidgetItem, QDialog, QVBoxLayout, QColor, QColorDialog
-from PyQt4.QtCore import Qt
-from ..compare_widget import Ui_Form
+try:
+    from PyQt4.QtGui import QWidget, QFileDialog, QTableWidgetItem, QDialog, QVBoxLayout, QColor, QColorDialog
+    from PyQt4.QtCore import Qt
+except:
+    from PyQt5.QtGui import QColor
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QWidget, QFileDialog, QTableWidgetItem, QDialog, QVBoxLayout, QColorDialog
+   
+from .ui_compare_widget import Ui_Form
 
 class CompareWidget(QWidget):
   active_folder='.'
@@ -18,7 +24,7 @@ class CompareWidget(QWidget):
     QWidget.__init__(self, parent)
     self.ui=Ui_Form()
     self.ui.setupUi(self)
-    self.ui.compareList.verticalHeader().setMovable(True)
+    #self.ui.compareList.verticalHeader().setMovable(True)
     self.ui.compareList.verticalHeader().sectionMoved.connect(self.draw)
     self.file_paths={}
 
