@@ -130,6 +130,14 @@ class MainWindow(QtWidgets.QMainWindow,
         for i in range(len(channels), 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
 
+        #if self.active_channel in self.ref_list_channels:
+        #    for i, refli in enumerate(self.reduction_list):
+        #        refli=self.recalculateReflectivity(refli)
+        #        self.reduction_list[i]=refli
+        #self.plotActiveTab()
+        #self.initiateProjectionPlot.emit(False)
+        #self.initiateReflectivityPlot.emit(False)
+
         # Update UI
         self.file_loaded_signal.emit()
 
@@ -196,6 +204,13 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         self.fileOpen(self._current_file)
 
+    def changeActiveChannel(self):
+        '''
+        The overview and reflectivity channel was changed. This
+        recalculates already extracted reflectivities.
+        '''
+        return self.file_loaded()
+    
     def gather_options(self):
         """
             Gather the reduction options.
@@ -234,7 +249,6 @@ class MainWindow(QtWidgets.QMainWindow,
     def cutPoints(self): return NotImplemented
     def autoRef(self): return NotImplemented
     def stripOverlap(self): return NotImplemented
-    def changeActiveChannel(self): return NotImplemented
     def open_polarization_window(self): return NotImplemented
     def open_rawdata_dialog(self): return NotImplemented
     def run_ipython(self): return NotImplemented

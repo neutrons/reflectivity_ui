@@ -4162,7 +4162,7 @@
    <sender>selectedChannel0</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>659</x>
@@ -4178,7 +4178,7 @@
    <sender>selectedChannel1</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>701</x>
@@ -4194,7 +4194,7 @@
    <sender>selectedChannel2</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>745</x>
@@ -4210,7 +4210,7 @@
    <sender>selectedChannel3</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>789</x>
@@ -4322,7 +4322,7 @@
    <sender>selectedChannel4</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>659</x>
@@ -4338,7 +4338,7 @@
    <sender>selectedChannel5</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>701</x>
@@ -4354,7 +4354,7 @@
    <sender>selectedChannel6</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>745</x>
@@ -4370,7 +4370,7 @@
    <sender>selectedChannel7</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>789</x>
@@ -4386,7 +4386,7 @@
    <sender>selectedChannel8</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>659</x>
@@ -4402,7 +4402,7 @@
    <sender>selectedChannel9</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>701</x>
@@ -4418,7 +4418,7 @@
    <sender>selectedChannel10</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>745</x>
@@ -4434,7 +4434,7 @@
    <sender>selectedChannel11</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
-   <slot>changeActiveChannel()</slot>
+   <slot>file_loaded()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>789</x>
@@ -4561,7 +4561,7 @@
   <slot>overwriteChanged()</slot>
   <slot>normalizeTotalReflection()</slot>
   <slot>reductionTableChanged(QTableWidgetItem*)</slot>
-  <slot>changeActiveChannel()</slot>
+  <slot>file_loaded()</slot>
   <slot>removeRefList()</slot>
   <slot>changeRegionValues()</slot>
   <slot>refineXpos()</slot>
