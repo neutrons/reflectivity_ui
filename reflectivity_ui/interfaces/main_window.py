@@ -52,7 +52,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # UI events
         self.file_loaded_signal.connect(self.update_info)
         self.file_loaded_signal.connect(self.update_daslog)
-        
+        self.file_loaded_signal.connect(self.plotActiveTab)
 
     def initialize_instrument(self):
         """
@@ -206,7 +206,7 @@ class MainWindow(QtWidgets.QMainWindow,
         '''
             Select the appropriate function to plot all visible images.
         '''
-        if self.auto_change_active or not self.active_data:
+        if self._active_channel is None:
             return
         color=str(self.ui.color_selector.currentText())
         if color!=self.color and self.color is not None:
@@ -233,9 +233,7 @@ class MainWindow(QtWidgets.QMainWindow,
             self.plot_offspec()
         if self.ui.plotTab.currentIndex()==4:
             self.plot_gisans()
-        if self.ui.plotTab.currentIndex()==5:
-            self.update_daslog()
-
+ 
     def update_file_list(self):
         """
             Update the list of data files
@@ -273,14 +271,70 @@ class MainWindow(QtWidgets.QMainWindow,
         recalculates already extracted reflectivities.
         '''
         return self.file_loaded()
+
+    def plot_xy(self):
+        '''
+        X vs. Y plots for all channels.
+        '''
+        plots=[self.ui.xy_pp, self.ui.xy_mm, self.ui.xy_pm, self.ui.xy_mp]
+        for i in range(len(self.active_data), 4):
+            if plots[i].cplot is not None:
+                plots[i].clear()
+                plots[i].draw()
+        imin=1e20
+        imax=1e-20
+        xynormed=[]
+        for dataset in self._data_sets[:4]:
+            d=dataset.xydata/dataset.proton_charge
+            xynormed.append(d)
+            if dataset.total_counts==0:
+                continue
+            imin=min(imin, d[d>0].min())
+            imax=max(imax, d.max())
     
+        if len(xynormed)>1:
+            self.ui.frame_xy_mm.show()
+            if len(xynormed)==4:
+                self.ui.frame_xy_sf.show()
+            else:
+                self.ui.frame_xy_sf.hide()
+        else:
+            self.ui.frame_xy_mm.hide()
+            self.ui.frame_xy_sf.hide()
+    
+        for i, datai in enumerate(xynormed):
+            if self.active_data[i].total_counts==0:
+                continue
+            if self.ui.tthPhi.isChecked():
+                plots[i].clear()
+                rad_per_pixel=dataset.det_size_x/dataset.dist_sam_det/dataset.xydata.shape[1]
+                phi_range=datai.shape[0]*rad_per_pixel*180./pi
+                tth_range=datai.shape[1]*rad_per_pixel*180./pi
+                phi0=self.ui.refYPos.value()*rad_per_pixel*180./pi
+                tth0=(dataset.dangle-dataset.dangle0)-(datai.shape[1]-dataset.dpix)*rad_per_pixel*180./pi
+                plots[i].imshow(datai, log=self.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
+                                aspect='auto', cmap=self.color, origin='lower',
+                                extent=[tth_range+tth0, tth0, phi0, phi0-phi_range])
+                plots[i].set_xlabel(u'2$\\Theta{}$ [°]')
+                plots[i].set_ylabel(u'$\\phi{}$ [°]')
+            else:
+                plots[i].imshow(datai, log=self.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
+                                aspect='auto', cmap=self.color, origin='lower')
+                plots[i].set_xlabel(u'x [pix]')
+                plots[i].set_ylabel(u'y [pix]')
+            plots[i].set_title(self.channels[i])
+            if plots[i].cplot is not None:
+                plots[i].cplot.set_clim([imin, imax])
+            if plots[i].cplot is not None and self.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+                plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
+            plots[i].draw()
+      
     def gather_options(self):
         """
             Gather the reduction options.
         """
         pass
 
-    def plotActiveTab(self): return NotImplemented
     def setNorm(self): return NotImplemented
     def addRefList(self): return NotImplemented
     def clearRefList(self): return NotImplemented
