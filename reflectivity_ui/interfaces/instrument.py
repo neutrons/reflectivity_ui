@@ -28,3 +28,38 @@ class Instrument(object):
         
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]
+    
+    def get_info(self, workspace, data_object ):
+        """
+            Retrieve information that is specific to this particular instrument
+            
+            @param workspace: Mantid workspace
+            @param data_object: CrossSectionData object 
+        """
+        data = workspace.getRun()
+        data_object.lambda_center=data['LambdaRequest'].value[0]
+        data_object.dangle=data['DANGLE'].value[0]
+        data_object.dangle0=data['DANGLE0'].value[0]
+        data_object.dpix=data['DIRPIX'].value[0]
+        data_object.slit1_width=data['S1HWidth'].value[0]
+        data_object.slit2_width=data['S2HWidth'].value[0]
+        data_object.slit3_width=data['S3HWidth'].value[0]
+ 
+        #TODO: these don't exist in the DASLogs
+        #data_object.slit1_dist=-data['instrument/aperture1/distance'].value[0]*1000.
+        #data_object.slit2_dist=-data['instrument/aperture2/distance'].value[0]*1000.
+        #data_object.slit3_dist=-data['instrument/aperture3/distance'].value[0]*1000.
+
+        data_object.sangle=data['SANGLE'].value[0]
+
+        data_object.dist_sam_det=data['SampleDetDis'].value[0]*1e-3
+        data_object.dist_mod_det=data['ModeratorSamDis'].value[0]*1e-3+data_object.dist_sam_det
+        data_object.dist_mod_mon=data['ModeratorSamDis'].value[0]*1e-3-2.75
+
+        # Get these from instrument
+        data_object.det_size_x = int(workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0]) #304
+        data_object.det_size_y = int(workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0]) #256
+
+        # The following active area used to be taken from instrument.DETECTOR_REGION
+        data_object.active_area_x = (8, 295)
+        data_object.active_area_y = (8, 246)

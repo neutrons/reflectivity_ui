@@ -15,6 +15,7 @@ class Configuration(object):
         self.tof_bin_type = 0
         ## Threshold under which we skip a cross-section, as fraction of the max count
         self.count_threshold = 0.01
+        self.tof_overwrite = None
     
     def to_q_settings(self):
         pass

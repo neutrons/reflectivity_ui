@@ -1411,7 +1411,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.toolBox.setCurrentIndex(0)
-        self.plotTab.setCurrentIndex(1)
+        self.plotTab.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
         self.actionOpen.triggered.connect(MainWindow.file_open_dialog)
         self.plotTab.currentChanged['int'].connect(MainWindow.plotActiveTab)

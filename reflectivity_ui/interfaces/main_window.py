@@ -13,6 +13,7 @@ import reflectivity_ui.interfaces.generated.ui_main_window
 
 from .data_handling.loader import NexusData
 from .configuration import Configuration
+from . import plotting
 
 class MainWindow(QtWidgets.QMainWindow,
                  reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow):
@@ -21,6 +22,9 @@ class MainWindow(QtWidgets.QMainWindow,
     """
     # UI events
     file_loaded_signal = QtCore.pyqtSignal()
+    color = None
+    _gisansThread = None
+    overview_lines = None
 
     def __init__(self):
         """
@@ -40,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow,
         self._current_file = None
         self._active_channel = None
 
-        # Update file list when changes are made        
+        # Update file list when changes are made
         self._path_watcher = QtCore.QFileSystemWatcher([self._current_directory], self)
         self._path_watcher.directoryChanged.connect(self.update_file_list)
 
@@ -202,7 +206,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 i += 1
         table.resizeColumnsToContents()
 
-    def _plotActiveTab(self):
+    def plotActiveTab(self):
         '''
             Select the appropriate function to plot all visible images.
         '''
@@ -224,7 +228,7 @@ class MainWindow(QtWidgets.QMainWindow,
             self._gisansThread.wait(100)
             self._gisansThread=None
         if self.ui.plotTab.currentIndex()==0:
-            self.plot_overview()
+            plotting.plot_overview(self)
         if self.ui.plotTab.currentIndex()==1:
             self.plot_xy()
         if self.ui.plotTab.currentIndex()==2:
@@ -328,6 +332,20 @@ class MainWindow(QtWidgets.QMainWindow,
             if plots[i].cplot is not None and self.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                 plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
+    
+    def getNorm(self):
+        return None
+
+    def toggleColorbars(self):
+
+        plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+               self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+               self.ui.xy_overview, self.ui.xtof_overview,
+               self.ui.offspec_pp, self.ui.offspec_mp, self.ui.offspec_pm, self.ui.offspec_mm]
+        for plot in plots:
+            plot.clear_fig()
+        self.overview_lines=None
+        self.plotActiveTab()
       
     def gather_options(self):
         """
@@ -353,7 +371,6 @@ class MainWindow(QtWidgets.QMainWindow,
     def clip_offspec_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
     def changeRegionValues(self): return NotImplemented
-    def toggleColorbars(self): return NotImplemented
     def overwriteChanged(self): return NotImplemented
     def toggleHide(self): return NotImplemented
     def fileOpenList(self): return NotImplemented
