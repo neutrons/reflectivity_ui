@@ -1039,7 +1039,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -1180,6 +1180,9 @@
                      <property name="alignment">
                       <set>Qt::AlignCenter</set>
                      </property>
+                     <property name="margin">
+                      <number>1</number>
+                     </property>
                      <property name="textInteractionFlags">
                       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
                      </property>
@@ -1277,8 +1280,17 @@
                       <enum>QFrame::Raised</enum>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_9">
-                      <property name="margin">
+                      <property name="leftMargin">
                        <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>1</number>
                       </property>
                       <item row="0" column="0">
                        <widget class="QLabel" name="label_12">
@@ -2722,14 +2734,6 @@
     <addaction name="separator"/>
     <addaction name="actionIPython_Console"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-    <addaction name="actionManual"/>
-    <addaction name="separator"/>
-    <addaction name="actionAbout"/>
-   </widget>
    <widget class="QMenu" name="menuReduction">
     <property name="title">
      <string>Reduction</string>
@@ -2775,7 +2779,6 @@
    <addaction name="menuAutomatics"/>
    <addaction name="menuTools"/>
    <addaction name="menuAdvanced"/>
-   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="mainToolbar">
@@ -2929,16 +2932,6 @@
    </property>
    <property name="toolTip">
     <string>Use the active table to extrac reduced datasets and save them</string>
-   </property>
-  </action>
-  <action name="actionManual">
-   <property name="text">
-    <string>Manual...</string>
-   </property>
-  </action>
-  <action name="actionAbout">
-   <property name="text">
-    <string>About...</string>
    </property>
   </action>
   <action name="actionAutoYLimits">
@@ -3455,22 +3448,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionAbout</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>aboutDialog()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>435</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>reduceButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -3499,22 +3476,6 @@
     <hint type="destinationlabel">
      <x>888</x>
      <y>843</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionManual</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>helpDialog()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>435</y>
     </hint>
    </hints>
   </connection>

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #pylint: disable=invalid-name, line-too-long
 """
     Main application window
@@ -50,8 +51,13 @@ class MainWindow(QtWidgets.QMainWindow,
         
         # UI events
         self.file_loaded_signal.connect(self.update_info)
+        self.file_loaded_signal.connect(self.update_daslog)
+        
 
     def initialize_instrument(self):
+        """
+            Initialize instrument according to the instrument
+        """
         for i in range(1, 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
         self.ui.selectedChannel0.show()
@@ -142,9 +148,9 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_loaded_signal.emit()
 
     def update_info(self):
-        '''
-        Write file metadata to the labels in the overview tab.
-        '''
+        """
+            Write file metadata to the labels in the overview tab.
+        """
         d=self._active_channel
 
         try:
@@ -172,6 +178,63 @@ class MainWindow(QtWidgets.QMainWindow,
         self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: <b>%s</b>'%(
                                        d.number, d.experiment,
                                        d.measurement_type, d.name))
+
+    def update_daslog(self):
+        """
+            Write parameters from all file daslogs to the table in the 
+            daslog tab.
+        """
+        table=self.ui.daslogTableBox
+        table.setRowCount(0)
+        table.sortItems(-1)
+        table.setColumnCount(len(self._data_sets)+2)
+        table.setHorizontalHeaderLabels(['Name']+self._data_sets.keys()+['Unit'])
+        for j, key in enumerate(sorted(self._active_channel.logs.keys(), key=lambda s: s.lower())):
+            table.insertRow(j)
+            table.setItem(j, 0, QtWidgets.QTableWidgetItem(key))
+            table.setItem(j, len(self._data_sets)+1,
+                          QtWidgets.QTableWidgetItem(self._active_channel.log_units[key]))
+            i = 0
+            for xs in self._data_sets:
+                item=QtWidgets.QTableWidgetItem(u'%g' % self._data_sets[xs].logs[key])
+                item.setToolTip(u'MIN: %g   MAX: %g' % (self._data_sets[xs].log_minmax[key]))
+                table.setItem(j, i+1, item)
+                i += 1
+        table.resizeColumnsToContents()
+
+    def _plotActiveTab(self):
+        '''
+            Select the appropriate function to plot all visible images.
+        '''
+        if self.auto_change_active or not self.active_data:
+            return
+        color=str(self.ui.color_selector.currentText())
+        if color!=self.color and self.color is not None:
+            self.color=color
+            plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                   self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                   self.ui.xy_overview, self.ui.xtof_overview]
+            for plot in plots:
+                plot.clear_fig()
+        elif self.color is None:
+            self.color=color
+        if self.ui.plotTab.currentIndex()!=4 and self._gisansThread:
+            self._gisansThread.finished.disconnect()
+            self._gisansThread.terminate()
+            self._gisansThread.wait(100)
+            self._gisansThread=None
+        if self.ui.plotTab.currentIndex()==0:
+            self.plot_overview()
+        if self.ui.plotTab.currentIndex()==1:
+            self.plot_xy()
+        if self.ui.plotTab.currentIndex()==2:
+            self.plot_xtof()
+        if self.ui.plotTab.currentIndex()==3:
+            self.plot_offspec()
+        if self.ui.plotTab.currentIndex()==4:
+            self.plot_gisans()
+        if self.ui.plotTab.currentIndex()==5:
+            self.update_daslog()
 
     def update_file_list(self):
         """
@@ -227,9 +290,7 @@ class MainWindow(QtWidgets.QMainWindow,
     def reduceDatasets(self): return NotImplemented
     def clearOverwrite(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
-    def aboutDialog(self): return NotImplemented
     def reductionTableChanged(self): return NotImplemented
-    def helpDialog(self): return NotImplemented
     def clearNormList(self): return NotImplemented
     def change_offspec_colorscale(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented

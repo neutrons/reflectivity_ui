@@ -91,7 +91,7 @@ class CrossSectionData(object):
     """
     def __init__(self, name='x', workspace=None):
         self.name = name
-        self.measurement_type = ''
+        self.measurement_type = 'polarized'
         self.workspace = workspace
         if workspace is not None:
             self.collect_info()
@@ -159,8 +159,8 @@ class CrossSectionData(object):
         self.det_size_x = int(self.workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0]) #304
         self.det_size_y = int(self.workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0]) #256
     
-        self.experiment=str(data['experiment_identifier'].value[0])
-        self.number=int(data['run_number'].value[0])
+        self.experiment=str(data['experiment_identifier'].value)
+        self.number=int(data['run_number'].value)
         self.merge_warnings=''
     
         # The following active area used to be taken from instrument.DETECTOR_REGION
