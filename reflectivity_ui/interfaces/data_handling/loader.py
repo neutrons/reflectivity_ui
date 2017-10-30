@@ -2,6 +2,7 @@
     Loader for event nexus files.
     Uses Mantid Framework
 """
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements
 from __future__ import absolute_import, division, print_function
 import sys
 import os
@@ -42,7 +43,7 @@ def getIxyt(nxs_data):
     sz_x_axis = int(nxs_data.getInstrument().getNumberParameter("number-of-x-pixels")[0]) #304
 
     _y_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof-1))
-    _y_error_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof-1))
+    #_y_error_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof-1))
 
     for x in range(sz_x_axis):
         for y in range(sz_y_axis):
@@ -53,6 +54,9 @@ def getIxyt(nxs_data):
     return _y_axis
 
 class NexusData(object):
+    """
+        Read a nexus file with multiple cross-section data.
+    """
     def __init__(self, file_path, configuration):
         self.file_path = file_path
         self.configuration = configuration
@@ -62,7 +66,7 @@ class NexusData(object):
         """
             Returns a workspace with the selected events
             TODO: make this flexible so we can filter anything we want.
-            
+
             A cross-section editor dialog should be written to
             add (title, definition) pair list of channels.
         """
@@ -94,7 +98,7 @@ class NexusData(object):
 
                 # Delete workspace
                 DeleteWorkspace(nxs_data)
-        
+
     def load(self):
         """
             Load cross-sections from a nexus file.
@@ -115,10 +119,10 @@ class CrossSectionData(object):
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
     @property
-    def nbytes(self): return (len(self._data_zipped)+
-                              self.xydata.nbytes+self.xtofdata.nbytes)
+    def nbytes(self): return len(self._data_zipped)+
+                              self.xydata.nbytes+self.xtofdata.nbytes
     @property
-    def rawbytes(self): return (self.data.nbytes+self.xydata.nbytes+self.xtofdata.nbytes)
+    def rawbytes(self): return self.data.nbytes+self.xydata.nbytes+self.xtofdata.nbytes
 
     @property
     def xdata(self): return self.xydata.mean(axis=0)
@@ -246,5 +250,3 @@ class CrossSectionData(object):
         self.data=Ixyt.astype(float) # 3D dataset
         self.xydata=Ixy.transpose().astype(float) # 2D dataset
         self.xtofdata=Ixt.astype(float) # 2D dataset
-        
-        

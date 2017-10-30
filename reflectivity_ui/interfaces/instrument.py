@@ -3,11 +3,16 @@
     that is instrument-specific and abstracts out how we obtain
     information from the data file
 """
-
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long
+from __future__ import absolute_import, division, print_function
 
 class Instrument(object):
+    """
+        Instrument class. Holds the data handling that is unique to a specific instrument.
+    """
     def __init__(self):
         self.instrument_name = "REFM"
+        self.tof_range = [0,0]
 
     def get_tof_range(self, run_object):
         """
@@ -16,7 +21,7 @@ class Instrument(object):
         sample_detector_distance = run_object['SampleDetDis'].getStatistics().mean / 1000.0
         source_sample_distance = run_object['ModeratorSamDis'].getStatistics().mean / 1000.0
         source_detector_distance = source_sample_distance + sample_detector_distance
-        
+
         h = 6.626e-34  # m^2 kg s^-1
         m = 1.675e-27  # kg
         wl = run_object.getProperty('LambdaRequest').value[0]
@@ -25,16 +30,17 @@ class Instrument(object):
         cst = source_detector_distance / h * m
         tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - 1.4 * 60.0 / chopper_speed) * 1e-4
         tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + 1.4 * 60.0 / chopper_speed) * 1e-4
-        
+
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]
-    
-    def get_info(self, workspace, data_object ):
+
+    @classmethod
+    def get_info(cls, workspace, data_object):
         """
             Retrieve information that is specific to this particular instrument
-            
+
             @param workspace: Mantid workspace
-            @param data_object: CrossSectionData object 
+            @param data_object: CrossSectionData object
         """
         data = workspace.getRun()
         data_object.lambda_center=data['LambdaRequest'].value[0]
@@ -44,7 +50,7 @@ class Instrument(object):
         data_object.slit1_width=data['S1HWidth'].value[0]
         data_object.slit2_width=data['S2HWidth'].value[0]
         data_object.slit3_width=data['S3HWidth'].value[0]
- 
+
         #TODO: these don't exist in the DASLogs
         #data_object.slit1_dist=-data['instrument/aperture1/distance'].value[0]*1000.
         #data_object.slit2_dist=-data['instrument/aperture2/distance'].value[0]*1000.

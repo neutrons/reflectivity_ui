@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#pylint: disable=invalid-name, line-too-long
+#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes
 """
     Main application window
 """
@@ -8,6 +8,7 @@ import sys
 import os
 import logging
 import glob
+import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_main_window
 
@@ -42,7 +43,9 @@ class MainWindow(QtWidgets.QMainWindow,
         self.settings = QtCore.QSettings('.refredm')
         self._current_directory = self.settings.value('current_directory', os.path.expanduser('~'))
         self._current_file = None
+        self._current_file_name = None
         self._active_channel = None
+        self._data_sets = None
 
         # Update file list when changes are made
         self._path_watcher = QtCore.QFileSystemWatcher([self._current_directory], self)
@@ -52,7 +55,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # Retrieve configuration from config and enable/disable features
         self.initialize_instrument()
         self.hide_unsupported()
-        
+
         # UI events
         self.file_loaded_signal.connect(self.update_info)
         self.file_loaded_signal.connect(self.update_daslog)
@@ -111,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow,
             self._current_file = file_path
             self._current_file_name = file_name
             self.update_file_list()
-            
+
             # Load the file
             try:
                 nexus_data = NexusData(file_path, self.configuration)
@@ -119,9 +122,11 @@ class MainWindow(QtWidgets.QMainWindow,
                 self.file_loaded()
             except:
                 logging.error("Error loading file: %s", sys.exc_value)
-            #self.fileOpen(filenames[0])
 
     def file_loaded(self):
+        """
+            Update UI after a file is loaded
+        """
         current_channel=0
         for i in range(12):
             if getattr(self.ui, 'selectedChannel%i'%i).isChecked():
@@ -185,7 +190,7 @@ class MainWindow(QtWidgets.QMainWindow,
 
     def update_daslog(self):
         """
-            Write parameters from all file daslogs to the table in the 
+            Write parameters from all file daslogs to the table in the
             daslog tab.
         """
         table=self.ui.daslogTableBox
@@ -237,7 +242,7 @@ class MainWindow(QtWidgets.QMainWindow,
             self.plot_offspec()
         if self.ui.plotTab.currentIndex()==4:
             self.plot_gisans()
- 
+
     def update_file_list(self):
         """
             Update the list of data files
@@ -295,7 +300,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 continue
             imin=min(imin, d[d>0].min())
             imax=max(imax, d.max())
-    
+
         if len(xynormed)>1:
             self.ui.frame_xy_mm.show()
             if len(xynormed)==4:
@@ -305,17 +310,17 @@ class MainWindow(QtWidgets.QMainWindow,
         else:
             self.ui.frame_xy_mm.hide()
             self.ui.frame_xy_sf.hide()
-    
+
         for i, datai in enumerate(xynormed):
             if self.active_data[i].total_counts==0:
                 continue
             if self.ui.tthPhi.isChecked():
                 plots[i].clear()
                 rad_per_pixel=dataset.det_size_x/dataset.dist_sam_det/dataset.xydata.shape[1]
-                phi_range=datai.shape[0]*rad_per_pixel*180./pi
-                tth_range=datai.shape[1]*rad_per_pixel*180./pi
-                phi0=self.ui.refYPos.value()*rad_per_pixel*180./pi
-                tth0=(dataset.dangle-dataset.dangle0)-(datai.shape[1]-dataset.dpix)*rad_per_pixel*180./pi
+                phi_range=datai.shape[0]*rad_per_pixel*180./np.pi
+                tth_range=datai.shape[1]*rad_per_pixel*180./np.pi
+                phi0=self.ui.refYPos.value()*rad_per_pixel*180./np.pi
+                tth0=(dataset.dangle-dataset.dangle0)-(datai.shape[1]-dataset.dpix)*rad_per_pixel*180./np.pi
                 plots[i].imshow(datai, log=self.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
                                 aspect='auto', cmap=self.color, origin='lower',
                                 extent=[tth_range+tth0, tth0, phi0, phi0-phi_range])
@@ -332,12 +337,12 @@ class MainWindow(QtWidgets.QMainWindow,
             if plots[i].cplot is not None and self.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                 plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
-    
+
     def getNorm(self):
         return None
 
     def toggleColorbars(self):
-
+        """ Refresh plots because of a color or scale change """
         plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
                self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
                self.ui.xy_overview, self.ui.xtof_overview,
@@ -346,7 +351,7 @@ class MainWindow(QtWidgets.QMainWindow,
             plot.clear_fig()
         self.overview_lines=None
         self.plotActiveTab()
-      
+
     def gather_options(self):
         """
             Gather the reduction options.
