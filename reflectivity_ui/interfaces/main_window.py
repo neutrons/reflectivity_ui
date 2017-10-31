@@ -15,6 +15,7 @@ import reflectivity_ui.interfaces.generated.ui_main_window
 from .data_handling.loader import NexusData
 from .configuration import Configuration
 from . import plotting
+from .plot_handler import PlotHandler
 
 class MainWindow(QtWidgets.QMainWindow,
                  reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow):
@@ -46,6 +47,7 @@ class MainWindow(QtWidgets.QMainWindow,
         self._current_file_name = None
         self._active_channel = None
         self._data_sets = None
+        self._cache = []
 
         # Update file list when changes are made
         self._path_watcher = QtCore.QFileSystemWatcher([self._current_directory], self)
@@ -60,6 +62,16 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_loaded_signal.connect(self.update_info)
         self.file_loaded_signal.connect(self.update_daslog)
         self.file_loaded_signal.connect(self.plotActiveTab)
+        self.plot_handler = PlotHandler(self.ui)
+
+    def keyPressEvent(self, event):
+        if event.modifiers()==QtCore.Qt.ControlModifier:
+            self.plot_handler.control_down=True
+        else:
+            self.plot_handler.control_down=False
+
+    def keyReleaseEvent(self, event):
+        self.plot_handler.control_down=False
 
     def initialize_instrument(self):
         """
@@ -267,6 +279,7 @@ class MainWindow(QtWidgets.QMainWindow,
             except ValueError:
                 logging.error("Could not set file selection: %s", self._current_file_name)
                 logging.error(sys.exc_value)
+
 
     def reload_file(self):
         """

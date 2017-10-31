@@ -1,0 +1,258 @@
+"""
+    Event handlers for the main application window.
+    Most of those come straight from QuickNXS.
+"""
+import logging
+import time
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class PlotHandler(object):
+    _picked_line = None
+    control_down = False
+    last_event = None
+
+    def __init__(self, main_window_ui):
+        self.ui = main_window_ui
+        self.connect_plot_events()
+
+    def connect_plot_events(self):
+        """
+            Connect matplotlib mouse events.
+        """
+        for plot in [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                     self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                     self.ui.xy_overview, self.ui.xtof_overview,
+                     self.ui.x_project, self.ui.y_project, self.ui.refl]:
+            plot.canvas.mpl_connect('motion_notify_event', self.plot_mouse_event)
+        for plot in [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                     self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                     self.ui.xy_overview, self.ui.xtof_overview]:
+            plot.canvas.mpl_connect('scroll_event', self.change_color_scale)
+        self.ui.x_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_x)
+        self.ui.x_project.canvas.mpl_connect('button_press_event', self.plot_pick_x)
+        self.ui.x_project.canvas.mpl_connect('button_release_event', self.plot_release)
+        self.ui.y_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_y)
+        self.ui.y_project.canvas.mpl_connect('button_press_event', self.plot_pick_y)
+        self.ui.y_project.canvas.mpl_connect('button_release_event', self.plot_release)
+        self.ui.refl.canvas.mpl_connect('scroll_event', self.scale_on_plot)
+        self.ui.xy_overview.canvas.mpl_connect('button_press_event', self.plot_pick_xy)
+        self.ui.xy_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xy)
+        self.ui.xy_overview.canvas.mpl_connect('button_release_event', self.plot_release)
+        self.ui.xtof_overview.canvas.mpl_connect('button_press_event', self.plot_pick_xtof)
+        self.ui.xtof_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xtof)
+        self.ui.xtof_overview.canvas.mpl_connect('button_release_event', self.plot_release)
+
+        # Status bar indicator
+        # TODO: add cache indicator and empty cache button
+        self.x_position_indicator=QtWidgets.QLabel(u" x=%g" % 0.)
+        self.x_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                                QtWidgets.QSizePolicy.Preferred)
+        self.x_position_indicator.setMaximumWidth(100)
+        self.x_position_indicator.setMinimumWidth(100)
+        self.ui.statusbar.addPermanentWidget(self.x_position_indicator)
+        self.y_position_indicator=QtWidgets.QLabel(u" y=%g" % 0.)
+        self.y_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                                QtWidgets.QSizePolicy.Preferred)
+        self.y_position_indicator.setMaximumWidth(100)
+        self.y_position_indicator.setMinimumWidth(100)
+        self.ui.statusbar.addPermanentWidget(self.y_position_indicator)
+
+    def plot_mouse_event(self, event):
+        """
+            Show the mouse position of any plot in the main window
+            status bar, as the single plot status indicator is only
+            visible for larger plot toolbars.
+            :param event: event object
+        """
+        if event.inaxes is None:
+            return
+        self.x_position_indicator.setText(u" x=%g" % event.xdata)
+        self.y_position_indicator.setText(u" y=%g" % event.ydata)
+    
+    def change_color_scale(self, event):
+        """
+            Change the intensity limits of a map plot with the mouse wheel.
+            :param event: event object
+        """
+        if self.last_event is not None and time.time()-self.last_event < 0.1:
+            return
+        self.last_event = time.time()
+
+        canvas=None
+        for plot in [self.ui.xy_overview, self.ui.xtof_overview]:
+            if plot.canvas is event.canvas:
+                canvas=[plot]
+        if event.canvas in [self.ui.xy_pp.canvas, self.ui.xy_mp.canvas,
+                            self.ui.xy_pm.canvas, self.ui.xy_mm.canvas]:
+            canvas=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm]
+        if event.canvas in [self.ui.xtof_pp.canvas, self.ui.xtof_mp.canvas,
+                            self.ui.xtof_pm.canvas, self.ui.xtof_mm.canvas]:
+            canvas=[self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm]
+        if not (canvas and canvas[0].cplot):
+            return
+        clim=canvas[0].cplot.get_clim()
+        for canv in canvas:
+            if canv.cplot is None:
+                continue
+            if self.control_down:
+                canv.cplot.set_clim(min(clim[1]*0.9, clim[0]*10**(0.05*event.step)), clim[1])
+            else:
+                canv.cplot.set_clim(clim[0], max(clim[0]*1.1, clim[1]*10**(0.05*event.step)))
+            canv.draw()
+    
+    def plot_release(self, event):
+        """
+            :param event: event object
+        """
+        self._picked_line = None
+    
+    def plot_pick_x(self, event):
+        """
+            Plot for x-projection has been clicked.
+            :param event: event object
+        """
+        if event.button is not None and self.ui.x_project.toolbar._active is None and \
+            event.xdata is not None:
+            if event.button==1:
+                xcen=self.ui.refXPos.value()
+                bgc=self.ui.bgCenter.value()
+                bgw=self.ui.bgWidth.value()
+                bgl=bgc-bgw/2.
+                bgr=bgc+bgw/2.
+                dists=[abs(event.xdata-item) for item in [xcen, bgl, bgr]]
+                min_dist=dists.index(min(dists))
+                pl=self._picked_line
+                if pl=='bgl' or (pl is None and min_dist==1):
+                    # left of right background bar and closer to left one
+                    bgl=event.xdata
+                    bgc=(bgr+bgl)/2.
+                    bgw=(bgr-bgl)
+                    self.ui.bgCenter.setValue(bgc)
+                    self.ui.bgWidth.setValue(bgw)
+                    self._picked_line='bgl'
+                elif pl=='bgr' or (pl is None and min_dist==2):
+                    # left of right background bar or closer to right background than peak
+                    bgr=event.xdata
+                    bgc=(bgr+bgl)/2.
+                    bgw=(bgr-bgl)
+                    self.ui.bgCenter.setValue(bgc)
+                    self.ui.bgWidth.setValue(bgw)
+                    self._picked_line='bgr'
+                else:
+                    self.ui.refXPos.setValue(event.xdata)
+                    self._picked_line='xpos'
+            elif event.button==3:
+                self.ui.refXWidth.setValue(abs(self.ui.refXPos.value()-event.xdata)*2.)
+    
+    def plot_pick_y(self, event):
+        """
+            Plot for y-projection has been clicked.
+            :param self QMainWindow: main window object
+            :param event: event object
+        """
+        if event.button==1 and self.ui.y_project.toolbar._active is None and \
+            event.xdata is not None:
+            ypos=self.ui.refYPos.value()
+            yw=self.ui.refYWidth.value()
+            yl=ypos-yw/2.
+            yr=ypos+yw/2.
+            pl=self._picked_line
+            if pl=='yl' or (pl is None and abs(event.xdata-yl)<abs(event.xdata-yr)):
+                yl=event.xdata
+                self._picked_line='yl'
+            else:
+                yr=event.xdata
+                self._picked_line='yr'
+            ypos=(yr+yl)/2.
+            yw=(yr-yl)
+            self.ui.refYPos.setValue(ypos)
+            self.ui.refYWidth.setValue(yw)
+    
+    def plot_pick_xy(self, event):
+        """
+            Plot for xy-map has been clicked.
+            :param self QMainWindow: main window object
+            :param event: event object
+        """
+        if event.button==1 and self.ui.xy_overview.toolbar._active is None and \
+            event.xdata is not None:
+            self.ui.refXPos.setValue(event.xdata)
+        elif event.button==3 and self.ui.xy_overview.toolbar._active is None and \
+            event.ydata is not None:
+            ypos=self.ui.refYPos.value()
+            yw=self.ui.refYWidth.value()
+            yl=ypos-yw/2.
+            yr=ypos+yw/2.
+            pl=self._picked_line
+            if pl=='yl' or (pl is None and abs(event.ydata-yl)<abs(event.ydata-yr)):
+                yl=event.ydata
+                self._picked_line='yl'
+            else:
+                yr=event.ydata
+                self._picked_line='yr'
+            ypos=(yr+yl)/2.
+            yw=(yr-yl)
+            self.auto_change_active=True
+            self.ui.refYPos.setValue(ypos)
+            self.auto_change_active=False
+            self.ui.refYWidth.setValue(yw)
+
+    def plot_pick_xtof(self, event):
+        """
+            :param event: event object
+        """
+        if event.button==1 and self.ui.xtof_overview.toolbar._active is None and \
+            event.ydata is not None:
+            xcen=self.ui.refXPos.value()
+            bgc=self.ui.bgCenter.value()
+            bgw=self.ui.bgWidth.value()
+            bgl=bgc-bgw/2.
+            bgr=bgc+bgw/2.
+            dists=[abs(event.ydata-item) for item in [xcen, bgl, bgr]]
+            min_dist=dists.index(min(dists))
+            pl=self._picked_line
+            if pl=='bgl' or (pl is None and min_dist==1):
+                # left of right background bar and closer to left one
+                bgl=event.ydata
+                bgc=(bgr+bgl)/2.
+                bgw=(bgr-bgl)
+                self.auto_change_active=True
+                self.ui.bgCenter.setValue(bgc)
+                self.auto_change_active=False
+                self.ui.bgWidth.setValue(bgw)
+                self._picked_line='bgl'
+            elif pl=='bgr' or (pl is None and min_dist==2):
+                # left of right background bar or closer to right background than peak
+                bgr=event.ydata
+                bgc=(bgr+bgl)/2.
+                bgw=(bgr-bgl)
+                self.auto_change_active=True
+                self.ui.bgCenter.setValue(bgc)
+                self.auto_change_active=False
+                self.ui.bgWidth.setValue(bgw)
+                self._picked_line='bgr'
+            else:
+                self.ui.refXPos.setValue(event.ydata)
+                self._picked_line='xpos'
+        elif event.button==3 and self.ui.xtof_overview.toolbar._active is None and \
+            event.ydata is not None:
+            xpos=self.ui.refXPos.value()
+            self.ui.refXWidth.setValue(abs(xpos-event.ydata)*2.)
+
+    def scale_on_plot(self, event):
+        """
+            :param event: event object
+        """
+        steps=event.step
+        xpos=event.xdata
+        if xpos is None:
+            return
+        for i, refl in enumerate(self.reduction_list):
+            if (refl.Q[refl.options['PN']]>xpos):
+                Ival=refl.options['scale']
+                if self.control_down:
+                    Inew=Ival*10**(0.05*steps)
+                else:
+                    Inew=Ival*10**(0.01*steps)
+                self.ui.reductionTable.setItem(i, 1,
+                                               QtWidgets.QTableWidgetItem("%.4f"%(Inew)))
