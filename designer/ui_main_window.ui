@@ -930,16 +930,6 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
-            <widget class="QCheckBox" name="normalizeXTof">
-             <property name="toolTip">
-              <string>Normalize the intensity in the X-ToF maps by the incident beam measurement</string>
-             </property>
-             <property name="text">
-              <string>Norm. X-ToF/λ</string>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="0">
             <widget class="QCheckBox" name="logarithmic_colorscale">
              <property name="toolTip">
@@ -1009,24 +999,23 @@
             </widget>
            </item>
            <item row="4" column="0">
-            <widget class="QCheckBox" name="hide_plots">
+            <widget class="QCheckBox" name="normalizeXTof">
              <property name="toolTip">
-              <string>Hide empty channels in the X-Y and X-ToF tabs to make more space for the measured channels</string>
+              <string>Normalize the intensity in the X-ToF maps by the incident beam measurement</string>
              </property>
              <property name="text">
-              <string>Hide Empty</string>
+              <string>Norm. X-ToF/λ</string>
              </property>
             </widget>
            </item>
           </layout>
           <zorder>xLamda</zorder>
-          <zorder>normalizeXTof</zorder>
           <zorder>logarithmic_y</zorder>
           <zorder>show_colorbars</zorder>
           <zorder>tthPhi</zorder>
-          <zorder>hide_plots</zorder>
           <zorder>color_selector</zorder>
           <zorder>logarithmic_colorscale</zorder>
+          <zorder>normalizeXTof</zorder>
          </widget>
         </item>
        </layout>
@@ -2607,7 +2596,7 @@
               <property name="minimumSize">
                <size>
                 <width>150</width>
-                <height>150</height>
+                <height>200</height>
                </size>
               </property>
              </widget>
@@ -2643,7 +2632,7 @@
               <property name="minimumSize">
                <size>
                 <width>150</width>
-                <height>150</height>
+                <height>200</height>
                </size>
               </property>
              </widget>
@@ -2685,7 +2674,7 @@
               <property name="minimumSize">
                <size>
                 <width>150</width>
-                <height>150</height>
+                <height>200</height>
                </size>
               </property>
              </widget>
@@ -2721,6 +2710,9 @@
     <addaction name="actionExport_Raw_Data"/>
    </widget>
    <widget class="QMenu" name="menuAdvanced">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
      <string>Advanced</string>
     </property>
@@ -2730,9 +2722,6 @@
     <addaction name="separator"/>
     <addaction name="actionPolarization"/>
     <addaction name="actionRaw_Data_Comparison"/>
-    <addaction name="actionBrowse_NXS_File"/>
-    <addaction name="separator"/>
-    <addaction name="actionIPython_Console"/>
    </widget>
    <widget class="QMenu" name="menuReduction">
     <property name="title">
@@ -2763,21 +2752,9 @@
     <addaction name="separator"/>
     <addaction name="actionStrip_Overlap"/>
    </widget>
-   <widget class="QMenu" name="menuTools">
-    <property name="title">
-     <string>Tools</string>
-    </property>
-    <addaction name="actionOpen_Compare_Window"/>
-    <addaction name="actionOpen_Reduction_Preview"/>
-    <addaction name="separator"/>
-    <addaction name="actionFilter_Points"/>
-    <addaction name="separator"/>
-    <addaction name="actionSearch_Database"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuReduction"/>
    <addaction name="menuAutomatics"/>
-   <addaction name="menuTools"/>
    <addaction name="menuAdvanced"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -2798,21 +2775,20 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionReduce"/>
    <addaction name="actionExport_Raw_Data"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
    <addaction name="actionNorm"/>
    <addaction name="actionClear_Normalizations"/>
    <addaction name="separator"/>
+   <addaction name="actionNormalizeScaling"/>
+   <addaction name="actionCut_Points"/>
+   <addaction name="separator"/>
    <addaction name="actionAddPlot"/>
    <addaction name="actionRemove"/>
    <addaction name="actionClear"/>
    <addaction name="separator"/>
-   <addaction name="separator"/>
-   <addaction name="actionNormalizeScaling"/>
-   <addaction name="actionCut_Points"/>
-   <addaction name="actionStrip_Overlap"/>
+   <addaction name="actionReduce"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
    <addaction name="actionAutomaticXPeak"/>
@@ -2821,6 +2797,7 @@
    <addaction name="separator"/>
    <addaction name="actionAuto_Reflectivity"/>
    <addaction name="separator"/>
+   <addaction name="actionStrip_Overlap"/>
    <addaction name="actionAdjust_Dirct_Beam"/>
   </widget>
   <action name="actionOpen">
@@ -2893,6 +2870,9 @@
    </property>
    <property name="toolTip">
     <string>Use active dataset to set overwrite parameters for direct pixel and Dangle0</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionNormalizeScaling">
@@ -2974,6 +2954,9 @@
    <property name="text">
     <string>Clear Overwrite</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionLoad_Extraction">
    <property name="text">
@@ -3009,6 +2992,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionOpen_Sum">
@@ -3068,10 +3054,16 @@
    <property name="text">
     <string>Polarization...</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionRaw_Data_Comparison">
    <property name="text">
     <string>Raw Data Comparison...</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionIPython_Console">
@@ -3200,9 +3192,7 @@
   <tabstop>color_selector</tabstop>
   <tabstop>logarithmic_colorscale</tabstop>
   <tabstop>logarithmic_y</tabstop>
-  <tabstop>hide_plots</tabstop>
   <tabstop>xLamda</tabstop>
-  <tabstop>normalizeXTof</tabstop>
   <tabstop>tthPhi</tabstop>
   <tabstop>plotTab</tabstop>
   <tabstop>tabWidget</tabstop>
@@ -3560,22 +3550,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionOpen_Compare_Window</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>open_compare_window()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>649</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionAdvanced_Background</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -3720,22 +3694,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>hide_plots</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>toggleHide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>129</x>
-     <y>815</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>246</x>
-     <y>833</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>dangle0Overwrite</sender>
    <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
@@ -3755,7 +3713,7 @@
    <sender>file_list</sender>
    <signal>itemSelectionChanged()</signal>
    <receiver>MainWindow</receiver>
-   <slot>fileOpenList()</slot>
+   <slot>file_open_from_list()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>257</x>
@@ -3912,38 +3870,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>histogramActive</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>folderModified()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>88</x>
-     <y>114</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>0</x>
-     <y>69</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>eventActive</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>folderModified()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>172</x>
-     <y>114</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>0</x>
-     <y>62</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>logarithmic_colorscale</sender>
    <signal>stateChanged(int)</signal>
    <receiver>MainWindow</receiver>
@@ -4036,22 +3962,6 @@
     <hint type="destinationlabel">
      <x>543</x>
      <y>454</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>oldFormatActive</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>folderModified()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>256</x>
-     <y>114</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
     </hint>
    </hints>
   </connection>
@@ -4232,22 +4142,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionIPython_Console</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>run_ipython()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>reduceLastButton</sender>
    <signal>pressed()</signal>
    <receiver>MainWindow</receiver>
@@ -4408,54 +4302,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionBrowse_NXS_File</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>open_nxs_dialog()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionFilter_Points</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>open_filter_dialog()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionOpen_Reduction_Preview</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>open_reduction_preview()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>load_live_data_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -4468,22 +4314,6 @@
     <hint type="destinationlabel">
      <x>-2</x>
      <y>505</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionSearch_Database</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>open_database_search()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
     </hint>
    </hints>
   </connection>
@@ -4507,9 +4337,8 @@
  <slots>
   <slot>file_open_dialog()</slot>
   <slot>plotActiveTab()</slot>
-  <slot>fileOpenList()</slot>
+  <slot>file_open_from_list()</slot>
   <slot>toggleColorbars()</slot>
-  <slot>toggleHide()</slot>
   <slot>setNorm()</slot>
   <slot>addRefList()</slot>
   <slot>clearRefList()</slot>
@@ -4527,17 +4356,13 @@
   <slot>changeRegionValues()</slot>
   <slot>refineXpos()</slot>
   <slot>visualizePeakfinding()</slot>
-  <slot>folderModified()</slot>
   <slot>clearOverwrite()</slot>
   <slot>openByNumber()</slot>
   <slot>loadExtraction()</slot>
-  <slot>aboutDialog()</slot>
   <slot>automaticExtraction()</slot>
-  <slot>helpDialog()</slot>
   <slot>clearNormList()</slot>
   <slot>change_offspec_colorscale()</slot>
   <slot>change_gisans_colorscale()</slot>
-  <slot>open_compare_window()</slot>
   <slot>open_advanced_background()</slot>
   <slot>clip_offspec_colorscale()</slot>
   <slot>fileOpenSumDialog()</slot>
@@ -4547,15 +4372,10 @@
   <slot>stripOverlap()</slot>
   <slot>open_polarization_window()</slot>
   <slot>open_rawdata_dialog()</slot>
-  <slot>run_ipython()</slot>
   <slot>raiseError()</slot>
   <slot>set_debug()</slot>
   <slot>quickReduce()</slot>
-  <slot>open_nxs_dialog()</slot>
-  <slot>open_filter_dialog()</slot>
-  <slot>open_reduction_preview()</slot>
   <slot>live_open()</slot>
-  <slot>open_database_search()</slot>
   <slot>open_logfile_viewer()</slot>
   <slot>exportRawData()</slot>
  </slots>

@@ -6,6 +6,10 @@
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long
 from __future__ import absolute_import, division, print_function
 
+# Constants
+h = 6.626e-34  # m^2 kg s^-1
+m = 1.675e-27  # kg
+
 class Instrument(object):
     """
         Instrument class. Holds the data handling that is unique to a specific instrument.
@@ -22,8 +26,6 @@ class Instrument(object):
         source_sample_distance = run_object['ModeratorSamDis'].getStatistics().mean / 1000.0
         source_detector_distance = source_sample_distance + sample_detector_distance
 
-        h = 6.626e-34  # m^2 kg s^-1
-        m = 1.675e-27  # kg
         wl = run_object.getProperty('LambdaRequest').value[0]
         chopper_speed = run_object.getProperty('SpeedRequest1').value[0]
         wl_offset = 0

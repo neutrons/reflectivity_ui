@@ -6,13 +6,24 @@ import logging
 import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
+def slow_down_events(fn):
+    def function_wrapper(self, *args, **kws):
+        if self.last_event is not None and time.time()-self.last_event < 0.3:
+            return
+        self.last_event = time.time()
+        return fn(self, *args, **kws)
+    return function_wrapper
+
 class PlotHandler(object):
     _picked_line = None
     control_down = False
     last_event = None
+    refl= None
 
-    def __init__(self, main_window_ui):
-        self.ui = main_window_ui
+    def __init__(self, main_window):
+        self.ui = main_window.ui
+        self.plot_manager = main_window.plot_manager
         self.connect_plot_events()
 
     def connect_plot_events(self):
@@ -68,15 +79,16 @@ class PlotHandler(object):
             return
         self.x_position_indicator.setText(u" x=%g" % event.xdata)
         self.y_position_indicator.setText(u" y=%g" % event.ydata)
-    
+
+    @slow_down_events
     def change_color_scale(self, event):
         """
             Change the intensity limits of a map plot with the mouse wheel.
             :param event: event object
         """
-        if self.last_event is not None and time.time()-self.last_event < 0.1:
-            return
-        self.last_event = time.time()
+        # Scaling parameters
+        _scale = 1.5
+        _step = 0.42
 
         canvas=None
         for plot in [self.ui.xy_overview, self.ui.xtof_overview]:
@@ -95,9 +107,9 @@ class PlotHandler(object):
             if canv.cplot is None:
                 continue
             if self.control_down:
-                canv.cplot.set_clim(min(clim[1]*0.9, clim[0]*10**(0.05*event.step)), clim[1])
+                canv.cplot.set_clim(min(clim[1]/_scale, clim[0]*10**(_step*event.step)), clim[1])
             else:
-                canv.cplot.set_clim(clim[0], max(clim[0]*1.1, clim[1]*10**(0.05*event.step)))
+                canv.cplot.set_clim(clim[0], max(clim[0]*_scale, clim[1]*10**(_step*event.step)))
             canv.draw()
     
     def plot_release(self, event):
@@ -105,7 +117,8 @@ class PlotHandler(object):
             :param event: event object
         """
         self._picked_line = None
-    
+
+    @slow_down_events
     def plot_pick_x(self, event):
         """
             Plot for x-projection has been clicked.
@@ -256,3 +269,61 @@ class PlotHandler(object):
                     Inew=Ival*10**(0.01*steps)
                 self.ui.reductionTable.setItem(i, 1,
                                                QtWidgets.QTableWidgetItem("%.4f"%(Inew)))
+
+    def change_region_values(self):
+        """
+            Called when the reflectivity extraction region has been changed.
+            Sets up a trigger to replot the reflectivity with a delay so
+            a subsequent change can occur without several replots.
+        """
+        if self.plot_manager.proj_lines is None:
+            return
+        lines=self.plot_manager.proj_lines
+
+        x_peak=self.ui.refXPos.value()
+        x_width=self.ui.refXWidth.value()
+        y_pos=self.ui.refYPos.value()
+        y_width=self.ui.refYWidth.value()
+        bg_pos=self.ui.bgCenter.value()
+        bg_width=self.ui.bgWidth.value()
+    
+        lines[0].set_xdata([x_peak-x_width/2., x_peak-x_width/2.])
+        lines[1].set_xdata([x_peak, x_peak])
+        lines[2].set_xdata([x_peak+x_width/2., x_peak+x_width/2.])
+        lines[3].set_xdata([bg_pos-bg_width/2., bg_pos-bg_width/2.])
+        lines[4].set_xdata([bg_pos+bg_width/2., bg_pos+bg_width/2.])
+        lines[5].set_xdata([y_pos-y_width/2., y_pos-y_width/2.])
+        lines[6].set_xdata([y_pos+y_width/2., y_pos+y_width/2.])
+        self.ui.x_project.draw()
+        self.ui.y_project.draw()
+
+        if not self.ui.tthPhi.isChecked():
+            self.plot_manager.xy_x1.set_xdata([x_peak-x_width/2., x_peak-x_width/2.])
+            self.plot_manager.xy_x2.set_xdata([x_peak+x_width/2., x_peak+x_width/2.])
+            self.plot_manager.xy_y1.set_ydata([y_pos-y_width/2., y_pos-y_width/2.])
+            self.plot_manager.xy_y2.set_ydata([y_pos+y_width/2., y_pos+y_width/2.])
+            self.ui.xy_overview.draw()
+
+        self.plot_manager.xtof_x1.set_ydata([x_peak-x_width/2., x_peak-x_width/2.])
+        self.plot_manager.xtof_x2.set_ydata([x_peak+x_width/2., x_peak+x_width/2.])
+        self.plot_manager.xtof_bck1.set_ydata([bg_pos-bg_width/2., bg_pos-bg_width/2.])
+        self.plot_manager.xtof_bck2.set_ydata([bg_pos+bg_width/2., bg_pos+bg_width/2.])
+        self.ui.xtof_overview.draw()
+
+        if self.ui.fanReflectivity.isChecked() and self.refl and not self.refl.options['extract_fan']:
+            old_aca=self.auto_change_active
+            self.auto_change_active=False
+            self.ui.rangeStart.setValue(self.cut_areas['fan'][0])
+            self.ui.rangeEnd.setValue(self.cut_areas['fan'][1])
+            self.auto_change_active=old_aca
+        elif not self.ui.fanReflectivity.isChecked() and self.refl and self.refl.options['extract_fan']:
+            norm=self.getNorm()
+            if norm in self.cut_areas:
+                old_aca=self.auto_change_active
+                self.auto_change_active=False
+                self.ui.rangeStart.setValue(self.cut_areas[norm][0])
+                self.ui.rangeEnd.setValue(self.cut_areas[norm][1])
+                self.auto_change_active=old_aca
+
+        #TODO: plot reflectivity
+        #self.trigger('initiateReflectivityPlot', False)

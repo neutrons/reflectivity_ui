@@ -23,7 +23,7 @@ from matplotlib.colors import LogNorm, Normalize
 from matplotlib.figure import Figure
 
 try:
-    import matplotlib.backends.qt4_editor.figureoptions as figureoptions
+    import matplotlib.backends.qt5_editor.figureoptions as figureoptions
 except ImportError:
     figureoptions=None
 

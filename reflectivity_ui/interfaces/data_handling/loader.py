@@ -149,12 +149,11 @@ class CrossSectionData(object):
     def xtof(self): return np.meshgrid(self.tof, self.x)
 
     @property
-    def lamda(self):
+    def wavelength(self):
         h = 6.626e-34  # m^2 kg s^-1
         m = 1.675e-27  # kg
         v_n=self.dist_mod_det/self.tof*1e6 #m/s
-        lamda_n=h/m/v_n*1e10 #A
-        return lamda_n
+        return h/m/v_n*1e10 #A
 
     @property
     def active_area_x(self):
