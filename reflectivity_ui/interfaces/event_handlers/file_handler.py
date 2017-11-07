@@ -8,7 +8,6 @@ import os
 import logging
 import glob
 from PyQt5 import QtGui, QtCore, QtWidgets
-from ..data_handling.loader import NexusData
 
 
 class FileHandler(object):
@@ -22,22 +21,27 @@ class FileHandler(object):
                                                        self.main_window)
         self._path_watcher.directoryChanged.connect(self.update_file_list)
 
+        self.cache_indicator=QtWidgets.QLabel("Cache Size: 0.0MB")
+        self.ui.statusbar.addPermanentWidget(self.cache_indicator)
+        button=QtWidgets.QPushButton('Empty Cache')
+        self.ui.statusbar.addPermanentWidget(button)
+        button.pressed.connect(self.empty_cache)
+        button.setFlat(True)
+        button.setMaximumSize(150, 20)
+
+    def empty_cache(self):
+        logging.error("empty cache")
+        self._data_manager.clear_cache()
+        self.cache_indicator.setText('Cache Size: 0.0MB')
+
     def open_file(self, file_path, force=False):
         """
             Read a data file
             :param str file_path: file path
             :param bool force: if true, the file will be reloaded
         """
-        # Check that the file exists
-        
-        #TODO: look whether it's cached
-        
-        # Check whether it's the current file
-        
-        # Load the data
         try:
-            nexus_data = NexusData(file_path, self.main_window.configuration)
-            self._data_manager.data_sets = nexus_data.load()
+            self._data_manager.load(file_path, self.main_window.configuration, force=force)
             self.file_loaded()
         except:
             logging.error("Error loading file: %s", sys.exc_value)
@@ -51,13 +55,11 @@ class FileHandler(object):
             if getattr(self.ui, 'selectedChannel%i'%i).isChecked():
                 current_channel = i
 
-        channels = self._data_manager.data_sets.keys()
-        if current_channel < len(channels):
-            self._data_manager.active_channel = self._data_manager.data_sets[channels[current_channel]]
-        else:
-            self._data_manager.active_channel = self._data_manager.data_sets[channels[0]]
+        success = self._data_manager.set_channel(current_channel)
+        if not success:
             self.ui.selectedChannel0.setChecked(True)
 
+        channels = self._data_manager.data_sets.keys()
         for i, channel in enumerate(channels):
             getattr(self.ui, 'selectedChannel%i'%i).show()
             getattr(self.ui, 'selectedChannel%i'%i).setText(channel)
@@ -73,6 +75,8 @@ class FileHandler(object):
         # Update UI
         self.main_window.file_loaded_signal.emit()
         self.main_window.initiate_projection_plot.emit(False)
+
+        self.cache_indicator.setText('Cache Size: %.1fMB'%(self._data_manager.get_cachesize()/1024.**2))
 
     def update_info(self):
         """
@@ -150,10 +154,9 @@ class FileHandler(object):
             self.main_window.settings.setValue('current_directory', file_dir)
 
             self._path_watcher.removePath(self._data_manager.current_directory)
-            self.main_window._current_directory = file_dir
-            self._path_watcher.addPath(self._data_manager.current_directory)
-            self._data_manager.current_file = file_path
+            self._data_manager._current_directory = file_dir #TODO
             self._data_manager.current_file_name = file_name
+            self._path_watcher.addPath(self._data_manager.current_directory)
             self.update_file_list()
             self.open_file(file_path)
 

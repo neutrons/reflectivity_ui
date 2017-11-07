@@ -1929,16 +1929,6 @@
                     </property>
                    </widget>
                   </item>
-                  <item>
-                   <widget class="QPushButton" name="reduceLastButton">
-                    <property name="enabled">
-                     <bool>true</bool>
-                    </property>
-                    <property name="text">
-                     <string>Quick-Reduce (use last options)</string>
-                    </property>
-                   </widget>
-                  </item>
                  </layout>
                 </item>
                </layout>
@@ -2706,8 +2696,6 @@
     <addaction name="actionOpen_Sum"/>
     <addaction name="separator"/>
     <addaction name="actionLoad_Extraction"/>
-    <addaction name="separator"/>
-    <addaction name="actionExport_Raw_Data"/>
    </widget>
    <widget class="QMenu" name="menuAdvanced">
     <property name="enabled">
@@ -2738,7 +2726,6 @@
     <addaction name="actionClear"/>
     <addaction name="separator"/>
     <addaction name="actionReduce"/>
-    <addaction name="actionQuick_Reduce"/>
    </widget>
    <widget class="QMenu" name="menuAutomatics">
     <property name="title">
@@ -2775,7 +2762,6 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionExport_Raw_Data"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
    <addaction name="actionNorm"/>
@@ -4142,38 +4128,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>reduceLastButton</sender>
-   <signal>pressed()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>quickReduce()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>640</x>
-     <y>820</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>663</x>
-     <y>866</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionQuick_Reduce</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>quickReduce()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>selectedChannel4</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
@@ -4317,22 +4271,6 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>actionExport_Raw_Data</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>exportRawData()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -4374,9 +4312,7 @@
   <slot>open_rawdata_dialog()</slot>
   <slot>raiseError()</slot>
   <slot>set_debug()</slot>
-  <slot>quickReduce()</slot>
   <slot>live_open()</slot>
   <slot>open_logfile_viewer()</slot>
-  <slot>exportRawData()</slot>
  </slots>
 </ui>

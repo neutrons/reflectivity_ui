@@ -338,3 +338,76 @@ class PlotManager(object):
 
         main_window.ui.x_project.draw()
         main_window.ui.y_project.draw()
+
+    def plot_offspec(self):
+        """
+            TODO: NOT YET WORKING
+            Create an offspecular plot for all channels of the datasets in the
+            reduction list. The user can define upper and lower bounds for the 
+            plotted intensity and select the coordinates to be ither kiz-kfz vs. Qz,
+            Qx vs. Qz or kiz vs. kfz.
+        """ 
+        plots=[self.main_window.ui.offspec_pp, self.main_window.ui.offspec_mm,
+               self.main_window.ui.offspec_pm, self.main_window.ui.offspec_mp]
+        for plot in plots:
+            plot.clear()
+        data_set_keys = self.main_window.data_manager.data_sets.keys()
+        for i in range(len(data_set_keys), 4):
+            if plots[i].cplot is not None:
+                plots[i].draw()
+        Imin=10**self.ui.offspecImin.value()
+        Imax=10**self.ui.offspecImax.value()
+        Qzmax=0.01
+        for item in self.reduction_list:
+            if type(item.origin) is list:
+                flist=[origin[0] for origin in item.origin]
+                data_all=NXSMultiData(flist, **item.read_options)
+            else:
+                fname=item.origin[0]
+                data_all=NXSData(fname, **item.read_options)
+            for i, channel in enumerate(self.ref_list_channels):
+                plot=plots[i]
+                selected_data=data_all[channel]
+                offspec=OffSpecular(selected_data, **item.options)
+                P0=len(selected_data.tof)-item.options['P0']
+                PN=item.options['PN']
+                Qzmax=max(offspec.Qz[int(item.options['x_pos']), PN:P0].max(), Qzmax)
+                ki_z, kf_z, Qx, Qz, S=offspec.ki_z, offspec.kf_z, offspec.Qx, offspec.Qz, offspec.S
+                if self.ui.kizmkfzVSqz.isChecked():
+                    plot.pcolormesh((ki_z-kf_z)[:, PN:P0],
+                                    Qz[:, PN:P0], S[:, PN:P0], log=True,
+                                    imin=Imin, imax=Imax, cmap=self.color,
+                                    shading='gouraud')
+                elif self.ui.qxVSqz.isChecked():
+                    plot.pcolormesh(Qx[:, PN:P0],
+                                    Qz[:, PN:P0], S[:, PN:P0], log=True,
+                                    imin=Imin, imax=Imax, cmap=self.color,
+                                    shading='gouraud')
+                else:
+                    plot.pcolormesh(ki_z[:, PN:P0],
+                                    kf_z[:, PN:P0], S[:, PN:P0], log=True,
+                                    imin=Imin, imax=Imax, cmap=self.color,
+                                    shading='gouraud')
+        for i, channel in enumerate(self.ref_list_channels):
+            plot=plots[i]
+            if self.ui.kizmkfzVSqz.isChecked():
+                plot.canvas.ax.set_xlim([-0.03, 0.03])
+                plot.canvas.ax.set_ylim([0., Qzmax])
+                plot.set_xlabel(u'k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]')
+                plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+            elif self.ui.qxVSqz.isChecked():
+                plot.canvas.ax.set_xlim([-0.001, 0.001])
+                plot.canvas.ax.set_ylim([0., Qzmax])
+                plot.set_xlabel(u'Q$_x$ [Å$^{-1}$]')
+                plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+            else:
+                plot.canvas.ax.set_xlim([0., Qzmax/2.])
+                plot.canvas.ax.set_ylim([0., Qzmax/2.])
+                plot.set_xlabel(u'k$_{i,z}$ [Å$^{-1}$]')
+                plot.set_ylabel(u'k$_{f,z}$ [Å$^{-1}$]')
+            plot.set_title(channel)
+            if plot.cplot is not None:
+                plot.cplot.set_clim([Imin, Imax])
+                if self.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+                    plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
+            plot.draw()

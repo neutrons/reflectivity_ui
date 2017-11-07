@@ -62,6 +62,13 @@ class NexusData(object):
         self.configuration = configuration
         self.cross_sections = {}
 
+    @property
+    def nbytes(self):
+        total_size = 0
+        for d in self.cross_sections.keys():
+            total_size += self.cross_sections[d].nbytes
+        return total_size
+
     def filter_events(self):
         """
             Returns a workspace with the selected events
@@ -119,9 +126,7 @@ class CrossSectionData(object):
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
     @property
-    def nbytes(self): return len(self._data_zipped)+self.xydata.nbytes+self.xtofdata.nbytes
-    @property
-    def rawbytes(self): return self.data.nbytes+self.xydata.nbytes+self.xtofdata.nbytes
+    def nbytes(self): return self.xydata.nbytes+self.xtofdata.nbytes
 
     @property
     def xdata(self): return self.xydata.mean(axis=0)

@@ -95,7 +95,6 @@ class MainWindow(QtWidgets.QMainWindow,
         self.ui.eventActive.hide()
 
         # Hide quick reduce button
-        self.ui.reduceLastButton.hide()
         self.ui.load_live_data_button.hide()
         self.ui.direct_beam_runs_label.hide()
 
@@ -128,10 +127,10 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_handler.open_file(self.data_manager.current_file, force=True)
 
     def changeActiveChannel(self):
-        '''
-        The overview and reflectivity channel was changed. This
-        recalculates already extracted reflectivities.
-        '''
+        """
+            The overview and reflectivity channel was changed. This
+            recalculates already extracted reflectivities.
+        """
         return self.file_loaded()
 
     def getNorm(self):
@@ -153,7 +152,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 plot.clear_fig()
         elif self.plot_manager.color is None:
             self.plot_manager.color = color
-        if self.ui.plotTab.currentIndex()!=4 and self._gisansThread:
+        if self.ui.plotTab.currentIndex()!=4 and self._gisansThread: #TODO
             self._gisansThread.finished.disconnect()
             self._gisansThread.terminate()
             self._gisansThread.wait(100)
@@ -165,9 +164,9 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.ui.plotTab.currentIndex()==2:
             self.plot_manager.plot_xtof()
         if self.ui.plotTab.currentIndex()==3:
-            self.plot_offspec()
+            self.plot_offspec() #TODO
         if self.ui.plotTab.currentIndex()==4:
-            self.plot_gisans()
+            self.plot_gisans() #TODO
 
     def toggleColorbars(self):
         """ Refresh plots because of a color or scale change """
@@ -177,7 +176,6 @@ class MainWindow(QtWidgets.QMainWindow,
                self.ui.offspec_pp, self.ui.offspec_mp, self.ui.offspec_pm, self.ui.offspec_mm]
         for plot in plots:
             plot.clear_fig()
-        #self.plot_manager.overview_lines=None
         self.plotActiveTab()
 
     def gather_options(self):
@@ -188,9 +186,9 @@ class MainWindow(QtWidgets.QMainWindow,
 
     def changeRegionValues(self):
         """
-        Called when the reflectivity extraction region has been changed.
-        Sets up a trigger to replot the reflectivity with a delay so
-        a subsequent change can occur without several replots.
+            Called when the reflectivity extraction region has been changed.
+            Sets up a trigger to replot the reflectivity with a delay so
+            a subsequent change can occur without several replots.
         """
         self.plot_handler.change_region_values()
 
@@ -217,15 +215,11 @@ class MainWindow(QtWidgets.QMainWindow,
     def cutPoints(self): return NotImplemented
     def autoRef(self): return NotImplemented
     def stripOverlap(self): return NotImplemented
-    def quickReduce(self): return NotImplemented
     def live_open(self): return NotImplemented
-    def exportRawData(self): return NotImplemented
-    
+
     # From the Advanced menu
     def overwriteDirectBeam(self): return NotImplemented
     def open_advanced_background(self): return NotImplemented
     def clearOverwrite(self): return NotImplemented
     def open_polarization_window(self): return NotImplemented
     def open_rawdata_dialog(self): return NotImplemented
-
-
