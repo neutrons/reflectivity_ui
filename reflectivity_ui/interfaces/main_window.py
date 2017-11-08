@@ -178,12 +178,6 @@ class MainWindow(QtWidgets.QMainWindow,
             plot.clear_fig()
         self.plotActiveTab()
 
-    def gather_options(self):
-        """
-            Gather the reduction options.
-        """
-        pass
-
     def changeRegionValues(self):
         """
             Called when the reflectivity extraction region has been changed.
@@ -210,7 +204,6 @@ class MainWindow(QtWidgets.QMainWindow,
     def clip_offspec_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
     def overwriteChanged(self): return NotImplemented
-    def visualizePeakfinding(self): return NotImplemented
     def openByNumber(self): return NotImplemented
     def cutPoints(self): return NotImplemented
     def autoRef(self): return NotImplemented

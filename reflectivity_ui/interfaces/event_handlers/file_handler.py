@@ -41,6 +41,7 @@ class FileHandler(object):
             :param bool force: if true, the file will be reloaded
         """
         try:
+            self.get_configuration()
             self._data_manager.load(file_path, self.main_window.configuration, force=force)
             self.file_loaded()
         except:
@@ -110,6 +111,32 @@ class FileHandler(object):
                                        d.number, d.experiment,
                                        d.measurement_type, d.name))
 
+        # Update reduction parameters
+        # for lines of the current extraction area
+        if d.data_info is not None:
+            self.ui.refXPos.setValue(d.data_info.peak_position)
+            peak_width = d.data_info.peak_range[1]-d.data_info.peak_range[0]
+            self.ui.refXWidth.setValue(peak_width)
+
+            peak_pos = (d.data_info.low_res_range[1]+d.data_info.low_res_range[0])/2.0
+            self.ui.refYPos.setValue(peak_pos)
+            peak_width = d.data_info.low_res_range[1]-d.data_info.low_res_range[0]
+            self.ui.refYWidth.setValue(peak_width)
+
+            bck_pos = (d.data_info.background[1]+d.data_info.background[0])/2.0
+            self.ui.bgCenter.setValue(bck_pos)
+            bck_width = d.data_info.background[1]-d.data_info.background[0]
+            self.ui.bgWidth.setValue(bck_width)
+
+            # TODO: this should update when we change the peak position?
+            self.ui.datasetAi.setText(u"%.3f°"%(d.data_info.scattering_angle))
+            #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
+            
+            self.ui.roi_used_label.setText(u"%s" % d.data_info.use_roi_actual)
+
+        else:
+            logging.error("No reduction parameters for this data")
+
     def update_file_list(self):
         """
             Update the list of data files
@@ -154,7 +181,7 @@ class FileHandler(object):
             self.main_window.settings.setValue('current_directory', file_dir)
 
             self._path_watcher.removePath(self._data_manager.current_directory)
-            self._data_manager._current_directory = file_dir #TODO
+            self._data_manager._current_directory = file_dir
             self._data_manager.current_file_name = file_name
             self._path_watcher.addPath(self._data_manager.current_directory)
             self.update_file_list()
@@ -183,4 +210,37 @@ class FileHandler(object):
                 i += 1
         table.resizeColumnsToContents()
 
+    def get_configuration(self):
+        """
+            Gather the reduction options.
+        """
+        self.main_window.configuration.tof_bins = self.ui.eventTofBins.value()
+        self.main_window.configuration.tof_bin_type = self.ui.eventBinMode.currentIndex()
+        self.main_window.configuration.use_roi = self.ui.use_roi_checkbox.isChecked()
+        self.main_window.configuration.update_peak_range = self.ui.fit_within_roi_checkbox.isChecked()
+        self.main_window.configuration.use_roi_bck = self.ui.use_bck_roi_checkbox.isChecked()
 
+        # Default ranges, using the current values
+        x_pos = self.ui.refXPos.value()
+        x_width = self.ui.refXWidth.value()
+        bck_pos = self.ui.bgCenter.value()
+        bck_width = self.ui.bgWidth.value()
+        
+        self.main_window.configuration.forced_peak_roi = [int(x_pos - x_width/2.0),
+                                                          int(x_pos + x_width/2.0)]
+        self.main_window.configuration.forced_bck_roi = [int(bck_pos - bck_width/2.0),
+                                                         int(bck_pos + bck_width/2.0)]
+
+        # Use background on each side of the peak
+        self.main_window.configuration.use_tight_bck = self.ui.use_side_bck_checkbox.isChecked()
+        self.main_window.configuration.bck_offset = self.ui.side_bck_width.value()
+
+        # Make the changes persistent
+        self.main_window.configuration.to_q_settings()
+
+    def set_configuration(self):
+        """
+            Set reduction options in UI, usually after loading
+            a reduced data set.
+        """
+        pass

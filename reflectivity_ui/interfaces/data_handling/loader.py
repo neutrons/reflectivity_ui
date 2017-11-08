@@ -12,10 +12,12 @@ import h5py
 import numpy as np
 
 # Import mantid according to the application configuration
-from ..configuration import ApplicationConfiguration
+from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 from mantid.simpleapi import *
+
+from .data_info import DataInfo
 
 ### Parameters needed for some calculations.
 
@@ -102,7 +104,6 @@ class NexusData(object):
                 cross_section.collect_info(nxs_data)
                 cross_section.process_data(nxs_data)
                 self.cross_sections[name] = cross_section
-
                 # Delete workspace
                 DeleteWorkspace(nxs_data)
 
@@ -122,6 +123,7 @@ class CrossSectionData(object):
         self.name = name
         self.measurement_type = 'polarized'
         self.configuration = configuration
+        self.data_info = None
 
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
@@ -180,8 +182,8 @@ class CrossSectionData(object):
     @active_area_y.setter
     def active_area_y(self, value):
         self._active_area_y=value
+    ################## Properties for easy data access ##########################
 
-################## Properties for easy data access ##########################
     def collect_info(self, workspace):
         """
             Extract meta data from DASLogs.
@@ -253,3 +255,9 @@ class CrossSectionData(object):
         self.data=Ixyt.astype(float) # 3D dataset
         self.xydata=Ixy.transpose().astype(float) # 2D dataset
         self.xtofdata=Ixt.astype(float) # 2D dataset
+
+        # Determine reduction parameter
+        try:
+            self.data_info = DataInfo(workspace, self.name, self.configuration)
+        except:
+            logging.error("Could not determine reduction parameters: %s", sys.exc_value)
