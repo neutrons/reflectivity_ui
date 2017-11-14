@@ -39,28 +39,31 @@ class MainWindow(QtWidgets.QMainWindow,
         self.ui.setupUi(self)
 
         # Application settings
-        self.configuration = Configuration()
         self.settings = QtCore.QSettings('.refredm')
+        self.configuration = Configuration(self.settings)
 
         # Object managers
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
+
+        # Event handlers
+        self.plot_handler = PlotHandler(self)
+        self.file_handler = FileHandler(self)
 
         # Initialization for specific instrument
         # Retrieve configuration from config and enable/disable features
         self.initialize_instrument()
         self.hide_unsupported()
 
-        # Event handlers
-        self.plot_handler = PlotHandler(self)
-        self.file_handler = FileHandler(self)
-
         # UI events
         self.file_loaded_signal.connect(self.file_handler.update_info)
         self.file_loaded_signal.connect(self.file_handler.update_daslog)
         self.file_loaded_signal.connect(self.plotActiveTab)
         self.initiate_projection_plot.connect(self.plot_manager.plot_projections)
-        
+
+    def closeEvent(self, event):
+        self.file_handler.get_configuration()
+        event.accept()
 
     def keyPressEvent(self, event):
         if event.modifiers()==QtCore.Qt.ControlModifier:
@@ -74,11 +77,14 @@ class MainWindow(QtWidgets.QMainWindow,
     def initialize_instrument(self):
         """
             Initialize instrument according to the instrument
+            and saved parameters
         """
         for i in range(1, 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
         self.ui.selectedChannel0.show()
         self.ui.selectedChannel0.setText(u"none")
+
+        self.file_handler.populate_from_configuration()
 
     def hide_unsupported(self):
         """

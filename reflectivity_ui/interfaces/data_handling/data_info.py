@@ -39,6 +39,8 @@ class DataInfo(object):
         # Options to override the ROI
         self.force_peak_roi = configuration.force_peak_roi
         self.forced_peak_roi = configuration.forced_peak_roi
+        self.force_low_res_roi = configuration.force_low_res_roi
+        self.forced_low_res_roi = configuration.forced_low_res_roi
         self.force_bck_roi = configuration.force_bck_roi
         self.forced_bck_roi = configuration.forced_bck_roi
         
@@ -86,6 +88,9 @@ class DataInfo(object):
         if self.force_peak_roi:
             logging.error("Forcing peak ROI: %s", self.forced_peak_roi)
             self.roi_peak = self.forced_peak_roi
+        if self.force_low_res_roi:
+            logging.error("Forcing low-res ROI: %s", self.forced_low_res_roi)
+            self.roi_low_res = self.forced_low_res_roi
         if self.force_bck_roi:
             logging.error("Forcing background ROI: %s", self.forced_bck_roi)
             self.roi_background = self.forced_bck_roi

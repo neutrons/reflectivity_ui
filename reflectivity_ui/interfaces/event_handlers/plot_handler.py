@@ -180,7 +180,7 @@ class PlotHandler(object):
             yw=(yr-yl)
             self.ui.refYPos.setValue(ypos)
             self.ui.refYWidth.setValue(yw)
-    
+
     def plot_pick_xy(self, event):
         """
             Plot for xy-map has been clicked.

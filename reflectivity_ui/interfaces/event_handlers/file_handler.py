@@ -7,6 +7,7 @@ import sys
 import os
 import logging
 import glob
+import math
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 
@@ -131,7 +132,7 @@ class FileHandler(object):
             # TODO: this should update when we change the peak position?
             self.ui.datasetAi.setText(u"%.3f°"%(d.data_info.scattering_angle))
             #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
-            
+
             self.ui.roi_used_label.setText(u"%s" % d.data_info.use_roi_actual)
 
         else:
@@ -223,24 +224,73 @@ class FileHandler(object):
         # Default ranges, using the current values
         x_pos = self.ui.refXPos.value()
         x_width = self.ui.refXWidth.value()
+        y_pos = self.ui.refYPos.value()
+        y_width = self.ui.refYWidth.value()
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
         
-        self.main_window.configuration.forced_peak_roi = [int(x_pos - x_width/2.0),
-                                                          int(x_pos + x_width/2.0)]
-        self.main_window.configuration.forced_bck_roi = [int(bck_pos - bck_width/2.0),
-                                                         int(bck_pos + bck_width/2.0)]
+        self.main_window.configuration.forced_peak_roi = [x_pos - x_width/2.0,
+                                                          x_pos + x_width/2.0]
+        self.main_window.configuration.forced_low_res_roi = [y_pos - y_width/2.0,
+                                                             y_pos + y_width/2.0]
+        self.main_window.configuration.forced_bck_roi = [bck_pos - bck_width/2.0,
+                                                         bck_pos + bck_width/2.0]
 
         # Use background on each side of the peak
         self.main_window.configuration.use_tight_bck = self.ui.use_side_bck_checkbox.isChecked()
         self.main_window.configuration.bck_offset = self.ui.side_bck_width.value()
 
-        # Make the changes persistent
-        self.main_window.configuration.to_q_settings()
+        # Other reduction options
+        self.main_window.configuration.subtract_background = self.ui.bgActive.isChecked()
+        self.main_window.configuration.scaling_factor = self.ui.refScale.value()
+        self.main_window.configuration.cut_first_n_points = self.ui.rangeStart.value()
+        self.main_window.configuration.cut_last_n_points = self.ui.rangeEnd.value()
 
-    def set_configuration(self):
+        # Make the changes persistent
+        self.main_window.configuration.to_q_settings(self.main_window.settings)
+
+    def populate_from_configuration(self):
         """
             Set reduction options in UI, usually after loading
             a reduced data set.
         """
-        pass
+        self.ui.eventTofBins.setValue(self.main_window.configuration.tof_bins)
+        self.ui.eventBinMode.setCurrentIndex(self.main_window.configuration.tof_bin_type)
+        self.ui.use_roi_checkbox.setChecked(self.main_window.configuration.use_roi)
+        self.ui.fit_within_roi_checkbox.setChecked(self.main_window.configuration.update_peak_range)
+        self.ui.use_bck_roi_checkbox.setChecked(self.main_window.configuration.use_roi_bck)
+
+        # Default ranges, using the current values
+        x_pos = (self.main_window.configuration.forced_peak_roi[1] \
+                 + self.main_window.configuration.forced_peak_roi[0]) / 2.0
+        x_width = (self.main_window.configuration.forced_peak_roi[1] \
+                   - self.main_window.configuration.forced_peak_roi[0])
+
+        y_pos = (self.main_window.configuration.forced_low_res_roi[1] \
+                 + self.main_window.configuration.forced_low_res_roi[0]) / 2.0
+        y_width = (self.main_window.configuration.forced_low_res_roi[1] \
+                   - self.main_window.configuration.forced_low_res_roi[0])
+
+        bck_pos = (self.main_window.configuration.forced_bck_roi[1] \
+                   + self.main_window.configuration.forced_bck_roi[0]) / 2.0
+        bck_width = (self.main_window.configuration.forced_bck_roi[1] \
+                     - self.main_window.configuration.forced_bck_roi[0])
+
+        self.ui.refXPos.setValue(x_pos)
+        self.ui.refXWidth.setValue(x_width)
+        self.ui.refYPos.setValue(y_pos)
+        self.ui.refYWidth.setValue(y_width)
+        self.ui.bgCenter.setValue(bck_pos)
+        self.ui.bgWidth.setValue(bck_width)
+
+        # Use background on each side of the peak
+        self.ui.use_side_bck_checkbox.setChecked(self.main_window.configuration.use_tight_bck)
+        self.ui.side_bck_width.setValue(self.main_window.configuration.bck_offset)
+
+        # Subtract background
+        self.ui.bgActive.setChecked(self.main_window.configuration.subtract_background)
+        # Scaling factor
+        self.ui.refScale.setValue(math.log10(self.main_window.configuration.scaling_factor))
+        # Cut first and last points
+        self.ui.rangeStart.setValue(self.main_window.configuration.cut_first_n_points)
+        self.ui.rangeEnd.setValue(self.main_window.configuration.cut_last_n_points)

@@ -56,13 +56,14 @@ class DataManager(object):
             :param str file_path: file path
         """
         nexus_data = None
-        # Only load from cache is force is false.
-        if not force:
-            # Check whether the file is in cache
-            for item in self._cache:
-                if item.file_path == file_path:
-                    nexus_data = item
-                    break
+        # Check whether the file is in cache
+        for i in range(len(self._cache)):
+            if self._cache[i].file_path == file_path:
+                if force:
+                    self._cache.pop(i)
+                else:
+                    nexus_data = self._cache[i]
+                break
 
         # If we don't have the data, load it
         if nexus_data is None:
