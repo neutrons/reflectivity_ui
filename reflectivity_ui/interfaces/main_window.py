@@ -58,7 +58,7 @@ class MainWindow(QtWidgets.QMainWindow,
         self.hide_unsupported()
 
         # UI events
-        self.file_loaded_signal.connect(self.file_handler.update_daslog)
+        self.file_loaded_signal.connect(self.file_handler.update_info)
         self.file_loaded_signal.connect(self.file_handler.update_daslog)
         self.file_loaded_signal.connect(self.plotActiveTab)
         self.initiate_projection_plot.connect(self.plot_manager.plot_projections)

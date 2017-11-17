@@ -268,7 +268,7 @@ class FileHandler(object):
             norma = d.configuration.normalization.number
         self.ui.reductionTable.setItem(idx, 12,
                                        QtWidgets.QTableWidgetItem(str(norma)))
-        self.ui.reductionTable.resizeColumnsToContents()
+        #self.ui.reductionTable.resizeColumnsToContents()
 
         # Emit signals
         if do_plot:
