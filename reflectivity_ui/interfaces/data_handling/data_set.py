@@ -10,6 +10,7 @@ import logging
 from collections import OrderedDict
 import h5py
 import numpy as np
+import copy
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -100,7 +101,7 @@ class NexusData(object):
                     continue
 
                 name = XSECT_MAPPING.get(channel, 'x')
-                cross_section = CrossSectionData(name, self.configuration)
+                cross_section = CrossSectionData(name, self.configuration, entry_name=channel)
                 cross_section.collect_info(nxs_data)
                 cross_section.process_data(nxs_data)
                 self.cross_sections[name] = cross_section
@@ -119,11 +120,20 @@ class CrossSectionData(object):
         Data object to hold loaded reflectivity data
     """
     from_event_mode=True
-    def __init__(self, name, configuration):
+    def __init__(self, name, configuration, entry_name='entry'):
         self.name = name
+        self.entry_name = entry_name
         self.measurement_type = 'polarized'
-        self.configuration = configuration
-        self.data_info = None
+        self.configuration = copy.deepcopy(configuration)
+        self.number = 0
+        self.q = None
+        self.r = None
+        self.dr = None
+        # Flag to tell us whether we succeeded in using the meta data ROI
+        self.use_roi_actual = True
+        # Flag to tell us whether we found this data to be a direct beam data set
+        self.is_direct_beam = False
+        self.tof_range = [0, 0]
 
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
@@ -182,6 +192,31 @@ class CrossSectionData(object):
     @active_area_y.setter
     def active_area_y(self, value):
         self._active_area_y=value
+
+    @property
+    def peak_position(self):
+        return (self.configuration.peak_roi[1]+self.configuration.peak_roi[0])/2.0
+
+    @property
+    def peak_width(self):
+        return self.configuration.peak_roi[1]-self.configuration.peak_roi[0]
+
+    @property
+    def low_res_position(self):
+        return (self.configuration.low_res_roi[1]+self.configuration.low_res_roi[0])/2.0
+
+    @property
+    def low_res_width(self):
+        return self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0]
+
+    @property
+    def bck_position(self):
+        return (self.configuration.bck_roi[1]+self.configuration.bck_roi[0])/2.0
+
+    @property
+    def bck_width(self):
+        return self.configuration.bck_roi[1]-self.configuration.bck_roi[0]
+
     ################## Properties for easy data access ##########################
 
     def collect_info(self, workspace):
@@ -221,7 +256,7 @@ class CrossSectionData(object):
         self.total_time=data['duration'].value
 
         self.experiment=str(data['experiment_identifier'].value)
-        self.number=int(data['run_number'].value)
+        self.number=int(workspace.getRunNumber())
         self.merge_warnings=''
 
         # Retrieve instrument-specific information
@@ -257,7 +292,70 @@ class CrossSectionData(object):
         self.xtofdata=Ixt.astype(float) # 2D dataset
 
         # Determine reduction parameter
-        try:
-            self.data_info = DataInfo(workspace, self.name, self.configuration)
-        except:
-            logging.error("Could not determine reduction parameters: %s", sys.exc_value)
+        data_info = DataInfo(workspace, self.name, self.configuration)
+        self.use_roi_actual = data_info.use_roi_actual
+        self.is_direct_beam = data_info.is_direct_beam
+        self.tof_range = data_info.tof_range
+
+        if not self.configuration.force_peak_roi:
+            self.configuration.peak_roi = data_info.peak_range
+
+        if not self.configuration.force_low_res_roi:
+            self.configuration.low_res_roi = data_info.low_res_range
+
+        if not self.configuration.force_bck_roi:
+            self.configuration.bck_roi = data_info.background
+
+        if self.configuration.set_direct_pixel:
+            self.direct_pixel = self.configuration.direct_pixel_overwrite
+
+        if self.configuration.set_direct_angle_offset:
+            self.angle_offset = self.configuration.direct_angle_offset_overwrite
+
+        self.scattering_angle = self.configuration.instrument.scattering_angle(workspace,
+                                                                               self.peak_position,
+                                                                               self.direct_pixel,
+                                                                               self.angle_offset)
+
+        self.reflectivity()
+
+    def reflectivity(self, direct_beam=None):
+        """
+            Compute reflectivity
+        """
+        apply_norm = direct_beam is not None
+        if not apply_norm:
+            direct_beam = CrossSectionData('none', self.configuration, 'none')
+
+        logging.error(self.tof_range)
+        angle_offset = 0 # Offset from dangle0, in radians
+        def _as_ints(a): return [int(a[0]), int(a[1])]
+        ws = MagnetismReflectometryReduction(RunNumbers=[str(self.number),],
+                                    NormalizationRunNumber=str(direct_beam.number),
+                                    SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
+                                    SubtractSignalBackground=True,
+                                    SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
+                                    ApplyNormalization=apply_norm,
+                                    NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
+                                    SubtractNormBackground=True,
+                                    NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
+                                    CutLowResDataAxis=True,
+                                    LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
+                                    CutLowResNormAxis=True,
+                                    LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+                                    CutTimeAxis=True,
+                                    QMin=0.001,
+                                    QStep=-0.01,
+                                    AngleOffset = angle_offset,
+                                    UseWLTimeAxis=False,
+                                    TimeAxisStep=self.configuration.tof_bins,
+                                    UseSANGLE=not self.configuration.use_dangle,
+                                    TimeAxisRange=self.tof_range,
+                                    SpecularPixel=self.peak_position,
+                                    ConstantQBinning=self.configuration.use_constant_q,
+                                    EntryName=str(self.entry_name))
+
+        self.q = ws.readX(0)[:].copy()
+        self.r = ws.readY(0)[:].copy()
+        self.dr = ws.readE(0)[:].copy()
+        DeleteWorkspace(ws)

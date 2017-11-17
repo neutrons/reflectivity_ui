@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 import os
 import logging
+import copy
 from PyQt5 import QtGui, QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_main_window
 
@@ -25,6 +26,7 @@ class MainWindow(QtWidgets.QMainWindow,
     # UI events
     file_loaded_signal = QtCore.pyqtSignal()
     initiate_projection_plot = QtCore.pyqtSignal(bool)
+    initiate_reflectivity_plot = QtCore.pyqtSignal(bool)
     _gisansThread = None
 
     def __init__(self):
@@ -56,10 +58,19 @@ class MainWindow(QtWidgets.QMainWindow,
         self.hide_unsupported()
 
         # UI events
-        self.file_loaded_signal.connect(self.file_handler.update_info)
+        self.file_loaded_signal.connect(self.file_handler.update_daslog)
         self.file_loaded_signal.connect(self.file_handler.update_daslog)
         self.file_loaded_signal.connect(self.plotActiveTab)
         self.initiate_projection_plot.connect(self.plot_manager.plot_projections)
+
+        self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
+        #self.initiate_reflectivity_plot.connect(self.updateStateFile)
+
+    def update_configuration(self, config):
+        """
+            Load a configuration
+        """
+        self.configuration = copy.deepcopy(config)
 
     def closeEvent(self, event):
         self.file_handler.get_configuration()
@@ -194,13 +205,17 @@ class MainWindow(QtWidgets.QMainWindow,
 
     def replotProjections(self):
         self.initiate_projection_plot.emit(True)
-        #self.initiateReflectivityPlot.emit(True)
+        self.initiate_reflectivity_plot.emit(True)
+
+    def addRefList(self):
+        self.file_handler.add_reflectivity()
+    def removeRefList(self):
+        self.file_handler.remove_reflectivity()
+    def clearRefList(self):
+        self.file_handler.clear_reflectivity()
 
     def setNorm(self): return NotImplemented
-    def addRefList(self): return NotImplemented
-    def clearRefList(self): return NotImplemented
     def normalizeTotalReflection(self): return NotImplemented
-    def removeRefList(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
     def reductionTableChanged(self): return NotImplemented

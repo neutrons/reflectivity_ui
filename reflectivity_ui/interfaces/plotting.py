@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import numpy as np
 import logging
 
@@ -411,3 +412,108 @@ class PlotManager(object):
                 if self.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                     plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plot.draw()
+
+    def plot_refl(self, preserve_lim=False):
+        '''
+        Calculate and display the reflectivity from the current dataset
+        and any dataset stored. Intensities from direct beam
+        measurements can be used for normalization.
+        '''
+        if self.main_window.data_manager.active_channel is None:
+            return False
+        if self.main_window.data_manager.active_channel.r is None:
+            # Get reduction parameters
+            self.main_window.file_handler.get_configuration()
+            try:
+                pass
+                #self.main_window.data_manager.active_channel.reflectivity()
+            except:
+                logging.error("Error computing reflectivity: %s", sys.exc_value)
+                return
+
+        P0=len(self.main_window.data_manager.active_channel.q)-self.main_window.ui.rangeStart.value()
+        PN=self.main_window.ui.rangeEnd.value()
+    
+        if len(self.main_window.ui.refl.toolbar._views)>0:
+            spos=self.main_window.ui.refl.toolbar._views._pos
+            view=self.main_window.ui.refl.toolbar._views[spos]
+            position=self.main_window.ui.refl.toolbar._positions[spos]
+        else:
+            view=None
+    
+        self.main_window.ui.refl.clear()
+        if self.main_window.data_manager.active_channel is None:
+            return
+        data = self.main_window.data_manager.active_channel
+        if data.total_counts == 0:
+            self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
+                                        u'No points to show\nin active dataset!',
+                                        horizontalalignment='center',
+                                        verticalalignment='center',
+                                        fontsize=14,
+                                        transform=self.main_window.ui.refl.canvas.ax.transAxes)
+        else:
+            ymin =1.5
+            ymax = 1e-7
+            ynormed = self.main_window.data_manager.active_channel.r[PN:P0]
+            if len(ynormed[ynormed>0])>=2:
+                ymin=min(ymin, ynormed[ynormed>0].min())
+                ymax=max(ymax, ynormed.max())
+                self.main_window.ui.refl.errorbar(self.main_window.data_manager.active_channel.q[PN:P0], ynormed,
+                                      yerr=self.main_window.data_manager.active_channel.dr[PN:P0],
+                                      label='Active', lw=2, color='black')
+            else:
+                self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
+                                            u'No points to show\nin active dataset!',
+                                            horizontalalignment='center',
+                                            verticalalignment='center',
+                                            fontsize=14,
+                                            transform=self.main_window.ui.refl.canvas.ax.transAxes)
+            if False:
+                for i, refli in enumerate(self.reduction_list):
+                    P0i=len(refli.Q)-refli.options['P0']
+                    PNi=refli.options['PN']
+                    ynormed=refli.R[PNi:P0i]
+                    try:
+                        ymin=min(ymin, ynormed[ynormed>0].min())
+                    except ValueError:
+                        pass
+                    try:
+                        ymax=max(ymax, ynormed.max())
+                    except ValueError:
+                        pass
+                    self.main_window.ui.refl.errorbar(refli.Q[PNi:P0i], ynormed,
+                                          yerr=refli.dR[PNi:P0i], label=str(refli.options['number']),
+                                          color=self._refl_color_list[i%len(self._refl_color_list)])
+            self.main_window.ui.refl.set_ylabel(u'I')
+            self.main_window.ui.refl.canvas.ax.set_ylim((ymin*0.9, ymax*1.1))
+            self.main_window.ui.refl.set_xlabel(u'Q$_z$ [Å$^{-1}$]')
+
+        if self.main_window.ui.logarithmic_y.isChecked():
+            self.main_window.ui.refl.set_yscale('log')
+        else:
+            self.main_window.ui.refl.set_yscale('linear')
+        self.main_window.ui.refl.legend()
+        if view is not None:
+            self.main_window.ui.refl.toolbar.push_current()
+            self.main_window.ui.refl.toolbar._views.push(view)
+            self.main_window.ui.refl.toolbar._positions.push(position)
+        if preserve_lim:
+            # reset the last zoom position
+            self.main_window.ui.refl.toolbar._update_view()
+        else:
+            self.main_window.ui.refl.toolbar._views._pos=0
+            self.main_window.ui.refl.toolbar._positions._pos=0
+        self.main_window.ui.refl.draw()
+        self.main_window.ui.refl.toolbar.set_history_buttons()
+
+    
+        #self.refl=Reflectivity(data, **options)
+        #self.ui.datasetAi.setText(u"%.3f°"%(self.refl.ai*180./pi))
+        #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
+        #if normalization is not None:
+        #    if self.ui.fanReflectivity.isChecked():
+        #        self.cut_areas['fan']=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
+        #    else:
+        #        self.cut_areas[normalization]=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
+

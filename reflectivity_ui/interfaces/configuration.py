@@ -2,7 +2,6 @@
     Application configuration, including reduction options
 """
 from __future__ import absolute_import, division, print_function
-import math
 
 from .data_handling.instrument import Instrument
 
@@ -27,6 +26,12 @@ class Configuration(object):
         # Reduction parameters
         # Use region of interest specified in meta data
         self.use_roi = True
+        self.set_direct_pixel = False
+        self.direct_pixel_overwrite = 0
+        self.set_direct_angle_offset = False
+        self.direct_angle_offset_overwrite = 0
+        self.use_dangle = False
+        self.use_constant_q = False
 
         # Update the specular peak range after finding the peak
         # within the ROI
@@ -39,11 +44,11 @@ class Configuration(object):
 
         # Options to override the range
         self.force_peak_roi = False
-        self.forced_peak_roi = [120, 140]
+        self.peak_roi = [120, 140]
         self.force_low_res_roi = False
-        self.forced_low_res_roi = [120, 140]
+        self.low_res_roi = [120, 140]
         self.force_bck_roi = False
-        self.forced_bck_roi = [10, 50]
+        self.bck_roi = [10, 50]
 
         # Subtract background
         self.subtract_background = True
@@ -52,6 +57,16 @@ class Configuration(object):
         # Cut first and last N points
         self.cut_first_n_points = 1
         self.cut_last_n_points = 1
+
+        # UI elements
+        self.normalize_x_tof = False
+        self.x_wl_map = False
+        self.angle_map = False
+        self.log_1d = True
+        self.log_2d = True
+
+        # Reduction options
+        self.normalization = None
 
         if settings is not None:
             self.from_q_settings(settings)
@@ -70,16 +85,29 @@ class Configuration(object):
         settings.setValue('bck_offset', self.bck_offset)
 
         settings.setValue('force_peak_roi', self.tof_bins)
-        settings.setValue('forced_peak_roi', ','.join([str(x) for x in self.forced_peak_roi]))
+        settings.setValue('peak_roi', ','.join([str(x) for x in self.peak_roi]))
         settings.setValue('force_low_res_roi', self.force_low_res_roi)
-        settings.setValue('forced_low_res_roi', ','.join([str(x) for x in self.forced_low_res_roi]))
+        settings.setValue('low_res_roi', ','.join([str(x) for x in self.low_res_roi]))
         settings.setValue('force_bck_roi', self.force_bck_roi)
-        settings.setValue('forced_bck_roi', ','.join([str(x) for x in self.forced_bck_roi]))
+        settings.setValue('bck_roi', ','.join([str(x) for x in self.bck_roi]))
 
         settings.setValue('subtract_background', self.subtract_background)
         settings.setValue('scaling_factor', self.scaling_factor)
         settings.setValue('cut_first_n_points', self.cut_first_n_points)
         settings.setValue('cut_last_n_points', self.cut_last_n_points)
+
+        settings.setValue('normalize_x_tof', self.normalize_x_tof)
+        settings.setValue('x_wl_map', self.x_wl_map)
+        settings.setValue('angle_map', self.angle_map)
+        settings.setValue('log_1d', self.log_1d)
+        settings.setValue('log_2d', self.log_2d)
+
+        settings.setValue('use_constant_q', self.use_constant_q)
+        settings.setValue('use_dangle', self.use_dangle)
+        settings.setValue('set_direct_pixel', self.set_direct_pixel)
+        settings.setValue('direct_pixel_overwrite', self.direct_pixel_overwrite)
+        settings.setValue('set_direct_angle_offset', self.set_direct_angle_offset)
+        settings.setValue('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite)
 
     def from_q_settings(self, settings):
         """ Retrieve configuration from QSettings """
@@ -101,15 +129,28 @@ class Configuration(object):
         self.force_bck_roi = settings.value('force_bck_roi',
                                             str(self.force_bck_roi)).lower() == 'true'
 
-        default = ','.join([str(x) for x in self.forced_peak_roi])
-        self.forced_peak_roi = [float(x) for x in settings.value('forced_peak_roi', default).split(',')]
-        default = ','.join([str(x) for x in self.forced_low_res_roi])
-        self.forced_low_res_roi = [float(x) for x in settings.value('forced_low_res_roi', default).split(',')]
-        default = ','.join([str(x) for x in self.forced_bck_roi])
-        self.forced_bck_roi = [float(x) for x in settings.value('forced_bck_roi', default).split(',')]
+        default = ','.join([str(x) for x in self.peak_roi])
+        self.peak_roi = [float(x) for x in settings.value('peak_roi', default).split(',')]
+        default = ','.join([str(x) for x in self.low_res_roi])
+        self.low_res_roi = [float(x) for x in settings.value('low_res_roi', default).split(',')]
+        default = ','.join([str(x) for x in self.bck_roi])
+        self.bck_roi = [float(x) for x in settings.value('bck_roi', default).split(',')]
 
         self.subtract_background = settings.value('subtract_background', str(self.subtract_background)).lower() == 'true'
-        self.scaling_factor = math.pow(10,float(settings.value('scaling_factor', self.scaling_factor)))
+        self.scaling_factor = float(settings.value('scaling_factor', self.scaling_factor))
         self.cut_first_n_points = int(settings.value('cut_first_n_points', self.cut_first_n_points))
         self.cut_last_n_points = int(settings.value('cut_last_n_points', self.cut_last_n_points))
+
+        self.normalize_x_tof = settings.value('normalize_x_tof', str(self.normalize_x_tof)).lower() == 'true'
+        self.x_wl_map = settings.value('x_wl_map', str(self.x_wl_map)).lower() == 'true'
+        self.angle_map = settings.value('angle_map', str(self.angle_map)).lower() == 'true'
+        self.log_1d = settings.value('log_1d', str(self.log_1d)).lower() == 'true'
+        self.log_2d = settings.value('log_2d', str(self.log_2d)).lower() == 'true'
+
+        self.use_constant_q = settings.value('use_constant_q', str(self.use_constant_q)).lower() == 'true'
+        self.use_dangle = settings.value('use_dangle', str(self.use_dangle)).lower() == 'true'
+        self.set_direct_pixel = settings.value('set_direct_pixel', str(self.set_direct_pixel)).lower() == 'true'
+        self.direct_pixel_overwrite = float(settings.value('direct_pixel_overwrite', self.direct_pixel_overwrite))
+        self.set_direct_angle_offset = settings.value('set_direct_angle_offset', str(self.set_direct_angle_offset)).lower() == 'true'
+        self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
 

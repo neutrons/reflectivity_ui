@@ -15,6 +15,8 @@ import math
 from scipy.optimize import curve_fit
 import logging
 
+def _as_ints(a): return [int(a[0]), int(a[1])]
+
 class DataInfo(object):
     """
         Class to hold the relevant information from a run (scattering or direct beam).
@@ -23,7 +25,6 @@ class DataInfo(object):
 
     def __init__(self, ws, cross_section, configuration):
         self.cross_section = cross_section
-        self.run_number = ws.getRunNumber()
         self.is_direct_beam = False
         self.data_type = 1
         self.peak_position = 0
@@ -38,11 +39,11 @@ class DataInfo(object):
 
         # Options to override the ROI
         self.force_peak_roi = configuration.force_peak_roi
-        self.forced_peak_roi = configuration.forced_peak_roi
+        self.forced_peak_roi = _as_ints(configuration.peak_roi)
         self.force_low_res_roi = configuration.force_low_res_roi
-        self.forced_low_res_roi = configuration.forced_low_res_roi
+        self.forced_low_res_roi = _as_ints(configuration.low_res_roi)
         self.force_bck_roi = configuration.force_bck_roi
-        self.forced_bck_roi = configuration.forced_bck_roi
+        self.forced_bck_roi = _as_ints(configuration.bck_roi)
         
         # Peak found before fitting for the central position
         self.found_peak = [0,0]
@@ -66,14 +67,19 @@ class DataInfo(object):
         # within the ROI
         self.update_peak_range = configuration.update_peak_range
 
-        self.tof_range = configuration.instrument.get_tof_range(ws.getRun())
-        self.determine_data_type(ws)
+        if ws is not None:
+            self.run_number = ws.getRunNumber()
+            self.tof_range = configuration.instrument.get_tof_range(ws.getRun())
+            self.determine_data_type(ws)
+        else:
+            self.run_number = 0
+            self.tof_range = [0, 0]
 
     def log(self):
-        logging.info("| Run: %s [direct beam: %s]" % (self.run_number, self.is_direct_beam))
-        logging.info("|   Peak position: %s" % self.peak_position)
-        logging.info("|   Reflectivity peak: %s" % str(self.peak_range))
-        logging.info("|   Low-resolution pixel range: %s" % str(self.low_res_range))
+        logging.warning("| Run: %s [direct beam: %s]" % (self.run_number, self.is_direct_beam))
+        logging.warning("|   Peak position: %s" % self.peak_position)
+        logging.warning("|   Reflectivity peak: %s" % str(self.peak_range))
+        logging.warning("|   Low-resolution pixel range: %s" % str(self.low_res_range))
 
     def process_roi(self, ws):
         """

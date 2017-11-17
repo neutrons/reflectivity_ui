@@ -55,7 +55,7 @@ class Instrument(object):
         return [tof_min, tof_max]
 
     @classmethod
-    def scattering_angle(cls, ws, peak_position=None):
+    def scattering_angle(cls, ws, peak_position=None, direct_pixel=None, angle_offset=None):
         """
             Determine the scattering angle in degrees
         """
@@ -113,6 +113,10 @@ class Instrument(object):
         # The following active area used to be taken from instrument.DETECTOR_REGION
         data_object.active_area_x = (8, 295)
         data_object.active_area_y = (8, 246)
+
+        # Convert to standard names
+        data_object.direct_pixel = data_object.dpix
+        data_object.angle_offset = data_object.dangle0
 
     def process_roi(self, ws):
         """

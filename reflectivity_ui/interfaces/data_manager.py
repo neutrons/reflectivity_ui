@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 import os
 import logging
-from .data_handling.loader import NexusData
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -16,8 +16,15 @@ class DataManager(object):
         self.current_file_name = None
         # Current data set
         self._nexus_data = None
+        self.active_channel = None
         # Cache of loaded data
         self._cache = []
+
+        # The following is information about the data to be combined together
+        # List of data sets
+        self.reduction_list = []
+        # List of cross-sections common to all reduced data sets
+        self.reduction_states = []
 
     @property
     def data_sets(self):
@@ -49,6 +56,25 @@ class DataManager(object):
         else:
             self.active_channel = self.data_sets[channels[0]]
         return False
+
+    def is_active_data_compatible(self):
+        """
+            Determine whether the currently active data set is compatible
+            with the data sets that are currently part of the reduction list.
+        """
+        return self.reduction_states == self.data_sets.keys() or self.reduction_list == []
+
+    def add_active_to_reduction(self):
+        """
+            Add active data set to reduction list
+        """
+        if not self._nexus_data in self.reduction_list:
+            if self.is_active_data_compatible():
+                self.reduction_list.append(self._nexus_data)
+            else:
+                logging.error("The data you are trying to add has different cross-sections")
+        if len(self.reduction_list) == 1:
+            self.reduction_states = self.data_sets.keys()
 
     def load(self, file_path, configuration, force=False):
         """

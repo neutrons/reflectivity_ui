@@ -8,6 +8,7 @@ import os
 import logging
 import glob
 import math
+import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 
@@ -46,6 +47,7 @@ class FileHandler(object):
             self._data_manager.load(file_path, self.main_window.configuration, force=force)
             self.file_loaded()
         except:
+            raise
             logging.error("Error loading file: %s", sys.exc_value)
 
     def file_loaded(self):
@@ -72,7 +74,7 @@ class FileHandler(object):
         #    for i, refli in enumerate(self.reduction_list):
         #        refli=self.recalculateReflectivity(refli)
         #        self.reduction_list[i]=refli
-        #self.initiateReflectivityPlot.emit(False)
+        self.main_window.initiate_reflectivity_plot.emit(False)
 
         # Update UI
         self.main_window.file_loaded_signal.emit()
@@ -85,6 +87,8 @@ class FileHandler(object):
             Write file metadata to the labels in the overview tab.
         """
         d=self._data_manager.active_channel
+        self.main_window.update_configuration(d.configuration)
+        self.populate_from_configuration()
 
         try:
             dangle0=u"%.3f° (%.3f°)"%(float(self.ui.dangle0Overwrite.text()), d.dangle0)
@@ -114,29 +118,20 @@ class FileHandler(object):
 
         # Update reduction parameters
         # for lines of the current extraction area
-        if d.data_info is not None:
-            self.ui.refXPos.setValue(d.data_info.peak_position)
-            peak_width = d.data_info.peak_range[1]-d.data_info.peak_range[0]
-            self.ui.refXWidth.setValue(peak_width)
+        self.ui.refXPos.setValue(d.peak_position)
+        self.ui.refXWidth.setValue(d.peak_width)
 
-            peak_pos = (d.data_info.low_res_range[1]+d.data_info.low_res_range[0])/2.0
-            self.ui.refYPos.setValue(peak_pos)
-            peak_width = d.data_info.low_res_range[1]-d.data_info.low_res_range[0]
-            self.ui.refYWidth.setValue(peak_width)
+        self.ui.refYPos.setValue(d.low_res_position)
+        self.ui.refYWidth.setValue(d.low_res_width)
 
-            bck_pos = (d.data_info.background[1]+d.data_info.background[0])/2.0
-            self.ui.bgCenter.setValue(bck_pos)
-            bck_width = d.data_info.background[1]-d.data_info.background[0]
-            self.ui.bgWidth.setValue(bck_width)
+        self.ui.bgCenter.setValue(d.bck_position)
+        self.ui.bgWidth.setValue(d.bck_width)
 
-            # TODO: this should update when we change the peak position?
-            self.ui.datasetAi.setText(u"%.3f°"%(d.data_info.scattering_angle))
-            #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
+        # TODO: this should update when we change the peak position?
+        self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
+        #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
 
-            self.ui.roi_used_label.setText(u"%s" % d.data_info.use_roi_actual)
-
-        else:
-            logging.error("No reduction parameters for this data")
+        self.ui.roi_used_label.setText(u"%s" % d.use_roi_actual)
 
     def update_file_list(self):
         """
@@ -211,6 +206,98 @@ class FileHandler(object):
                 i += 1
         table.resizeColumnsToContents()
 
+    def add_reflectivity(self, do_plot=True):
+        """
+            Collect information about the current extraction settings and store them
+            in the list of reduction items.
+        """
+        #if self.refl is None:
+        #    return
+        #if self.refl.options['normalization'] is None:
+        #  warning(u"You can only add reflectivities (? normalized)!",
+        #          extra={'title': u'Data not normalized'})
+        #  return
+
+        # Verify that the new data is consistent with existing data in the table
+        if not self._data_manager.is_active_data_compatible():
+            logging.error("The data you are trying to add doesn't have the same cross-sections")
+            return
+
+        # Pick the first cross section as reference
+        channels = self._data_manager.data_sets.keys()
+        d = self._data_manager.data_sets[channels[0]]
+
+        # Use the same y region for all following datasets (can be changed by user if desired)
+        #if len(self._data_manager.reduction_list)==0:
+        #    self.ui.actionAutoYLimits.setChecked(False)
+        self._data_manager.add_active_to_reduction()
+
+        self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
+        idx=len(self._data_manager.reduction_list)-1
+    
+        item=QtWidgets.QTableWidgetItem(str(d.number))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.reductionTable.setItem(idx, 0, item)
+        self.ui.reductionTable.setItem(idx, 1,
+                                       QtWidgets.QTableWidgetItem("%.4f"%(d.configuration.scaling_factor)))
+        self.ui.reductionTable.setItem(idx, 2,
+                                       QtWidgets.QTableWidgetItem(str(d.configuration.cut_first_n_points)))
+        self.ui.reductionTable.setItem(idx, 3,
+                                       QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
+        item=QtWidgets.QTableWidgetItem(str(d.peak_position))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.reductionTable.setItem(idx, 4, item)
+        self.ui.reductionTable.setItem(idx, 5,
+                                       QtWidgets.QTableWidgetItem(str(d.peak_width)))
+        item=QtWidgets.QTableWidgetItem(str(d.low_res_position))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.reductionTable.setItem(idx, 6, item)
+        self.ui.reductionTable.setItem(idx, 7,
+                                       QtWidgets.QTableWidgetItem(str(d.low_res_width)))
+        item=QtWidgets.QTableWidgetItem(str(d.bck_position))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.reductionTable.setItem(idx, 8, item)
+        self.ui.reductionTable.setItem(idx, 9,
+                                       QtWidgets.QTableWidgetItem(str(d.bck_width)))
+        self.ui.reductionTable.setItem(idx, 10,
+                                       QtWidgets.QTableWidgetItem(str(d.direct_pixel)))
+        self.ui.reductionTable.setItem(idx, 11,
+                                       QtWidgets.QTableWidgetItem("%.4f"%d.scattering_angle))
+        norma = 'none'
+        if d.configuration.normalization is not None:
+            norma = d.configuration.normalization.number
+        self.ui.reductionTable.setItem(idx, 12,
+                                       QtWidgets.QTableWidgetItem(str(norma)))
+        self.ui.reductionTable.resizeColumnsToContents()
+
+        # Emit signals
+        if do_plot:
+            self.main_window.initiate_reflectivity_plot.emit(True)
+
+    def clear_reflectivity(self, do_plot=True):
+        """
+            Remove all items from the reduction list.
+        """
+        self._data_manager.reduction_list=[]
+        self.ui.reductionTable.setRowCount(0)
+        self.ui.actionAutoYLimits.setChecked(True)
+        if do_plot:
+            self.main_window.initiate_reflectivity_plot.emit(False)
+
+    def remove_reflectivity(self):
+        """
+            Remove one item from the reduction list.
+        """
+        index=self.ui.reductionTable.currentRow()
+        if index<0:
+            return
+        self._data_manager.reduction_list.pop(index)
+        self.ui.reductionTable.removeRow(index)
+        self.main_window.initiate_reflectivity_plot.emit(False)
+
+    def reflectivity_updated(self):
+        pass
+
     def get_configuration(self):
         """
             Gather the reduction options.
@@ -229,12 +316,15 @@ class FileHandler(object):
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
         
-        self.main_window.configuration.forced_peak_roi = [x_pos - x_width/2.0,
+        self.main_window.configuration.peak_roi = [x_pos - x_width/2.0,
                                                           x_pos + x_width/2.0]
-        self.main_window.configuration.forced_low_res_roi = [y_pos - y_width/2.0,
+        self.main_window.configuration.low_res_roi = [y_pos - y_width/2.0,
                                                              y_pos + y_width/2.0]
-        self.main_window.configuration.forced_bck_roi = [bck_pos - bck_width/2.0,
+        self.main_window.configuration.bck_roi = [bck_pos - bck_width/2.0,
                                                          bck_pos + bck_width/2.0]
+
+        self.main_window.configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
+        self.main_window.configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()
 
         # Use background on each side of the peak
         self.main_window.configuration.use_tight_bck = self.ui.use_side_bck_checkbox.isChecked()
@@ -242,9 +332,27 @@ class FileHandler(object):
 
         # Other reduction options
         self.main_window.configuration.subtract_background = self.ui.bgActive.isChecked()
-        self.main_window.configuration.scaling_factor = self.ui.refScale.value()
+        try:
+            scale = math.pow(10.0, self.ui.refScale.value())
+        except:
+            scale = 1
+        self.main_window.configuration.scaling_factor = scale
         self.main_window.configuration.cut_first_n_points = self.ui.rangeStart.value()
         self.main_window.configuration.cut_last_n_points = self.ui.rangeEnd.value()
+
+        self.main_window.configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
+        self.main_window.configuration.use_dangle = self.ui.trustDANGLE.isChecked()
+        self.main_window.configuration.set_direct_pixel = self.ui.set_dirpix_checkbox.isChecked()
+        self.main_window.configuration.set_direct_angle_offset = self.ui.set_dangle0_checkbox.isChecked()
+        self.main_window.configuration.direct_pixel_overwrite = self.ui.directPixelOverwrite.value()
+        self.main_window.configuration.direct_angle_offset_overwrite = self.ui.dangle0Overwrite.value()
+
+        # UI elements
+        self.main_window.configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
+        self.main_window.configuration.x_wl_map = self.ui.xLamda.isChecked()
+        self.main_window.configuration.angle_map = self.ui.tthPhi.isChecked()
+        self.main_window.configuration.log_1d = self.ui.logarithmic_y.isChecked()
+        self.main_window.configuration.log_2d = self.ui.logarithmic_colorscale.isChecked()
 
         # Make the changes persistent
         self.main_window.configuration.to_q_settings(self.main_window.settings)
@@ -261,20 +369,23 @@ class FileHandler(object):
         self.ui.use_bck_roi_checkbox.setChecked(self.main_window.configuration.use_roi_bck)
 
         # Default ranges, using the current values
-        x_pos = (self.main_window.configuration.forced_peak_roi[1] \
-                 + self.main_window.configuration.forced_peak_roi[0]) / 2.0
-        x_width = (self.main_window.configuration.forced_peak_roi[1] \
-                   - self.main_window.configuration.forced_peak_roi[0])
+        x_pos = (self.main_window.configuration.peak_roi[1] \
+                 + self.main_window.configuration.peak_roi[0]) / 2.0
+        x_width = (self.main_window.configuration.peak_roi[1] \
+                   - self.main_window.configuration.peak_roi[0])
 
-        y_pos = (self.main_window.configuration.forced_low_res_roi[1] \
-                 + self.main_window.configuration.forced_low_res_roi[0]) / 2.0
-        y_width = (self.main_window.configuration.forced_low_res_roi[1] \
-                   - self.main_window.configuration.forced_low_res_roi[0])
+        y_pos = (self.main_window.configuration.low_res_roi[1] \
+                 + self.main_window.configuration.low_res_roi[0]) / 2.0
+        y_width = (self.main_window.configuration.low_res_roi[1] \
+                   - self.main_window.configuration.low_res_roi[0])
 
-        bck_pos = (self.main_window.configuration.forced_bck_roi[1] \
-                   + self.main_window.configuration.forced_bck_roi[0]) / 2.0
-        bck_width = (self.main_window.configuration.forced_bck_roi[1] \
-                     - self.main_window.configuration.forced_bck_roi[0])
+        bck_pos = (self.main_window.configuration.bck_roi[1] \
+                   + self.main_window.configuration.bck_roi[0]) / 2.0
+        bck_width = (self.main_window.configuration.bck_roi[1] \
+                     - self.main_window.configuration.bck_roi[0])
+
+        self.ui.actionAutomaticXPeak.setChecked(not self.main_window.configuration.force_peak_roi)
+        self.ui.actionAutoYLimits.setChecked(not self.main_window.configuration.force_low_res_roi)
 
         self.ui.refXPos.setValue(x_pos)
         self.ui.refXWidth.setValue(x_width)
@@ -290,7 +401,25 @@ class FileHandler(object):
         # Subtract background
         self.ui.bgActive.setChecked(self.main_window.configuration.subtract_background)
         # Scaling factor
-        self.ui.refScale.setValue(math.log10(self.main_window.configuration.scaling_factor))
+        try:
+            scale = math.log10(self.main_window.configuration.scaling_factor)
+        except:
+            scale = 0.0
+        self.ui.refScale.setValue(scale)
         # Cut first and last points
         self.ui.rangeStart.setValue(self.main_window.configuration.cut_first_n_points)
         self.ui.rangeEnd.setValue(self.main_window.configuration.cut_last_n_points)
+
+        self.ui.fanReflectivity.setChecked(self.main_window.configuration.use_constant_q)
+        self.ui.trustDANGLE.setChecked(self.main_window.configuration.use_dangle)
+        self.ui.set_dirpix_checkbox.setChecked(self.main_window.configuration.set_direct_pixel)
+        self.ui.set_dangle0_checkbox.setChecked(self.main_window.configuration.set_direct_angle_offset)
+        self.ui.directPixelOverwrite.setValue(self.main_window.configuration.direct_pixel_overwrite)
+        self.ui.dangle0Overwrite.setValue(self.main_window.configuration.direct_angle_offset_overwrite)
+
+        # UI elements
+        self.ui.normalizeXTof.setChecked(self.main_window.configuration.normalize_x_tof)
+        self.ui.xLamda.setChecked(self.main_window.configuration.x_wl_map)
+        self.ui.tthPhi.setChecked(self.main_window.configuration.angle_map)
+        self.ui.logarithmic_y.setChecked(self.main_window.configuration.log_1d)
+        self.ui.logarithmic_colorscale.setChecked(self.main_window.configuration.log_2d)
