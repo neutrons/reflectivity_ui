@@ -6,6 +6,8 @@
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long
 from __future__ import absolute_import, division, print_function
 import sys
+import math
+import logging
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -13,8 +15,6 @@ application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 from mantid.simpleapi import *
 
-import math
-import logging
 
 # Constants
 h = 6.626e-34  # m^2 kg s^-1
@@ -28,7 +28,6 @@ class Instrument(object):
     n_y_pixel = 256
     huber_x_cut = 4.95
     peak_range_offset = 50
-    tolerance = 0.02
     tolerance = 0.02
     pixel_width = 0.0007
 
@@ -237,3 +236,12 @@ class Instrument(object):
                     low_res[1]+self.peak_range_offset+broadening]
         return peak
 
+    @classmethod
+    def find_direct_beam(cls):
+        """
+            Find a direct beam suitable for this data set by looking into
+            its data directory.
+            :param ws: Mantid workspace
+        """
+        
+        return

@@ -203,6 +203,12 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         self.plot_handler.change_region_values()
 
+    def reductionTableChanged(self, item):
+        '''
+        Perform action upon change in data reduction list.
+        '''
+        self.file_handler.reduction_table_changed(item)
+
     def replotProjections(self):
         self.initiate_projection_plot.emit(True)
         self.initiate_reflectivity_plot.emit(True)
@@ -214,11 +220,12 @@ class MainWindow(QtWidgets.QMainWindow,
     def clearRefList(self):
         self.file_handler.clear_reflectivity()
 
-    def setNorm(self): return NotImplemented
+    def setNorm(self, do_plot=True, do_remove=True):
+        self.file_handler.add_direct_beam(do_plot, do_remove)
+
     def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
-    def reductionTableChanged(self): return NotImplemented
     def clearNormList(self): return NotImplemented
     def change_offspec_colorscale(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented

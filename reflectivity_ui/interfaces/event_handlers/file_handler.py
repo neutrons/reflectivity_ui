@@ -8,7 +8,6 @@ import os
 import logging
 import glob
 import math
-import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 
@@ -17,6 +16,7 @@ class FileHandler(object):
         self.ui = main_window.ui
         self.main_window = main_window
         self._data_manager = main_window.data_manager
+        self._pause_interactions = False
 
         # Update file list when changes are made
         self._path_watcher = QtCore.QFileSystemWatcher([self._data_manager.current_directory],
@@ -118,14 +118,14 @@ class FileHandler(object):
 
         # Update reduction parameters
         # for lines of the current extraction area
-        self.ui.refXPos.setValue(d.peak_position)
-        self.ui.refXWidth.setValue(d.peak_width)
+        self.ui.refXPos.setValue(d.configuration.peak_position)
+        self.ui.refXWidth.setValue(d.configuration.peak_width)
 
-        self.ui.refYPos.setValue(d.low_res_position)
-        self.ui.refYWidth.setValue(d.low_res_width)
+        self.ui.refYPos.setValue(d.configuration.low_res_position)
+        self.ui.refYWidth.setValue(d.configuration.low_res_width)
 
-        self.ui.bgCenter.setValue(d.bck_position)
-        self.ui.bgWidth.setValue(d.bck_width)
+        self.ui.bgCenter.setValue(d.configuration.bck_position)
+        self.ui.bgWidth.setValue(d.configuration.bck_width)
 
         # TODO: this should update when we change the peak position?
         self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
@@ -223,6 +223,7 @@ class FileHandler(object):
             logging.error("The data you are trying to add doesn't have the same cross-sections")
             return
 
+        self._pause_interactions = True
         # Pick the first cross section as reference
         channels = self._data_manager.data_sets.keys()
         d = self._data_manager.data_sets[channels[0]]
@@ -237,6 +238,7 @@ class FileHandler(object):
     
         item=QtWidgets.QTableWidgetItem(str(d.number))
         item.setBackground(QtGui.QColor(200, 200, 200))
+        item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
         self.ui.reductionTable.setItem(idx, 0, item)
         self.ui.reductionTable.setItem(idx, 1,
                                        QtWidgets.QTableWidgetItem("%.4f"%(d.configuration.scaling_factor)))
@@ -244,21 +246,21 @@ class FileHandler(object):
                                        QtWidgets.QTableWidgetItem(str(d.configuration.cut_first_n_points)))
         self.ui.reductionTable.setItem(idx, 3,
                                        QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
-        item=QtWidgets.QTableWidgetItem(str(d.peak_position))
+        item=QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.reductionTable.setItem(idx, 4, item)
         self.ui.reductionTable.setItem(idx, 5,
-                                       QtWidgets.QTableWidgetItem(str(d.peak_width)))
-        item=QtWidgets.QTableWidgetItem(str(d.low_res_position))
+                                       QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+        item=QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.reductionTable.setItem(idx, 6, item)
         self.ui.reductionTable.setItem(idx, 7,
-                                       QtWidgets.QTableWidgetItem(str(d.low_res_width)))
-        item=QtWidgets.QTableWidgetItem(str(d.bck_position))
+                                       QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+        item=QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.reductionTable.setItem(idx, 8, item)
         self.ui.reductionTable.setItem(idx, 9,
-                                       QtWidgets.QTableWidgetItem(str(d.bck_width)))
+                                       QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
         self.ui.reductionTable.setItem(idx, 10,
                                        QtWidgets.QTableWidgetItem(str(d.direct_pixel)))
         self.ui.reductionTable.setItem(idx, 11,
@@ -268,11 +270,11 @@ class FileHandler(object):
             norma = d.configuration.normalization.number
         self.ui.reductionTable.setItem(idx, 12,
                                        QtWidgets.QTableWidgetItem(str(norma)))
-        #self.ui.reductionTable.resizeColumnsToContents()
 
         # Emit signals
         if do_plot:
             self.main_window.initiate_reflectivity_plot.emit(True)
+        self._pause_interactions = False
 
     def clear_reflectivity(self, do_plot=True):
         """
@@ -297,6 +299,87 @@ class FileHandler(object):
 
     def reflectivity_updated(self):
         pass
+
+    def reduction_table_changed(self, item):
+        '''
+        Perform action upon change in data reduction list.
+        '''
+        if self._pause_interactions:
+            return
+
+        entry=item.row()
+        column=item.column()
+
+        refl=self.reduction_list[entry]
+
+
+        # If we changed the normalization run, make sure it's in the list
+        # of direct beams we know about
+        
+        # reset options that can't be changed
+        #if column==12:
+        #    item.setText(str(options['normalization'].options['number']))
+        #    return
+    
+        keys = ['number', 'scaling_factor', 'cut_first_n_points', 'cut_last_n_points',
+                'peak_position', 'peak_width', 'low_res_position', 'low_res_width',
+                'bck_position', 'bck_width', 'direct_pixel', 'scattering_angle']
+
+        # update settings from selected option
+        if column in [1, 4, 5, 6, 7, 8, 9, 10]:
+            refl.set_parameter(keys[column], float(item.text()))
+        elif column in [2,3]:
+            refl.set_parameter(keys[column], int(item.text()))
+
+        self.reflectivityUpdated.emit(True)
+        self.initiateReflectivityPlot.emit(True)
+
+    def add_direct_beam(self, do_plot=True, do_remove=True):
+        """
+            Add / remove dataset to the available normalizations or clear the normalization list.
+        """
+        # Pick the first cross section as reference.There will likely be only one
+        # for a direct beam data set.
+        channels = self._data_manager.data_sets.keys()
+        d = self._data_manager.data_sets[channels[0]]
+
+        # If the data set is not already in the list, add it.
+        was_added = self._data_manager.add_active_to_normalization()
+        if was_added:
+            idx=len(self._data_manager.direct_beam_list)-1
+            self.ui.normalizeTable.insertRow(idx)
+            item=QtWidgets.QTableWidgetItem(str(d.number))
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+            item.setBackground(QtGui.QColor(200, 200, 200))
+            self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
+            wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
+            self.ui.normalizeTable.setItem(idx, 1, QtWidgets.QTableWidgetItem(wl))
+            item=QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
+            item.setBackground(QtGui.QColor(200, 200, 200))
+            self.ui.normalizeTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(item))
+            self.ui.normalizeTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+            item=QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
+            item.setBackground(QtGui.QColor(200, 200, 200))
+            self.ui.normalizeTable.setItem(idx, 4, QtWidgets.QTableWidgetItem(item))
+            self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+            item=QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
+            item.setBackground(QtGui.QColor(200, 200, 200))
+            self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(item))
+            self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
+
+        # If the data set is already in the list, remove it.
+        # We will need to check that no scattering data set is using it.
+        elif do_remove:
+            idx = self._data_manager.remove_active_from_normalization()
+            logging.error("IDX %s", idx)
+            if idx >= 0:
+                self.ui.normalizeTable.removeRow(idx)
+
+        direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
+        self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
+
+        if do_plot:
+            self.initiateReflectivityPlot.emit(False)
 
     def get_configuration(self):
         """

@@ -4,6 +4,8 @@ import numpy as np
 import logging
 
 class PlotManager(object):
+    _refl_color_list=['blue', 'red', 'green', 'purple', '#aaaa00', 'cyan']
+
     def __init__(self, main_window):
         self.main_window = main_window
         self.overview_lines=None
@@ -469,11 +471,13 @@ class PlotManager(object):
                                             verticalalignment='center',
                                             fontsize=14,
                                             transform=self.main_window.ui.refl.canvas.ax.transAxes)
-            if False:
-                for i, refli in enumerate(self.reduction_list):
-                    P0i=len(refli.Q)-refli.options['P0']
-                    PNi=refli.options['PN']
-                    ynormed=refli.R[PNi:P0i]
+            if True:
+                channel_name = self.main_window.data_manager.active_channel.name
+                
+                for i, refli in enumerate(self.main_window.data_manager.reduction_list):
+                    P0i=len(refli.cross_sections[channel_name].q)-refli.configuration.cut_first_n_points
+                    PNi=refli.configuration.cut_last_n_points
+                    ynormed=refli.cross_sections[channel_name].r[PNi:P0i]
                     try:
                         ymin=min(ymin, ynormed[ynormed>0].min())
                     except ValueError:
@@ -482,8 +486,10 @@ class PlotManager(object):
                         ymax=max(ymax, ynormed.max())
                     except ValueError:
                         pass
-                    self.main_window.ui.refl.errorbar(refli.Q[PNi:P0i], ynormed,
-                                          yerr=refli.dR[PNi:P0i], label=str(refli.options['number']),
+                    self.main_window.ui.refl.errorbar(refli.cross_sections[channel_name].q[PNi:P0i],
+                                                      ynormed,
+                                                      yerr=refli.cross_sections[channel_name].dr[PNi:P0i],
+                                                      label=str(refli.number),
                                           color=self._refl_color_list[i%len(self._refl_color_list)])
             self.main_window.ui.refl.set_ylabel(u'I')
             self.main_window.ui.refl.canvas.ax.set_ylim((ymin*0.9, ymax*1.1))

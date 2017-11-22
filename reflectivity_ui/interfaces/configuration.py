@@ -71,6 +71,66 @@ class Configuration(object):
         if settings is not None:
             self.from_q_settings(settings)
 
+    @property
+    def peak_position(self):
+        return (self.peak_roi[1]+self.peak_roi[0])/2.0
+
+    @peak_position.setter
+    def peak_position(self, value):
+        width = self.peak_width
+        self.peak_roi[0] = value - width/2.0
+        self.peak_roi[1] = value + width/2.0
+
+    @property
+    def peak_width(self):
+        return self.peak_roi[1]-self.peak_roi[0]
+
+    @peak_width.setter
+    def peak_width(self, value):
+        pos = self.peak_position
+        self.peak_roi[0] = pos - value/2.0
+        self.peak_roi[1] = pos + value/2.0
+
+    @property
+    def low_res_position(self):
+        return (self.low_res_roi[1]+self.low_res_roi[0])/2.0
+
+    @low_res_position.setter
+    def low_res_position(self, value):
+        width = self.low_res_width
+        self.low_res_roi[0] = value - width/2.0
+        self.low_res_roi[1] = value + width/2.0
+
+    @property
+    def low_res_width(self):
+        return self.low_res_roi[1]-self.low_res_roi[0]
+
+    @low_res_width.setter
+    def low_res_width(self, value):
+        pos = self.low_res_position
+        self.low_res_roi[0] = pos - value/2.0
+        self.low_res_roi[1] = pos + value/2.0
+
+    @property
+    def bck_position(self):
+        return (self.bck_roi[1]+self.bck_roi[0])/2.0
+
+    @bck_position.setter
+    def bck_position(self, value):
+        width = self.bck_width
+        self.bck_roi[0] = value - width/2.0
+        self.bck_roi[1] = value + width/2.0
+
+    @property
+    def bck_width(self):
+        return self.bck_roi[1]-self.bck_roi[0]
+
+    @bck_width.setter
+    def bck_width(self, value):
+        pos = self.bck_position
+        self.bck_roi[0] = pos - value/2.0
+        self.bck_roi[1] = pos + value/2.0
+
     def to_q_settings(self, settings):
         """
             Save configuration to QSettings

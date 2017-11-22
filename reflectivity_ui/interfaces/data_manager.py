@@ -23,6 +23,7 @@ class DataManager(object):
         # The following is information about the data to be combined together
         # List of data sets
         self.reduction_list = []
+        self.direct_beam_list = []
         # List of cross-sections common to all reduced data sets
         self.reduction_states = []
 
@@ -73,8 +74,26 @@ class DataManager(object):
                 self.reduction_list.append(self._nexus_data)
             else:
                 logging.error("The data you are trying to add has different cross-sections")
+            return True
         if len(self.reduction_list) == 1:
             self.reduction_states = self.data_sets.keys()
+        return False
+
+    def add_active_to_normalization(self):
+        """
+            Add active data set to the direct beam list
+        """
+        if not self._nexus_data in self.direct_beam_list:
+            self.direct_beam_list.append(self._nexus_data)
+            return True
+        return False
+
+    def remove_active_from_normalization(self):
+        for i in range(len(self.direct_beam_list)):
+            if self.direct_beam_list[i] == self._nexus_data:
+                self.direct_beam_list.pop(i)
+                return i
+        return -1
 
     def load(self, file_path, configuration, force=False):
         """

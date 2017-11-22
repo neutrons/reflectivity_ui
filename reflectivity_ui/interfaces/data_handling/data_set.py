@@ -62,6 +62,7 @@ class NexusData(object):
     """
     def __init__(self, file_path, configuration):
         self.file_path = file_path
+        self.number = 0
         self.configuration = configuration
         self.cross_sections = {}
 
@@ -71,6 +72,18 @@ class NexusData(object):
         for d in self.cross_sections.keys():
             total_size += self.cross_sections[d].nbytes
         return total_size
+
+    def set_parameter(self, param, value):
+        """
+            Loop through the cross-section data sets and update
+            a parameter.
+        """
+        try:
+            for xs in self.cross_sections:
+                if hasattr(self.cross_sections[xs].configuration, param):
+                    setattr(self.cross_sections[xs].configuration, param, value)
+        except:
+            logging.error("Could not set parameter %s %s\n  %s", param, value, sys.exc_value)
 
     def filter_events(self):
         """
@@ -105,6 +118,7 @@ class NexusData(object):
                 cross_section.collect_info(nxs_data)
                 cross_section.process_data(nxs_data)
                 self.cross_sections[name] = cross_section
+                self.number = cross_section.number
                 # Delete workspace
                 DeleteWorkspace(nxs_data)
 
@@ -192,30 +206,6 @@ class CrossSectionData(object):
     @active_area_y.setter
     def active_area_y(self, value):
         self._active_area_y=value
-
-    @property
-    def peak_position(self):
-        return (self.configuration.peak_roi[1]+self.configuration.peak_roi[0])/2.0
-
-    @property
-    def peak_width(self):
-        return self.configuration.peak_roi[1]-self.configuration.peak_roi[0]
-
-    @property
-    def low_res_position(self):
-        return (self.configuration.low_res_roi[1]+self.configuration.low_res_roi[0])/2.0
-
-    @property
-    def low_res_width(self):
-        return self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0]
-
-    @property
-    def bck_position(self):
-        return (self.configuration.bck_roi[1]+self.configuration.bck_roi[0])/2.0
-
-    @property
-    def bck_width(self):
-        return self.configuration.bck_roi[1]-self.configuration.bck_roi[0]
 
     ################## Properties for easy data access ##########################
 
@@ -313,7 +303,7 @@ class CrossSectionData(object):
             self.angle_offset = self.configuration.direct_angle_offset_overwrite
 
         self.scattering_angle = self.configuration.instrument.scattering_angle(workspace,
-                                                                               self.peak_position,
+                                                                               self.configuration.peak_position,
                                                                                self.direct_pixel,
                                                                                self.angle_offset)
 
@@ -351,7 +341,7 @@ class CrossSectionData(object):
                                     TimeAxisStep=self.configuration.tof_bins,
                                     UseSANGLE=not self.configuration.use_dangle,
                                     TimeAxisRange=self.tof_range,
-                                    SpecularPixel=self.peak_position,
+                                    SpecularPixel=self.configuration.peak_position,
                                     ConstantQBinning=self.configuration.use_constant_q,
                                     EntryName=str(self.entry_name))
 
