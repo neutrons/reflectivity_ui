@@ -318,7 +318,7 @@ class FileHandler(object):
         entry=item.row()
         column=item.column()
 
-        refl=self.reduction_list[entry]
+        refl=self._data_manager.reduction_list[entry]
 
         # If we changed the normalization run, make sure it's in the list
         # of direct beams we know about
@@ -330,16 +330,16 @@ class FileHandler(object):
     
         keys = ['number', 'scaling_factor', 'cut_first_n_points', 'cut_last_n_points',
                 'peak_position', 'peak_width', 'low_res_position', 'low_res_width',
-                'bck_position', 'bck_width', 'direct_pixel', 'scattering_angle']
+                'bck_position', 'bck_width', 'direct_pixel', 'scattering_angle', 'normalization']
 
         # update settings from selected option
         if column in [1, 4, 5, 6, 7, 8, 9, 10]:
             refl.set_parameter(keys[column], float(item.text()))
-        elif column in [2,3]:
+        elif column in [2, 3, 11]:
             refl.set_parameter(keys[column], int(item.text()))
 
         refl.calculate_reflectivity()
-        self.initiateReflectivityPlot.emit(True)
+        self.main_window.initiate_reflectivity_plot.emit(True)
 
     def add_direct_beam(self, do_plot=True, do_remove=True):
         """
@@ -386,7 +386,7 @@ class FileHandler(object):
         self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
 
         if do_plot:
-            self.initiateReflectivityPlot.emit(False)
+             self.main_window.initiate_reflectivity_plot.emit(False)
 
     def get_configuration(self):
         """

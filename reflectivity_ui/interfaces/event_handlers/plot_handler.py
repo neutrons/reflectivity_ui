@@ -337,3 +337,105 @@ class PlotHandler(object):
 
         #TODO: plot reflectivity
         #self.trigger('initiateReflectivityPlot', False)
+
+def plot_offspec(self):
+    """
+    Create an offspecular plot for all channels of the datasets in the
+    reduction list. The user can define upper and lower bounds for the 
+    plotted intensity and select the coordinates to be ither kiz-kfz vs. Qz,
+    Qx vs. Qz or kiz vs. kfz.
+    """
+    plots=[self.ui.offspec_pp, self.ui.offspec_mm,
+           self.ui.offspec_pm, self.ui.offspec_mp]
+    for plot in plots:
+        plot.clear()
+    for i in range(len(self.active_data), 4):
+        if plots[i].cplot is not None:
+            plots[i].draw()
+    Imin=10**self.ui.offspecImin.value()
+    Imax=10**self.ui.offspecImax.value()
+    Qzmax=0.01
+    for item in self.reduction_list:
+
+        fname=item.origin[0]
+        data_all=NXSData(fname, **item.read_options)
+        for i, channel in enumerate(self.ref_list_channels):
+            plot=plots[i]
+            selected_data=data_all[channel]
+            offspec=OffSpecular(selected_data, **item.options)
+            P0=len(selected_data.tof)-item.options['P0']
+            PN=item.options['PN']
+            Qzmax=max(offspec.Qz[int(item.options['x_pos']), PN:P0].max(), Qzmax)
+            ki_z, kf_z, Qx, Qz, S=offspec.ki_z, offspec.kf_z, offspec.Qx, offspec.Qz, offspec.S
+            if self.ui.kizmkfzVSqz.isChecked():
+                plot.pcolormesh((ki_z-kf_z)[:, PN:P0],
+                                Qz[:, PN:P0], S[:, PN:P0], log=True,
+                                imin=Imin, imax=Imax, cmap=self.color,
+                                shading='gouraud')
+            elif self.ui.qxVSqz.isChecked():
+                plot.pcolormesh(Qx[:, PN:P0],
+                                Qz[:, PN:P0], S[:, PN:P0], log=True,
+                                imin=Imin, imax=Imax, cmap=self.color,
+                                shading='gouraud')
+            else:
+                plot.pcolormesh(ki_z[:, PN:P0],
+                                kf_z[:, PN:P0], S[:, PN:P0], log=True,
+                                imin=Imin, imax=Imax, cmap=self.color,
+                                shading='gouraud')
+    for i, channel in enumerate(self.ref_list_channels):
+        plot=plots[i]
+        if self.ui.kizmkfzVSqz.isChecked():
+            plot.canvas.ax.set_xlim([-0.03, 0.03])
+            plot.canvas.ax.set_ylim([0., Qzmax])
+            plot.set_xlabel(u'k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]')
+            plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+        elif self.ui.qxVSqz.isChecked():
+            plot.canvas.ax.set_xlim([-0.001, 0.001])
+            plot.canvas.ax.set_ylim([0., Qzmax])
+            plot.set_xlabel(u'Q$_x$ [Å$^{-1}$]')
+            plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+        else:
+            plot.canvas.ax.set_xlim([0., Qzmax/2.])
+            plot.canvas.ax.set_ylim([0., Qzmax/2.])
+            plot.set_xlabel(u'k$_{i,z}$ [Å$^{-1}$]')
+            plot.set_ylabel(u'k$_{f,z}$ [Å$^{-1}$]')
+        plot.set_title(channel)
+        if plot.cplot is not None:
+            plot.cplot.set_clim([Imin, Imax])
+            if self.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+                plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
+        plot.draw()
+
+    def change_offspec_colorscale(self):
+        plots=[self.ui.offspec_pp, self.ui.offspec_mm,
+               self.ui.offspec_pm, self.ui.offspec_mp]
+        Imin=10**self.ui.offspecImin.value()
+        Imax=10**self.ui.offspecImax.value()
+        if Imin>=Imax:
+            return
+        for i, _ in enumerate(self.ref_list_channels):
+            plot=plots[i]
+            if plot.cplot is not None:
+                for item in plot.canvas.ax.collections:
+                    item.set_clim(Imin, Imax)
+            plot.draw()
+
+    def clip_offspec_colorscale(self):
+        plots=[self.ui.offspec_pp, self.ui.offspec_mm,
+               self.ui.offspec_pm, self.ui.offspec_mp]
+        Imin=1e10
+        for i, _ in enumerate(self.ref_list_channels):
+            plot=plots[i]
+            if plot.cplot is not None:
+                for item in plot.canvas.ax.collections:
+                    I=item.get_array()
+                    Imin=min(Imin, I[I>0].min())
+        for i, _ in enumerate(self.ref_list_channels):
+            plot=plots[i]
+            if plot.cplot is not None:
+                for item in plot.canvas.ax.collections:
+                    I=item.get_array()
+                    I[I<=0]=Imin
+                    item.set_array(I)
+            plot.draw()
+

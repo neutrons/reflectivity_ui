@@ -92,9 +92,9 @@ class NexusData(object):
         """
         for xs in self.cross_sections:
             try:
-                xs.reflectivity()
+                self.cross_sections[xs].reflectivity()
             except:
-                logging.error("Could not calculate reflectivity for %s\n  %s", xs.name, sys.exc_value)
+                logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
 
     def filter_events(self):
         """
@@ -326,6 +326,8 @@ class CrossSectionData(object):
         """
         if configuration is not None:
             self.configuration = copy.deepcopy(configuration)
+
+        #TODO: Get direct beam from list of direct beams
         apply_norm = direct_beam is not None
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
