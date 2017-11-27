@@ -129,6 +129,7 @@ class PlotHandler(object):
         """
         if event.button is not None and self.ui.x_project.toolbar._active is None and \
             event.xdata is not None:
+            self.main_window.auto_change_active=True
             if event.button==1:
                 xcen=self.ui.refXPos.value()
                 bgc=self.ui.bgCenter.value()
@@ -159,6 +160,8 @@ class PlotHandler(object):
                     self._picked_line='xpos'
             elif event.button==3:
                 self.ui.refXWidth.setValue(abs(self.ui.refXPos.value()-event.xdata)*2.)
+            self.main_window.auto_change_active=False
+            self.change_region_values()
     
     def plot_pick_y(self, event):
         """
@@ -166,9 +169,9 @@ class PlotHandler(object):
             :param self QMainWindow: main window object
             :param event: event object
         """
+        self.main_window.auto_change_active=True
         if event.button==1 and self.ui.y_project.toolbar._active is None and \
             event.xdata is not None:
-            self.main_window.auto_change_active=True
             ypos=self.ui.refYPos.value()
             yw=self.ui.refYWidth.value()
             yl=ypos-yw/2.
@@ -184,7 +187,9 @@ class PlotHandler(object):
             yw=(yr-yl)
             self.ui.refYPos.setValue(ypos)
             self.ui.refYWidth.setValue(yw)
-            self.main_window.auto_change_active=False
+        self.main_window.auto_change_active=False
+        self.change_region_values()
+
 
     def plot_pick_xy(self, event):
         """
@@ -192,6 +197,7 @@ class PlotHandler(object):
             :param self QMainWindow: main window object
             :param event: event object
         """
+        self.main_window.auto_change_active=True
         if event.button==1 and self.ui.xy_overview.toolbar._active is None and \
             event.xdata is not None:
             self.ui.refXPos.setValue(event.xdata)
@@ -210,15 +216,16 @@ class PlotHandler(object):
                 self._picked_line='yr'
             ypos=(yr+yl)/2.
             yw=(yr-yl)
-            self.auto_change_active=True
             self.ui.refYPos.setValue(ypos)
-            self.auto_change_active=False
             self.ui.refYWidth.setValue(yw)
+        self.main_window.auto_change_active=False
+        self.change_region_values()
 
     def plot_pick_xtof(self, event):
         """
             :param event: event object
         """
+        self.main_window.auto_change_active=True
         if event.button==1 and self.ui.xtof_overview.toolbar._active is None and \
             event.ydata is not None:
             xcen=self.ui.refXPos.value()
@@ -234,9 +241,7 @@ class PlotHandler(object):
                 bgl=event.ydata
                 bgc=(bgr+bgl)/2.
                 bgw=(bgr-bgl)
-                self.auto_change_active=True
                 self.ui.bgCenter.setValue(bgc)
-                self.auto_change_active=False
                 self.ui.bgWidth.setValue(bgw)
                 self._picked_line='bgl'
             elif pl=='bgr' or (pl is None and min_dist==2):
@@ -244,9 +249,7 @@ class PlotHandler(object):
                 bgr=event.ydata
                 bgc=(bgr+bgl)/2.
                 bgw=(bgr-bgl)
-                self.auto_change_active=True
                 self.ui.bgCenter.setValue(bgc)
-                self.auto_change_active=False
                 self.ui.bgWidth.setValue(bgw)
                 self._picked_line='bgr'
             else:
@@ -256,6 +259,8 @@ class PlotHandler(object):
             event.ydata is not None:
             xpos=self.ui.refXPos.value()
             self.ui.refXWidth.setValue(abs(xpos-event.ydata)*2.)
+        self.main_window.auto_change_active=False
+        self.change_region_values()
 
     def scale_on_plot(self, event):
         """

@@ -585,7 +585,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>295</width>
+             <width>316</width>
              <height>128</height>
             </rect>
            </property>
@@ -768,7 +768,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>226</width>
+             <width>316</width>
              <height>110</height>
             </rect>
            </property>
@@ -3490,7 +3490,7 @@
   </connection>
   <connection>
    <sender>offspecImin</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>change_offspec_colorscale()</slot>
    <hints>
@@ -3506,7 +3506,7 @@
   </connection>
   <connection>
    <sender>offspecImax</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>change_offspec_colorscale()</slot>
    <hints>
@@ -3522,7 +3522,7 @@
   </connection>
   <connection>
    <sender>gisansImin</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>change_gisans_colorscale()</slot>
    <hints>
@@ -3538,7 +3538,7 @@
   </connection>
   <connection>
    <sender>gisansImax</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>change_gisans_colorscale()</slot>
    <hints>
@@ -3634,7 +3634,7 @@
   </connection>
   <connection>
    <sender>directPixelOverwrite</sender>
-   <signal>valueChanged(QString)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>overwriteChanged()</slot>
    <hints>
@@ -3666,7 +3666,7 @@
   </connection>
   <connection>
    <sender>refYWidth</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -3714,7 +3714,7 @@
   </connection>
   <connection>
    <sender>refXPos</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -3730,7 +3730,7 @@
   </connection>
   <connection>
    <sender>bgCenter</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -3746,7 +3746,7 @@
   </connection>
   <connection>
    <sender>refXWidth</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -3762,7 +3762,7 @@
   </connection>
   <connection>
    <sender>bgWidth</sender>
-   <signal>valueChanged(double)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -3778,7 +3778,7 @@
   </connection>
   <connection>
    <sender>rangeStart</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -3794,7 +3794,7 @@
   </connection>
   <connection>
    <sender>rangeEnd</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>editingFinished()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
