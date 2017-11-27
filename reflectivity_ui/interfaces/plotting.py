@@ -423,15 +423,6 @@ class PlotManager(object):
         '''
         if self.main_window.data_manager.active_channel is None:
             return False
-        if self.main_window.data_manager.active_channel.r is None:
-            # Get reduction parameters
-            self.main_window.file_handler.get_configuration()
-            try:
-                pass
-                #self.main_window.data_manager.active_channel.reflectivity()
-            except:
-                logging.error("Error computing reflectivity: %s", sys.exc_value)
-                return
 
         P0=len(self.main_window.data_manager.active_channel.q)-self.main_window.ui.rangeStart.value()
         PN=self.main_window.ui.rangeEnd.value()
@@ -522,4 +513,3 @@ class PlotManager(object):
         #        self.cut_areas['fan']=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
         #    else:
         #        self.cut_areas[normalization]=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
-

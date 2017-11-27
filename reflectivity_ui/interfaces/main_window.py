@@ -48,6 +48,8 @@ class MainWindow(QtWidgets.QMainWindow,
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
 
+        self.auto_change_active=False
+
         # Event handlers
         self.plot_handler = PlotHandler(self)
         self.file_handler = FileHandler(self)
@@ -202,6 +204,15 @@ class MainWindow(QtWidgets.QMainWindow,
             a subsequent change can occur without several replots.
         """
         self.plot_handler.change_region_values()
+        if self.auto_change_active:
+            return
+        if self.data_manager.active_channel is not None:
+            try:
+                self.file_handler.get_configuration()
+                self.data_manager.active_channel.reflectivity(configuration=self.configuration)
+                self.plot_manager.plot_refl()
+            except:
+                logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
 
     def reductionTableChanged(self, item):
         '''
@@ -223,10 +234,12 @@ class MainWindow(QtWidgets.QMainWindow,
     def setNorm(self, do_plot=True, do_remove=True):
         self.file_handler.add_direct_beam(do_plot, do_remove)
 
+    def clearNormList(self):
+        self.file_handler.clear_direct_beams()
+
     def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
-    def clearNormList(self): return NotImplemented
     def change_offspec_colorscale(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented
     def clip_offspec_colorscale(self): return NotImplemented

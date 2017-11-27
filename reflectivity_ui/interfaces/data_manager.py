@@ -89,11 +89,23 @@ class DataManager(object):
         return False
 
     def remove_active_from_normalization(self):
+        """
+            Remove the active data set from the direct beam list
+        """
         for i in range(len(self.direct_beam_list)):
             if self.direct_beam_list[i] == self._nexus_data:
                 self.direct_beam_list.pop(i)
                 return i
         return -1
+
+    def clear_direct_beam_list(self):
+        """
+            Remove all items from the direct beam list, and make
+            sure to remove links to those items in the scattering data sets.
+
+            TODO: remove links from scattering data sets.
+        """
+        self.direct_beam_list = []
 
     def load(self, file_path, configuration, force=False):
         """

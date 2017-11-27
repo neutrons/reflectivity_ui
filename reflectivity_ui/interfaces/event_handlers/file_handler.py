@@ -282,7 +282,15 @@ class FileHandler(object):
         """
         self._data_manager.reduction_list=[]
         self.ui.reductionTable.setRowCount(0)
-        self.ui.actionAutoYLimits.setChecked(True)
+        if do_plot:
+            self.main_window.initiate_reflectivity_plot.emit(False)
+
+    def clear_direct_beams(self, do_plot=True):
+        """
+            Remove all items from the direct beam list.
+        """
+        self._data_manager.clear_direct_beam_list()
+        self.ui.reductionTable.setRowCount(0)
         if do_plot:
             self.main_window.initiate_reflectivity_plot.emit(False)
 
@@ -312,7 +320,6 @@ class FileHandler(object):
 
         refl=self.reduction_list[entry]
 
-
         # If we changed the normalization run, make sure it's in the list
         # of direct beams we know about
         
@@ -331,7 +338,7 @@ class FileHandler(object):
         elif column in [2,3]:
             refl.set_parameter(keys[column], int(item.text()))
 
-        self.reflectivityUpdated.emit(True)
+        refl.calculate_reflectivity()
         self.initiateReflectivityPlot.emit(True)
 
     def add_direct_beam(self, do_plot=True, do_remove=True):

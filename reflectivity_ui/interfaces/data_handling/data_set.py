@@ -85,6 +85,17 @@ class NexusData(object):
         except:
             logging.error("Could not set parameter %s %s\n  %s", param, value, sys.exc_value)
 
+    def calculate_reflectivity(self):
+        """
+            Loop through the cross-section data sets and update
+            the reflectivity.
+        """
+        for xs in self.cross_sections:
+            try:
+                xs.reflectivity()
+            except:
+                logging.error("Could not calculate reflectivity for %s\n  %s", xs.name, sys.exc_value)
+
     def filter_events(self):
         """
             Returns a workspace with the selected events
@@ -309,10 +320,12 @@ class CrossSectionData(object):
 
         self.reflectivity()
 
-    def reflectivity(self, direct_beam=None):
+    def reflectivity(self, direct_beam=None, configuration=None):
         """
             Compute reflectivity
         """
+        if configuration is not None:
+            self.configuration = copy.deepcopy(configuration)
         apply_norm = direct_beam is not None
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')

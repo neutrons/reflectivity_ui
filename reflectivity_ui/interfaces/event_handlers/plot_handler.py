@@ -22,8 +22,10 @@ class PlotHandler(object):
     refl= None
 
     def __init__(self, main_window):
+        self.main_window = main_window
         self.ui = main_window.ui
         self.plot_manager = main_window.plot_manager
+        self.data_manager = main_window.data_manager
         self.connect_plot_events()
 
     def connect_plot_events(self):
@@ -39,18 +41,18 @@ class PlotHandler(object):
                      self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
                      self.ui.xy_overview, self.ui.xtof_overview]:
             plot.canvas.mpl_connect('scroll_event', self.change_color_scale)
-        self.ui.x_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_x)
+        #self.ui.x_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_x)
         self.ui.x_project.canvas.mpl_connect('button_press_event', self.plot_pick_x)
         self.ui.x_project.canvas.mpl_connect('button_release_event', self.plot_release)
-        self.ui.y_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_y)
+        #self.ui.y_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_y)
         self.ui.y_project.canvas.mpl_connect('button_press_event', self.plot_pick_y)
         self.ui.y_project.canvas.mpl_connect('button_release_event', self.plot_release)
         self.ui.refl.canvas.mpl_connect('scroll_event', self.scale_on_plot)
         self.ui.xy_overview.canvas.mpl_connect('button_press_event', self.plot_pick_xy)
-        self.ui.xy_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xy)
+        #self.ui.xy_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xy)
         self.ui.xy_overview.canvas.mpl_connect('button_release_event', self.plot_release)
         self.ui.xtof_overview.canvas.mpl_connect('button_press_event', self.plot_pick_xtof)
-        self.ui.xtof_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xtof)
+        #self.ui.xtof_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xtof)
         self.ui.xtof_overview.canvas.mpl_connect('button_release_event', self.plot_release)
 
         # Status bar indicator
@@ -117,6 +119,7 @@ class PlotHandler(object):
             :param event: event object
         """
         self._picked_line = None
+        self.main_window.changeRegionValues()
 
     @slow_down_events
     def plot_pick_x(self, event):
@@ -165,6 +168,7 @@ class PlotHandler(object):
         """
         if event.button==1 and self.ui.y_project.toolbar._active is None and \
             event.xdata is not None:
+            self.main_window.auto_change_active=True
             ypos=self.ui.refYPos.value()
             yw=self.ui.refYWidth.value()
             yl=ypos-yw/2.
@@ -180,6 +184,7 @@ class PlotHandler(object):
             yw=(yr-yl)
             self.ui.refYPos.setValue(ypos)
             self.ui.refYWidth.setValue(yw)
+            self.main_window.auto_change_active=False
 
     def plot_pick_xy(self, event):
         """
