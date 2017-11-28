@@ -66,6 +66,7 @@ class Configuration(object):
         self.log_2d = True
 
         # Reduction options
+        self.match_direct_beam = False
         self.normalization = None
 
         if settings is not None:

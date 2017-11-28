@@ -85,14 +85,14 @@ class NexusData(object):
         except:
             logging.error("Could not set parameter %s %s\n  %s", param, value, sys.exc_value)
 
-    def calculate_reflectivity(self):
+    def calculate_reflectivity(self, direct_beam=None, configuration=None):
         """
             Loop through the cross-section data sets and update
             the reflectivity.
         """
         for xs in self.cross_sections:
             try:
-                self.cross_sections[xs].reflectivity()
+                self.cross_sections[xs].reflectivity(direct_beam=direct_beam, configuration=configuration)
             except:
                 logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
 
@@ -318,7 +318,7 @@ class CrossSectionData(object):
                                                                                self.direct_pixel,
                                                                                self.angle_offset)
 
-        self.reflectivity()
+        #self.reflectivity()
 
     def reflectivity(self, direct_beam=None, configuration=None):
         """
@@ -327,7 +327,10 @@ class CrossSectionData(object):
         if configuration is not None:
             self.configuration = copy.deepcopy(configuration)
 
-        #TODO: Get direct beam from list of direct beams
+        if self.configuration is None:
+            return
+
+        # If a direct beam object was passed, use it.
         apply_norm = direct_beam is not None
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')

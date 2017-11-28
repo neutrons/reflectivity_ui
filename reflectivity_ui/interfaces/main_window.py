@@ -209,7 +209,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.data_manager.active_channel is not None:
             try:
                 self.file_handler.get_configuration()
-                self.data_manager.active_channel.reflectivity(configuration=self.configuration)
+                self.data_manager.calculate_reflectivity(configuration=self.configuration, active_only=True)
                 self.plot_manager.plot_refl()
             except:
                 logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)

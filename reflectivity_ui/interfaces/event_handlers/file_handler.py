@@ -219,8 +219,8 @@ class FileHandler(object):
         #  return
 
         # Verify that the new data is consistent with existing data in the table
-        if not self._data_manager.is_active_data_compatible():
-            logging.error("The data you are trying to add doesn't have the same cross-sections")
+        if not self._data_manager.add_active_to_reduction():
+            logging.error("Data incompatible or already in the list.")
             return
 
         self._pause_interactions = True
@@ -231,7 +231,6 @@ class FileHandler(object):
         # Use the same y region for all following datasets (can be changed by user if desired)
         #if len(self._data_manager.reduction_list)==0:
         #    self.ui.actionAutoYLimits.setChecked(False)
-        self._data_manager.add_active_to_reduction()
 
         self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
         idx=len(self._data_manager.reduction_list)-1
@@ -335,10 +334,10 @@ class FileHandler(object):
         # update settings from selected option
         if column in [1, 4, 5, 6, 7, 8, 9, 10]:
             refl.set_parameter(keys[column], float(item.text()))
-        elif column in [2, 3, 11]:
+        elif column in [2, 3, 12]:
             refl.set_parameter(keys[column], int(item.text()))
 
-        refl.calculate_reflectivity()
+        self._data_manager.calculate_reflectivity(nexus_data=refl)
         self.main_window.initiate_reflectivity_plot.emit(True)
 
     def add_direct_beam(self, do_plot=True, do_remove=True):
@@ -386,7 +385,7 @@ class FileHandler(object):
         self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
 
         if do_plot:
-             self.main_window.initiate_reflectivity_plot.emit(False)
+            self.main_window.initiate_reflectivity_plot.emit(False)
 
     def get_configuration(self):
         """
@@ -415,6 +414,7 @@ class FileHandler(object):
 
         self.main_window.configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
         self.main_window.configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()
+        self.main_window.configuration.match_direct_beam = self.ui.actionAutoNorm.isChecked()
 
         # Use background on each side of the peak
         self.main_window.configuration.use_tight_bck = self.ui.use_side_bck_checkbox.isChecked()

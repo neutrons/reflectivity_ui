@@ -7,6 +7,7 @@ import sys
 import os
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
+from numpy.compat.setup import configuration
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -63,6 +64,8 @@ class DataManager(object):
             Determine whether the currently active data set is compatible
             with the data sets that are currently part of the reduction list.
         """
+        logging.error(str(self.reduction_states))
+        logging.error(str(self.data_sets.keys()))
         return self.reduction_states == self.data_sets.keys() or self.reduction_list == []
 
     def add_active_to_reduction(self):
@@ -71,12 +74,12 @@ class DataManager(object):
         """
         if not self._nexus_data in self.reduction_list:
             if self.is_active_data_compatible():
+                if len(self.reduction_list) == 0:
+                    self.reduction_states = self.data_sets.keys()
                 self.reduction_list.append(self._nexus_data)
+                return True
             else:
                 logging.error("The data you are trying to add has different cross-sections")
-            return True
-        if len(self.reduction_list) == 1:
-            self.reduction_states = self.data_sets.keys()
         return False
 
     def add_active_to_normalization(self):
@@ -135,9 +138,48 @@ class DataManager(object):
 
             directory, file_name = os.path.split(file_path)
             self.current_directory = directory
-            #self.current_file = file_path
             self.current_file_name = file_name
-            #self.data_sets = nexus_data.cross_sections
+
+            #TODO: Find suitable direct beam
+            if configuration.match_direct_beam:
+                logging.error("Direct beam matching not implemented")
+
+            # Compute reflectivity
+            nexus_data.calculate_reflectivity()
             return self.data_sets
         logging.error("Nothing to load for file %s", file_path)
         return None
+
+    def calculate_reflectivity(self, active_only=False, nexus_data=None):
+        """
+            Calculater reflectivity using the current configuration
+        """
+        # Try to find the direct beam in the list of direct beam data sets
+        direct_beam = None
+        
+        # Get the direct beam info from the configuration
+        # All the cross sections should have the same direct beam file.
+        data_keys = nexus_data.cross_sections.keys()
+        if len(data_keys) == 0:
+            logging.error("DataManager.calculate_reflectivity: nothing to compute")
+            return
+
+        data_xs = nexus_data.cross_sections[data_keys[0]]
+        
+        if data_xs.configuration is not None and data_xs.configuration.normalization is not None:
+            for item in self.direct_beam_list:
+                if item.number == data_xs.configuration.normalization:
+                    keys = item.cross_sections.keys()
+                    if len(keys) >= 1:
+                        if len(keys) > 1:
+                            logging.error("More than one cross-section for the direct beam, using the first one")
+                            direct_beam = item.cross_sections[keys[0]]
+            if direct_beam is None:
+                logging.error("The specified direct beam is not available: skipping")
+
+        if nexus_data is not None:
+            nexus_data.calculate_reflectivity(direct_beam=direct_beam)
+        elif active_only:
+            self.active_channel.reflectivity(direct_beam=direct_beam)
+        else:
+            self._nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
