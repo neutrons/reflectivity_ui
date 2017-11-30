@@ -305,6 +305,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="match_direct_beam_button">
+            <property name="text">
+             <string>Match Direct Beam</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -585,7 +592,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>316</width>
+             <width>295</width>
              <height>128</height>
             </rect>
            </property>
@@ -768,7 +775,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>316</width>
+             <width>226</width>
              <height>110</height>
             </rect>
            </property>
@@ -4256,6 +4263,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>match_direct_beam_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>match_direct_beam_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>266</x>
+     <y>500</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>786</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -4298,5 +4321,6 @@
   <slot>set_debug()</slot>
   <slot>live_open()</slot>
   <slot>open_logfile_viewer()</slot>
+  <slot>match_direct_beam_clicked()</slot>
  </slots>
 </ui>

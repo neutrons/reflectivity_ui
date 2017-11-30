@@ -298,6 +298,10 @@ class CrossSectionData(object):
         self.is_direct_beam = data_info.is_direct_beam
         self.tof_range = data_info.tof_range
 
+        self.meta_data_roi_peak = data_info.roi_peak
+        self.meta_data_roi_bck = data_info.roi_background
+        logging.error(str(data_info.roi_peak))
+
         if not self.configuration.force_peak_roi:
             self.configuration.peak_roi = data_info.peak_range
 
@@ -331,11 +335,12 @@ class CrossSectionData(object):
             return
 
         # If a direct beam object was passed, use it.
+        logging.error("Config DB: %s", self.configuration.normalization)
         apply_norm = direct_beam is not None
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
 
-        logging.error(self.tof_range)
+        logging.error("Reduction with DB: %s", direct_beam.number)
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(a[0]), int(a[1])]
         ws = MagnetismReflectometryReduction(RunNumbers=[str(self.number),],

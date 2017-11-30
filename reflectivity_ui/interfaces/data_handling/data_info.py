@@ -12,6 +12,7 @@ from mantid.simpleapi import *
 
 import numpy as np
 import math
+import copy
 from scipy.optimize import curve_fit
 import logging
 
@@ -86,9 +87,7 @@ class DataInfo(object):
             Process the ROI information and determine the peak
             range, the low-resolution range, and the background range.
         """
-        self.roi_peak,
-        self.roi_low_res,
-        self.roi_background = self.configuration.instrument.process_roi(ws)
+        self.roi_peak, self.roi_low_res, self.roi_background = self.configuration.instrument.process_roi(ws)
 
         # After all this, update the ROI according to reduction options
         if self.force_peak_roi:
@@ -134,7 +133,7 @@ class DataInfo(object):
         # Those will be our defaults
         integrated_ws = self.configuration.instrument.integrate_detector(ws, specular=True)
         peak = self.configuration.instrument.determine_peak_range(integrated_ws, specular=True)
-        self.found_peak = peak
+        self.found_peak = copy.copy(peak)
         logging.info("Run %s [%s]: Peak found %s" % (self.run_number, self.cross_section, peak))
         signal_y = integrated_ws.readY(0)
         signal_x = range(len(signal_y))
@@ -152,11 +151,11 @@ class DataInfo(object):
         self.use_roi_actual = False
         
         if self.use_roi and not self.roi_peak == [0,0]:
-            peak = self.roi_peak
+            peak = copy.copy(self.roi_peak)
             if not self.roi_low_res == [0,0]:
-                low_res = self.roi_low_res
+                low_res = copy.copy(self.roi_low_res)
             if not self.roi_background == [0,0]:
-                bck_range = self.roi_background
+                bck_range = copy.copy(self.roi_background)
             logging.info("Using ROI peak range: [%s %s]", peak[0], peak[1])
             self.use_roi_actual = True
 
@@ -181,7 +180,7 @@ class DataInfo(object):
             # If we do find a peak, then update the ranges rather than using
             # what we currently have (which is probably given by the ROI).
             logging.warning("Run %s [%s]: Could not fit a peak in the supplied peak range" % (self.run_number, self.cross_section))
-            logging.debug(sys.exc_value)
+            logging.warning(sys.exc_value)
             try:
                 peak_position, peak_width = self.fit_peak(signal_x, signal_y, self.found_peak)
                 peak = [math.floor(peak_position-peak_width), math.floor(peak_position+peak_width)]
@@ -191,7 +190,7 @@ class DataInfo(object):
                 logging.warning("Run %s [%s]: Peak not in supplied range! Found peak: %s low: %s" % (self.run_number, self.cross_section, peak, low_res))
                 logging.warning("Run %s [%s]: Peak position: %s  Peak width: %s" % (self.run_number, self.cross_section, peak_position, peak_width))
             except:
-                logging.debug(sys.exc_value)
+                logging.warning(sys.exc_value)
                 logging.error("Run %s [%s]: Could not use Gaussian fit to determine peak position over whole detector" % (self.run_number, self.cross_section))
 
         # Update the specular peak range if needed
@@ -214,11 +213,11 @@ class DataInfo(object):
         else:
             self.background = [int(bck_range[0]), int(bck_range[1])]
 
-        # Determine whether we have a direct beam 
-        self.is_direct_beam = self.configuration.instrument.check_direct_beam(ws, peak_position)
-
         # Computed scattering angle
         self.scattering_angle = self.configuration.instrument.scattering_angle(ws, peak_position)
+        
+        # Determine whether we have a direct beam
+        self.is_direct_beam = self.configuration.instrument.check_direct_beam(ws, peak_position)
 
         # Convenient data type
         self.data_type = 0 if self.is_direct_beam else 1

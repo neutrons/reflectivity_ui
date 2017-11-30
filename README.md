@@ -9,3 +9,6 @@
 - Add progress bar
 - Add log window
 - Improve data manager design to handle direct beams more cleanly
+- Keep the Mantid workspaces instead of deleting them so we can recalculate faster.
+- Switch active data when clicking on the reduction table.
+- Calculated sangle needs to update if we change the position ranges

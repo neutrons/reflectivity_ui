@@ -132,6 +132,8 @@ class FileHandler(object):
         #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
 
         self.ui.roi_used_label.setText(u"%s" % d.use_roi_actual)
+        self.ui.roi_peak_label.setText(u"%s" % str(d.meta_data_roi_peak))
+        self.ui.roi_bck_label.setText(u"%s" % str(d.meta_data_roi_bck))
 
     def update_file_list(self):
         """
@@ -266,7 +268,7 @@ class FileHandler(object):
                                        QtWidgets.QTableWidgetItem("%.4f"%d.scattering_angle))
         norma = 'none'
         if d.configuration.normalization is not None:
-            norma = d.configuration.normalization.number
+            norma = d.configuration.normalization
         self.ui.reductionTable.setItem(idx, 12,
                                        QtWidgets.QTableWidgetItem(str(norma)))
 
@@ -359,19 +361,19 @@ class FileHandler(object):
             item.setBackground(QtGui.QColor(200, 200, 200))
             self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
             wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
-            self.ui.normalizeTable.setItem(idx, 1, QtWidgets.QTableWidgetItem(wl))
+            self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(wl))
             item=QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
             item.setBackground(QtGui.QColor(200, 200, 200))
-            self.ui.normalizeTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(item))
-            self.ui.normalizeTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+            self.ui.normalizeTable.setItem(idx, 1, QtWidgets.QTableWidgetItem(item))
+            self.ui.normalizeTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
             item=QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
             item.setBackground(QtGui.QColor(200, 200, 200))
-            self.ui.normalizeTable.setItem(idx, 4, QtWidgets.QTableWidgetItem(item))
-            self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+            self.ui.normalizeTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(item))
+            self.ui.normalizeTable.setItem(idx, 4, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
             item=QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
             item.setBackground(QtGui.QColor(200, 200, 200))
-            self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(item))
-            self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
+            self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(item))
+            self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
 
         # If the data set is already in the list, remove it.
         # We will need to check that no scattering data set is using it.

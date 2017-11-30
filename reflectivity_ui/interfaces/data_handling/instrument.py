@@ -26,9 +26,9 @@ class Instrument(object):
     """
     n_x_pixel = 304
     n_y_pixel = 256
-    huber_x_cut = 4.95
+    huber_x_cut = 0
     peak_range_offset = 50
-    tolerance = 0.02
+    tolerance = 0.05
     pixel_width = 0.0007
 
     def __init__(self):
@@ -72,10 +72,28 @@ class Instrument(object):
         """
             Determine whether this data is a direct beam
         """
-        huber_x = ws.getRun().getProperty("HuberX").getStatistics().mean
         sangle = ws.getRun().getProperty("SANGLE").getStatistics().mean
         theta = self.scattering_angle(ws, peak_position)
+        huber_x = ws.getRun().getProperty("HuberX").getStatistics().mean
         return not ((theta > self.tolerance or sangle > self.tolerance) and huber_x < self.huber_x_cut)
+
+    def direct_beam_match(self, scattering, direct_beam, skip_slits=False):
+        """
+            Verify whether two data sets are compatible.
+        """
+        if scattering.number == direct_beam.number \
+            or ((direct_beam.scattering_angle > self.tolerance \
+                 or direct_beam.sangle > self.tolerance) and direct_beam.huber_x < self.huber_x_cut):
+            logging.error("Run %s may not be a direct beam", direct_beam.number)
+
+        if math.fabs(scattering.lambda_center-direct_beam.lambda_center) < self.tolerance \
+            and (skip_slits or \
+            (math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance \
+            and math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance \
+            and math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance)):
+            return True
+        logging.error("%s %s", scattering.lambda_center, direct_beam.lambda_center)
+        return False
 
     @classmethod
     def get_info(cls, workspace, data_object):
@@ -93,6 +111,7 @@ class Instrument(object):
         data_object.slit1_width=data['S1HWidth'].value[0]
         data_object.slit2_width=data['S2HWidth'].value[0]
         data_object.slit3_width=data['S3HWidth'].value[0]
+        data_object.huber_x=data['HuberX'].getStatistics().mean
 
         #TODO: these don't exist in the DASLogs
         #data_object.slit1_dist=-data['instrument/aperture1/distance'].value[0]*1000.

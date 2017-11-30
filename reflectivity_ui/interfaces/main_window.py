@@ -237,6 +237,10 @@ class MainWindow(QtWidgets.QMainWindow,
     def clearNormList(self):
         self.file_handler.clear_direct_beams()
 
+    def match_direct_beam_clicked(self):
+        self.data_manager.find_best_direct_beam()
+        self.initiate_reflectivity_plot.emit(True)
+
     def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
