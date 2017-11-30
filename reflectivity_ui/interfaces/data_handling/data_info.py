@@ -182,7 +182,12 @@ class DataInfo(object):
             logging.warning("Run %s [%s]: Could not fit a peak in the supplied peak range" % (self.run_number, self.cross_section))
             logging.warning(sys.exc_value)
             try:
-                peak_position, peak_width = self.fit_peak(signal_x, signal_y, self.found_peak)
+                # Define a good default that is wide enough for the fit to work
+                default_width = (self.found_peak[1]-self.found_peak[0])/2.0
+                default_width = max(default_width, 5.0)
+                default_center = (self.found_peak[1]+self.found_peak[0])/2.0
+                default_peak = [default_center-default_width, default_center+default_width]
+                peak_position, peak_width = self.fit_peak(signal_x, signal_y, default_peak)
                 peak = [math.floor(peak_position-peak_width), math.floor(peak_position+peak_width)]
                 #low_res = [5, self.n_x_pixel-5]
                 low_res = self.found_low_res
