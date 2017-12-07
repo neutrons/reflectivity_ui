@@ -70,6 +70,11 @@ class FileHandler(object):
         for i in range(len(channels), 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
 
+        if self._data_manager.active_channel is not None \
+                and self._data_manager.active_channel.configuration.normalization is not None:
+            self.ui.matched_direct_beam_label.setText(u"%s" % self._data_manager.active_channel.configuration.normalization)
+        else:
+            self.ui.matched_direct_beam_label.setText(u"None")
         #if self.active_channel in self.ref_list_channels:
         #    for i, refli in enumerate(self.reduction_list):
         #        refli=self.recalculateReflectivity(refli)
@@ -317,7 +322,8 @@ class FileHandler(object):
             Remove all items from the direct beam list.
         """
         self._data_manager.clear_direct_beam_list()
-        self.ui.reductionTable.setRowCount(0)
+        self.ui.normalizeTable.setRowCount(0)
+        self.ui.normalization_list_label.setText(u"None")
         if do_plot:
             self.main_window.initiate_reflectivity_plot.emit(False)
 

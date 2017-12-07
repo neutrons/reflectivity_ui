@@ -330,7 +330,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>316</width>
+             <width>371</width>
              <height>132</height>
             </rect>
            </property>
@@ -592,7 +592,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>295</width>
+             <width>371</width>
              <height>128</height>
             </rect>
            </property>
@@ -775,7 +775,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>226</width>
+             <width>371</width>
              <height>110</height>
             </rect>
            </property>
@@ -1562,6 +1562,49 @@
                  <number>2</number>
                 </property>
                 <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_16">
+                  <property name="leftMargin">
+                   <number>4</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>4</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="label_19">
+                    <property name="text">
+                     <string>Matched direct beam:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="matched_direct_beam_label">
+                    <property name="text">
+                     <string>None</string>
+                    </property>
+                    <property name="indent">
+                     <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_7">
                   <property name="leftMargin">
                    <number>4</number>
@@ -1575,7 +1618,7 @@
                      <string>A list of files selected fro normalization</string>
                     </property>
                     <property name="text">
-                     <string>Direct Beam Runs:</string>
+                     <string>Direct beam runs:</string>
                     </property>
                    </widget>
                   </item>
@@ -1591,16 +1634,36 @@
                      <string>A list of files selected fro normalization</string>
                     </property>
                     <property name="text">
-                     <string>Cross sections:</string>
+                     <string>None</string>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                     </property>
                     <property name="margin">
                      <number>0</number>
                     </property>
                     <property name="indent">
                      <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_18">
+                    <property name="text">
+                     <string>Cross sections:</string>
                     </property>
                    </widget>
                   </item>

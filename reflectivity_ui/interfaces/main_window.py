@@ -95,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow,
         for i in range(1, 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
         self.ui.selectedChannel0.show()
-        self.ui.selectedChannel0.setText(u"none")
+        self.ui.selectedChannel0.setText(u"None")
 
         self.file_handler.populate_from_configuration()
 
@@ -115,7 +115,6 @@ class MainWindow(QtWidgets.QMainWindow,
 
         # Hide quick reduce button
         self.ui.load_live_data_button.hide()
-        self.ui.direct_beam_runs_label.hide()
 
     # Actions defined in Qt Designer
     def file_open_dialog(self):
