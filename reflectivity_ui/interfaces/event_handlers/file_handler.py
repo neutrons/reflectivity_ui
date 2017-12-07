@@ -135,10 +135,18 @@ class FileHandler(object):
         self.ui.roi_peak_label.setText(u"%s" % str(d.meta_data_roi_peak))
         self.ui.roi_bck_label.setText(u"%s" % str(d.meta_data_roi_bck))
 
-    def update_file_list(self):
+    def update_file_list(self, file_path=None):
         """
             Update the list of data files
         """
+        if file_path is not None:
+            file_dir, file_name = os.path.split(unicode(file_path))
+            self.main_window.settings.setValue('current_directory', file_dir)
+            self._path_watcher.removePath(self._data_manager.current_directory)
+            self._data_manager._current_directory = file_dir
+            self._data_manager.current_file_name = file_name
+            self._path_watcher.addPath(self._data_manager.current_directory)
+
         # Update the list of files
         event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*event.nxs'))
         h5_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*.nxs.h5'))
@@ -175,16 +183,34 @@ class FileHandler(object):
                                                     filter=filter_)
 
         if file_path:
-            file_dir, file_name = os.path.split(unicode(file_path))
-            self.main_window.settings.setValue('current_directory', file_dir)
-
-            self._path_watcher.removePath(self._data_manager.current_directory)
-            self._data_manager._current_directory = file_dir
-            self._data_manager.current_file_name = file_name
-            self._path_watcher.addPath(self._data_manager.current_directory)
-            self.update_file_list()
+            self.update_file_list(file_path)
             self.open_file(file_path)
 
+    def open_run_number(self, number=None):
+        """
+            Open a data file by typing a run number
+        """
+        if number is None:
+            number=self.ui.numberSearchEntry.text()
+        QtWidgets.QApplication.instance().processEvents()
+
+        # Look for new-style nexus file name
+        search_string = self.main_window.configuration.instrument.file_search_template % number
+
+        file_list = glob.glob(search_string+'_event.nxs')
+        # Look for old-style nexus file name
+        if len(file_list) == 0:
+            file_list = glob.glob(search_string+'.nxs.h5')
+        self.ui.numberSearchEntry.setText('')
+
+        if len(file_list) > 0:
+            self.update_file_list(file_list[0])
+            self.open_file(os.path.abspath(file_list[0]))
+            return True
+        else:
+            logging.error('Could not locate %s', number)
+            return False
+  
     def update_daslog(self):
         """
             Write parameters from all file daslogs to the table in the

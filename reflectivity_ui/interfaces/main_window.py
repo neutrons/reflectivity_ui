@@ -241,6 +241,9 @@ class MainWindow(QtWidgets.QMainWindow,
         self.data_manager.find_best_direct_beam()
         self.initiate_reflectivity_plot.emit(True)
 
+    def openByNumber(self):
+        self.file_handler.open_run_number()
+
     def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
@@ -249,7 +252,6 @@ class MainWindow(QtWidgets.QMainWindow,
     def clip_offspec_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
     def overwriteChanged(self): return NotImplemented
-    def openByNumber(self): return NotImplemented
     def cutPoints(self): return NotImplemented
     def autoRef(self): return NotImplemented
     def stripOverlap(self): return NotImplemented

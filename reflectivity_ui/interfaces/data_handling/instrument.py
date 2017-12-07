@@ -30,9 +30,11 @@ class Instrument(object):
     peak_range_offset = 50
     tolerance = 0.05
     pixel_width = 0.0007
+    instrument_name = "REFM"
+    instrument_dir = "/SNS/REF_M"
+    file_search_template = "/SNS/REF_M/*/data/REF_M_%s"
 
     def __init__(self):
-        self.instrument_name = "REFM"
         self.tof_range = [0,0]
 
     def get_tof_range(self, run_object):
