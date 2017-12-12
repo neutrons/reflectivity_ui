@@ -2791,20 +2791,6 @@
      <height>20</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuAdvanced">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="title">
-     <string>Advanced</string>
-    </property>
-    <addaction name="actionAdvanced_Background"/>
-    <addaction name="actionAdjust_Dirct_Beam"/>
-    <addaction name="actionClear_Overwrite"/>
-    <addaction name="separator"/>
-    <addaction name="actionPolarization"/>
-    <addaction name="actionRaw_Data_Comparison"/>
-   </widget>
    <widget class="QMenu" name="menuReduction">
     <property name="title">
      <string>Reduction</string>
@@ -2832,10 +2818,11 @@
     <addaction name="actionAuto_Reflectivity"/>
     <addaction name="separator"/>
     <addaction name="actionStrip_Overlap"/>
+    <addaction name="separator"/>
+    <addaction name="action_use_common_ranges"/>
    </widget>
    <addaction name="menuReduction"/>
    <addaction name="menuAutomatics"/>
-   <addaction name="menuAdvanced"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="mainToolbar">
@@ -3218,6 +3205,23 @@
    </property>
    <property name="toolTip">
     <string>Save the raw, unnormalized intensity data of the current dataset.</string>
+   </property>
+  </action>
+  <action name="action_use_common_ranges">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use common ranges</string>
+   </property>
+   <property name="toolTip">
+    <string>Apply identical ranges to all cross-sections</string>
+   </property>
+   <property name="statusTip">
+    <string>Apply identical ranges to all cross-sections</string>
    </property>
   </action>
  </widget>

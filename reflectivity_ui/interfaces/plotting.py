@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys
 import numpy as np
-import logging
 
 class PlotManager(object):
     _refl_color_list=['blue', 'red', 'green', 'purple', '#aaaa00', 'cyan']
@@ -421,22 +419,31 @@ class PlotManager(object):
         and any dataset stored. Intensities from direct beam
         measurements can be used for normalization.
         '''
-        if self.main_window.data_manager.active_channel is None:
+        if self.main_window.data_manager.active_channel is None \
+            or self.main_window.data_manager.active_channel.r is None \
+            or self.main_window.data_manager.active_channel.q is None \
+            or self.main_window.data_manager.active_channel.dr is None:
+            self.main_window.ui.refl.clear()
+            self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
+                                        u'No points to show\nin active dataset!',
+                                        horizontalalignment='center',
+                                        verticalalignment='center',
+                                        fontsize=14,
+                                        transform=self.main_window.ui.refl.canvas.ax.transAxes)
+            self.main_window.ui.refl.draw()
             return False
 
         P0=len(self.main_window.data_manager.active_channel.q)-self.main_window.ui.rangeStart.value()
         PN=self.main_window.ui.rangeEnd.value()
-    
+
         if len(self.main_window.ui.refl.toolbar._views)>0:
             spos=self.main_window.ui.refl.toolbar._views._pos
             view=self.main_window.ui.refl.toolbar._views[spos]
             position=self.main_window.ui.refl.toolbar._positions[spos]
         else:
             view=None
-    
+
         self.main_window.ui.refl.clear()
-        if self.main_window.data_manager.active_channel is None:
-            return
         data = self.main_window.data_manager.active_channel
         if data.total_counts == 0:
             self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
@@ -462,26 +469,25 @@ class PlotManager(object):
                                             verticalalignment='center',
                                             fontsize=14,
                                             transform=self.main_window.ui.refl.canvas.ax.transAxes)
-            if True:
-                channel_name = self.main_window.data_manager.active_channel.name
-                
-                for i, refli in enumerate(self.main_window.data_manager.reduction_list):
-                    P0i=len(refli.cross_sections[channel_name].q)-refli.configuration.cut_first_n_points
-                    PNi=refli.configuration.cut_last_n_points
-                    ynormed=refli.cross_sections[channel_name].r[PNi:P0i]
-                    try:
-                        ymin=min(ymin, ynormed[ynormed>0].min())
-                    except ValueError:
-                        pass
-                    try:
-                        ymax=max(ymax, ynormed.max())
-                    except ValueError:
-                        pass
-                    self.main_window.ui.refl.errorbar(refli.cross_sections[channel_name].q[PNi:P0i],
-                                                      ynormed,
-                                                      yerr=refli.cross_sections[channel_name].dr[PNi:P0i],
-                                                      label=str(refli.number),
-                                          color=self._refl_color_list[i%len(self._refl_color_list)])
+
+            channel_name = self.main_window.data_manager.active_channel.name
+            for i, refli in enumerate(self.main_window.data_manager.reduction_list):
+                P0i=len(refli.cross_sections[channel_name].q)-refli.configuration.cut_first_n_points
+                PNi=refli.configuration.cut_last_n_points
+                ynormed=refli.cross_sections[channel_name].r[PNi:P0i]
+                try:
+                    ymin=min(ymin, ynormed[ynormed>0].min())
+                except ValueError:
+                    pass
+                try:
+                    ymax=max(ymax, ynormed.max())
+                except ValueError:
+                    pass
+                self.main_window.ui.refl.errorbar(refli.cross_sections[channel_name].q[PNi:P0i],
+                                                  ynormed,
+                                                  yerr=refli.cross_sections[channel_name].dr[PNi:P0i],
+                                                  label=str(refli.number),
+                                                  color=self._refl_color_list[i%len(self._refl_color_list)])
             self.main_window.ui.refl.set_ylabel(u'I')
             self.main_window.ui.refl.canvas.ax.set_ylim((ymin*0.9, ymax*1.1))
             self.main_window.ui.refl.set_xlabel(u'Q$_z$ [Å$^{-1}$]')
@@ -504,7 +510,6 @@ class PlotManager(object):
         self.main_window.ui.refl.draw()
         self.main_window.ui.refl.toolbar.set_history_buttons()
 
-    
         #self.refl=Reflectivity(data, **options)
         #self.ui.datasetAi.setText(u"%.3f°"%(self.refl.ai*180./pi))
         #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))

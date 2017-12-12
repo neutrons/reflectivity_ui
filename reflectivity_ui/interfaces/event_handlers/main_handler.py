@@ -10,8 +10,10 @@ import glob
 import math
 from PyQt5 import QtGui, QtCore, QtWidgets
 
+from ..configuration import Configuration
 
-class FileHandler(object):
+
+class MainHandler(object):
     def __init__(self, main_window):
         self.ui = main_window.ui
         self.main_window = main_window
@@ -43,8 +45,8 @@ class FileHandler(object):
             :param bool force: if true, the file will be reloaded
         """
         try:
-            self.get_configuration()
-            self._data_manager.load(file_path, self.main_window.configuration, force=force)
+            configuration = self.get_configuration()
+            self._data_manager.load(file_path, configuration, force=force)
             self.file_loaded()
         except:
             raise
@@ -75,10 +77,6 @@ class FileHandler(object):
             self.ui.matched_direct_beam_label.setText(u"%s" % self._data_manager.active_channel.configuration.normalization)
         else:
             self.ui.matched_direct_beam_label.setText(u"None")
-        #if self.active_channel in self.ref_list_channels:
-        #    for i, refli in enumerate(self.reduction_list):
-        #        refli=self.recalculateReflectivity(refli)
-        #        self.reduction_list[i]=refli
         self.main_window.initiate_reflectivity_plot.emit(False)
 
         # Update UI
@@ -92,8 +90,9 @@ class FileHandler(object):
             Write file metadata to the labels in the overview tab.
         """
         d=self._data_manager.active_channel
-        self.main_window.update_configuration(d.configuration)
-        self.populate_from_configuration()
+        self.populate_from_configuration(d.configuration)
+        self.main_window.initiate_projection_plot.emit(False)
+        QtWidgets.QApplication.instance().processEvents()
 
         try:
             dangle0=u"%.3f° (%.3f°)"%(float(self.ui.dangle0Overwrite.text()), d.dangle0)
@@ -120,17 +119,6 @@ class FileHandler(object):
         self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: <b>%s</b>'%(
                                        d.number, d.experiment,
                                        d.measurement_type, d.name))
-
-        # Update reduction parameters
-        # for lines of the current extraction area
-        self.ui.refXPos.setValue(d.configuration.peak_position)
-        self.ui.refXWidth.setValue(d.configuration.peak_width)
-
-        self.ui.refYPos.setValue(d.configuration.low_res_position)
-        self.ui.refYWidth.setValue(d.configuration.low_res_width)
-
-        self.ui.bgCenter.setValue(d.configuration.bck_position)
-        self.ui.bgWidth.setValue(d.configuration.bck_width)
 
         # TODO: this should update when we change the peak position?
         self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
@@ -200,7 +188,8 @@ class FileHandler(object):
         QtWidgets.QApplication.instance().processEvents()
 
         # Look for new-style nexus file name
-        search_string = self.main_window.configuration.instrument.file_search_template % number
+        configuration = self.get_configuration()
+        search_string = configuration.instrument.file_search_template % number
 
         file_list = glob.glob(search_string+'_event.nxs')
         # Look for old-style nexus file name
@@ -244,12 +233,14 @@ class FileHandler(object):
             Collect information about the current extraction settings and store them
             in the list of reduction items.
         """
-        #if self.refl is None:
-        #    return
-        #if self.refl.options['normalization'] is None:
-        #  warning(u"You can only add reflectivities (? normalized)!",
-        #          extra={'title': u'Data not normalized'})
-        #  return
+        # Update the configuration according to current parameters
+        # Note that when a data set is first loaded, the peaks may have a different
+        # range for each cross-section. If the option to use a common set of ranges
+        # was turned on, we pick the ranges from the currently active cross-section
+        # and apply then to all cross-sections.
+        if self.ui.action_use_common_ranges.isChecked():
+            config = self.get_configuration()
+            self._data_manager.update_configuration(configuration=config, active_only=False)
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
@@ -257,17 +248,20 @@ class FileHandler(object):
             return
 
         self._pause_interactions = True
-        # Pick the first cross section as reference
-        channels = self._data_manager.data_sets.keys()
-        d = self._data_manager.data_sets[channels[0]]
-
-        # Use the same y region for all following datasets (can be changed by user if desired)
-        #if len(self._data_manager.reduction_list)==0:
-        #    self.ui.actionAutoYLimits.setChecked(False)
-
         self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
         idx=len(self._data_manager.reduction_list)-1
-    
+
+        self.update_reduction_table(idx, self._data_manager.active_channel)
+        # Emit signals
+        if do_plot:
+            self.main_window.initiate_reflectivity_plot.emit(True)
+        self._pause_interactions = False
+
+    def update_reduction_table(self, idx, d):
+        """
+            Update the reduction tale
+        """
+        self._pause_interactions = True
         item=QtWidgets.QTableWidgetItem(str(d.number))
         item.setBackground(QtGui.QColor(200, 200, 200))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
@@ -302,10 +296,6 @@ class FileHandler(object):
             norma = d.configuration.normalization
         self.ui.reductionTable.setItem(idx, 12,
                                        QtWidgets.QTableWidgetItem(str(norma)))
-
-        # Emit signals
-        if do_plot:
-            self.main_window.initiate_reflectivity_plot.emit(True)
         self._pause_interactions = False
 
     def clear_reflectivity(self, do_plot=True):
@@ -353,14 +343,9 @@ class FileHandler(object):
 
         refl=self._data_manager.reduction_list[entry]
 
-        # If we changed the normalization run, make sure it's in the list
-        # of direct beams we know about
-        
-        # reset options that can't be changed
-        #if column==12:
-        #    item.setText(str(options['normalization'].options['number']))
-        #    return
-    
+        #TODO: If we changed the normalization run, make sure it's in the list
+        # of direct beams we know about.
+
         keys = ['number', 'scaling_factor', 'cut_first_n_points', 'cut_last_n_points',
                 'peak_position', 'peak_width', 'low_res_position', 'low_res_width',
                 'bck_position', 'bck_width', 'direct_pixel', 'scattering_angle', 'normalization']
@@ -370,9 +355,18 @@ class FileHandler(object):
             refl.set_parameter(keys[column], float(item.text()))
         elif column in [2, 3, 12]:
             refl.set_parameter(keys[column], int(item.text()))
+        elif column == 12:
+            refl.set_parameter(keys[column],item.text())
+
+        # If the changed data set is the active data, also change the UI
+        if self._data_manager.is_active(refl):
+            self.main_window.auto_change_active=True
+            self.update_info()
+            self.main_window.auto_change_active=False
 
         self._data_manager.calculate_reflectivity(nexus_data=refl)
         self.main_window.initiate_reflectivity_plot.emit(True)
+
 
     def add_direct_beam(self, do_plot=True, do_remove=True):
         """
@@ -421,15 +415,75 @@ class FileHandler(object):
         if do_plot:
             self.main_window.initiate_reflectivity_plot.emit(False)
 
+    def check_region_values_changed(self):
+        """
+            Return true if any of the parameters tied to a particular slot
+            has changed.
+
+            Some parameters are tied to the changeRegionValues() slot.
+            There are time-consuming actions that we only want to take
+            if those values actually changed, as opposed to the use simply
+            clicking outside the box.
+        """
+        configuration = self._data_manager.active_channel.configuration
+        valid_change = False
+
+        # ROI parameters
+        x_pos = self.ui.refXPos.value()
+        x_width = self.ui.refXWidth.value()
+        y_pos = self.ui.refYPos.value()
+        y_width = self.ui.refYWidth.value()
+        bck_pos = self.ui.bgCenter.value()
+        bck_width = self.ui.bgWidth.value()
+
+        new_peak_roi = [x_pos - x_width/2.0, x_pos + x_width/2.0]
+        valid_change = valid_change or \
+            not configuration.peak_roi == new_peak_roi
+
+        new_low_res_roi = [y_pos - y_width/2.0, y_pos + y_width/2.0]
+        valid_change = valid_change or \
+            not configuration.low_res_roi == new_low_res_roi
+
+        new_bck_roi = [bck_pos - bck_width/2.0, bck_pos + bck_width/2.0]
+        valid_change = valid_change or \
+            not configuration.bck_roi == new_bck_roi
+
+        try:
+            scale = math.pow(10.0, self.ui.refScale.value())
+        except:
+            scale = 1
+        valid_change = valid_change or \
+            not configuration.scaling_factor == scale
+
+        valid_change = valid_change or \
+            not configuration.cut_first_n_points == self.ui.rangeStart.value()
+
+        valid_change = valid_change or \
+            not configuration.cut_last_n_points == self.ui.rangeEnd.value()
+
+        valid_change = valid_change or \
+            not configuration.subtract_background == self.ui.bgActive.isChecked()
+
+        valid_change = valid_change or \
+            not configuration.use_constant_q == self.ui.fanReflectivity.isChecked()
+
+        valid_change = valid_change or \
+            not configuration.use_dangle == self.ui.trustDANGLE.isChecked()
+        return valid_change
+
     def get_configuration(self):
         """
             Gather the reduction options.
         """
-        self.main_window.configuration.tof_bins = self.ui.eventTofBins.value()
-        self.main_window.configuration.tof_bin_type = self.ui.eventBinMode.currentIndex()
-        self.main_window.configuration.use_roi = self.ui.use_roi_checkbox.isChecked()
-        self.main_window.configuration.update_peak_range = self.ui.fit_within_roi_checkbox.isChecked()
-        self.main_window.configuration.use_roi_bck = self.ui.use_bck_roi_checkbox.isChecked()
+        if self._data_manager.active_channel is not None:
+            configuration = self._data_manager.active_channel.configuration
+        else:
+            configuration = Configuration(self.main_window.settings)
+        configuration.tof_bins = self.ui.eventTofBins.value()
+        configuration.tof_bin_type = self.ui.eventBinMode.currentIndex()
+        configuration.use_roi = self.ui.use_roi_checkbox.isChecked()
+        configuration.update_peak_range = self.ui.fit_within_roi_checkbox.isChecked()
+        configuration.use_roi_bck = self.ui.use_bck_roi_checkbox.isChecked()
 
         # Default ranges, using the current values
         x_pos = self.ui.refXPos.value()
@@ -439,111 +493,102 @@ class FileHandler(object):
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
         
-        self.main_window.configuration.peak_roi = [x_pos - x_width/2.0,
-                                                          x_pos + x_width/2.0]
-        self.main_window.configuration.low_res_roi = [y_pos - y_width/2.0,
-                                                             y_pos + y_width/2.0]
-        self.main_window.configuration.bck_roi = [bck_pos - bck_width/2.0,
-                                                         bck_pos + bck_width/2.0]
+        configuration.peak_roi = [x_pos - x_width/2.0,
+                                                   x_pos + x_width/2.0]
+        configuration.low_res_roi = [y_pos - y_width/2.0,
+                                                      y_pos + y_width/2.0]
+        configuration.bck_roi = [bck_pos - bck_width/2.0,
+                                                  bck_pos + bck_width/2.0]
 
-        self.main_window.configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
-        self.main_window.configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()
-        self.main_window.configuration.match_direct_beam = self.ui.actionAutoNorm.isChecked()
+        configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
+        configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()
+        configuration.match_direct_beam = self.ui.actionAutoNorm.isChecked()
 
         # Use background on each side of the peak
-        self.main_window.configuration.use_tight_bck = self.ui.use_side_bck_checkbox.isChecked()
-        self.main_window.configuration.bck_offset = self.ui.side_bck_width.value()
+        configuration.use_tight_bck = self.ui.use_side_bck_checkbox.isChecked()
+        configuration.bck_offset = self.ui.side_bck_width.value()
 
         # Other reduction options
-        self.main_window.configuration.subtract_background = self.ui.bgActive.isChecked()
+        configuration.subtract_background = self.ui.bgActive.isChecked()
         try:
             scale = math.pow(10.0, self.ui.refScale.value())
         except:
             scale = 1
-        self.main_window.configuration.scaling_factor = scale
-        self.main_window.configuration.cut_first_n_points = self.ui.rangeStart.value()
-        self.main_window.configuration.cut_last_n_points = self.ui.rangeEnd.value()
+        configuration.scaling_factor = scale
+        configuration.cut_first_n_points = self.ui.rangeStart.value()
+        configuration.cut_last_n_points = self.ui.rangeEnd.value()
 
-        self.main_window.configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
-        self.main_window.configuration.use_dangle = self.ui.trustDANGLE.isChecked()
-        self.main_window.configuration.set_direct_pixel = self.ui.set_dirpix_checkbox.isChecked()
-        self.main_window.configuration.set_direct_angle_offset = self.ui.set_dangle0_checkbox.isChecked()
-        self.main_window.configuration.direct_pixel_overwrite = self.ui.directPixelOverwrite.value()
-        self.main_window.configuration.direct_angle_offset_overwrite = self.ui.dangle0Overwrite.value()
+        configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
+        configuration.use_dangle = self.ui.trustDANGLE.isChecked()
+        configuration.set_direct_pixel = self.ui.set_dirpix_checkbox.isChecked()
+        configuration.set_direct_angle_offset = self.ui.set_dangle0_checkbox.isChecked()
+        configuration.direct_pixel_overwrite = self.ui.directPixelOverwrite.value()
+        configuration.direct_angle_offset_overwrite = self.ui.dangle0Overwrite.value()
 
         # UI elements
-        self.main_window.configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
-        self.main_window.configuration.x_wl_map = self.ui.xLamda.isChecked()
-        self.main_window.configuration.angle_map = self.ui.tthPhi.isChecked()
-        self.main_window.configuration.log_1d = self.ui.logarithmic_y.isChecked()
-        self.main_window.configuration.log_2d = self.ui.logarithmic_colorscale.isChecked()
+        configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
+        configuration.x_wl_map = self.ui.xLamda.isChecked()
+        configuration.angle_map = self.ui.tthPhi.isChecked()
+        configuration.log_1d = self.ui.logarithmic_y.isChecked()
+        configuration.log_2d = self.ui.logarithmic_colorscale.isChecked()
 
         # Make the changes persistent
-        self.main_window.configuration.to_q_settings(self.main_window.settings)
+        configuration.to_q_settings(self.main_window.settings)
+        return configuration
 
-    def populate_from_configuration(self):
+    def populate_from_configuration(self, configuration=None):
         """
             Set reduction options in UI, usually after loading
             a reduced data set.
         """
-        self.ui.eventTofBins.setValue(self.main_window.configuration.tof_bins)
-        self.ui.eventBinMode.setCurrentIndex(self.main_window.configuration.tof_bin_type)
-        self.ui.use_roi_checkbox.setChecked(self.main_window.configuration.use_roi)
-        self.ui.fit_within_roi_checkbox.setChecked(self.main_window.configuration.update_peak_range)
-        self.ui.use_bck_roi_checkbox.setChecked(self.main_window.configuration.use_roi_bck)
+        if configuration is None:
+            configuration = Configuration(self.main_window.settings)
 
-        # Default ranges, using the current values
-        x_pos = (self.main_window.configuration.peak_roi[1] \
-                 + self.main_window.configuration.peak_roi[0]) / 2.0
-        x_width = (self.main_window.configuration.peak_roi[1] \
-                   - self.main_window.configuration.peak_roi[0])
+        self.ui.eventTofBins.setValue(configuration.tof_bins)
+        self.ui.eventBinMode.setCurrentIndex(configuration.tof_bin_type)
+        self.ui.use_roi_checkbox.setChecked(configuration.use_roi)
+        self.ui.fit_within_roi_checkbox.setChecked(configuration.update_peak_range)
+        self.ui.use_bck_roi_checkbox.setChecked(configuration.use_roi_bck)
 
-        y_pos = (self.main_window.configuration.low_res_roi[1] \
-                 + self.main_window.configuration.low_res_roi[0]) / 2.0
-        y_width = (self.main_window.configuration.low_res_roi[1] \
-                   - self.main_window.configuration.low_res_roi[0])
+        self.ui.actionAutomaticXPeak.setChecked(not configuration.force_peak_roi)
+        self.ui.actionAutoYLimits.setChecked(not configuration.force_low_res_roi)
 
-        bck_pos = (self.main_window.configuration.bck_roi[1] \
-                   + self.main_window.configuration.bck_roi[0]) / 2.0
-        bck_width = (self.main_window.configuration.bck_roi[1] \
-                     - self.main_window.configuration.bck_roi[0])
+        # Update reduction parameters
+        self.ui.refXPos.setValue(configuration.peak_position)
+        self.ui.refXWidth.setValue(configuration.peak_width)
 
-        self.ui.actionAutomaticXPeak.setChecked(not self.main_window.configuration.force_peak_roi)
-        self.ui.actionAutoYLimits.setChecked(not self.main_window.configuration.force_low_res_roi)
+        self.ui.refYPos.setValue(configuration.low_res_position)
+        self.ui.refYWidth.setValue(configuration.low_res_width)
 
-        self.ui.refXPos.setValue(x_pos)
-        self.ui.refXWidth.setValue(x_width)
-        self.ui.refYPos.setValue(y_pos)
-        self.ui.refYWidth.setValue(y_width)
-        self.ui.bgCenter.setValue(bck_pos)
-        self.ui.bgWidth.setValue(bck_width)
+        self.ui.bgCenter.setValue(configuration.bck_position)
+        self.ui.bgWidth.setValue(configuration.bck_width)
 
         # Use background on each side of the peak
-        self.ui.use_side_bck_checkbox.setChecked(self.main_window.configuration.use_tight_bck)
-        self.ui.side_bck_width.setValue(self.main_window.configuration.bck_offset)
+        self.ui.use_side_bck_checkbox.setChecked(configuration.use_tight_bck)
+        self.ui.side_bck_width.setValue(configuration.bck_offset)
 
         # Subtract background
-        self.ui.bgActive.setChecked(self.main_window.configuration.subtract_background)
+        self.ui.bgActive.setChecked(configuration.subtract_background)
         # Scaling factor
         try:
-            scale = math.log10(self.main_window.configuration.scaling_factor)
+            scale = math.log10(configuration.scaling_factor)
         except:
             scale = 0.0
         self.ui.refScale.setValue(scale)
         # Cut first and last points
-        self.ui.rangeStart.setValue(self.main_window.configuration.cut_first_n_points)
-        self.ui.rangeEnd.setValue(self.main_window.configuration.cut_last_n_points)
+        self.ui.rangeStart.setValue(configuration.cut_first_n_points)
+        self.ui.rangeEnd.setValue(configuration.cut_last_n_points)
 
-        self.ui.fanReflectivity.setChecked(self.main_window.configuration.use_constant_q)
-        self.ui.trustDANGLE.setChecked(self.main_window.configuration.use_dangle)
-        self.ui.set_dirpix_checkbox.setChecked(self.main_window.configuration.set_direct_pixel)
-        self.ui.set_dangle0_checkbox.setChecked(self.main_window.configuration.set_direct_angle_offset)
-        self.ui.directPixelOverwrite.setValue(self.main_window.configuration.direct_pixel_overwrite)
-        self.ui.dangle0Overwrite.setValue(self.main_window.configuration.direct_angle_offset_overwrite)
+        self.ui.fanReflectivity.setChecked(configuration.use_constant_q)
+        self.ui.trustDANGLE.setChecked(configuration.use_dangle)
+        self.ui.set_dirpix_checkbox.setChecked(configuration.set_direct_pixel)
+        self.ui.set_dangle0_checkbox.setChecked(configuration.set_direct_angle_offset)
+        self.ui.directPixelOverwrite.setValue(configuration.direct_pixel_overwrite)
+        self.ui.dangle0Overwrite.setValue(configuration.direct_angle_offset_overwrite)
 
         # UI elements
-        self.ui.normalizeXTof.setChecked(self.main_window.configuration.normalize_x_tof)
-        self.ui.xLamda.setChecked(self.main_window.configuration.x_wl_map)
-        self.ui.tthPhi.setChecked(self.main_window.configuration.angle_map)
-        self.ui.logarithmic_y.setChecked(self.main_window.configuration.log_1d)
-        self.ui.logarithmic_colorscale.setChecked(self.main_window.configuration.log_2d)
+        self.ui.normalizeXTof.setChecked(configuration.normalize_x_tof)
+        self.ui.xLamda.setChecked(configuration.x_wl_map)
+        self.ui.tthPhi.setChecked(configuration.angle_map)
+        self.ui.logarithmic_y.setChecked(configuration.log_1d)
+        self.ui.logarithmic_colorscale.setChecked(configuration.log_2d)

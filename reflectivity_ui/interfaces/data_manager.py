@@ -3,11 +3,9 @@
     and manages the data cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import sys
 import os
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
-from numpy.compat.setup import configuration
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -59,6 +57,12 @@ class DataManager(object):
             self.active_channel = self.data_sets[channels[0]]
         return False
 
+    def is_active(self, data_set):
+        """
+            Returns True of the given data set is the active data set.
+        """
+        return data_set == self._nexus_data
+
     def is_active_data_compatible(self):
         """
             Determine whether the currently active data set is compatible
@@ -67,6 +71,15 @@ class DataManager(object):
         logging.error(str(self.reduction_states))
         logging.error(str(self.data_sets.keys()))
         return self.reduction_states == self.data_sets.keys() or self.reduction_list == []
+
+    def find_active_data_id(self):
+        """
+            Update the reduction table with the active data as appropriate
+        """
+        for i in range(len(self.reduction_list)):
+            if self._nexus_data == self.reduction_list[i]:
+                return i
+        return None
 
     def add_active_to_reduction(self):
         """
@@ -154,6 +167,17 @@ class DataManager(object):
         logging.error("Nothing to load for file %s", file_path)
         return None
 
+    def update_configuration(self, configuration, active_only=False, nexus_data=None):
+        """
+            Update configuration
+        """
+        if active_only:
+            self.active_channel.update_configuration(configuration)
+        elif nexus_data is not None:
+            nexus_data.update_configuration(configuration)
+        else:
+            self._nexus_data.update_configuration(configuration)
+
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None):
         """
             Calculater reflectivity using the current configuration
@@ -185,12 +209,10 @@ class DataManager(object):
             if direct_beam is None:
                 logging.error("The specified direct beam is not available: skipping")
 
-        if nexus_data is not None:
-            nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
-        elif active_only:
+        if active_only:
             self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
         else:
-            self._nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
+            nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
 
     def find_best_direct_beam(self):
         """

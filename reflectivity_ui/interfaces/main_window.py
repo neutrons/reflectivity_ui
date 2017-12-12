@@ -11,10 +11,8 @@ import copy
 from PyQt5 import QtGui, QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_main_window
 
-from .configuration import Configuration
-
 from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
-from reflectivity_ui.interfaces.event_handlers.file_handler import FileHandler
+from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from .data_manager import DataManager
 from .plotting import PlotManager
 
@@ -42,7 +40,6 @@ class MainWindow(QtWidgets.QMainWindow,
 
         # Application settings
         self.settings = QtCore.QSettings('.refredm')
-        self.configuration = Configuration(self.settings)
 
         # Object managers
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
@@ -52,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow,
 
         # Event handlers
         self.plot_handler = PlotHandler(self)
-        self.file_handler = FileHandler(self)
+        self.file_handler = MainHandler(self)
 
         # Initialization for specific instrument
         # Retrieve configuration from config and enable/disable features
@@ -66,13 +63,6 @@ class MainWindow(QtWidgets.QMainWindow,
         self.initiate_projection_plot.connect(self.plot_manager.plot_projections)
 
         self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
-        #self.initiate_reflectivity_plot.connect(self.updateStateFile)
-
-    def update_configuration(self, config):
-        """
-            Load a configuration
-        """
-        self.configuration = copy.deepcopy(config)
 
     def closeEvent(self, event):
         self.file_handler.get_configuration()
@@ -202,16 +192,25 @@ class MainWindow(QtWidgets.QMainWindow,
             Sets up a trigger to replot the reflectivity with a delay so
             a subsequent change can occur without several replots.
         """
-        self.plot_handler.change_region_values()
         if self.auto_change_active:
             return
-        if self.data_manager.active_channel is not None:
-            try:
-                self.file_handler.get_configuration()
-                self.data_manager.calculate_reflectivity(configuration=self.configuration, active_only=True)
+
+        if self.file_handler.check_region_values_changed():
+            configuration = self.file_handler.get_configuration()
+
+            if self.data_manager.active_channel is not None:
+                active_only = not self.ui.action_use_common_ranges.isChecked()
+                self.data_manager.update_configuration(configuration=configuration, active_only=active_only)
+                self.plot_handler.change_region_values()
+                idx = self.data_manager.find_active_data_id()
+                if idx is not None:
+                    self.file_handler.update_reduction_table(idx, self.data_manager.active_channel)
+                QtWidgets.QApplication.instance().processEvents()
+                try:
+                    self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
+                except:
+                    logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
                 self.plot_manager.plot_refl()
-            except:
-                logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
 
     def reductionTableChanged(self, item):
         '''
