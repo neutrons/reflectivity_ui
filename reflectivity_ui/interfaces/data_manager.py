@@ -60,6 +60,7 @@ class DataManager(object):
     def is_active(self, data_set):
         """
             Returns True of the given data set is the active data set.
+            :param NexusData: data set object
         """
         return data_set == self._nexus_data
 
@@ -68,18 +69,43 @@ class DataManager(object):
             Determine whether the currently active data set is compatible
             with the data sets that are currently part of the reduction list.
         """
-        logging.error(str(self.reduction_states))
-        logging.error(str(self.data_sets.keys()))
         return self.reduction_states == self.data_sets.keys() or self.reduction_list == []
+
+    def find_data_in_reduction_list(self, nexus_data):
+        """
+            Look for the given data in the reduction list.
+            Return the index within the reduction list or none.
+            :param NexusData: data set object
+        """
+        for i in range(len(self.reduction_list)):
+            if nexus_data == self.reduction_list[i]:
+                return i
+        return None
+
+    def find_data_in_direct_beam_list(self, nexus_data):
+        """
+            Look for the given data in the direct beam list.
+            Return the index within the direct beam list or none.
+            :param NexusData: data set object
+        """
+        for i in range(len(self.direct_beam_list)):
+            if nexus_data == self.direct_beam_list[i]:
+                return i
+        return None
 
     def find_active_data_id(self):
         """
-            Update the reduction table with the active data as appropriate
+            Look for the active data in the reduction list.
+            Return the index within the reduction list or none.
         """
-        for i in range(len(self.reduction_list)):
-            if self._nexus_data == self.reduction_list[i]:
-                return i
-        return None
+        return self.find_data_in_reduction_list(self._nexus_data)
+
+    def find_active_direct_beam_id(self):
+        """
+            Look for the active data in the direct beam list.
+            Return the index within the direct beam list or none.
+        """
+        return self.find_data_in_reduction_list(self._nexus_data)
 
     def add_active_to_reduction(self):
         """
@@ -127,13 +153,22 @@ class DataManager(object):
         """
             Load a data file
             :param str file_path: file path
+            :param Configuration configuration: configuration to use to load the data
+            :param bool force: it True, existing data will be replaced if it exists.
         """
         nexus_data = None
         is_from_cache = False
+        reduction_list_id = None
+        direct_beam_list_id = None
+
         # Check whether the file is in cache
         for i in range(len(self._cache)):
             if self._cache[i].file_path == file_path:
                 if force:
+                    # Check whether the data is in the reduction list before
+                    # removing it.
+                    reduction_list_id = self.find_data_in_reduction_list(self._cache[i])
+                    direct_beam_list_id = self.find_data_in_direct_beam_list(self._cache[i])
                     self._cache.pop(i)
                 else:
                     nexus_data = self._cache[i]
@@ -151,13 +186,18 @@ class DataManager(object):
             self.current_directory = directory
             self.current_file_name = file_name
 
-            #TODO: Find suitable direct beam
+            # Find suitable direct beam
             if configuration.match_direct_beam:
                 self.find_best_direct_beam()
 
             # If we didn't get this data set from our cache,
             # then add it and compute its reflectivity.
             if not is_from_cache:
+                # Replace reduction and normalization entries as needed
+                if reduction_list_id is not None:
+                    self.reduction_list[reduction_list_id] = nexus_data
+                if direct_beam_list_id is not None:
+                    self.direct_beam_list[direct_beam_list_id] = nexus_data
                 # Compute reflectivity
                 nexus_data.calculate_reflectivity()
                 while len(self._cache)>=self.MAX_CACHE:
@@ -197,7 +237,7 @@ class DataManager(object):
             return
 
         data_xs = nexus_data.cross_sections[data_keys[0]]
-        
+
         if data_xs.configuration is not None and data_xs.configuration.normalization is not None:
             for item in self.direct_beam_list:
                 if item.number == data_xs.configuration.normalization:
@@ -216,10 +256,11 @@ class DataManager(object):
 
     def find_best_direct_beam(self):
         """
+            Find the best direct beam in the direct beam list for the active data
+            Returns a run number.
         """
         closest = None
         for item in self.direct_beam_list:
-            logging.error("DB? %s", item.number)
             channel = item.cross_sections[item.cross_sections.keys()[0]]
             if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel):
                 if closest is None:
@@ -230,7 +271,6 @@ class DataManager(object):
         if closest is None:
             # If we didn't find a direct beam, try with just the wavelength
             for item in self.direct_beam_list:
-                logging.error("DB? %s", item.number)
                 channel = item.cross_sections[item.cross_sections.keys()[0]]
                 if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel, skip_slits=True):
                     if closest is None:
@@ -238,5 +278,5 @@ class DataManager(object):
                     elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
                         closest = item.number
         self._nexus_data.set_parameter("normalization", closest)
-        logging.error("Found direct beam: %s", closest)
+        logging.error("Found direct beam? %s", closest)
         return closest

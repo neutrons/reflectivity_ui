@@ -48,8 +48,14 @@ class MainHandler(object):
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force)
             self.file_loaded()
+            # If we a reloading a data set, it might already exist in the
+            # reduction table. Let's link those entries so we don't break
+            # the expected behavior.
+            if force:
+                idx = self._data_manager.find_active_data_id()
+                if idx is not None:
+                    self.update_reduction_table(idx, self._data_manager.active_channel)
         except:
-            raise
             logging.error("Error loading file: %s", sys.exc_value)
 
     def file_loaded(self):
@@ -366,7 +372,6 @@ class MainHandler(object):
 
         self._data_manager.calculate_reflectivity(nexus_data=refl)
         self.main_window.initiate_reflectivity_plot.emit(True)
-
 
     def add_direct_beam(self, do_plot=True, do_remove=True):
         """
