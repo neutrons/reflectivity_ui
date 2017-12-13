@@ -44,6 +44,26 @@ class DataManager(object):
     def clear_cache(self):
         self._cache = []
 
+    def set_active_data_from_reduction_list(self, index):
+        """
+            Set a data set in the reduction list as the active
+            data set according to its index.
+            :param int index: index in the reduction list
+        """
+        if index < len(self.reduction_list):
+            self._nexus_data = self.reduction_list[index]
+            self.set_channel(0)
+
+    def set_active_data_from_direct_beam_list(self, index):
+        """
+            Set a data set in the direct beam list as the active
+            data set according to its index.
+            :param int index: index in the direct beam list
+        """
+        if index < len(self.direct_beam_list):
+            self._nexus_data = self.direct_beam_list[index]
+            self.set_channel(0)
+
     def set_channel(self, index):
         """
             Set the current channel to the specified index, or zero

@@ -1602,6 +1602,31 @@
                     </property>
                    </spacer>
                   </item>
+                  <item>
+                   <widget class="QLabel" name="is_direct_beam_label">
+                    <property name="minimumSize">
+                     <size>
+                      <width>50</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
+                    </property>
+                    <property name="statusTip">
+                     <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </item>
                 <item>
@@ -1763,7 +1788,7 @@
                 <item>
                  <widget class="QTabWidget" name="tabWidget">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>1</number>
                   </property>
                   <widget class="QWidget" name="tab">
                    <attribute name="title">
@@ -1794,7 +1819,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
@@ -4346,6 +4371,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>reductionTable</sender>
+   <signal>cellActivated(int,int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>reduction_cell_activated(int,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>885</x>
+     <y>663</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>786</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>normalizeTable</sender>
+   <signal>cellActivated(int,int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>direct_beam_cell_activated(int,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>885</x>
+     <y>663</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>786</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -4389,5 +4446,7 @@
   <slot>live_open()</slot>
   <slot>open_logfile_viewer()</slot>
   <slot>match_direct_beam_clicked()</slot>
+  <slot>reduction_cell_activated(int,int)</slot>
+  <slot>direct_beam_cell_activated(int,int)</slot>
  </slots>
 </ui>

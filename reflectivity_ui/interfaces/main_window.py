@@ -218,6 +218,28 @@ class MainWindow(QtWidgets.QMainWindow,
         '''
         self.file_handler.reduction_table_changed(item)
 
+    def reduction_cell_activated(self, row, col):
+        """
+            Select a data set when the user double-clicks on a run number (col 0).
+            in the reduction table.
+            :param int row: row index
+            :param int col: column index
+        """
+        if col == 0:
+            self.data_manager.set_active_data_from_reduction_list(row)
+            self.file_loaded()
+
+    def direct_beam_cell_activated(self, row, col):
+        """
+            Select a data set when the user double-clicks on a run number (col 0).
+            in the direct beam table.
+            :param int row: row index
+            :param int col: column index
+        """
+        if col == 0:
+            self.data_manager.set_active_data_from_direct_beam_list(row)
+            self.file_loaded()
+
     def replotProjections(self):
         self.initiate_projection_plot.emit(True)
         self.initiate_reflectivity_plot.emit(True)

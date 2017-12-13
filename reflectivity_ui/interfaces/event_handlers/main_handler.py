@@ -95,6 +95,7 @@ class MainHandler(object):
         """
             Write file metadata to the labels in the overview tab.
         """
+        self._pause_interactions = True
         d=self._data_manager.active_channel
         self.populate_from_configuration(d.configuration)
         self.main_window.initiate_projection_plot.emit(False)
@@ -126,6 +127,12 @@ class MainHandler(object):
                                        d.number, d.experiment,
                                        d.measurement_type, d.name))
 
+        # Update direct beam indicator
+        if d.is_direct_beam:
+            self.ui.is_direct_beam_label.setText(u"Direct beam")
+        else:
+            self.ui.is_direct_beam_label.setText(u"")
+
         # TODO: this should update when we change the peak position?
         self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
         #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
@@ -133,6 +140,27 @@ class MainHandler(object):
         self.ui.roi_used_label.setText(u"%s" % d.use_roi_actual)
         self.ui.roi_peak_label.setText(u"%s" % str(d.meta_data_roi_peak))
         self.ui.roi_bck_label.setText(u"%s" % str(d.meta_data_roi_bck))
+
+        # If we update an entry, it's because that data is currently active.
+        # Highlight it and un-highlight the other ones.
+        idx = self._data_manager.find_active_data_id()
+        for i in range(self.ui.reductionTable.rowCount()):
+            item = self.ui.reductionTable.item(i, 0)
+            if item is not None:
+                if i == idx:
+                    item.setBackground(QtGui.QColor(246, 213, 16))
+                else:
+                    item.setBackground(QtGui.QColor(255, 255, 255))
+
+        idx = self._data_manager.find_active_direct_beam_id()
+        for i in range(self.ui.normalizeTable.rowCount()):
+            item = self.ui.normalizeTable.item(i, 0)
+            if item is not None:
+                if i == idx:
+                    item.setBackground(QtGui.QColor(246, 213, 16))
+                else:
+                    item.setBackground(QtGui.QColor(255, 255, 255))
+        self._pause_interactions = False
 
     def update_file_list(self, file_path=None):
         """
@@ -269,7 +297,7 @@ class MainHandler(object):
         """
         self._pause_interactions = True
         item=QtWidgets.QTableWidgetItem(str(d.number))
-        item.setBackground(QtGui.QColor(200, 200, 200))
+        item.setBackground(QtGui.QColor(246, 213, 16))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
         self.ui.reductionTable.setItem(idx, 0, item)
         self.ui.reductionTable.setItem(idx, 1,
@@ -339,7 +367,7 @@ class MainHandler(object):
 
     def reduction_table_changed(self, item):
         '''
-        Perform action upon change in data reduction list.
+            Perform action upon change in data reduction list.
         '''
         if self._pause_interactions:
             return
@@ -389,7 +417,7 @@ class MainHandler(object):
             self.ui.normalizeTable.insertRow(idx)
             item=QtWidgets.QTableWidgetItem(str(d.number))
             item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
-            item.setBackground(QtGui.QColor(200, 200, 200))
+            item.setBackground(QtGui.QColor(246, 213, 16))
             self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
             wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
             self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(wl))
@@ -410,7 +438,6 @@ class MainHandler(object):
         # We will need to check that no scattering data set is using it.
         elif do_remove:
             idx = self._data_manager.remove_active_from_normalization()
-            logging.error("IDX %s", idx)
             if idx >= 0:
                 self.ui.normalizeTable.removeRow(idx)
 
