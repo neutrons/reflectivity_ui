@@ -126,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         item=self.ui.file_list.currentItem()
         name=unicode(item.text())
+        QtWidgets.QApplication.instance().processEvents()
         self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
 
     def reload_file(self):
@@ -202,16 +203,10 @@ class MainWindow(QtWidgets.QMainWindow,
                 active_only = not self.ui.action_use_common_ranges.isChecked()
                 self.data_manager.update_configuration(configuration=configuration, active_only=active_only)
                 self.plot_handler.change_region_values()
+                self.file_handler.update_calculated_data()
 
-                # Update the reduction table if this data set is in it
-                idx = self.data_manager.find_active_data_id()
-                if idx is not None:
-                    self.file_handler.update_reduction_table(idx, self.data_manager.active_channel)
-
-                # Update the direct beam table if this data set is in it
-                idx = self.data_manager.find_active_direct_beam_id()
-                if idx is not None:
-                    self.file_handler.update_direct_beam_table(idx, self.data_manager.active_channel)
+                # Update the reduction/direct beam tables if this data set is in it
+                self.file_handler.update_tables()
 
                 QtWidgets.QApplication.instance().processEvents()
                 try:
@@ -236,6 +231,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if col == 0:
             self.data_manager.set_active_data_from_reduction_list(row)
             self.file_loaded()
+            self.file_handler.active_data_changed()
 
     def direct_beam_cell_activated(self, row, col):
         """
@@ -247,6 +243,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if col == 0:
             self.data_manager.set_active_data_from_direct_beam_list(row)
             self.file_loaded()
+            self.file_handler.active_data_changed()
 
     def replotProjections(self):
         self.initiate_projection_plot.emit(True)
@@ -260,14 +257,22 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_handler.clear_reflectivity()
 
     def setNorm(self, do_plot=True, do_remove=True):
-        self.file_handler.add_direct_beam(do_plot, do_remove)
+        self.file_handler.add_direct_beam(do_remove)
 
     def clearNormList(self):
         self.file_handler.clear_direct_beams()
 
     def match_direct_beam_clicked(self):
-        self.data_manager.find_best_direct_beam()
-        self.initiate_reflectivity_plot.emit(True)
+        """
+            Find the best direct beam run for the activate data set
+            and compute the reflectivity as needed.
+        """
+        if self.data_manager.find_best_direct_beam():
+            self.file_handler.update_tables()
+            self.file_handler.update_calculated_data()
+            QtWidgets.QApplication.instance().processEvents()
+            self.data_manager.calculate_reflectivity()
+            self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):
         self.file_handler.open_run_number()

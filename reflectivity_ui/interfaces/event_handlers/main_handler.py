@@ -48,13 +48,6 @@ class MainHandler(object):
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force)
             self.file_loaded()
-            # If we a reloading a data set, it might already exist in the
-            # reduction table. Let's link those entries so we don't break
-            # the expected behavior.
-            if force:
-                idx = self._data_manager.find_active_data_id()
-                if idx is not None:
-                    self.update_reduction_table(idx, self._data_manager.active_channel)
         except:
             logging.error("Error loading file: %s", sys.exc_value)
 
@@ -78,22 +71,48 @@ class MainHandler(object):
         for i in range(len(channels), 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
 
-        if self._data_manager.active_channel is not None \
-                and self._data_manager.active_channel.configuration.normalization is not None:
-            self.ui.matched_direct_beam_label.setText(u"%s" % self._data_manager.active_channel.configuration.normalization)
-        else:
-            self.ui.matched_direct_beam_label.setText(u"None")
-        self.main_window.initiate_reflectivity_plot.emit(False)
+        # Update reduction tables
+        self.update_tables()
 
-        # Update UI
+        self.main_window.initiate_reflectivity_plot.emit(False)
         self.main_window.file_loaded_signal.emit()
         self.main_window.initiate_projection_plot.emit(False)
 
         self.cache_indicator.setText('Cache Size: %.1fMB'%(self._data_manager.get_cachesize()/1024.**2))
 
+    def update_tables(self):
+        """
+            Update a data set that may be in the reduction table or the
+            direct beam table.
+        """
+        # Update the reduction table if this data set is in it
+        idx = self._data_manager.find_active_data_id()
+        if idx is not None:
+            self.update_reduction_table(idx, self._data_manager.active_channel)
+
+        # Update the direct beam table if this data set is in it
+        idx = self._data_manager.find_active_direct_beam_id()
+        if idx is not None:
+            self.update_direct_beam_table(idx, self._data_manager.active_channel)
+
+    def update_calculated_data(self):
+        """
+            Update the calculated entries in the overview tab.
+            We should call this after the peak ranges change, or
+            after a change is made that will affect the displayed results.
+        """
+        d=self._data_manager.active_channel
+        self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
+        #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
+
+        if d.configuration.normalization is not None:
+            self.ui.matched_direct_beam_label.setText(u"%s" % d.configuration.normalization)
+        else:
+            self.ui.matched_direct_beam_label.setText(u"None")
+
     def update_info(self):
         """
-            Write file metadata to the labels in the overview tab.
+            Update metadata shown in the overview tab.
         """
         self._pause_interactions = True
         d=self._data_manager.active_channel
@@ -133,33 +152,15 @@ class MainHandler(object):
         else:
             self.ui.is_direct_beam_label.setText(u"")
 
-        # TODO: this should update when we change the peak position?
-        self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
-        #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
+        # Update the calculated data
+        self.update_calculated_data()
 
         self.ui.roi_used_label.setText(u"%s" % d.use_roi_actual)
         self.ui.roi_peak_label.setText(u"%s" % str(d.meta_data_roi_peak))
         self.ui.roi_bck_label.setText(u"%s" % str(d.meta_data_roi_bck))
 
-        # If we update an entry, it's because that data is currently active.
-        # Highlight it and un-highlight the other ones.
-        idx = self._data_manager.find_active_data_id()
-        for i in range(self.ui.reductionTable.rowCount()):
-            item = self.ui.reductionTable.item(i, 0)
-            if item is not None:
-                if i == idx:
-                    item.setBackground(QtGui.QColor(246, 213, 16))
-                else:
-                    item.setBackground(QtGui.QColor(255, 255, 255))
+        self.active_data_changed()
 
-        idx = self._data_manager.find_active_direct_beam_id()
-        for i in range(self.ui.normalizeTable.rowCount()):
-            item = self.ui.normalizeTable.item(i, 0)
-            if item is not None:
-                if i == idx:
-                    item.setBackground(QtGui.QColor(246, 213, 16))
-                else:
-                    item.setBackground(QtGui.QColor(255, 255, 255))
         self._pause_interactions = False
 
     def update_file_list(self, file_path=None):
@@ -262,7 +263,7 @@ class MainHandler(object):
                 i += 1
         table.resizeColumnsToContents()
 
-    def add_reflectivity(self, do_plot=True):
+    def add_reflectivity(self):
         """
             Collect information about the current extraction settings and store them
             in the list of reduction items.
@@ -283,12 +284,11 @@ class MainHandler(object):
 
         self._pause_interactions = True
         self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
-        idx=len(self._data_manager.reduction_list)-1
 
-        self.update_reduction_table(idx, self._data_manager.active_channel)
-        # Emit signals
-        if do_plot:
-            self.main_window.initiate_reflectivity_plot.emit(True)
+        # Update the reduction and direct beam tables
+        self.update_tables()
+
+        self.main_window.initiate_reflectivity_plot.emit(True)
         self._pause_interactions = False
 
     def update_reduction_table(self, idx, d):
@@ -297,7 +297,10 @@ class MainHandler(object):
         """
         self._pause_interactions = True
         item=QtWidgets.QTableWidgetItem(str(d.number))
-        item.setBackground(QtGui.QColor(246, 213, 16))
+        if d == self._data_manager.active_channel:
+            item.setBackground(QtGui.QColor(246, 213, 16))
+        else:
+            item.setBackground(QtGui.QColor(255, 255, 255))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
         self.ui.reductionTable.setItem(idx, 0, item)
         self.ui.reductionTable.setItem(idx, 1,
@@ -381,7 +384,7 @@ class MainHandler(object):
                 'peak_position', 'peak_width', 'low_res_position', 'low_res_width',
                 'bck_position', 'bck_width', 'direct_pixel', 'scattering_angle', 'normalization']
 
-        # update settings from selected option
+        # Update settings from selected option
         if column in [1, 4, 5, 6, 7, 8, 9, 10]:
             refl.set_parameter(keys[column], float(item.text()))
         elif column in [2, 3, 12]:
@@ -389,21 +392,26 @@ class MainHandler(object):
         elif column == 12:
             refl.set_parameter(keys[column],item.text())
 
+        # Update calculated data
+        refl.update_calculated_values()
+
         # If the changed data set is the active data, also change the UI
+        #TODO: why do ew need this?
         if self._data_manager.is_active(refl):
             self.main_window.auto_change_active=True
             self.update_info()
             self.main_window.auto_change_active=False
 
         # Update the direct beam table if this data set is in it
-        idx = self._data_manager.find_active_direct_beam_id()
+        idx = self._data_manager.find_data_in_direct_beam_list(refl)
         if idx is not None:
-            self.update_direct_beam_table(idx, self._data_manager.active_channel)
+            channels = refl.cross_sections.keys()
+            self.update_direct_beam_table(idx, refl.cross_sections[channels[0]])
 
         self._data_manager.calculate_reflectivity(nexus_data=refl)
         self.main_window.initiate_reflectivity_plot.emit(True)
 
-    def add_direct_beam(self, do_plot=True, do_remove=True):
+    def add_direct_beam(self, do_remove=True):
         """
             Add / remove dataset to the available normalizations or clear the normalization list.
         """
@@ -412,15 +420,10 @@ class MainHandler(object):
             config = self.get_configuration()
             self._data_manager.update_configuration(configuration=config, active_only=False)
 
-        # If the data set is not already in the list, add it.
-        was_added = self._data_manager.add_active_to_normalization()
-        if was_added:
-            idx=len(self._data_manager.direct_beam_list)-1
-            self.ui.normalizeTable.insertRow(idx)
-            # Pick the first cross section as reference.There will likely be only one
-            # for a direct beam data set.
-            channels = self._data_manager.data_sets.keys()
-            self.update_direct_beam_table(idx, self._data_manager.data_sets[channels[0]])
+        # Verify that the new data is consistent with existing data in the table
+        if self._data_manager.add_active_to_normalization():
+            self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
+            self.update_tables()
 
         # If the data set is already in the list, remove it.
         # We will need to check that no scattering data set is using it.
@@ -432,8 +435,7 @@ class MainHandler(object):
         direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
         self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
 
-        if do_plot:
-            self.main_window.initiate_reflectivity_plot.emit(False)
+        self.main_window.initiate_reflectivity_plot.emit(False)
 
     def update_direct_beam_table(self, idx, d):
         """
@@ -444,7 +446,11 @@ class MainHandler(object):
         self._pause_interactions = True
         item=QtWidgets.QTableWidgetItem(str(d.number))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
-        item.setBackground(QtGui.QColor(246, 213, 16))
+        if d == self._data_manager.active_channel:
+            item.setBackground(QtGui.QColor(246, 213, 16))
+        else:
+            item.setBackground(QtGui.QColor(255, 255, 255))
+
         self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
         wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
         self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(wl))
@@ -461,6 +467,30 @@ class MainHandler(object):
         self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(item))
         self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
         self._pause_interactions = False
+
+    def active_data_changed(self):
+        """
+            Actions to be taken once the active data set has changed
+        """
+        # If we update an entry, it's because that data is currently active.
+        # Highlight it and un-highlight the other ones.
+        idx = self._data_manager.find_active_data_id()
+        for i in range(self.ui.reductionTable.rowCount()):
+            item = self.ui.reductionTable.item(i, 0)
+            if item is not None:
+                if i == idx:
+                    item.setBackground(QtGui.QColor(246, 213, 16))
+                else:
+                    item.setBackground(QtGui.QColor(255, 255, 255))
+
+        idx = self._data_manager.find_active_direct_beam_id()
+        for i in range(self.ui.normalizeTable.rowCount()):
+            item = self.ui.normalizeTable.item(i, 0)
+            if item is not None:
+                if i == idx:
+                    item.setBackground(QtGui.QColor(246, 213, 16))
+                else:
+                    item.setBackground(QtGui.QColor(255, 255, 255))
 
     def check_region_values_changed(self):
         """

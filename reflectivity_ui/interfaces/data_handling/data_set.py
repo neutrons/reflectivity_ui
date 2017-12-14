@@ -78,12 +78,16 @@ class NexusData(object):
             Loop through the cross-section data sets and update
             a parameter.
         """
+        has_changed = False
         try:
             for xs in self.cross_sections:
                 if hasattr(self.cross_sections[xs].configuration, param):
-                    setattr(self.cross_sections[xs].configuration, param, value)
+                    if not getattr(self.cross_sections[xs].configuration, param) == value:
+                        setattr(self.cross_sections[xs].configuration, param, value)
+                        has_changed = True
         except:
             logging.error("Could not set parameter %s %s\n  %s", param, value, sys.exc_value)
+        return has_changed
 
     def calculate_reflectivity(self, direct_beam=None, configuration=None):
         """
@@ -106,6 +110,13 @@ class NexusData(object):
                 self.cross_sections[xs].update_configuration(configuration)
             except:
                 logging.error("Could not update configuration for %s\n  %s", xs, sys.exc_value)
+
+    def update_calculated_values(self):
+        """
+            Loop through the cross-section data sets and update.
+        """
+        for xs in self.cross_sections:
+                self.cross_sections[xs].update_calculated_values()
 
     def filter_events(self):
         """
@@ -311,7 +322,6 @@ class CrossSectionData(object):
 
         self.meta_data_roi_peak = data_info.roi_peak
         self.meta_data_roi_bck = data_info.roi_background
-        logging.error(str(data_info.roi_peak))
 
         if not self.configuration.force_peak_roi:
             self.configuration.peak_roi = data_info.peak_range
@@ -328,10 +338,13 @@ class CrossSectionData(object):
         if self.configuration.set_direct_angle_offset:
             self.angle_offset = self.configuration.direct_angle_offset_overwrite
 
-        self.scattering_angle = self.configuration.instrument.scattering_angle(workspace,
-                                                                               self.configuration.peak_position,
-                                                                               self.direct_pixel,
-                                                                               self.angle_offset)
+        self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
+
+    def update_calculated_values(self):
+        """
+            Update parameters that are calculated from the configuration
+        """
+        self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
 
     def update_configuration(self, configuration):
         """
@@ -339,6 +352,7 @@ class CrossSectionData(object):
         """
         if configuration is not None:
             self.configuration = copy.deepcopy(configuration)
+            self.update_calculated_values()
 
     def reflectivity(self, direct_beam=None, configuration=None):
         """

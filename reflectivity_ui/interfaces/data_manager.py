@@ -125,7 +125,7 @@ class DataManager(object):
             Look for the active data in the direct beam list.
             Return the index within the direct beam list or none.
         """
-        return self.find_data_in_reduction_list(self._nexus_data)
+        return self.find_data_in_direct_beam_list(self._nexus_data)
 
     def add_active_to_reduction(self):
         """
@@ -278,6 +278,7 @@ class DataManager(object):
         """
             Find the best direct beam in the direct beam list for the active data
             Returns a run number.
+            Returns True if we have updated the data with a new normalization run.
         """
         closest = None
         for item in self.direct_beam_list:
@@ -297,6 +298,4 @@ class DataManager(object):
                         closest = item.number
                     elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
                         closest = item.number
-        self._nexus_data.set_parameter("normalization", closest)
-        logging.error("Found direct beam? %s", closest)
-        return closest
+        return self._nexus_data.set_parameter("normalization", closest)

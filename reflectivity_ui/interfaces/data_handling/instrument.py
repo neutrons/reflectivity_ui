@@ -56,7 +56,7 @@ class Instrument(object):
         return [tof_min, tof_max]
 
     @classmethod
-    def scattering_angle(cls, ws, peak_position=None, direct_pixel=None, angle_offset=None):
+    def scattering_angle(cls, ws, peak_position=None):
         """
             Determine the scattering angle in degrees
         """
@@ -68,6 +68,19 @@ class Instrument(object):
         peak_pos = peak_position if peak_position is not None else direct_beam_pix
         theta_d = (dangle - dangle0) / 2.0
         theta_d += ((direct_beam_pix - peak_pos) * cls.pixel_width) * 180.0 / math.pi / (2.0 * det_distance)
+        return theta_d
+
+    @classmethod
+    def scattering_angle_from_data(cls, data_object):
+        """
+            Compute the scattering angle from a CrossSectionData object, in degrees.
+            #TODO: this will go away once we keep the workspace
+
+            @param data_object: CrossSectionData object
+        """
+        theta_d = (data_object.dangle - data_object.dangle0) / 2.0
+        theta_d += ((data_object.dpix - data_object.configuration.peak_position) * cls.pixel_width) * 180.0 / math.pi / (2.0 * data_object.dist_sam_det)
+        theta_d += data_object.angle_offset
         return theta_d
 
     def check_direct_beam(self, ws, peak_position):
