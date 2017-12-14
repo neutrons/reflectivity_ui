@@ -202,9 +202,17 @@ class MainWindow(QtWidgets.QMainWindow,
                 active_only = not self.ui.action_use_common_ranges.isChecked()
                 self.data_manager.update_configuration(configuration=configuration, active_only=active_only)
                 self.plot_handler.change_region_values()
+
+                # Update the reduction table if this data set is in it
                 idx = self.data_manager.find_active_data_id()
                 if idx is not None:
                     self.file_handler.update_reduction_table(idx, self.data_manager.active_channel)
+
+                # Update the direct beam table if this data set is in it
+                idx = self.data_manager.find_active_direct_beam_id()
+                if idx is not None:
+                    self.file_handler.update_direct_beam_table(idx, self.data_manager.active_channel)
+
                 QtWidgets.QApplication.instance().processEvents()
                 try:
                     self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)

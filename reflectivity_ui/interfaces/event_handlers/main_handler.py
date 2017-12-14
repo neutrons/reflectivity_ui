@@ -362,9 +362,6 @@ class MainHandler(object):
         self.ui.reductionTable.removeRow(index)
         self.main_window.initiate_reflectivity_plot.emit(False)
 
-    def reflectivity_updated(self):
-        pass
-
     def reduction_table_changed(self, item):
         '''
             Perform action upon change in data reduction list.
@@ -398,6 +395,11 @@ class MainHandler(object):
             self.update_info()
             self.main_window.auto_change_active=False
 
+        # Update the direct beam table if this data set is in it
+        idx = self._data_manager.find_active_direct_beam_id()
+        if idx is not None:
+            self.update_direct_beam_table(idx, self._data_manager.active_channel)
+
         self._data_manager.calculate_reflectivity(nexus_data=refl)
         self.main_window.initiate_reflectivity_plot.emit(True)
 
@@ -405,34 +407,20 @@ class MainHandler(object):
         """
             Add / remove dataset to the available normalizations or clear the normalization list.
         """
-        # Pick the first cross section as reference.There will likely be only one
-        # for a direct beam data set.
-        channels = self._data_manager.data_sets.keys()
-        d = self._data_manager.data_sets[channels[0]]
+        # Update all cross-section parameters as needed.
+        if self.ui.action_use_common_ranges.isChecked():
+            config = self.get_configuration()
+            self._data_manager.update_configuration(configuration=config, active_only=False)
 
         # If the data set is not already in the list, add it.
         was_added = self._data_manager.add_active_to_normalization()
         if was_added:
             idx=len(self._data_manager.direct_beam_list)-1
             self.ui.normalizeTable.insertRow(idx)
-            item=QtWidgets.QTableWidgetItem(str(d.number))
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
-            item.setBackground(QtGui.QColor(246, 213, 16))
-            self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
-            wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
-            self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(wl))
-            item=QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
-            item.setBackground(QtGui.QColor(200, 200, 200))
-            self.ui.normalizeTable.setItem(idx, 1, QtWidgets.QTableWidgetItem(item))
-            self.ui.normalizeTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
-            item=QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
-            item.setBackground(QtGui.QColor(200, 200, 200))
-            self.ui.normalizeTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(item))
-            self.ui.normalizeTable.setItem(idx, 4, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
-            item=QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
-            item.setBackground(QtGui.QColor(200, 200, 200))
-            self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(item))
-            self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
+            # Pick the first cross section as reference.There will likely be only one
+            # for a direct beam data set.
+            channels = self._data_manager.data_sets.keys()
+            self.update_direct_beam_table(idx, self._data_manager.data_sets[channels[0]])
 
         # If the data set is already in the list, remove it.
         # We will need to check that no scattering data set is using it.
@@ -446,6 +434,33 @@ class MainHandler(object):
 
         if do_plot:
             self.main_window.initiate_reflectivity_plot.emit(False)
+
+    def update_direct_beam_table(self, idx, d):
+        """
+            Update a direct beam table entry
+            :param int idx: row index
+            :param CrossSectionData d: data object
+        """
+        self._pause_interactions = True
+        item=QtWidgets.QTableWidgetItem(str(d.number))
+        item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+        item.setBackground(QtGui.QColor(246, 213, 16))
+        self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
+        wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
+        self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(wl))
+        item=QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.normalizeTable.setItem(idx, 1, QtWidgets.QTableWidgetItem(item))
+        self.ui.normalizeTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+        item=QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.normalizeTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(item))
+        self.ui.normalizeTable.setItem(idx, 4, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+        item=QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
+        item.setBackground(QtGui.QColor(200, 200, 200))
+        self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(item))
+        self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
+        self._pause_interactions = False
 
     def check_region_values_changed(self):
         """

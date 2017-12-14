@@ -7,3 +7,4 @@ class ApplicationConfiguration(object):
     """
     def __init__(self):
         self.mantid_path = '.'
+        #self.mantid_path = '/opt/mantidnightly/bin'
