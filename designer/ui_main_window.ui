@@ -2821,6 +2821,7 @@
      <string>Reduction</string>
     </property>
     <addaction name="actionNorm"/>
+    <addaction name="actionRemove_Normalization"/>
     <addaction name="actionClear_Normalizations"/>
     <addaction name="separator"/>
     <addaction name="actionNormalizeScaling"/>
@@ -2870,6 +2871,7 @@
    <addaction name="separator"/>
    <addaction name="separator"/>
    <addaction name="actionNorm"/>
+   <addaction name="actionRemove_Normalization"/>
    <addaction name="actionClear_Normalizations"/>
    <addaction name="separator"/>
    <addaction name="actionNormalizeScaling"/>
@@ -2888,8 +2890,8 @@
    <addaction name="separator"/>
    <addaction name="actionAuto_Reflectivity"/>
    <addaction name="separator"/>
-   <addaction name="actionStrip_Overlap"/>
    <addaction name="actionAdjust_Dirct_Beam"/>
+   <addaction name="actionStrip_Overlap"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -2912,10 +2914,10 @@
      <normaloff>:/General/extractNormalization.png</normaloff>:/General/extractNormalization.png</iconset>
    </property>
    <property name="text">
-    <string>Set Normalization</string>
+    <string>Set as normalization</string>
    </property>
    <property name="toolTip">
-    <string>Take current dataset as direct beam for wavelength normalization (Ctrl+W)</string>
+    <string>Take current data set as direct beam for wavelength normalization (Ctrl+W)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -2927,10 +2929,10 @@
      <normaloff>:/General/addRef.png</normaloff>:/General/addRef.png</iconset>
    </property>
    <property name="text">
-    <string>Keep Item in List</string>
+    <string>Add to reduction list</string>
    </property>
    <property name="toolTip">
-    <string>Add current dataset to data reduction list (Ctrl+Q)</string>
+    <string>Add the current data set to the reduction list (Ctrl+Q)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -2942,10 +2944,10 @@
      <normaloff>:/General/clearRef.png</normaloff>:/General/clearRef.png</iconset>
    </property>
    <property name="text">
-    <string>Clear List</string>
+    <string>Clear reduction list</string>
    </property>
    <property name="toolTip">
-    <string>Remove all plots from data reduction list (CTRL+SHIFT+Q)</string>
+    <string>Remove all data sets from the reduction list (CTRL+SHIFT+Q)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Q</string>
@@ -2987,10 +2989,10 @@
      <normaloff>:/General/delRef.png</normaloff>:/General/delRef.png</iconset>
    </property>
    <property name="text">
-    <string>Remove Line</string>
+    <string>Remove from reduction list</string>
    </property>
    <property name="toolTip">
-    <string>Remove selected plots from data reduction list</string>
+    <string>Remove selected data set from the reduction list</string>
    </property>
   </action>
   <action name="actionReduce">
@@ -3063,10 +3065,10 @@
      <normaloff>:/General/clearNorm.png</normaloff>:/General/clearNorm.png</iconset>
    </property>
    <property name="text">
-    <string>Clear Normalizations</string>
+    <string>Clear normalization list</string>
    </property>
    <property name="toolTip">
-    <string>Remove all datasets from the direct beam list (CTRL+SHIFT+W)</string>
+    <string>Remove all data sets from the direct beam list (CTRL+SHIFT+W)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+W</string>
@@ -3247,6 +3249,21 @@
    </property>
    <property name="statusTip">
     <string>Apply identical ranges to all cross-sections</string>
+   </property>
+  </action>
+  <action name="actionRemove_Normalization">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/General/delNormalization.png</normaloff>:/General/delNormalization.png</iconset>
+   </property>
+   <property name="text">
+    <string>Remove from normalizations</string>
+   </property>
+   <property name="iconText">
+    <string>Remove from normalizations</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove the selected data set from normalization list</string>
    </property>
   </action>
  </widget>
@@ -4403,6 +4420,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRemove_Normalization</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>remove_normalization()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>786</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -4448,5 +4481,6 @@
   <slot>match_direct_beam_clicked()</slot>
   <slot>reduction_cell_activated(int,int)</slot>
   <slot>direct_beam_cell_activated(int,int)</slot>
+  <slot>remove_normalization()</slot>
  </slots>
 </ui>

@@ -2,13 +2,13 @@
 
 # Interface
 - Make sure matplotlib widgets work.
-- Implement item handling in the direct beam list to be identical to the scattering run list (add a remove button).
 - Add progress bar
 - Add log window
 - Add pop-up message boxes for errors?
 - Calculated sangle needs to update if we change the position ranges
 - Create a widget to change the mantid path
-- Match direct beam should update the reduction list.
+- Add Huber X cut
+- Update affected reflectivity when a direct beam run is deleted or changed.
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
@@ -21,6 +21,9 @@
 
 ## QUESTION: should we use the same ranges for all cross-sections? Probably.
 
+## Reduction
+- Stitching
+- Normalize output to 1.
 
 ## DONE:
 - Add indicator for whether the application things the data set we are looking at is a direct beam or not.
@@ -36,3 +39,6 @@
     - If so, get it's config and push it to the main UI.
 
 - When updating the main UI, check whether we need to update the reduction table.
+- Match direct beam should update the reduction list.
+- Implement item handling in the direct beam list to be identical to the scattering run list (add a remove button).
+

@@ -21,6 +21,7 @@
     <file>totalReflection.png</file>
     <file>tthZero.png</file>
     <file>extractNormalization.png</file>
+    <file>delNormalization.png</file>
   </qresource>
   <qresource prefix="MPL Toolbar">
     <file>toggle-log.png</file>

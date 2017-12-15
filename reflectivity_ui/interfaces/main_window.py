@@ -256,8 +256,11 @@ class MainWindow(QtWidgets.QMainWindow,
     def clearRefList(self):
         self.file_handler.clear_reflectivity()
 
-    def setNorm(self, do_plot=True, do_remove=True):
-        self.file_handler.add_direct_beam(do_remove)
+    def setNorm(self):
+        self.file_handler.add_direct_beam()
+
+    def remove_normalization(self):
+        self.file_handler.remove_direct_beam()
 
     def clearNormList(self):
         self.file_handler.clear_direct_beams()

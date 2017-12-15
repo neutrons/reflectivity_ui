@@ -335,24 +335,22 @@ class MainHandler(object):
                                        QtWidgets.QTableWidgetItem(str(norma)))
         self._pause_interactions = False
 
-    def clear_reflectivity(self, do_plot=True):
+    def clear_reflectivity(self):
         """
             Remove all items from the reduction list.
         """
         self._data_manager.reduction_list=[]
         self.ui.reductionTable.setRowCount(0)
-        if do_plot:
-            self.main_window.initiate_reflectivity_plot.emit(False)
+        self.main_window.initiate_reflectivity_plot.emit(False)
 
-    def clear_direct_beams(self, do_plot=True):
+    def clear_direct_beams(self):
         """
             Remove all items from the direct beam list.
         """
         self._data_manager.clear_direct_beam_list()
         self.ui.normalizeTable.setRowCount(0)
         self.ui.normalization_list_label.setText(u"None")
-        if do_plot:
-            self.main_window.initiate_reflectivity_plot.emit(False)
+        self.main_window.initiate_reflectivity_plot.emit(False)
 
     def remove_reflectivity(self):
         """
@@ -363,6 +361,17 @@ class MainHandler(object):
             return
         self._data_manager.reduction_list.pop(index)
         self.ui.reductionTable.removeRow(index)
+        self.main_window.initiate_reflectivity_plot.emit(False)
+
+    def remove_direct_beam(self):
+        """
+            Remove one item from the direct beam list.
+        """
+        index=self.ui.normalizeTable.currentRow()
+        if index<0:
+            return
+        self._data_manager.direct_beam_list.pop(index)
+        self.ui.normalizeTable.removeRow(index)
         self.main_window.initiate_reflectivity_plot.emit(False)
 
     def reduction_table_changed(self, item):
@@ -411,7 +420,7 @@ class MainHandler(object):
         self._data_manager.calculate_reflectivity(nexus_data=refl)
         self.main_window.initiate_reflectivity_plot.emit(True)
 
-    def add_direct_beam(self, do_remove=True):
+    def add_direct_beam(self):
         """
             Add / remove dataset to the available normalizations or clear the normalization list.
         """
@@ -421,16 +430,12 @@ class MainHandler(object):
             self._data_manager.update_configuration(configuration=config, active_only=False)
 
         # Verify that the new data is consistent with existing data in the table
-        if self._data_manager.add_active_to_normalization():
-            self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
-            self.update_tables()
+        if not self._data_manager.add_active_to_normalization():
+            logging.error("Data incompatible or already in the list.")
+            return
 
-        # If the data set is already in the list, remove it.
-        # We will need to check that no scattering data set is using it.
-        elif do_remove:
-            idx = self._data_manager.remove_active_from_normalization()
-            if idx >= 0:
-                self.ui.normalizeTable.removeRow(idx)
+        self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
+        self.update_tables()
 
         direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
         self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
