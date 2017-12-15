@@ -35,7 +35,6 @@
          style="stop-color:#f20000;stop-opacity:1" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
        id="linearGradient6446"
        osb:paint="gradient">
       <stop
@@ -48,7 +47,6 @@
          id="stop6450" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
        id="linearGradient4336"
        osb:paint="gradient">
       <stop
@@ -79,15 +77,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="11.2"
-     inkscape:cx="23.574949"
-     inkscape:cy="17.846394"
+     inkscape:cx="8.0392347"
+     inkscape:cy="28.56068"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="1837"
      inkscape:window-height="933"
      inkscape:window-x="1447"
-     inkscape:window-y="190"
+     inkscape:window-y="213"
      inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
@@ -136,20 +134,6 @@
        d="m 48.082439,1051.5133 -46.6867746,0 0,-21.1836"
        id="path3001"
        inkscape:connector-curvature="0" />
-    <rect
-       style="opacity:1;fill:none;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect6514"
-       width="26.999998"
-       height="10.999983"
-       x="-35"
-       y="997.36218" />
-    <rect
-       style="opacity:1;fill:url(#linearGradient4336);fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect6516"
-       width="14.928572"
-       height="6.9821429"
-       x="-35"
-       y="997.36218" />
     <rect
        y="1020.0407"
        x="10.625001"
