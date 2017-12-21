@@ -7,7 +7,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 import os
 import logging
-import copy
 from PyQt5 import QtGui, QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_main_window
 
@@ -101,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # Hide format selectiuon since we're only using event data
         self.ui.oldFormatActive.hide()
         self.ui.histogramActive.hide()
+        self.ui.counts_roi_label.hide()
         self.ui.eventActive.hide()
 
         # Hide quick reduce button
@@ -124,6 +124,9 @@ class MainWindow(QtWidgets.QMainWindow,
         """
             Called when a new file is selected from the file list.
         """
+        if self.auto_change_active:
+            return
+        logging.error("open from list")
         item=self.ui.file_list.currentItem()
         name=unicode(item.text())
         QtWidgets.QApplication.instance().processEvents()

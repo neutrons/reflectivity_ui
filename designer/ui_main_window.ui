@@ -592,7 +592,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>371</width>
+             <width>295</width>
              <height>128</height>
             </rect>
            </property>
@@ -775,7 +775,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>371</width>
+             <width>226</width>
              <height>110</height>
             </rect>
            </property>
@@ -1525,7 +1525,7 @@
                     </widget>
                    </item>
                    <item row="4" column="0">
-                    <widget class="QLabel" name="label_14">
+                    <widget class="QLabel" name="counts_roi_label">
                      <property name="toolTip">
                       <string>Counts in the window selected for X and Y</string>
                      </property>

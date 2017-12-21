@@ -5,7 +5,6 @@
 - Add progress bar
 - Add log window
 - Add pop-up message boxes for errors?
-- Calculated sangle needs to update if we change the position ranges
 - Create a widget to change the mantid path
 - Add Huber X cut
 - Update affected reflectivity when a direct beam run is deleted or changed.
@@ -40,5 +39,7 @@
 
 - When updating the main UI, check whether we need to update the reduction table.
 - Match direct beam should update the reduction list.
-- Implement item handling in the direct beam list to be identical to the scattering run list (add a remove button).
+- Implement item handling in the direct beam list to be identical to the scattering run list.
+- Calculated sangle needs to update if we change the position ranges
+
 

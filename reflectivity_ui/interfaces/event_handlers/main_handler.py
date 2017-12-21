@@ -33,6 +33,9 @@ class MainHandler(object):
         button.setFlat(True)
         button.setMaximumSize(150, 20)
 
+        self.status_message = QtWidgets.QLabel("")
+        self.ui.statusbar.insertWidget(0, self.status_message)
+
     def empty_cache(self):
         logging.error("empty cache")
         self._data_manager.clear_cache()
@@ -44,12 +47,17 @@ class MainHandler(object):
             :param str file_path: file path
             :param bool force: if true, the file will be reloaded
         """
+        self.main_window.auto_change_active = True
         try:
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force)
             self.file_loaded()
+            self.report_message("Loaded file %s" % self._data_manager.current_file_name)
         except:
+            self.report_message("Error loading file %s" % self._data_manager.current_file_name,
+                                detailed_message=str(sys.exc_value), pop_up=False)
             logging.error("Error loading file: %s", sys.exc_value)
+        self.main_window.auto_change_active = False
 
     def file_loaded(self):
         """
@@ -218,6 +226,7 @@ class MainHandler(object):
         """
             Open a data file by typing a run number
         """
+        self.main_window.auto_change_active = True
         if number is None:
             number=self.ui.numberSearchEntry.text()
         QtWidgets.QApplication.instance().processEvents()
@@ -232,13 +241,16 @@ class MainHandler(object):
             file_list = glob.glob(search_string+'.nxs.h5')
         self.ui.numberSearchEntry.setText('')
 
+        success = False
         if len(file_list) > 0:
             self.update_file_list(file_list[0])
             self.open_file(os.path.abspath(file_list[0]))
-            return True
+            success = True
         else:
-            logging.error('Could not locate %s', number)
-            return False
+            self.report_message("Could not locate file %s" % number, pop_up=True)
+
+        self.main_window.auto_change_active = False
+        return success
   
     def update_daslog(self):
         """
@@ -674,3 +686,24 @@ class MainHandler(object):
         self.ui.tthPhi.setChecked(configuration.angle_map)
         self.ui.logarithmic_y.setChecked(configuration.log_1d)
         self.ui.logarithmic_colorscale.setChecked(configuration.log_2d)
+
+    def report_message(self, message, informative_message=None,
+                       detailed_message=None, pop_up=False):
+        """
+            Report an error
+        """
+        self.status_message.setText(message)
+
+        if pop_up:
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+    
+            msg.setText(message)
+            msg.setWindowTitle("Information")
+            if informative_message is not None:
+                msg.setInformativeText(informative_message)
+            if detailed_message is not None:
+                msg.setDetailedText(detailed_message)
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok) 
+            msg.exec_()
+
