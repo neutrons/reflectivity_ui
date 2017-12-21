@@ -176,23 +176,23 @@ class Configuration(object):
 
     def from_q_settings(self, settings):
         """ Retrieve configuration from QSettings """
-        self.use_roi = settings.value('use_roi', str(self.use_roi)).lower() == 'true'
+
+        def _verify_true(parameter, default):
+            """ Utility function to read a bool """
+            _value = settings.value(parameter, str(default))
+            return str(_value).lower() == 'true'
+
+        self.use_roi = _verify_true('use_roi', self.use_roi)
         self.tof_bins = int(settings.value('tof_bins', self.tof_bins))
         self.tof_bin_type = int(settings.value('tof_bin_type', self.tof_bin_type))
-        self.update_peak_range = settings.value('update_peak_range',
-                                                str(self.update_peak_range)).lower() == 'true'
-        self.use_roi_bck = settings.value('use_roi_bck',
-                                          str(self.use_roi_bck)).lower() == 'true'
-        self.use_tight_bck = settings.value('use_tight_bck',
-                                            str(self.use_tight_bck)).lower() == 'true'
+        self.update_peak_range = _verify_true('update_peak_range', self.update_peak_range)
+        self.use_roi_bck = _verify_true('use_roi_bck', self.use_roi_bck)
+        self.use_tight_bck = _verify_true('use_tight_bck', self.use_tight_bck)
         self.bck_offset = int(settings.value('bck_offset', self.bck_offset))
 
-        self.force_peak_roi = settings.value('force_peak_roi',
-                                             str(self.force_peak_roi)).lower() == 'true'
-        self.force_low_res_roi = settings.value('force_low_res_roi',
-                                                str(self.force_low_res_roi)).lower() == 'true'
-        self.force_bck_roi = settings.value('force_bck_roi',
-                                            str(self.force_bck_roi)).lower() == 'true'
+        self.force_peak_roi = _verify_true('force_peak_roi', self.force_peak_roi)
+        self.force_low_res_roi = _verify_true('force_low_res_roi', self.force_low_res_roi)
+        self.force_bck_roi = _verify_true('force_bck_roi', self.force_bck_roi)
 
         default = ','.join([str(x) for x in self.peak_roi])
         self.peak_roi = [float(x) for x in settings.value('peak_roi', default).split(',')]
@@ -201,21 +201,21 @@ class Configuration(object):
         default = ','.join([str(x) for x in self.bck_roi])
         self.bck_roi = [float(x) for x in settings.value('bck_roi', default).split(',')]
 
-        self.subtract_background = settings.value('subtract_background', str(self.subtract_background)).lower() == 'true'
+        self.subtract_background = _verify_true('subtract_background', self.subtract_background)
         self.scaling_factor = float(settings.value('scaling_factor', self.scaling_factor))
         self.cut_first_n_points = int(settings.value('cut_first_n_points', self.cut_first_n_points))
         self.cut_last_n_points = int(settings.value('cut_last_n_points', self.cut_last_n_points))
 
-        self.normalize_x_tof = settings.value('normalize_x_tof', str(self.normalize_x_tof)).lower() == 'true'
-        self.x_wl_map = settings.value('x_wl_map', str(self.x_wl_map)).lower() == 'true'
-        self.angle_map = settings.value('angle_map', str(self.angle_map)).lower() == 'true'
-        self.log_1d = settings.value('log_1d', str(self.log_1d)).lower() == 'true'
-        self.log_2d = settings.value('log_2d', str(self.log_2d)).lower() == 'true'
+        self.normalize_x_tof = _verify_true('normalize_x_tof', self.normalize_x_tof)
+        self.x_wl_map = _verify_true('x_wl_map', self.x_wl_map)
+        self.angle_map = _verify_true('angle_map', self.angle_map)
+        self.log_1d = _verify_true('log_1d', self.log_1d)
+        self.log_2d = _verify_true('log_2d', self.log_2d)
 
-        self.use_constant_q = settings.value('use_constant_q', str(self.use_constant_q)).lower() == 'true'
-        self.use_dangle = settings.value('use_dangle', str(self.use_dangle)).lower() == 'true'
-        self.set_direct_pixel = settings.value('set_direct_pixel', str(self.set_direct_pixel)).lower() == 'true'
+        self.use_constant_q = _verify_true('use_constant_q', self.use_constant_q)
+        self.use_dangle = _verify_true('use_dangle', self.use_dangle)
+        self.set_direct_pixel = _verify_true('set_direct_pixel', self.set_direct_pixel)
         self.direct_pixel_overwrite = float(settings.value('direct_pixel_overwrite', self.direct_pixel_overwrite))
-        self.set_direct_angle_offset = settings.value('set_direct_angle_offset', str(self.set_direct_angle_offset)).lower() == 'true'
+        self.set_direct_angle_offset = _verify_true('set_direct_angle_offset', self.set_direct_angle_offset)
         self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
 
