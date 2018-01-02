@@ -1,6 +1,7 @@
 # Magnetic Reflectivity Reduction
+To-do list:
 
-# Interface
+## Interface
 - Make sure matplotlib widgets work.
 - Add progress bar
 - Add log window

@@ -1,3 +1,5 @@
+
+#pylint: disable=invalid-name, line-too-long, too-few-public-methods, too-many-instance-attributes, wrong-import-order, bare-except
 """
     Application configuration, including reduction options
 """
@@ -23,7 +25,7 @@ class Configuration(object):
         # Threshold under which we skip a cross-section, as fraction of the max count
         self.count_threshold = 0.01
         self.tof_overwrite = None
-        
+
         # Reduction parameters
         # Use region of interest specified in meta data
         self.use_roi = True
@@ -78,6 +80,7 @@ class Configuration(object):
 
     @property
     def peak_position(self):
+        """ Peak position property """
         return (self.peak_roi[1]+self.peak_roi[0])/2.0
 
     @peak_position.setter
@@ -88,6 +91,7 @@ class Configuration(object):
 
     @property
     def peak_width(self):
+        """ Peak width property """
         return self.peak_roi[1]-self.peak_roi[0]
 
     @peak_width.setter
@@ -98,6 +102,7 @@ class Configuration(object):
 
     @property
     def low_res_position(self):
+        """ Peak position in the low-resolution direction """
         return (self.low_res_roi[1]+self.low_res_roi[0])/2.0
 
     @low_res_position.setter
@@ -108,6 +113,7 @@ class Configuration(object):
 
     @property
     def low_res_width(self):
+        """ Peak width in the low-resolution direction """
         return self.low_res_roi[1]-self.low_res_roi[0]
 
     @low_res_width.setter
@@ -118,6 +124,7 @@ class Configuration(object):
 
     @property
     def bck_position(self):
+        """ Center of the background range """
         return (self.bck_roi[1]+self.bck_roi[0])/2.0
 
     @bck_position.setter
@@ -128,6 +135,7 @@ class Configuration(object):
 
     @property
     def bck_width(self):
+        """ Width of the background range """
         return self.bck_roi[1]-self.bck_roi[0]
 
     @bck_width.setter
@@ -218,4 +226,3 @@ class Configuration(object):
         self.direct_pixel_overwrite = float(settings.value('direct_pixel_overwrite', self.direct_pixel_overwrite))
         self.set_direct_angle_offset = _verify_true('set_direct_angle_offset', self.set_direct_angle_offset)
         self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
-

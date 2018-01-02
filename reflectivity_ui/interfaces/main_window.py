@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes
+#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, bare-except
 """
     Main application window
 """
@@ -64,16 +64,19 @@ class MainWindow(QtWidgets.QMainWindow,
         self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
 
     def closeEvent(self, event):
+        """ Close UI event """
         self.file_handler.get_configuration()
         event.accept()
 
     def keyPressEvent(self, event):
+        """ UI event """
         if event.modifiers()==QtCore.Qt.ControlModifier:
             self.plot_handler.control_down=True
         else:
             self.plot_handler.control_down=False
 
     def keyReleaseEvent(self, event):
+        """ UI event """
         self.plot_handler.control_down=False
 
     def initialize_instrument(self):
@@ -146,6 +149,12 @@ class MainWindow(QtWidgets.QMainWindow,
         return self.file_loaded()
 
     def getNorm(self):
+        """
+            TODO: deal with this
+            This is supposed to retrieve the normalization data for the active reflectivity
+            data so that we can normalize the distributions we are plotting.
+            See plotting.plot_xtof and plotting.plot_overview
+        """
         return None
 
     def plotActiveTab(self):
@@ -252,23 +261,32 @@ class MainWindow(QtWidgets.QMainWindow,
             self.file_handler.active_data_changed()
 
     def replotProjections(self):
+        """ Signal handling """
         self.initiate_projection_plot.emit(True)
         self.initiate_reflectivity_plot.emit(True)
 
     def addRefList(self):
+        """ Signal handling """
         self.file_handler.add_reflectivity()
+
     def removeRefList(self):
+        """ Signal handling """
         self.file_handler.remove_reflectivity()
+
     def clearRefList(self):
+        """ Signal handling """
         self.file_handler.clear_reflectivity()
 
     def setNorm(self):
+        """ Signal handling """
         self.file_handler.add_direct_beam()
 
     def remove_normalization(self):
+        """ Signal handling """
         self.file_handler.remove_direct_beam()
 
     def clearNormList(self):
+        """ Signal handling """
         self.file_handler.clear_direct_beams()
 
     def match_direct_beam_clicked(self):
@@ -285,8 +303,11 @@ class MainWindow(QtWidgets.QMainWindow,
             self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):
+        """ Signal handling """
         self.file_handler.open_run_number()
 
+    # Un-used UI signals
+    #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented

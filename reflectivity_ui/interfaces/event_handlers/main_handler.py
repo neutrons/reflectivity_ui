@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, bare-except, too-many-arguments
 """
-    Manage file-related events
+    Manage file-related and UI events
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 import sys
@@ -15,6 +16,9 @@ from .progress_reporter import ProgressReporter
 
 
 class MainHandler(object):
+    """
+        Event handler for the main application window.
+    """
     def __init__(self, main_window):
         self.ui = main_window.ui
         self.main_window = main_window
@@ -38,6 +42,9 @@ class MainHandler(object):
         self.ui.statusbar.insertWidget(0, self.status_message)
 
     def empty_cache(self):
+        """
+            Empty the data cache
+        """
         self._data_manager.clear_cache()
         self.cache_indicator.setText('Cache Size: 0.0MB')
 
@@ -253,7 +260,7 @@ class MainHandler(object):
 
         self.main_window.auto_change_active = False
         return success
-  
+
     def update_daslog(self):
         """
             Write parameters from all file daslogs to the table in the
@@ -419,7 +426,6 @@ class MainHandler(object):
         refl.update_calculated_values()
 
         # If the changed data set is the active data, also change the UI
-        #TODO: why do ew need this?
         if self._data_manager.is_active(refl):
             self.main_window.auto_change_active=True
             self.update_info()
@@ -589,7 +595,7 @@ class MainHandler(object):
         y_width = self.ui.refYWidth.value()
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
-        
+
         configuration.peak_roi = [x_pos - x_width/2.0,
                                                    x_pos + x_width/2.0]
         configuration.low_res_roi = [y_pos - y_width/2.0,
@@ -713,12 +719,12 @@ class MainHandler(object):
         if pop_up:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Warning)
-    
+
             msg.setText(message)
             msg.setWindowTitle("Information")
             if informative_message is not None:
                 msg.setInformativeText(informative_message)
             if detailed_message is not None:
                 msg.setDetailedText(detailed_message)
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok) 
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()

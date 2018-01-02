@@ -1,3 +1,4 @@
+#pylint: disable=too-many-arguments
 """
     Class used to report on progress. It allows for sub-tasks and
     computes a meaningful progress status accordingly.
@@ -6,7 +7,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 class ProgressReporter(object):
-
+    """
+        Progress reporter class that allows for sub-tasks.
+    """
     def __init__(self, max_value=100, call_back=None, create_dialog=False,
                  window_title="Loading", message="", parent=None):
         self.max_value = max_value
@@ -68,6 +71,6 @@ class ProgressReporter(object):
 
             :param int max_value: portion of the task
         """
-        p = ProgressReporter(max_value, self.update)
-        self.sub_tasks.append(p)
-        return p
+        sub_task_progress = ProgressReporter(max_value, self.update)
+        self.sub_tasks.append(sub_task_progress)
+        return sub_task_progress
