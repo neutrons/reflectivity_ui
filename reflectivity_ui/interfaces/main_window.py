@@ -126,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         if self.auto_change_active:
             return
-        logging.error("open from list")
+        QtWidgets.QApplication.instance().processEvents()
         item=self.ui.file_list.currentItem()
         name=unicode(item.text())
         QtWidgets.QApplication.instance().processEvents()
@@ -214,7 +214,10 @@ class MainWindow(QtWidgets.QMainWindow,
                 QtWidgets.QApplication.instance().processEvents()
                 try:
                     self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
+                    self.file_handler.report_message("Reflectivity updated")
                 except:
+                    self.file_handler.report_message("There was a problem updating the reflectivity",
+                                                     pop_up=False)
                     logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
                 self.plot_manager.plot_refl()
 
@@ -278,6 +281,7 @@ class MainWindow(QtWidgets.QMainWindow,
             self.file_handler.update_calculated_data()
             QtWidgets.QApplication.instance().processEvents()
             self.data_manager.calculate_reflectivity()
+            self.file_handler.report_message("Reflectivity updated")
             self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):

@@ -11,6 +11,7 @@ import math
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from ..configuration import Configuration
+from .progress_reporter import ProgressReporter
 
 
 class MainHandler(object):
@@ -37,7 +38,6 @@ class MainHandler(object):
         self.ui.statusbar.insertWidget(0, self.status_message)
 
     def empty_cache(self):
-        logging.error("empty cache")
         self._data_manager.clear_cache()
         self.cache_indicator.setText('Cache Size: 0.0MB')
 
@@ -49,14 +49,16 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         try:
+            self.report_message("Loading file %s" % file_path)
+            prog = ProgressReporter(create_dialog=True, parent=self.main_window)
+
             configuration = self.get_configuration()
-            self._data_manager.load(file_path, configuration, force=force)
+            self._data_manager.load(file_path, configuration, force=force, progress=prog)
             self.file_loaded()
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
         except:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
-                                detailed_message=str(sys.exc_value), pop_up=False)
-            logging.error("Error loading file: %s", sys.exc_value)
+                                detailed_message=str(sys.exc_value), pop_up=True, is_error=True)
         self.main_window.auto_change_active = False
 
     def file_loaded(self):
@@ -201,8 +203,8 @@ class MainHandler(object):
             try:
                 self.ui.file_list.setCurrentRow(event_file_list.index(self._data_manager.current_file_name))
             except ValueError:
-                logging.error("Could not set file selection: %s", self._data_manager.current_file_name)
-                logging.error(sys.exc_value)
+                self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
+                                    detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
 
     # Actions defined in Qt Designer
     def file_open_dialog(self):
@@ -291,7 +293,7 @@ class MainHandler(object):
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
-            logging.error("Data incompatible or already in the list.")
+            self.report_message("Data incompatible or already in the list.", pop_up=True)
             return
 
         self._pause_interactions = True
@@ -430,6 +432,7 @@ class MainHandler(object):
             self.update_direct_beam_table(idx, refl.cross_sections[channels[0]])
 
         self._data_manager.calculate_reflectivity(nexus_data=refl)
+        self.file_handler.report_message("Reflectivity updated")
         self.main_window.initiate_reflectivity_plot.emit(True)
 
     def add_direct_beam(self):
@@ -443,7 +446,7 @@ class MainHandler(object):
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_normalization():
-            logging.error("Data incompatible or already in the list.")
+            self.report_message("Data incompatible or already in the list.", pop_up=True)
             return
 
         self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
@@ -688,11 +691,24 @@ class MainHandler(object):
         self.ui.logarithmic_colorscale.setChecked(configuration.log_2d)
 
     def report_message(self, message, informative_message=None,
-                       detailed_message=None, pop_up=False):
+                       detailed_message=None, pop_up=False, is_error=False):
         """
-            Report an error
+            Report an error.
+            :param str message: message string to be reported
+            :param str informative_message: extra information
+            :param str detailed_message: detailed message for the log
+            :param bool pop_up: if True, a dialog will pop up
+            :param bool is_error: if True, the message is logged on the error channel
         """
         self.status_message.setText(message)
+        if is_error:
+            logging.error(message)
+            if detailed_message is not None:
+                logging.error(detailed_message)
+        elif pop_up:
+            logging.warning(message)
+        else:
+            logging.info(message)
 
         if pop_up:
             msg = QtWidgets.QMessageBox()
@@ -706,4 +722,3 @@ class MainHandler(object):
                 msg.setDetailedText(detailed_message)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok) 
             msg.exec_()
-

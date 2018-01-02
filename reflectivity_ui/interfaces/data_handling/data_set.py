@@ -17,6 +17,8 @@ from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 from mantid.simpleapi import *
+# Set Mantid logging level to warnings
+ConfigService.setConsoleLogLevel(4)
 
 from .data_info import DataInfo
 
@@ -118,13 +120,15 @@ class NexusData(object):
         for xs in self.cross_sections:
                 self.cross_sections[xs].update_calculated_values()
 
-    def filter_events(self):
+    def filter_events(self, progress=None):
         """
             Returns a workspace with the selected events
             TODO: make this flexible so we can filter anything we want.
 
             A cross-section editor dialog should be written to
             add (title, definition) pair list of channels.
+
+            :param function progress: call-back function to track progress
         """
         nxs = h5py.File(self.file_path, mode='r')
         keys = nxs.keys()
@@ -136,7 +140,11 @@ class NexusData(object):
         if len(keys) == 1:
             pass
         else:
+            progress_value = 0
             for channel in keys:
+                if progress is not None:
+                    progress_value += int(100.0/len(keys))
+                    progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
                 logging.warning("Loading file %s [%s]", str(self.file_path), str(channel))
                 try:
                     nxs_data = LoadEventNexus(str(self.file_path),
@@ -155,11 +163,12 @@ class NexusData(object):
                 # Delete workspace
                 DeleteWorkspace(nxs_data)
 
-    def load(self):
+    def load(self, progress=None):
         """
             Load cross-sections from a nexus file.
+            :param function progress: call-back function to track progress
         """
-        self.filter_events()
+        self.filter_events(progress=progress)
         return self.cross_sections
 
 class CrossSectionData(object):
@@ -368,12 +377,12 @@ class CrossSectionData(object):
             return
 
         # If a direct beam object was passed, use it.
-        logging.error("Config DB: %s", self.configuration.normalization)
         apply_norm = direct_beam is not None
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
 
-        logging.error("Reduction with DB: %s", direct_beam.number)
+        logging.error("%s Reduction with DB: %s [config: %s]",
+                      self.entry_name, direct_beam.number, self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(a[0]), int(a[1])]
         try:

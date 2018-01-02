@@ -169,7 +169,12 @@ class DataManager(object):
         """
         self.direct_beam_list = []
 
-    def load(self, file_path, configuration, force=False):
+    def _loading_progress(self, call_back, start_value, stop_value,
+                          value, message=None):
+        _value = start_value + (stop_value-start_value)*value
+        call_back(_value, message)
+
+    def load(self, file_path, configuration, force=False, progress=None):
         """
             Load a data file
             :param str file_path: file path
@@ -182,6 +187,8 @@ class DataManager(object):
         direct_beam_list_id = None
 
         # Check whether the file is in cache
+        if progress is not None:
+            progress(10, "Loading data...")
         for i in range(len(self._cache)):
             if self._cache[i].file_path == file_path:
                 if force:
@@ -198,8 +205,12 @@ class DataManager(object):
         # If we don't have the data, load it
         if nexus_data is None:
             nexus_data = NexusData(file_path, configuration)
-            nexus_data.load()
+            nexus_data.load(progress=progress.create_sub_task(max_value=70))
 
+        if progress is not None:
+            progress(80, "Calculating...")
+
+        return_value = None
         if nexus_data is not None:
             self._nexus_data = nexus_data
             directory, file_name = os.path.split(file_path)
@@ -223,9 +234,12 @@ class DataManager(object):
                 while len(self._cache)>=self.MAX_CACHE:
                     self._cache.pop(0)
                 self._cache.append(nexus_data)
-            return self.data_sets
+            return_value = self.data_sets
         logging.error("Nothing to load for file %s", file_path)
-        return None
+
+        if progress is not None:
+            progress(100)
+        return return_value
 
     def update_configuration(self, configuration, active_only=False, nexus_data=None):
         """
