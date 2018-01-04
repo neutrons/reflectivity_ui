@@ -592,7 +592,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>295</width>
+             <width>371</width>
              <height>128</height>
             </rect>
            </property>
@@ -775,7 +775,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>226</width>
+             <width>371</width>
              <height>110</height>
             </rect>
            </property>
@@ -2309,7 +2309,7 @@
            <item>
             <widget class="QRadioButton" name="kizmkfzVSqz">
              <property name="text">
-              <string>(ki_z-kf_z) VS. Qz</string>
+              <string>(ki_z-kf_z) vs Qz</string>
              </property>
              <property name="checked">
               <bool>true</bool>
@@ -2319,14 +2319,14 @@
            <item>
             <widget class="QRadioButton" name="qxVSqz">
              <property name="text">
-              <string>Qx VS. Qz</string>
+              <string>Qx vs Qz</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QRadioButton" name="kizVSkfz">
              <property name="text">
-              <string>ki_z VS. kf_z</string>
+              <string>ki_z vs kf_z</string>
              </property>
             </widget>
            </item>
@@ -2335,9 +2335,32 @@
          <item row="1" column="0" colspan="2">
           <layout class="QHBoxLayout" name="horizontalLayout_9">
            <item>
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Intensity range: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <widget class="QLabel" name="label_21">
              <property name="text">
-              <string>Imin 10^</string>
+              <string>I_min 10^</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2364,22 +2387,25 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="clipOffspec">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
-             <property name="text">
-              <string>Clip</string>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
              </property>
-            </widget>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <widget class="QLabel" name="label_22">
              <property name="text">
-              <string>Imax 10^</string>
+              <string>I_max 10^</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2396,6 +2422,38 @@
              </property>
              <property name="singleStep">
               <double>0.250000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="refresh_offspec">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Recalculate the offspecular data</string>
+             </property>
+             <property name="statusTip">
+              <string>Recalculate the offspecular data</string>
+             </property>
+             <property name="text">
+              <string>Refresh</string>
              </property>
             </widget>
            </item>
@@ -2835,7 +2893,7 @@
    </widget>
    <widget class="QMenu" name="menuAutomatics">
     <property name="title">
-     <string>Automatics</string>
+     <string>Options</string>
     </property>
     <addaction name="actionAutomaticXPeak"/>
     <addaction name="actionAutoYLimits"/>
@@ -2874,9 +2932,6 @@
    <addaction name="actionRemove_Normalization"/>
    <addaction name="actionClear_Normalizations"/>
    <addaction name="separator"/>
-   <addaction name="actionNormalizeScaling"/>
-   <addaction name="actionCut_Points"/>
-   <addaction name="separator"/>
    <addaction name="actionAddPlot"/>
    <addaction name="actionRemove"/>
    <addaction name="actionClear"/>
@@ -2887,6 +2942,9 @@
    <addaction name="actionAutomaticXPeak"/>
    <addaction name="actionAutoYLimits"/>
    <addaction name="actionAutoNorm"/>
+   <addaction name="separator"/>
+   <addaction name="actionNormalizeScaling"/>
+   <addaction name="actionCut_Points"/>
    <addaction name="separator"/>
    <addaction name="actionAuto_Reflectivity"/>
    <addaction name="separator"/>
@@ -3004,7 +3062,7 @@
     <string>Reduce...</string>
    </property>
    <property name="toolTip">
-    <string>Use the active table to extrac reduced datasets and save them</string>
+    <string>Reduce the data in the reduction table and save the output</string>
    </property>
   </action>
   <action name="actionAutoYLimits">
@@ -3211,7 +3269,7 @@
      <normaloff>:/General/autoNorm.png</normaloff>:/General/autoNorm.png</iconset>
    </property>
    <property name="text">
-    <string>AutoNorm</string>
+    <string>Auto select normalization</string>
    </property>
    <property name="toolTip">
     <string>Automatically select normalization file with closest slit sizes</string>
@@ -3323,7 +3381,6 @@
   <tabstop>kizVSkfz</tabstop>
   <tabstop>offspecImin</tabstop>
   <tabstop>offspecImax</tabstop>
-  <tabstop>clipOffspec</tabstop>
   <tabstop>gisansImin</tabstop>
   <tabstop>gisansImax</tabstop>
   <tabstop>daslogTableBox</tabstop>
@@ -3685,10 +3742,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>clipOffspec</sender>
+   <sender>refresh_offspec</sender>
    <signal>pressed()</signal>
    <receiver>MainWindow</receiver>
-   <slot>clip_offspec_colorscale()</slot>
+   <slot>refresh_offspec()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>323</x>
@@ -4466,7 +4523,7 @@
   <slot>change_offspec_colorscale()</slot>
   <slot>change_gisans_colorscale()</slot>
   <slot>open_advanced_background()</slot>
-  <slot>clip_offspec_colorscale()</slot>
+  <slot>refresh_offspec()</slot>
   <slot>fileOpenSumDialog()</slot>
   <slot>reload_file()</slot>
   <slot>cutPoints()</slot>

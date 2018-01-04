@@ -271,6 +271,7 @@ class MPLWidget(QtWidgets.QWidget):
         '''
           Convenience to redraw the graph.
         '''
+        self.canvas.fig.tight_layout()
         self.canvas.draw()
 
     def plot(self, *args, **opts):

@@ -216,14 +216,15 @@ class DataManager(object):
             directory, file_name = os.path.split(file_path)
             self.current_directory = directory
             self.current_file_name = file_name
-
-            # Find suitable direct beam
-            if configuration.match_direct_beam:
-                self.find_best_direct_beam()
+            self.set_channel(0)
 
             # If we didn't get this data set from our cache,
             # then add it and compute its reflectivity.
             if not is_from_cache:
+                # Find suitable direct beam
+                if configuration.match_direct_beam:
+                    self.find_best_direct_beam()
+
                 # Replace reduction and normalization entries as needed
                 if reduction_list_id is not None:
                     self.reduction_list[reduction_list_id] = nexus_data
@@ -252,7 +253,7 @@ class DataManager(object):
         else:
             self._nexus_data.update_configuration(configuration)
 
-    def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None):
+    def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """
             Calculater reflectivity using the current configuration
         """
@@ -283,7 +284,9 @@ class DataManager(object):
             if direct_beam is None:
                 logging.error("The specified direct beam is not available: skipping")
 
-        if active_only:
+        if not specular:
+            nexus_data.calculate_offspec(direct_beam=direct_beam)
+        elif active_only:
             self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
         else:
             nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)

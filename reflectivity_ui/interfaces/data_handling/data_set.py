@@ -75,6 +75,18 @@ class NexusData(object):
             total_size += self.cross_sections[d].nbytes
         return total_size
 
+    def get_q_range(self):
+        """
+            Return the Q range for the cross-sections
+        """
+        q_min = 0
+        q_max = 0
+        for xs in self.cross_sections:
+            if self.cross_sections[xs].q is not None:
+                q_min = min(q_min, self.cross_sections[xs].q.min())
+                q_max = max(q_max, self.cross_sections[xs].q.max())
+        return q_min, q_max
+
     def set_parameter(self, param, value):
         """
             Loop through the cross-section data sets and update
@@ -101,6 +113,17 @@ class NexusData(object):
                 self.cross_sections[xs].reflectivity(direct_beam=direct_beam, configuration=configuration)
             except:
                 logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
+
+    def calculate_offspec(self, direct_beam=None):
+        """
+            Loop through the cross-section data sets and update
+            the reflectivity.
+        """
+        for xs in self.cross_sections:
+            try:
+                self.cross_sections[xs].offspec(direct_beam=direct_beam)
+            except:
+                logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
 
     def update_configuration(self, configuration):
         """
@@ -130,6 +153,7 @@ class NexusData(object):
 
             :param function progress: call-back function to track progress
         """
+        progress(5, "Preparing...", out_of=100.0)
         nxs = h5py.File(self.file_path, mode='r')
         keys = nxs.keys()
         keys.sort()
@@ -183,8 +207,8 @@ class CrossSectionData(object):
         self.configuration = copy.deepcopy(configuration)
         self.number = 0
         self.q = None
-        self.r = None
-        self.dr = None
+        self._r = None
+        self._dr = None
         # Flag to tell us whether we succeeded in using the meta data ROI
         self.use_roi_actual = True
         # Flag to tell us whether we found this data to be a direct beam data set
@@ -412,8 +436,90 @@ class CrossSectionData(object):
                                         EntryName=str(self.entry_name))
 
             self.q = ws.readX(0)[:].copy()
-            self.r = ws.readY(0)[:].copy()
-            self.dr = ws.readE(0)[:].copy()
+            self.r = ws.readY(0)[:].copy() * self.configuration.scaling_factor
+            self.dr = ws.readE(0)[:].copy() * self.configuration.scaling_factor
             DeleteWorkspace(ws)
         except:
             logging.error("MR reduction failed:\n  %s", sys.exc_value)
+
+    def offspec(self, direct_beam=None):
+        """
+            Extract off-specular scattering from 4D dataset (x,y,ToF,I).
+            Uses a window in y to filter the 4D data
+            and than sums all I values for each ToF and x channel.
+            Qz,Qx,kiz,kfz is calculated using the x and ToF positions
+            together with the tth-bank and direct pixel values.
+            
+            :param CrossSectionData dataset: The dataset to use for extraction
+        """
+        #TODO: correct for detector sensitivity
+        #TODO: Background calculation
+
+        x_pos = self.configuration.peak_position
+        x_width = self.configuration.peak_width
+        y_pos = self.configuration.low_res_position
+        y_width = self.configuration.low_res_width
+        scale = 1./self.proton_charge * self.configuration.scaling_factor
+
+        # Get regions in pixels as integers
+        reg=map(lambda item: int(round(item)),
+                [x_pos-x_width/2., x_pos+x_width/2.+1,
+                 y_pos-y_width/2., y_pos+y_width/2.+1])
+
+        rad_per_pixel = self.det_size_x / self.dist_sam_det / self.xydata.shape[1]
+
+        xtth = self.direct_pixel - np.arange(self.data.shape[0])[self.active_area_x[0]:
+                                                                 self.active_area_x[1]]
+        pix_offset_spec = self.direct_pixel - x_pos
+
+        tth_spec = self.scattering_angle * np.pi/180. + pix_offset_spec * rad_per_pixel
+        af = self.scattering_angle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
+        ai = np.ones_like(af) * tth_spec / 2.
+
+        #self._calc_bg()
+
+        H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
+        v_edges = self.dist_mod_det/self.tof_edges * 1e6 #m/s
+        lambda_edges = H_OVER_M_NEUTRON / v_edges * 1e10 #A
+
+        wl = (lambda_edges[:-1] + lambda_edges[1:]) / 2.
+        # The resolution for lambda is digital range with equal probability
+        # therefore it is the bin size divided by sqrt(12)
+        self.d_wavelength = np.abs(lambda_edges[:-1] - lambda_edges[1:]) / np.sqrt(12)
+        k = 2. * np.pi / wl
+
+        # calculate reciprocal space, incident and outgoing perpendicular wave vectors
+        self.Qz=k[np.newaxis, :]*(np.sin(af)+np.sin(ai))[:, np.newaxis]
+        self.Qx=k[np.newaxis, :]*(np.cos(af)-np.cos(ai))[:, np.newaxis]
+        self.ki_z=k[np.newaxis, :]*np.sin(ai)[:, np.newaxis]
+        self.kf_z=k[np.newaxis, :]*np.sin(af)[:, np.newaxis]
+
+        # calculate ROI intensities and normalize by number of points
+        raw_multi_dim=self.data[self.active_area_x[0]:self.active_area_x[1], reg[2]:reg[3], :]
+        raw = raw_multi_dim.sum(axis=1)
+        d_raw = np.sqrt(raw)
+
+        # normalize data by width in y and multiply scaling factor
+        self.intensity = raw/(reg[3]-reg[2]) * scale
+        self.d_intensity = d_raw/(reg[3]-reg[2]) * scale
+        self.S = self.intensity #self.intensity-self.BG[np.newaxis, :]
+        self.dS = self.d_intensity #np.sqrt(self.d_intensity**2+(self.dBG**2)[np.newaxis, :])
+
+        if direct_beam is not None:
+            if not direct_beam.configuration.tof_bins == self.configuration.tof_bins:
+                logging.error("Trying to normalize with a direct beam data set with different binning")
+
+            norm_raw_multi_dim=direct_beam.data[self.active_area_x[0]:self.active_area_x[1], reg[2]:reg[3], :]
+            norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
+            norm_d_raw = np.sqrt(norm_raw)
+            norm_raw /= (reg[3]-reg[2]) * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
+            norm_d_raw /= (reg[3]-reg[2]) * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
+
+            idxs=norm_raw>0.
+            self.dS[:, idxs]=np.sqrt(
+                         (self.dS[:, idxs]/norm_raw[idxs][np.newaxis, :])**2+
+                         (self.S[:, idxs]/norm_raw[idxs][np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, :])**2
+                         )
+            self.S[:, idxs]/=norm_raw[idxs][np.newaxis, :]
+            self.S[:, np.logical_not(idxs)]=0.
+            self.dS[:, np.logical_not(idxs)]=0.

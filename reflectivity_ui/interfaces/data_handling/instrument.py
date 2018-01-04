@@ -104,10 +104,9 @@ class Instrument(object):
         if math.fabs(scattering.lambda_center-direct_beam.lambda_center) < self.tolerance \
             and (skip_slits or \
             (math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance \
-            and math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance \
-            and math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance)):
+            and math.fabs(scattering.slit2_width-direct_beam.slit2_width) < self.tolerance \
+            and math.fabs(scattering.slit3_width-direct_beam.slit3_width) < self.tolerance)):
             return True
-        logging.error("%s %s", scattering.lambda_center, direct_beam.lambda_center)
         return False
 
     @classmethod
@@ -140,8 +139,11 @@ class Instrument(object):
         data_object.dist_mod_mon=data['ModeratorSamDis'].value[0]*1e-3-2.75
 
         # Get these from instrument
-        data_object.det_size_x = int(workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0]) #304
-        data_object.det_size_y = int(workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0]) #256
+        data_object.pixel_width = float(workspace.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
+        data_object.n_det_size_x = int(workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0]) # 304
+        data_object.n_det_size_y = int(workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0]) # 256
+        data_object.det_size_x = data_object.n_det_size_x * data_object.pixel_width # horizontal size of detector [m]
+        data_object.det_size_y = data_object.n_det_size_y * data_object.pixel_width # vertical size of detector [m]
 
         # The following active area used to be taken from instrument.DETECTOR_REGION
         data_object.active_area_x = (8, 295)

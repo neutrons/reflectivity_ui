@@ -58,7 +58,6 @@ class MainHandler(object):
         try:
             self.report_message("Loading file %s" % file_path)
             prog = ProgressReporter(create_dialog=True, parent=self.main_window)
-
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force, progress=prog)
             self.file_loaded()
@@ -137,14 +136,16 @@ class MainHandler(object):
         self.main_window.initiate_projection_plot.emit(False)
         QtWidgets.QApplication.instance().processEvents()
 
-        try:
-            dangle0=u"%.3f° (%.3f°)"%(float(self.ui.dangle0Overwrite.text()), d.dangle0)
-        except ValueError:
+        if self.ui.set_dangle0_checkbox.isChecked():
+            dangle0=u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d.dangle0)
+        else:
             dangle0=u"%.3f°"%(d.dangle0)
-        if self.ui.directPixelOverwrite.value()>=0:
-            dpix=u"%.1f (%.1f)"%(self.ui.directPixelOverwrite.value(), d.dpix)
+
+        if self.ui.set_dirpix_checkbox.isChecked():
+            dpix=u"%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d.dpix)
         else:
             dpix=u"%.1f"%d.dpix
+
         self.ui.datasetLambda.setText(u"%.2f (%.2f-%.2f) Å"%(d.lambda_center,
                                                              d.lambda_center-1.5,
                                                              d.lambda_center+1.5))
@@ -417,10 +418,14 @@ class MainHandler(object):
         # Update settings from selected option
         if column in [1, 4, 5, 6, 7, 8, 9, 10]:
             refl.set_parameter(keys[column], float(item.text()))
-        elif column in [2, 3, 12]:
+        elif column in [2, 3]:
             refl.set_parameter(keys[column], int(item.text()))
         elif column == 12:
-            refl.set_parameter(keys[column],item.text())
+            try:
+                refl.set_parameter(keys[column], item.text())
+            except:
+                refl.set_parameter(keys[column], None)
+                item.setText("none")
 
         # Update calculated data
         refl.update_calculated_values()
@@ -438,7 +443,7 @@ class MainHandler(object):
             self.update_direct_beam_table(idx, refl.cross_sections[channels[0]])
 
         self._data_manager.calculate_reflectivity(nexus_data=refl)
-        self.file_handler.report_message("Reflectivity updated")
+
         self.main_window.initiate_reflectivity_plot.emit(True)
 
     def add_direct_beam(self):
@@ -528,6 +533,9 @@ class MainHandler(object):
             if those values actually changed, as opposed to the use simply
             clicking outside the box.
         """
+        if self._data_manager.active_channel is None:
+            return
+
         configuration = self._data_manager.active_channel.configuration
         valid_change = False
 

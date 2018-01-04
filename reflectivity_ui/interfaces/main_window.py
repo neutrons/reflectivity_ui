@@ -185,7 +185,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.ui.plotTab.currentIndex()==2:
             self.plot_manager.plot_xtof()
         if self.ui.plotTab.currentIndex()==3:
-            self.plot_offspec() #TODO
+            self.plot_manager.plot_offspec()
         if self.ui.plotTab.currentIndex()==4:
             self.plot_gisans() #TODO
 
@@ -223,7 +223,6 @@ class MainWindow(QtWidgets.QMainWindow,
                 QtWidgets.QApplication.instance().processEvents()
                 try:
                     self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
-                    self.file_handler.report_message("Reflectivity updated")
                 except:
                     self.file_handler.report_message("There was a problem updating the reflectivity",
                                                      pop_up=False)
@@ -299,21 +298,30 @@ class MainWindow(QtWidgets.QMainWindow,
             self.file_handler.update_calculated_data()
             QtWidgets.QApplication.instance().processEvents()
             self.data_manager.calculate_reflectivity()
-            self.file_handler.report_message("Reflectivity updated")
             self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):
         """ Signal handling """
         self.file_handler.open_run_number()
 
+    def refresh_offspec(self):
+        """
+            Refresh / recalculate the off-specular plots
+        """
+        self.plot_manager.plot_offspec()
+
+    def change_offspec_colorscale(self):
+        """
+            Change the intensity limits for the color scale of the off-specular plots
+        """
+        self.plot_handler.change_offspec_colorscale()
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
-    def change_offspec_colorscale(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented
-    def clip_offspec_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
     def overwriteChanged(self): return NotImplemented
     def cutPoints(self): return NotImplemented

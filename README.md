@@ -9,6 +9,7 @@ To-do list:
 - Create a widget to change the mantid path
 - Add Huber X cut
 - Update affected reflectivity when a direct beam run is deleted or changed.
+- Do something with DIRPIX and DANGLE0 overwrite
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
