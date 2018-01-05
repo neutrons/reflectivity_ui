@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import numpy as np
 
 class PlotManager(object):
@@ -372,7 +373,11 @@ class PlotManager(object):
 
         for nexus_data in self.main_window.data_manager.reduction_list:
             # Recalculate the off-specular reflectivity
-            self.main_window.data_manager.calculate_reflectivity(nexus_data=nexus_data, specular=False)
+            try:
+                self.main_window.data_manager.calculate_reflectivity(nexus_data=nexus_data, specular=False)
+            except:
+                self.main_window.file_handler.report_message("Could not compute reflectivity for %s" % self._data_manager.current_file_name,
+                                                             detailed_message=str(sys.exc_value), pop_up=False, is_error=False)
 
             for i, channel in enumerate(data_set_keys):
                 plot = plots[i]
@@ -452,8 +457,8 @@ class PlotManager(object):
             self.main_window.ui.refl.draw()
             return False
 
-        P0=len(self.main_window.data_manager.active_channel.q)-self.main_window.ui.rangeStart.value()
-        PN=self.main_window.ui.rangeEnd.value()
+        P0=self.main_window.ui.rangeStart.value()
+        PN=len(self.main_window.data_manager.active_channel.q)-self.main_window.ui.rangeEnd.value()
 
         if len(self.main_window.ui.refl.toolbar._views)>0:
             spos=self.main_window.ui.refl.toolbar._views._pos
@@ -474,12 +479,12 @@ class PlotManager(object):
         else:
             ymin =1.5
             ymax = 1e-7
-            ynormed = self.main_window.data_manager.active_channel.r[PN:P0]
+            ynormed = self.main_window.data_manager.active_channel.r[P0:PN]
             if len(ynormed[ynormed>0])>=2:
                 ymin=min(ymin, ynormed[ynormed>0].min())
                 ymax=max(ymax, ynormed.max())
-                self.main_window.ui.refl.errorbar(self.main_window.data_manager.active_channel.q[PN:P0], ynormed,
-                                      yerr=self.main_window.data_manager.active_channel.dr[PN:P0],
+                self.main_window.ui.refl.errorbar(self.main_window.data_manager.active_channel.q[P0:PN], ynormed,
+                                      yerr=self.main_window.data_manager.active_channel.dr[P0:PN],
                                       label='Active', lw=2, color='black')
             else:
                 self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
@@ -491,9 +496,9 @@ class PlotManager(object):
 
             channel_name = self.main_window.data_manager.active_channel.name
             for i, refli in enumerate(self.main_window.data_manager.reduction_list):
-                P0i=len(refli.cross_sections[channel_name].q)-refli.configuration.cut_first_n_points
-                PNi=refli.configuration.cut_last_n_points
-                ynormed=refli.cross_sections[channel_name].r[PNi:P0i]
+                P0i=len(refli.cross_sections[channel_name].q)-refli.cross_sections[channel_name].configuration.cut_first_n_points
+                PNi=refli.cross_sections[channel_name].configuration.cut_last_n_points
+                ynormed=refli.cross_sections[channel_name].r[P0i:PNi]
                 try:
                     ymin=min(ymin, ynormed[ynormed>0].min())
                 except ValueError:
@@ -502,9 +507,9 @@ class PlotManager(object):
                     ymax=max(ymax, ynormed.max())
                 except ValueError:
                     pass
-                self.main_window.ui.refl.errorbar(refli.cross_sections[channel_name].q[PNi:P0i],
+                self.main_window.ui.refl.errorbar(refli.cross_sections[channel_name].q[P0i:PNi],
                                                   ynormed,
-                                                  yerr=refli.cross_sections[channel_name].dr[PNi:P0i],
+                                                  yerr=refli.cross_sections[channel_name].dr[P0i:PNi],
                                                   label=str(refli.number),
                                                   color=self._refl_color_list[i%len(self._refl_color_list)])
             #self.main_window.ui.refl.set_ylabel(u'I')

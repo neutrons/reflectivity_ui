@@ -3,9 +3,12 @@
     and manages the data cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import sys
 import os
+import numpy as np
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
+from .data_handling.data_manipulation import stitch_reflectivity
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -135,7 +138,17 @@ class DataManager(object):
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
                     self.reduction_states = self.data_sets.keys()
-                self.reduction_list.append(self._nexus_data)
+                # Append to the reduction list, but keep the Q ordering
+                q_min, _ = self._nexus_data.get_q_range()
+                is_inserted = False
+                for i in range(len(self.reduction_list)):
+                    _q_min, _ = self.reduction_list[i].get_q_range()
+                    if q_min < _q_min:
+                        self.reduction_list.insert(i, self._nexus_data)
+                        is_inserted = True
+                        break
+                if not is_inserted:
+                    self.reduction_list.append(self._nexus_data)
                 return True
             else:
                 logging.error("The data you are trying to add has different cross-sections")
@@ -210,7 +223,6 @@ class DataManager(object):
         if progress is not None:
             progress(80, "Calculating...")
 
-        return_value = None
         if nexus_data is not None:
             self._nexus_data = nexus_data
             directory, file_name = os.path.split(file_path)
@@ -231,16 +243,15 @@ class DataManager(object):
                 if direct_beam_list_id is not None:
                     self.direct_beam_list[direct_beam_list_id] = nexus_data
                 # Compute reflectivity
-                nexus_data.calculate_reflectivity()
+                has_errors, msg = nexus_data.calculate_reflectivity()
+                if has_errors:
+                    raise RuntimeError(msg)
                 while len(self._cache)>=self.MAX_CACHE:
                     self._cache.pop(0)
                 self._cache.append(nexus_data)
-            return_value = self.data_sets
-        logging.error("Nothing to load for file %s", file_path)
 
         if progress is not None:
             progress(100)
-        return return_value
 
     def update_configuration(self, configuration, active_only=False, nexus_data=None):
         """
@@ -285,11 +296,18 @@ class DataManager(object):
                 logging.error("The specified direct beam is not available: skipping")
 
         if not specular:
-            nexus_data.calculate_offspec(direct_beam=direct_beam)
+            has_errors, detailed_msg = nexus_data.calculate_offspec(direct_beam=direct_beam)
         elif active_only:
-            self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
+            try:
+                self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
+            except:
+                has_errors = True
+                detailed_msg = str(sys.exc_value)
         else:
-            nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
+            has_errors, detailed_msg = nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
+
+        if has_errors:
+            raise RuntimeError(detailed_msg)
 
     def find_best_direct_beam(self):
         """
@@ -316,3 +334,38 @@ class DataManager(object):
                     elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
                         closest = item.number
         return self._nexus_data.set_parameter("normalization", closest)
+
+    def get_trim_values(self):
+        """
+            Cut the start and end of the active data set to 5% of its
+            maximum intensity.
+        """
+        if self.active_channel is not None \
+            and self.active_channel.q is not None \
+            and self.active_channel.configuration.normalization is not None:
+            direct_beam = None
+            for item in self.direct_beam_list:
+                if item.number == self.active_channel.configuration.normalization:
+                    keys = item.cross_sections.keys()
+                    if len(keys) >= 1:
+                        if len(keys) > 1:
+                            logging.error("More than one cross-section for the direct beam, using the first one")
+                        direct_beam = item.cross_sections[keys[0]]
+            if direct_beam is None:
+                logging.error("The specified direct beam is not available: skipping")
+                return
+
+            region=np.where(self.active_channel.r>=(self.active_channel.r.max()*0.05))[0]
+            p_0=region[0]
+            p_n=len(self.active_channel.r)-region[-1]-1
+            self._nexus_data.set_parameter("cut_first_n_points", p_0)
+            self._nexus_data.set_parameter("cut_last_n_points", p_n)
+            return [p_0, p_n]
+        return
+
+    def stitch_data_sets(self, normalize_to_unity=True):
+        """
+            Stitch all the reflectivity parts and normalize as needed
+            :param bool normalize_to_unity: If True, the reflectivity plateau will be normalized to 1.
+        """
+        stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity)

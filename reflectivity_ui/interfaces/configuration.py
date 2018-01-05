@@ -57,6 +57,10 @@ class Configuration(object):
         self.subtract_background = True
         # Overall scaling factor
         self.scaling_factor = 1.0
+        # Normalize to unity when stitching
+        self.normalize_to_unity = True
+        self.total_reflectivity_q_cutoff = 0.01
+
         # Cut first and last N points
         self.cut_first_n_points = 1
         self.cut_last_n_points = 1

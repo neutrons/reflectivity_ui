@@ -79,12 +79,16 @@ class NexusData(object):
         """
             Return the Q range for the cross-sections
         """
-        q_min = 0
-        q_max = 0
+        q_min = None
+        q_max = None
         for xs in self.cross_sections:
             if self.cross_sections[xs].q is not None:
-                q_min = min(q_min, self.cross_sections[xs].q.min())
-                q_max = max(q_max, self.cross_sections[xs].q.max())
+                if q_min is None:
+                    q_min = self.cross_sections[xs].q.min()
+                    q_max = self.cross_sections[xs].q.max()
+                else:
+                    q_min = min(q_min, self.cross_sections[xs].q.min())
+                    q_max = max(q_max, self.cross_sections[xs].q.max())
         return q_min, q_max
 
     def set_parameter(self, param, value):
@@ -108,23 +112,33 @@ class NexusData(object):
             Loop through the cross-section data sets and update
             the reflectivity.
         """
+        has_errors = False
+        detailed_msg = ""
         for xs in self.cross_sections:
             try:
                 self.cross_sections[xs].reflectivity(direct_beam=direct_beam, configuration=configuration)
             except:
+                has_errors = True
+                detailed_msg += "Could not calculate reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
+        return has_errors, detailed_msg
 
     def calculate_offspec(self, direct_beam=None):
         """
             Loop through the cross-section data sets and update
             the reflectivity.
         """
+        has_errors = False
+        detailed_msg = ""
         for xs in self.cross_sections:
             try:
                 self.cross_sections[xs].offspec(direct_beam=direct_beam)
             except:
+                has_errors = True
+                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
-
+        return has_errors, detailed_msg
+            
     def update_configuration(self, configuration):
         """
             Loop through the cross-section data sets and update
@@ -244,6 +258,18 @@ class CrossSectionData(object):
 
     @property
     def xtof(self): return np.meshgrid(self.tof, self.x)
+
+    @property
+    def r(self):
+        if self._r is None:
+            return None
+        return self._r * self.configuration.scaling_factor
+
+    @property
+    def dr(self):
+        if self._dr is None:
+            return None
+        return self._dr * self.configuration.scaling_factor
 
     @property
     def wavelength(self):
@@ -392,8 +418,8 @@ class CrossSectionData(object):
             Compute reflectivity
         """
         self.q = None
-        self.r = None
-        self.dr = None
+        self._r = None
+        self._dr = None
         if configuration is not None:
             self.configuration = copy.deepcopy(configuration)
 
@@ -409,38 +435,35 @@ class CrossSectionData(object):
                       self.entry_name, direct_beam.number, self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(a[0]), int(a[1])]
-        try:
-            ws = MagnetismReflectometryReduction(RunNumbers=[str(self.number),],
-                                        NormalizationRunNumber=str(direct_beam.number),
-                                        SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
-                                        SubtractSignalBackground=True,
-                                        SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
-                                        ApplyNormalization=apply_norm,
-                                        NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
-                                        SubtractNormBackground=True,
-                                        NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
-                                        CutLowResDataAxis=True,
-                                        LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
-                                        CutLowResNormAxis=True,
-                                        LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
-                                        CutTimeAxis=True,
-                                        QMin=0.001,
-                                        QStep=-0.01,
-                                        AngleOffset = angle_offset,
-                                        UseWLTimeAxis=False,
-                                        TimeAxisStep=self.configuration.tof_bins,
-                                        UseSANGLE=not self.configuration.use_dangle,
-                                        TimeAxisRange=self.tof_range,
-                                        SpecularPixel=self.configuration.peak_position,
-                                        ConstantQBinning=self.configuration.use_constant_q,
-                                        EntryName=str(self.entry_name))
+        ws = MagnetismReflectometryReduction(RunNumbers=[str(self.number),],
+                                    NormalizationRunNumber=str(direct_beam.number),
+                                    SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
+                                    SubtractSignalBackground=True,
+                                    SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
+                                    ApplyNormalization=apply_norm,
+                                    NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
+                                    SubtractNormBackground=True,
+                                    NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
+                                    CutLowResDataAxis=True,
+                                    LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
+                                    CutLowResNormAxis=True,
+                                    LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+                                    CutTimeAxis=True,
+                                    QMin=0.001,
+                                    QStep=-0.01,
+                                    AngleOffset = angle_offset,
+                                    UseWLTimeAxis=False,
+                                    TimeAxisStep=self.configuration.tof_bins,
+                                    UseSANGLE=not self.configuration.use_dangle,
+                                    TimeAxisRange=self.tof_range,
+                                    SpecularPixel=self.configuration.peak_position,
+                                    ConstantQBinning=self.configuration.use_constant_q,
+                                    EntryName=str(self.entry_name))
 
-            self.q = ws.readX(0)[:].copy()
-            self.r = ws.readY(0)[:].copy() * self.configuration.scaling_factor
-            self.dr = ws.readE(0)[:].copy() * self.configuration.scaling_factor
-            DeleteWorkspace(ws)
-        except:
-            logging.error("MR reduction failed:\n  %s", sys.exc_value)
+        self.q = ws.readX(0)[:].copy()
+        self._r = ws.readY(0)[:].copy() #* self.configuration.scaling_factor
+        self._dr = ws.readE(0)[:].copy() #* self.configuration.scaling_factor
+        DeleteWorkspace(ws)
 
     def offspec(self, direct_beam=None):
         """

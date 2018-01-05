@@ -606,7 +606,7 @@
             <property name="margin">
              <number>2</number>
             </property>
-            <item row="0" column="3" colspan="2">
+            <item row="0" column="2" colspan="2">
              <widget class="QDoubleSpinBox" name="directPixelOverwrite">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -643,11 +643,11 @@
                </size>
               </property>
               <property name="text">
-               <string>Trusted Angle:</string>
+               <string>Trusted angle:</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="3">
+            <item row="3" column="2">
              <widget class="QRadioButton" name="trustDANGLE">
               <property name="minimumSize">
                <size>
@@ -663,7 +663,7 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="4">
+            <item row="3" column="3">
              <widget class="QRadioButton" name="trustSANGLE">
               <property name="minimumSize">
                <size>
@@ -679,47 +679,13 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="1" colspan="3">
-             <widget class="QLabel" name="label_36">
-              <property name="text">
-               <string>Stitch Polynom Order</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="4">
-             <widget class="QSpinBox" name="polynomOrder">
-              <property name="maximum">
-               <number>10</number>
-              </property>
-              <property name="value">
-               <number>3</number>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1" colspan="3">
-             <widget class="QLabel" name="label_31">
-              <property name="text">
-               <string>Stitching Add Points:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="4">
-             <widget class="QSpinBox" name="addStitchPoints">
-              <property name="toolTip">
-               <string>When Stitching together two scans, add this amount of points from each scan to the overlap area for the fit.</string>
-              </property>
-              <property name="maximum">
-               <number>20</number>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1" colspan="3">
+            <item row="5" column="1" colspan="2">
              <widget class="QCheckBox" name="fanReflectivity">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Evaluate Q for each X line of the reflectivity and combine these measurements.&lt;/p&gt;&lt;p&gt;Can be used with a large X-width of e.g. 15 for samples scattering to a large 2θ area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>&quot;Fan&quot;-Reflection</string>
+               <string>Constant-Q binning</string>
               </property>
              </widget>
             </item>
@@ -737,7 +703,7 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="3" colspan="2">
+            <item row="2" column="2" colspan="2">
              <widget class="QDoubleSpinBox" name="dangle0Overwrite">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -756,19 +722,29 @@
               </property>
              </widget>
             </item>
+            <item row="4" column="1" colspan="2">
+             <widget class="QCheckBox" name="normalize_to_unity_checkbox">
+              <property name="toolTip">
+               <string>Normalize the total reflectivity plateau to unity when stitching</string>
+              </property>
+              <property name="text">
+               <string>Normalize to unity when stitching</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
            </layout>
            <zorder>trustSANGLE</zorder>
-           <zorder>addStitchPoints</zorder>
-           <zorder>polynomOrder</zorder>
-           <zorder>label_36</zorder>
            <zorder>trustDANGLE</zorder>
            <zorder>label_30</zorder>
            <zorder>directPixelOverwrite</zorder>
-           <zorder>label_31</zorder>
            <zorder>fanReflectivity</zorder>
            <zorder>set_dirpix_checkbox</zorder>
            <zorder>set_dangle0_checkbox</zorder>
            <zorder>dangle0Overwrite</zorder>
+           <zorder>normalize_to_unity_checkbox</zorder>
           </widget>
           <widget class="QWidget" name="page_3">
            <property name="geometry">
@@ -3362,8 +3338,6 @@
   <tabstop>directPixelOverwrite</tabstop>
   <tabstop>trustDANGLE</tabstop>
   <tabstop>trustSANGLE</tabstop>
-  <tabstop>polynomOrder</tabstop>
-  <tabstop>addStitchPoints</tabstop>
   <tabstop>fanReflectivity</tabstop>
   <tabstop>show_colorbars</tabstop>
   <tabstop>color_selector</tabstop>
@@ -3470,22 +3444,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionAdjust_Dirct_Beam</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>overwriteDirectBeam()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>416</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionNormalizeScaling</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -3570,22 +3528,6 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>reduceDatasets()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>416</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionClear_Overwrite</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>clearOverwrite()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3802,22 +3744,6 @@
     <hint type="destinationlabel">
      <x>349</x>
      <y>815</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>directPixelOverwrite</sender>
-   <signal>editingFinished()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>overwriteChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>250</x>
-     <y>536</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>416</y>
     </hint>
    </hints>
   </connection>
@@ -4507,15 +4433,12 @@
   <slot>nextFile()</slot>
   <slot>prevFile()</slot>
   <slot>reduceDatasets()</slot>
-  <slot>overwriteDirectBeam()</slot>
-  <slot>overwriteChanged()</slot>
   <slot>normalizeTotalReflection()</slot>
   <slot>reductionTableChanged(QTableWidgetItem*)</slot>
   <slot>file_loaded()</slot>
   <slot>removeRefList()</slot>
   <slot>changeRegionValues()</slot>
   <slot>refineXpos()</slot>
-  <slot>clearOverwrite()</slot>
   <slot>openByNumber()</slot>
   <slot>loadExtraction()</slot>
   <slot>automaticExtraction()</slot>

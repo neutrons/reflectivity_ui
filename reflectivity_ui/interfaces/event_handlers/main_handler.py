@@ -60,11 +60,11 @@ class MainHandler(object):
             prog = ProgressReporter(create_dialog=True, parent=self.main_window)
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force, progress=prog)
-            self.file_loaded()
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
         except:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=True, is_error=True)
+        self.file_loaded()
         self.main_window.auto_change_active = False
 
     def file_loaded(self):
@@ -87,11 +87,8 @@ class MainHandler(object):
         for i in range(len(channels), 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
 
-        # Update reduction tables
-        self.update_tables()
-
-        self.main_window.initiate_reflectivity_plot.emit(False)
         self.main_window.file_loaded_signal.emit()
+        self.main_window.initiate_reflectivity_plot.emit(False)
         self.main_window.initiate_projection_plot.emit(False)
 
         self.cache_indicator.setText('Cache Size: %.1fMB'%(self._data_manager.get_cachesize()/1024.**2))
@@ -176,6 +173,9 @@ class MainHandler(object):
         self.ui.roi_used_label.setText(u"%s" % d.use_roi_actual)
         self.ui.roi_peak_label.setText(u"%s" % str(d.meta_data_roi_peak))
         self.ui.roi_bck_label.setText(u"%s" % str(d.meta_data_roi_bck))
+
+        # Update reduction tables
+        self.update_tables()
 
         self.active_data_changed()
 
@@ -303,11 +303,11 @@ class MainHandler(object):
         if not self._data_manager.add_active_to_reduction():
             self.report_message("Data incompatible or already in the list.", pop_up=True)
             return
-
         self._pause_interactions = True
-        self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
 
         # Update the reduction and direct beam tables
+        idx = self._data_manager.find_data_in_reduction_list(self._data_manager._nexus_data)
+        self.ui.reductionTable.insertRow(idx)
         self.update_tables()
 
         self.main_window.initiate_reflectivity_plot.emit(True)
@@ -442,7 +442,13 @@ class MainHandler(object):
             channels = refl.cross_sections.keys()
             self.update_direct_beam_table(idx, refl.cross_sections[channels[0]])
 
-        self._data_manager.calculate_reflectivity(nexus_data=refl)
+        # Only recalculate if we need to, otherwise just replot
+        if not column in [1, 2, 3]:
+            try:
+                self._data_manager.calculate_reflectivity(nexus_data=refl)
+            except:
+                self.report_message("Could not compute reflectivity for %s" % self._data_manager.current_file_name,
+                                    detailed_message=str(sys.exc_value), pop_up=False, is_error=False)
 
         self.main_window.initiate_reflectivity_plot.emit(True)
 
@@ -532,12 +538,22 @@ class MainHandler(object):
             There are time-consuming actions that we only want to take
             if those values actually changed, as opposed to the use simply
             clicking outside the box.
+
+            Some parameters don't require a recalculation but simply a
+            refreshing of the plots. Those are parameters such as scaling
+            factors or the number of points clipped.
+            
+            Return values:
+                -1 = no valid change
+                 0 = replot needed
+                 1 = recalculation needed
         """
         if self._data_manager.active_channel is None:
             return
 
         configuration = self._data_manager.active_channel.configuration
         valid_change = False
+        replot_change = False
 
         # ROI parameters
         x_pos = self.ui.refXPos.value()
@@ -563,13 +579,13 @@ class MainHandler(object):
             scale = math.pow(10.0, self.ui.refScale.value())
         except:
             scale = 1
-        valid_change = valid_change or \
+        replot_change = replot_change or \
             not configuration.scaling_factor == scale
 
-        valid_change = valid_change or \
+        replot_change = replot_change or \
             not configuration.cut_first_n_points == self.ui.rangeStart.value()
 
-        valid_change = valid_change or \
+        replot_change = replot_change or \
             not configuration.cut_last_n_points == self.ui.rangeEnd.value()
 
         valid_change = valid_change or \
@@ -580,7 +596,12 @@ class MainHandler(object):
 
         valid_change = valid_change or \
             not configuration.use_dangle == self.ui.trustDANGLE.isChecked()
-        return valid_change
+
+        if valid_change:
+            return 1
+        if replot_change:
+            return 0
+        return -1
 
     def get_configuration(self):
         """
@@ -628,6 +649,7 @@ class MainHandler(object):
         configuration.scaling_factor = scale
         configuration.cut_first_n_points = self.ui.rangeStart.value()
         configuration.cut_last_n_points = self.ui.rangeEnd.value()
+        configuration.normalize_to_unity = self.ui.normalize_to_unity_checkbox.isChecked()
 
         configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
         configuration.use_dangle = self.ui.trustDANGLE.isChecked()
@@ -703,6 +725,33 @@ class MainHandler(object):
         self.ui.tthPhi.setChecked(configuration.angle_map)
         self.ui.logarithmic_y.setChecked(configuration.log_1d)
         self.ui.logarithmic_colorscale.setChecked(configuration.log_2d)
+
+    def stitch_reflectivity(self):
+        """
+            Stitch the reflectivity parts and normalize to 1.
+        """
+        self._data_manager.stitch_data_sets(normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked())
+
+        for i in range(len(self._data_manager.reduction_list)):
+            xs = self._data_manager.active_channel.name
+            d = self._data_manager.data_sets[xs]
+            self.ui.reductionTable.setItem(i, 1,
+                                           QtWidgets.QTableWidgetItem("%.4f"%(d.configuration.scaling_factor)))
+
+        self.main_window.initiate_reflectivity_plot.emit(False)
+
+    def trim_data_to_normalization(self):
+        """
+            Cut the start and end of the active data set to 5% of its
+            maximum intensity.
+        """
+        trim_points = self._data_manager.get_trim_values()
+        if trim_points is not None:
+            self.ui.rangeStart.setValue(trim_points[0])
+            self.ui.rangeEnd.setValue(trim_points[1])
+            self.update_tables()
+        else:
+            self.report_message("No direct beam found to trim data", pop_up=False)
 
     def report_message(self, message, informative_message=None,
                        detailed_message=None, pop_up=False, is_error=False):

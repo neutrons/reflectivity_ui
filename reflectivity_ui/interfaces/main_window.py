@@ -208,7 +208,8 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.auto_change_active:
             return
 
-        if self.file_handler.check_region_values_changed():
+        change_type = self.file_handler.check_region_values_changed()
+        if change_type >= 0:
             configuration = self.file_handler.get_configuration()
 
             if self.data_manager.active_channel is not None:
@@ -221,12 +222,13 @@ class MainWindow(QtWidgets.QMainWindow,
                 self.file_handler.update_tables()
 
                 QtWidgets.QApplication.instance().processEvents()
-                try:
-                    self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
-                except:
-                    self.file_handler.report_message("There was a problem updating the reflectivity",
-                                                     pop_up=False)
-                    logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
+                if change_type > 0:
+                    try:
+                        self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
+                    except:
+                        self.file_handler.report_message("There was a problem updating the reflectivity",
+                                                         pop_up=False)
+                        logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
                 self.plot_manager.plot_refl()
 
     def reductionTableChanged(self, item):
@@ -257,7 +259,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if col == 0:
             self.data_manager.set_active_data_from_direct_beam_list(row)
             self.file_loaded()
-            self.file_handler.active_data_changed()
+            #self.file_handler.active_data_changed()
 
     def replotProjections(self):
         """ Signal handling """
@@ -297,7 +299,12 @@ class MainWindow(QtWidgets.QMainWindow,
             self.file_handler.update_tables()
             self.file_handler.update_calculated_data()
             QtWidgets.QApplication.instance().processEvents()
-            self.data_manager.calculate_reflectivity()
+            try:
+                self.data_manager.calculate_reflectivity()
+            except:
+                self.file_handler.report_message("There was a problem updating the reflectivity",
+                                                 pop_up=False)
+                logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
             self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):
@@ -316,22 +323,30 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         self.plot_handler.change_offspec_colorscale()
 
+    def cutPoints(self):
+        """
+            Cut the start and end of the active data set to 5% of its
+            maximum intensity.
+        """
+        self.file_handler.trim_data_to_normalization()
+
+    def normalizeTotalReflection(self):
+        """
+            Stitch the reflectivity parts and normalize to 1.
+        """
+        self.file_handler.stitch_reflectivity()
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
-    def normalizeTotalReflection(self): return NotImplemented
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
-    def overwriteChanged(self): return NotImplemented
-    def cutPoints(self): return NotImplemented
     def autoRef(self): return NotImplemented
     def stripOverlap(self): return NotImplemented
     def live_open(self): return NotImplemented
 
     # From the Advanced menu
-    def overwriteDirectBeam(self): return NotImplemented
     def open_advanced_background(self): return NotImplemented
-    def clearOverwrite(self): return NotImplemented
     def open_polarization_window(self): return NotImplemented
     def open_rawdata_dialog(self): return NotImplemented

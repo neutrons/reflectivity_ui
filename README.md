@@ -10,6 +10,9 @@ To-do list:
 - Add Huber X cut
 - Update affected reflectivity when a direct beam run is deleted or changed.
 - Do something with DIRPIX and DANGLE0 overwrite
+- Make sure all the config properties make it to QSettings
+- Do something with P0 / PN to clean up the reflectivity
+- Refactor the configuration object of the NexusData class
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
