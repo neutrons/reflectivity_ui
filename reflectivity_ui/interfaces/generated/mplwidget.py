@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import tempfile
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 import matplotlib.cm
 import matplotlib.colors
 from reflectivity_ui.config import plotting
@@ -130,7 +130,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         imgpix=QtGui.QPixmap(filename)
         os.remove(filename)
 
-        imgobj=QtGui.QLabel()
+        imgobj=QtWidgets.QLabel()
         imgobj.setPixmap(imgpix)
         imgobj.setMask(imgpix.mask())
         imgobj.setGeometry(0, 0, imgpix.width(), imgpix.height())
@@ -138,13 +138,13 @@ class NavigationToolbar(NavigationToolbar2QT):
         def getPrintData(printer):
             imgobj.render(printer)
 
-        printer=QtGui.QPrinter()
+        printer=QtPrintSupport.QPrinter()
         printer.setPrinterName('mrac4a_printer')
-        printer.setPageSize(QtGui.QPrinter.Letter)
+        printer.setPageSize(QtPrintSupport.QPrinter.Letter)
         printer.setResolution(600)
-        printer.setOrientation(QtGui.QPrinter.Landscape)
+        printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
 
-        pd=QtGui.QPrintPreviewDialog(printer)
+        pd=QtPrintSupport.QPrintPreviewDialog(printer)
         pd.paintRequested.connect(getPrintData)
         pd.exec_()
 
@@ -165,14 +165,14 @@ class NavigationToolbar(NavigationToolbar2QT):
                 filters.append(filter_)
         filters=';;'.join(filters)
 
-        fname=QtGui.QFileDialog.getSaveFileName(self, u"Choose a filename to save to", start, filters)
+        fname=QtWidgets.QFileDialog.getSaveFileName(self, u"Choose a filename to save to", start, filters)
         if fname:
             try:
-                self.canvas.print_figure(unicode(fname))
+                self.canvas.print_figure(unicode(fname[0]))
             except Exception, e:
-                QtGui.QMessageBox.critical(
+                QtWidgets.QMessageBox.critical(
                     self, "Error saving file", str(e),
-                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.NoButton)
+                    QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton)
 
     def toggle_log(self, *args):
         ax=self.canvas.ax

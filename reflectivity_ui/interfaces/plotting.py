@@ -496,8 +496,8 @@ class PlotManager(object):
 
             channel_name = self.main_window.data_manager.active_channel.name
             for i, refli in enumerate(self.main_window.data_manager.reduction_list):
-                P0i=len(refli.cross_sections[channel_name].q)-refli.cross_sections[channel_name].configuration.cut_first_n_points
-                PNi=refli.cross_sections[channel_name].configuration.cut_last_n_points
+                P0i=refli.cross_sections[channel_name].configuration.cut_first_n_points
+                PNi=len(refli.cross_sections[channel_name].q)-refli.cross_sections[channel_name].configuration.cut_last_n_points
                 ynormed=refli.cross_sections[channel_name].r[P0i:PNi]
                 try:
                     ymin=min(ymin, ynormed[ynormed>0].min())

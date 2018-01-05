@@ -128,6 +128,7 @@ class MainHandler(object):
             Update metadata shown in the overview tab.
         """
         self._pause_interactions = True
+        self.main_window.auto_change_active = True
         d=self._data_manager.active_channel
         self.populate_from_configuration(d.configuration)
         self.main_window.initiate_projection_plot.emit(False)
@@ -180,6 +181,7 @@ class MainHandler(object):
         self.active_data_changed()
 
         self._pause_interactions = False
+        self.main_window.auto_change_active = False
 
     def update_file_list(self, file_path=None):
         """
@@ -734,7 +736,7 @@ class MainHandler(object):
 
         for i in range(len(self._data_manager.reduction_list)):
             xs = self._data_manager.active_channel.name
-            d = self._data_manager.data_sets[xs]
+            d = self._data_manager.reduction_list[i].cross_sections[xs]
             self.ui.reductionTable.setItem(i, 1,
                                            QtWidgets.QTableWidgetItem("%.4f"%(d.configuration.scaling_factor)))
 
