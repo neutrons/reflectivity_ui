@@ -755,6 +755,21 @@ class MainHandler(object):
         else:
             self.report_message("No direct beam found to trim data", pop_up=False)
 
+    def strip_overlap(self):
+        """
+            Remove overlapping points in the reflecitviy, cutting always from the lower Qz
+            measurements.
+        """
+        self._data_manager.strip_overlap()
+
+        for i in range(len(self._data_manager.reduction_list)):
+            xs = self._data_manager.active_channel.name
+            d = self._data_manager.reduction_list[i].cross_sections[xs]
+            self.ui.reductionTable.setItem(i, 3,
+                                           QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
+
+        self.main_window.initiate_reflectivity_plot.emit(False)
+
     def report_message(self, message, informative_message=None,
                        detailed_message=None, pop_up=False, is_error=False):
         """

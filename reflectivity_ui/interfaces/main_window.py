@@ -330,6 +330,13 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         self.file_handler.trim_data_to_normalization()
 
+    def stripOverlap(self):
+        """
+            Remove overlapping points in the reflecitviy, cutting always from the lower Qz
+            measurements.
+        """
+        self.file_handler.strip_overlap()
+
     def normalizeTotalReflection(self):
         """
             Stitch the reflectivity parts and normalize to 1.
@@ -343,7 +350,6 @@ class MainWindow(QtWidgets.QMainWindow,
     def change_gisans_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
     def autoRef(self): return NotImplemented
-    def stripOverlap(self): return NotImplemented
     def live_open(self): return NotImplemented
 
     # From the Advanced menu

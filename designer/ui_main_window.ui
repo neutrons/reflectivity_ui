@@ -593,7 +593,7 @@
              <x>0</x>
              <y>0</y>
              <width>371</width>
-             <height>128</height>
+             <height>106</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2858,9 +2858,6 @@
     <addaction name="actionRemove_Normalization"/>
     <addaction name="actionClear_Normalizations"/>
     <addaction name="separator"/>
-    <addaction name="actionNormalizeScaling"/>
-    <addaction name="actionCut_Points"/>
-    <addaction name="separator"/>
     <addaction name="actionAddPlot"/>
     <addaction name="actionRemove"/>
     <addaction name="actionClear"/>
@@ -2869,11 +2866,14 @@
    </widget>
    <widget class="QMenu" name="menuAutomatics">
     <property name="title">
-     <string>Options</string>
+     <string>Tools</string>
     </property>
     <addaction name="actionAutomaticXPeak"/>
     <addaction name="actionAutoYLimits"/>
     <addaction name="actionAutoNorm"/>
+    <addaction name="separator"/>
+    <addaction name="actionNormalizeScaling"/>
+    <addaction name="actionCut_Points"/>
     <addaction name="separator"/>
     <addaction name="actionAuto_Reflectivity"/>
     <addaction name="separator"/>

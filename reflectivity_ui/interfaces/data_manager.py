@@ -363,6 +363,25 @@ class DataManager(object):
             return [p_0, p_n]
         return
 
+    def strip_overlap(self):
+        """
+            Remove overlapping points in the reflecitviy, cutting always from the lower Qz
+            measurements.
+        """
+        if len(self.reduction_list)<2:
+            logging.error('You need to have at least two datasets in the reduction table')
+            return
+        xs = self.active_channel.name
+        for idx, item in enumerate(self.reduction_list[:-1]):
+            next_item=self.reduction_list[idx+1]
+            end_idx=next_item.cross_sections[xs].configuration.cut_first_n_points
+            
+            overlap_idx=np.where(item.cross_sections[xs].q >= next_item.cross_sections[xs].q[end_idx])
+            logging.error(overlap_idx[0])
+            if len(overlap_idx[0]) > 0:
+                n_points = len(item.cross_sections[xs].q)-overlap_idx[0][0]
+                item.set_parameter("cut_last_n_points", n_points)
+
     def stitch_data_sets(self, normalize_to_unity=True):
         """
             Stitch all the reflectivity parts and normalize as needed
