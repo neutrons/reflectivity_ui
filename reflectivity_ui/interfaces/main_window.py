@@ -187,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.ui.plotTab.currentIndex()==3:
             self.plot_manager.plot_offspec()
         if self.ui.plotTab.currentIndex()==4:
-            self.plot_gisans() #TODO
+            self.plot_manager.plot_gisans()
 
     def toggleColorbars(self):
         """ Refresh plots because of a color or scale change """
@@ -343,13 +343,14 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         self.file_handler.stitch_reflectivity()
 
+    def autoRef(self): return NotImplemented
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
-    def autoRef(self): return NotImplemented
     def live_open(self): return NotImplemented
 
     # From the Advanced menu

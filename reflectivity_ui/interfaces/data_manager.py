@@ -243,9 +243,8 @@ class DataManager(object):
                 if direct_beam_list_id is not None:
                     self.direct_beam_list[direct_beam_list_id] = nexus_data
                 # Compute reflectivity
-                has_errors, msg = nexus_data.calculate_reflectivity()
-                if has_errors:
-                    raise RuntimeError(msg)
+                self.calculate_reflectivity()
+
                 while len(self._cache)>=self.MAX_CACHE:
                     self._cache.pop(0)
                 self._cache.append(nexus_data)
@@ -264,25 +263,26 @@ class DataManager(object):
         else:
             self._nexus_data.update_configuration(configuration)
 
-    def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
+    def _find_direct_beam(self, nexus_data):
         """
-            Calculater reflectivity using the current configuration
+            Determine whether we have a direct beam data set available
+            for a given reflectivity data set.
+            The object returned is a CrossSectionData object.
+
+            :param NexusData or CrossSectionData nexus_data: data set to find a direct beam for
         """
-        # Try to find the direct beam in the list of direct beam data sets
         direct_beam = None
-        
-        # Select the data to work on
-        if nexus_data is None:
-            nexus_data = self._nexus_data
-
-        # Get the direct beam info from the configuration
-        # All the cross sections should have the same direct beam file.
-        data_keys = nexus_data.cross_sections.keys()
-        if len(data_keys) == 0:
-            logging.error("DataManager.calculate_reflectivity: nothing to compute")
-            return
-
-        data_xs = nexus_data.cross_sections[data_keys[0]]
+        # Find the CrossSectionData object to work with
+        if isinstance(nexus_data, NexusData):
+            # Get the direct beam info from the configuration
+            # All the cross sections should have the same direct beam file.
+            data_keys = nexus_data.cross_sections.keys()
+            if len(data_keys) == 0:
+                logging.error("DataManager._find_direct_beam: no data available in NexusData object")
+                return
+            data_xs = nexus_data.cross_sections[data_keys[0]]
+        else:
+            data_xs = nexus_data
 
         if data_xs.configuration is not None and data_xs.configuration.normalization is not None:
             for item in self.direct_beam_list:
@@ -294,6 +294,32 @@ class DataManager(object):
                         direct_beam = item.cross_sections[keys[0]]
             if direct_beam is None:
                 logging.error("The specified direct beam is not available: skipping")
+
+        return direct_beam
+
+    def calculate_gisans(self, nexus_data=None):
+        # Select the data to work on
+        if nexus_data is None:
+            nexus_data = self._nexus_data
+
+        # We must have a direct beam data set to normalize with
+        direct_beam = self._find_direct_beam(nexus_data)
+        if direct_beam is None:
+            raise RuntimeError("Please select a direct beam data set for your data.")
+
+        nexus_data.calculate_gisans(direct_beam=direct_beam)
+
+    def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
+        """
+            Calculater reflectivity using the current configuration
+            #TODO: refactor the error handling
+        """
+        # Select the data to work on
+        if nexus_data is None:
+            nexus_data = self._nexus_data
+
+        # Try to find the direct beam in the list of direct beam data sets
+        direct_beam = self._find_direct_beam(nexus_data)
 
         if not specular:
             has_errors, detailed_msg = nexus_data.calculate_offspec(direct_beam=direct_beam)
@@ -343,21 +369,15 @@ class DataManager(object):
         if self.active_channel is not None \
             and self.active_channel.q is not None \
             and self.active_channel.configuration.normalization is not None:
-            direct_beam = None
-            for item in self.direct_beam_list:
-                if item.number == self.active_channel.configuration.normalization:
-                    keys = item.cross_sections.keys()
-                    if len(keys) >= 1:
-                        if len(keys) > 1:
-                            logging.error("More than one cross-section for the direct beam, using the first one")
-                        direct_beam = item.cross_sections[keys[0]]
+            direct_beam = self._find_direct_beam(self.active_channel)
+
             if direct_beam is None:
                 logging.error("The specified direct beam is not available: skipping")
                 return
 
-            region=np.where(self.active_channel.r>=(self.active_channel.r.max()*0.05))[0]
+            region=np.where(self.direct_beam.r>=(self.direct_beam.r.max()*0.05))[0]
             p_0=region[0]
-            p_n=len(self.active_channel.r)-region[-1]-1
+            p_n=len(self.direct_beam.r)-region[-1]-1
             self._nexus_data.set_parameter("cut_first_n_points", p_0)
             self._nexus_data.set_parameter("cut_last_n_points", p_n)
             return [p_0, p_n]

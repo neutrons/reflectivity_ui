@@ -80,7 +80,6 @@ class Instrument(object):
         """
         theta_d = (data_object.dangle - data_object.dangle0) / 2.0
         theta_d += ((data_object.dpix - data_object.configuration.peak_position) * cls.pixel_width) * 180.0 / math.pi / (2.0 * data_object.dist_sam_det)
-        theta_d += data_object.angle_offset
         return theta_d
 
     def check_direct_beam(self, ws, peak_position):

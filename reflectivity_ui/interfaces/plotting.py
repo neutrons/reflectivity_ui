@@ -358,6 +358,12 @@ class PlotManager(object):
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
+
+        if len(data_set_keys)==4:
+            self.main_window.ui.frame_offspec_sf.show()
+        else:
+            self.main_window.ui.frame_offspec_sf.hide()
+
         i_min=10**self.main_window.ui.offspecImin.value()
         i_max=10**self.main_window.ui.offspecImax.value()
         qz_min = 0.5
@@ -542,3 +548,60 @@ class PlotManager(object):
         #        self.cut_areas['fan']=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
         #    else:
         #        self.cut_areas[normalization]=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
+
+    def plot_gisans(self):
+        """
+            Create GISANS plots of the current dataset with Qy-Qz maps.
+        """
+        if self.main_window.data_manager.active_channel is None:
+            return
+
+        plots=[self.main_window.ui.gisans_pp, self.main_window.ui.gisans_mm,
+               self.main_window.ui.gisans_pm, self.main_window.ui.gisans_mp]
+
+        for plot in plots:
+            plot.clear()
+        data_set_keys = self.main_window.data_manager.data_sets.keys()
+        for i in range(len(data_set_keys), 4):
+            if plots[i].cplot is not None:
+                plots[i].canvas.fig.text(0.3, 0.5, "Pease wait for calculation\nto be finished.")
+                plots[i].draw()
+
+        #TODO: Here would be a good place to reset the progress bar
+
+        # Compute GISANS
+        try:
+            self.main_window.data_manager.calculate_gisans()
+        except:
+            self.main_window.file_handler.report_message("Could not compute GISANS for %s" % self.main_window.data_manager.current_file_name,
+                                                         detailed_message=str(sys.exc_value),
+                                                         pop_up=True, is_error=True)
+
+        Imin=10**self.main_window.ui.gisansImin.value()
+        Imax=10**self.main_window.ui.gisansImax.value()
+
+        if len(data_set_keys)>1:
+            self.main_window.ui.frame_gisans_mm.show()
+            if len(data_set_keys)==4:
+                self.main_window.ui.frame_gisans_sf.show()
+            else:
+                self.main_window.ui.frame_gisans_sf.hide()
+        else:
+            self.main_window.ui.frame_xy_mm.hide()
+            self.main_window.ui.frame_xy_sf.hide()
+
+        for i, channel in enumerate(data_set_keys):
+            plot = plots[i]
+            selected_data=self.main_window.data_manager.data_sets[channel]
+            plots[i].clear_fig()
+            plots[i].pcolormesh(selected_data.QyGrid, selected_data.QzGrid, selected_data.SGrid,
+                                log=self.main_window.ui.logarithmic_colorscale.isChecked(), imin=Imin, imax=Imax,
+                                cmap=self.color)
+            plots[i].set_xlabel(u'Q$_y$ [Å$^{-1}$]')
+            plots[i].set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+            plots[i].set_title(channel)
+            if plots[i].cplot is not None:
+                plots[i].cplot.set_clim([Imin, Imax])
+            if plots[i].cplot is not None and self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+                plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
+            plots[i].draw()

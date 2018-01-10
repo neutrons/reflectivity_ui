@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1573</width>
-    <height>861</height>
+    <width>1843</width>
+    <height>1163</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -592,7 +592,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>371</width>
+             <width>322</width>
              <height>106</height>
             </rect>
            </property>
@@ -751,7 +751,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>371</width>
+             <width>226</width>
              <height>110</height>
             </rect>
            </property>
@@ -1035,7 +1035,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -1795,7 +1795,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
@@ -1905,10 +1905,10 @@
                       </column>
                       <column>
                        <property name="text">
-                        <string>TTH</string>
+                        <string>Theta</string>
                        </property>
                        <property name="toolTip">
-                        <string>DANGLE-DANGLE0</string>
+                        <string>Scattering angle (degrees)</string>
                        </property>
                       </column>
                       <column>
@@ -2236,7 +2236,7 @@
           </widget>
          </item>
          <item row="3" column="0" colspan="2">
-          <widget class="QFrame" name="frame_2">
+          <widget class="QFrame" name="frame_offspec_sf">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -2695,6 +2695,18 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>350</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>350</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -2846,7 +2858,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1573</width>
+     <width>1843</width>
      <height>20</height>
     </rect>
    </property>

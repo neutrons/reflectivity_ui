@@ -36,6 +36,8 @@ XSECT_MAPPING = {u'entry-Off_Off': u'++',
                  u'entry-On_Off': u'-+',
                 }
 
+H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
+
 def getIxyt(nxs_data):
     """
         Return [x, y, TOF] array
@@ -122,6 +124,20 @@ class NexusData(object):
                 detailed_msg += "Could not calculate reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
         return has_errors, detailed_msg
+
+    def calculate_gisans(self, direct_beam):
+        has_errors = False
+        detailed_msg = ""
+        for xs in self.cross_sections:
+            try:
+                self.cross_sections[xs].gisans(direct_beam=direct_beam)
+            except:
+                raise
+                has_errors = True
+                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
+                logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
+        if has_errors:
+            raise RuntimeError(detailed_msg)
 
     def calculate_offspec(self, direct_beam=None):
         """
@@ -472,8 +488,8 @@ class CrossSectionData(object):
             and than sums all I values for each ToF and x channel.
             Qz,Qx,kiz,kfz is calculated using the x and ToF positions
             together with the tth-bank and direct pixel values.
-            
-            :param CrossSectionData dataset: The dataset to use for extraction
+
+            :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
         """
         #TODO: correct for detector sensitivity
         #TODO: Background calculation
@@ -494,14 +510,13 @@ class CrossSectionData(object):
         xtth = self.direct_pixel - np.arange(self.data.shape[0])[self.active_area_x[0]:
                                                                  self.active_area_x[1]]
         pix_offset_spec = self.direct_pixel - x_pos
-
-        tth_spec = self.scattering_angle * np.pi/180. + pix_offset_spec * rad_per_pixel
-        af = self.scattering_angle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
+        delta_dangle = self.dangle - self.dangle0
+        tth_spec = delta_dangle * np.pi/180. + pix_offset_spec * rad_per_pixel
+        af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
         ai = np.ones_like(af) * tth_spec / 2.
 
         #self._calc_bg()
 
-        H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
         v_edges = self.dist_mod_det/self.tof_edges * 1e6 #m/s
         lambda_edges = H_OVER_M_NEUTRON / v_edges * 1e10 #A
 
@@ -546,3 +561,85 @@ class CrossSectionData(object):
             self.S[:, idxs]/=norm_raw[idxs][np.newaxis, :]
             self.S[:, np.logical_not(idxs)]=0.
             self.dS[:, np.logical_not(idxs)]=0.
+
+    def gisans(self, direct_beam=None):
+        """
+            Compute GISANS
+
+            :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
+        """
+        #TODO: Perform sensitivity correction
+        x_pos = self.configuration.peak_position
+        y_pos = self.configuration.low_res_position
+        scale = 1./self.proton_charge * self.configuration.scaling_factor
+
+        rad_per_pixel = self.det_size_x / self.dist_sam_det / self.xydata.shape[1]
+        xtth = self.direct_pixel - np.arange(self.data.shape[0])[self.active_area_x[0]:
+                                                                 self.active_area_x[1]]
+        pix_offset_spec = self.direct_pixel - x_pos
+        delta_dangle = self.dangle - self.dangle0
+        tth_spec = delta_dangle * np.pi/180. + pix_offset_spec * rad_per_pixel
+        af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
+        ai = np.ones_like(af) * tth_spec / 2.
+
+        phi=(np.arange(self.data.shape[1])[self.active_area_y[0]:
+                                           self.active_area_y[1]]-y_pos)*rad_per_pixel
+
+        v_edges=self.dist_mod_det/self.tof_edges*1e6 #m/s
+        lambda_edges = H_OVER_M_NEUTRON/v_edges*1e10 #A
+        wl = (lambda_edges[:-1] + lambda_edges[1:]) / 2.
+        k = 2.*np.pi / wl
+
+        # calculate ROI intensities and normalize by number of points
+        P0 = self.configuration.cut_first_n_points
+        PN = len(self.tof) - self.configuration.cut_last_n_points
+
+        # calculate reciprocal space, incident and outgoing perpendicular wave vectors
+        Qy=k[np.newaxis, np.newaxis, P0:PN]*(np.sin(phi)*np.cos(af)[:, np.newaxis])[:, :, np.newaxis]
+        p_i=k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(ai)[:, np.newaxis])[:, :, np.newaxis]
+        p_f=k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(af)[:, np.newaxis])[:, :, np.newaxis]
+        Qz=p_i+p_f
+
+        raw=self.data[self.active_area_x[0]:self.active_area_x[1],
+                        self.active_area_y[0]:self.active_area_y[1],
+                        P0:PN]
+
+        intensity = scale * np.array(raw)
+        d_intensity = scale * np.sqrt(raw)
+
+        if direct_beam is not None:
+            if not direct_beam.configuration.tof_bins == self.configuration.tof_bins:
+                logging.error("Trying to normalize with a direct beam data set with different binning")
+
+            norm_raw_multi_dim=direct_beam.data[self.active_area_x[0]:self.active_area_x[1],
+                                                self.active_area_y[0]:self.active_area_y[1], P0:PN]
+            norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
+            norm_d_raw = np.sqrt(norm_raw)
+            
+            surface = (self.active_area_x[1]-self.active_area_x[0]) * (self.active_area_y[1]-self.active_area_y[0])
+            
+            norm_raw /= surface * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
+            norm_d_raw /= surface * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
+
+            idxs=norm_raw>0.
+            d_intensity[:, :, idxs]=np.sqrt(
+                         (d_intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :])**2+
+                         (intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, np.newaxis, :])**2
+                         )
+            intensity[:, :, idxs]/=norm_raw[idxs][np.newaxis, np.newaxis, :]
+            intensity[:, :, np.logical_not(idxs)]=0.
+            d_intensity[:, :, np.logical_not(idxs)]=0.
+
+        # Create grid
+        # bins=(self.options['gisans_gridy'], self.options['gisans_gridz']),
+        #TODO: allow binning as application parameter
+        self.SGrid, qy, qz = np.histogram2d(Qy.flatten(), Qz.flatten(),
+                                            bins=(50, 50),
+                                            weights=intensity.flatten())
+        npoints, _, _ = np.histogram2d(Qy.flatten(), Qz.flatten(),
+                                       bins=(50, 50))
+        self.SGrid[npoints>0]/=npoints[npoints>0]
+        self.SGrid=self.SGrid.transpose()
+        qy=(qy[:-1]+qy[1:])/2.
+        qz=(qz[:-1]+qz[1:])/2.
+        self.QyGrid, self.QzGrid = np.meshgrid(qy, qz)
