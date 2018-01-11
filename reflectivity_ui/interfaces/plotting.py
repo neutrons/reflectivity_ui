@@ -564,7 +564,6 @@ class PlotManager(object):
         data_set_keys = self.main_window.data_manager.data_sets.keys()
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
-                plots[i].canvas.fig.text(0.3, 0.5, "Pease wait for calculation\nto be finished.")
                 plots[i].draw()
 
         #TODO: Here would be a good place to reset the progress bar

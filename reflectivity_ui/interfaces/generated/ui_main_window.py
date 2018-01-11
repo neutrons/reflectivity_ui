@@ -744,7 +744,7 @@ class Ui_MainWindow(object):
         self.reductionTable.setHorizontalHeaderItem(11, item)
         item = QtWidgets.QTableWidgetItem()
         self.reductionTable.setHorizontalHeaderItem(12, item)
-        self.reductionTable.horizontalHeader().setVisible(False)
+        self.reductionTable.horizontalHeader().setVisible(True)
         self.reductionTable.horizontalHeader().setCascadingSectionResizes(False)
         self.reductionTable.horizontalHeader().setDefaultSectionSize(70)
         self.reductionTable.horizontalHeader().setMinimumSectionSize(30)
@@ -1414,7 +1414,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.toolBox.setCurrentIndex(0)
-        self.plotTab.setCurrentIndex(3)
+        self.plotTab.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
         self.actionOpen.triggered.connect(MainWindow.file_open_dialog)
         self.plotTab.currentChanged['int'].connect(MainWindow.plotActiveTab)
