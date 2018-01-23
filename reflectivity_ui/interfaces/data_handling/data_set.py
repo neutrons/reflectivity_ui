@@ -443,12 +443,13 @@ class CrossSectionData(object):
             return
 
         # If a direct beam object was passed, use it.
-        apply_norm = direct_beam is not None
+        apply_norm = direct_beam is not None and not self.is_direct_beam
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
 
-        logging.error("%s Reduction with DB: %s [config: %s]",
-                      self.entry_name, direct_beam.number, self.configuration.normalization)
+        logging.error("%s:%s Reduction with DB: %s [config: %s]",
+                      self.number, self.entry_name, direct_beam.number,
+                      self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(a[0]), int(a[1])]
         ws = MagnetismReflectometryReduction(RunNumbers=[str(self.number),],
@@ -643,3 +644,10 @@ class CrossSectionData(object):
         qy=(qy[:-1]+qy[1:])/2.
         qz=(qz[:-1]+qz[1:])/2.
         self.QyGrid, self.QzGrid = np.meshgrid(qy, qz)
+
+class NexusMetaData(object):
+    """
+        Class used to hold meta-data read before loading the neutron events
+    """
+    mid_q = 0
+    is_direct_beam = False

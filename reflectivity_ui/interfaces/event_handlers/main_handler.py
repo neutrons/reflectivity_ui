@@ -23,7 +23,6 @@ class MainHandler(object):
         self.ui = main_window.ui
         self.main_window = main_window
         self._data_manager = main_window.data_manager
-        self._pause_interactions = False
 
         # Update file list when changes are made
         self._path_watcher = QtCore.QFileSystemWatcher([self._data_manager.current_directory],
@@ -48,11 +47,12 @@ class MainHandler(object):
         self._data_manager.clear_cache()
         self.cache_indicator.setText('Cache Size: 0.0MB')
 
-    def open_file(self, file_path, force=False):
+    def open_file(self, file_path, force=False, silent=False):
         """
             Read a data file
             :param str file_path: file path
             :param bool force: if true, the file will be reloaded
+            :param bool silent: if true, the UI will not be updated
         """
         self.main_window.auto_change_active = True
         try:
@@ -64,13 +64,15 @@ class MainHandler(object):
         except:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=True, is_error=True)
-        self.file_loaded()
+        if not silent:
+            self.file_loaded()
         self.main_window.auto_change_active = False
 
     def file_loaded(self):
         """
             Update UI after a file is loaded
         """
+        self.main_window.auto_change_active = True
         current_channel=0
         for i in range(12):
             if getattr(self.ui, 'selectedChannel%i'%i).isChecked():
@@ -86,6 +88,7 @@ class MainHandler(object):
             getattr(self.ui, 'selectedChannel%i'%i).setText(channel)
         for i in range(len(channels), 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
+        self.main_window.auto_change_active = False
 
         self.main_window.file_loaded_signal.emit()
         self.main_window.initiate_reflectivity_plot.emit(False)
@@ -127,7 +130,6 @@ class MainHandler(object):
         """
             Update metadata shown in the overview tab.
         """
-        self._pause_interactions = True
         self.main_window.auto_change_active = True
         d=self._data_manager.active_channel
         self.populate_from_configuration(d.configuration)
@@ -180,7 +182,6 @@ class MainHandler(object):
 
         self.active_data_changed()
 
-        self._pause_interactions = False
         self.main_window.auto_change_active = False
 
     def update_file_list(self, file_path=None):
@@ -215,6 +216,64 @@ class MainHandler(object):
             except ValueError:
                 self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
                                     detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+
+    def automated_file_selection(self):
+        """
+            Go through the files in the current in order of run numbers, and
+            load files until the incident angle is no longer increasing.
+        """
+        self.main_window.auto_change_active=True
+        # Update the list of files
+        event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*event.nxs'))
+        h5_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*.nxs.h5'))
+        event_file_list.extend(h5_file_list)
+        event_file_list.sort()
+        event_file_list = [os.path.basename(name) for name in event_file_list]
+
+        current_file_found= False
+        n_count = 0
+        logging.error("Current file: %s", self._data_manager.current_file_name)
+
+        q_current = self._data_manager.extract_meta_data().mid_q
+
+        # Add the current data set to the reduction table
+        # Do nothing if the data is incompatible
+        is_direct_beam = self._data_manager.active_channel.is_direct_beam
+        if is_direct_beam:
+            if not self.add_direct_beam():
+                return
+        else:
+            if not self.add_reflectivity():
+                return
+
+        for f in event_file_list:
+            file_path = str(os.path.join(self._data_manager.current_directory, f))
+            if current_file_found and n_count<10:
+                n_count += 1
+                meta_data = self._data_manager.extract_meta_data(file_path)
+
+                if q_current <= meta_data.mid_q and is_direct_beam==meta_data.is_direct_beam:
+                    q_current = meta_data.mid_q
+                    self.open_file(file_path, silent=True)
+                    d=self._data_manager.active_channel
+                    # If we find data of another type, stop here
+                    if not is_direct_beam == self._data_manager.active_channel.is_direct_beam:
+                        break
+                    self.main_window.auto_change_active = True
+                    self.populate_from_configuration(d.configuration)
+                    if self._data_manager.active_channel.is_direct_beam:
+                        self.add_direct_beam()
+                    else:
+                        self.add_reflectivity()
+
+            if f == self._data_manager.current_file_name:
+                current_file_found = True
+
+        # At the very end, update the UI and plot reflectivity
+        if n_count > 0:
+            self.main_window.auto_change_active = True
+            self.file_loaded()
+        self.main_window.auto_change_active=False
 
     # Actions defined in Qt Designer
     def file_open_dialog(self):
@@ -291,6 +350,8 @@ class MainHandler(object):
         """
             Collect information about the current extraction settings and store them
             in the list of reduction items.
+
+            Returns true if everything is ok, false otherwise.
         """
         # Update the configuration according to current parameters
         # Note that when a data set is first loaded, the peaks may have a different
@@ -304,8 +365,8 @@ class MainHandler(object):
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
             self.report_message("Data incompatible or already in the list.", pop_up=True)
-            return
-        self._pause_interactions = True
+            return False
+        self.main_window.auto_change_active = True
 
         # Update the reduction and direct beam tables
         idx = self._data_manager.find_data_in_reduction_list(self._data_manager._nexus_data)
@@ -313,13 +374,14 @@ class MainHandler(object):
         self.update_tables()
 
         self.main_window.initiate_reflectivity_plot.emit(True)
-        self._pause_interactions = False
+        self.main_window.auto_change_active = False
+        return True
 
     def update_reduction_table(self, idx, d):
         """
             Update the reduction tale
         """
-        self._pause_interactions = True
+        self.main_window.auto_change_active = True
         item=QtWidgets.QTableWidgetItem(str(d.number))
         if d == self._data_manager.active_channel:
             item.setBackground(QtGui.QColor(246, 213, 16))
@@ -357,7 +419,7 @@ class MainHandler(object):
             norma = d.configuration.normalization
         self.ui.reductionTable.setItem(idx, 12,
                                        QtWidgets.QTableWidgetItem(str(norma)))
-        self._pause_interactions = False
+        self.main_window.auto_change_active = False
 
     def clear_reflectivity(self):
         """
@@ -402,7 +464,7 @@ class MainHandler(object):
         '''
             Perform action upon change in data reduction list.
         '''
-        if self._pause_interactions:
+        if self.main_window.auto_change_active:
             return
 
         entry=item.row()
@@ -466,7 +528,7 @@ class MainHandler(object):
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_normalization():
             self.report_message("Data incompatible or already in the list.", pop_up=True)
-            return
+            return False
 
         self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
         self.update_tables()
@@ -475,6 +537,7 @@ class MainHandler(object):
         self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
 
         self.main_window.initiate_reflectivity_plot.emit(False)
+        return True
 
     def update_direct_beam_table(self, idx, d):
         """
@@ -482,7 +545,7 @@ class MainHandler(object):
             :param int idx: row index
             :param CrossSectionData d: data object
         """
-        self._pause_interactions = True
+        self.main_window.auto_change_active = True
         item=QtWidgets.QTableWidgetItem(str(d.number))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
         if d == self._data_manager.active_channel:
@@ -505,7 +568,7 @@ class MainHandler(object):
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(item))
         self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
-        self._pause_interactions = False
+        self.main_window.auto_change_active = False
 
     def active_data_changed(self):
         """
@@ -513,6 +576,7 @@ class MainHandler(object):
         """
         # If we update an entry, it's because that data is currently active.
         # Highlight it and un-highlight the other ones.
+        self.main_window.auto_change_active = True
         idx = self._data_manager.find_active_data_id()
         for i in range(self.ui.reductionTable.rowCount()):
             item = self.ui.reductionTable.item(i, 0)
@@ -530,6 +594,7 @@ class MainHandler(object):
                     item.setBackground(QtGui.QColor(246, 213, 16))
                 else:
                     item.setBackground(QtGui.QColor(255, 255, 255))
+        self.main_window.auto_change_active = False
 
     def check_region_values_changed(self):
         """

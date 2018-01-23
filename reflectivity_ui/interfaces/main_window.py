@@ -343,7 +343,8 @@ class MainWindow(QtWidgets.QMainWindow,
         """
         self.file_handler.stitch_reflectivity()
 
-    def autoRef(self): return NotImplemented
+    def autoRef(self):
+        self.file_handler.automated_file_selection()
 
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use

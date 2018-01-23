@@ -71,6 +71,25 @@ class Instrument(object):
         return theta_d
 
     @classmethod
+    def mid_q_value(cls, ws):
+        """
+            Get the mid q value, at the requested wl mid-point.
+            :param workspace ws: Mantid workspace
+        """
+        wl = ws.getRun().getProperty('LambdaRequest').value[0]
+        theta_d = Instrument.scattering_angle(ws) * math.pi / 180.0
+        return 4.0*math.pi*math.sin(theta_d) / wl
+
+    @classmethod
+    def mid_q_value_from_data(cls, data_object):
+        """
+            Get the mid q value, at the requested wl mid-point.
+            :param workspace ws: Mantid workspace
+        """
+        theta_d = (data_object.dangle - data_object.dangle0) / 2.0 * math.pi / 180.0
+        return 4.0*math.pi*math.sin(theta_d) / data_object.lambda_center
+
+    @classmethod
     def scattering_angle_from_data(cls, data_object):
         """
             Compute the scattering angle from a CrossSectionData object, in degrees.
@@ -82,7 +101,7 @@ class Instrument(object):
         theta_d += ((data_object.dpix - data_object.configuration.peak_position) * cls.pixel_width) * 180.0 / math.pi / (2.0 * data_object.dist_sam_det)
         return theta_d
 
-    def check_direct_beam(self, ws, peak_position):
+    def check_direct_beam(self, ws, peak_position=None):
         """
             Determine whether this data is a direct beam
         """

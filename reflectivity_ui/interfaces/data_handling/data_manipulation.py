@@ -1,13 +1,21 @@
 """
     Methods used to process data, usually calling Mantid
 """
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements
+from __future__ import absolute_import, division, print_function
 import sys
+import logging
+import h5py
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
+from ase.cluster.factory import cross
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 from mantid.simpleapi import *
+
+from .instrument import Instrument
+from .data_set import NexusMetaData
 
 
 def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
@@ -57,3 +65,39 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
         _previous_ws = CloneWorkspace(ws)
 
     return scaling_factors
+
+def extract_meta_data(file_path=None, cross_section_data=None, configuration=None):
+    """
+        Get mid Q-value from meta data
+        :param str file_path: name of the file to read
+    """
+    meta_data = NexusMetaData()
+
+    if cross_section_data is not None:
+        meta_data.mid_q = cross_section_data.configuration.instrument.mid_q_value_from_data(cross_section_data)
+        meta_data.is_direct_beam = cross_section_data.is_direct_beam
+        return meta_data
+    elif file_path is None:
+        raise RuntimeError("Either a file path or a data object must be supplied")
+
+    nxs = h5py.File(file_path, mode='r')
+    keys = nxs.keys()
+    keys.sort()
+    nxs.close()
+
+    if len(keys) == 0:
+        logging.error("No entry in data file %s", file_path)
+        return meta_data
+
+    try:
+        ws = LoadEventNexus(str(file_path),
+                            MetaDataOnly=True,
+                            NXentryName=str(keys[0]))
+        meta_data.mid_q = Instrument.mid_q_value(ws)
+        if configuration is not None:
+            meta_data.is_direct_beam = configuration.instrument.check_direct_beam(ws)
+    except:
+        logging.error(sys.exc_value)
+        logging.error("Could not load file %s [%s]", file_path, keys[0])
+
+    return meta_data

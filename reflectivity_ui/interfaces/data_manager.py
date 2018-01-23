@@ -7,8 +7,8 @@ import sys
 import os
 import numpy as np
 import logging
-from reflectivity_ui.interfaces.data_handling.data_set import NexusData
-from .data_handling.data_manipulation import stitch_reflectivity
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData, NexusMetaData
+from .data_handling.data_manipulation import stitch_reflectivity, extract_meta_data
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -375,9 +375,9 @@ class DataManager(object):
                 logging.error("The specified direct beam is not available: skipping")
                 return
 
-            region=np.where(self.direct_beam.r>=(self.direct_beam.r.max()*0.05))[0]
+            region=np.where(direct_beam.r>=(direct_beam.r.max()*0.05))[0]
             p_0=region[0]
-            p_n=len(self.direct_beam.r)-region[-1]-1
+            p_n=len(direct_beam.r)-region[-1]-1
             self._nexus_data.set_parameter("cut_first_n_points", p_0)
             self._nexus_data.set_parameter("cut_last_n_points", p_n)
             return [p_0, p_n]
@@ -408,3 +408,12 @@ class DataManager(object):
             :param bool normalize_to_unity: If True, the reflectivity plateau will be normalized to 1.
         """
         stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity)
+
+    def extract_meta_data(self, file_path=None):
+        """
+            Return the current q-value at the center of the wavelength range of the current data set.
+            If a file path is provided, the mid q-value will be extracted from that data file.
+        """
+        if file_path is not None:
+            return extract_meta_data(file_path=file_path, configuration=self.active_channel.configuration)
+        return extract_meta_data(cross_section_data=self.active_channel)
