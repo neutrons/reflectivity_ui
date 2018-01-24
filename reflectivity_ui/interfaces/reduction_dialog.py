@@ -1,0 +1,108 @@
+"""
+    Main application window
+"""
+from __future__ import absolute_import, division, print_function, unicode_literals
+import os
+from PyQt5 import QtGui, QtCore, QtWidgets
+import reflectivity_ui.interfaces.generated.ui_reduce_dialog
+
+class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_reduce_dialog.Ui_Dialog):
+
+    default_template = u'%(instrument.NAME)s_{numbers}_{item}_{state}.{type}'
+    default_sample_size = 10.0 # mm
+
+    def __init__(self, parent):
+        super(ReductionDialog, self).__init__(parent)
+
+        self.setupUi(self)
+
+        self.settings = QtCore.QSettings('.refredm')
+
+        self.directoryEntry.setText(self.settings.value('output_directory',
+                                                        os.path.expanduser('~')))
+        self.fileNameEntry.setText(self.settings.value('output_file_template',
+                                                       ReductionDialog.default_template))
+        try:
+            _value = float(self.settings.value('output_sample_size',
+                                               ReductionDialog.default_sample_size))
+        except:
+            _value = ReductionDialog.default_sample_size
+        self.sampleSize.setValue(_value)
+
+        # Outputs
+        self.exportSpecular.setChecked(self._verify_true('export_specular', True))
+        self.export_SA.setChecked(self._verify_true('export_asym', True))
+        self.exportGISANS.setChecked(self._verify_true('export_gisans', False))
+        self.exportOffSpecular.setChecked(self._verify_true('export_offspec', False))
+        self.exportOffSpecularCorr.setChecked(self._verify_true('export_offspec_corr', False))
+        self.exportOffSpecularSmoothed.setChecked(self._verify_true('export_offspec_smooth', False))
+
+        # Formats
+        self.combinedAscii.setChecked(self._verify_true('format_combined', True))
+        self.genx.setChecked(self._verify_true('format_genx', False))
+        self.matlab.setChecked(self._verify_true('format_matlab', False))
+        self.multiAscii.setChecked(self._verify_true('format_multi', False))
+        self.numpy.setChecked(self._verify_true('format_numpy', False))
+        self.plot.setChecked(self._verify_true('format_plot', False))
+
+    def _verify_true(self, parameter, default):
+        """ Utility function to read a bool """
+        _value = self.settings.value(parameter, str(default))
+        return str(_value).lower() == 'true'
+
+    def accept(self):
+        """
+            Save the current options and close dialog
+        """
+        self.save_settings()
+        self.close()
+
+    def get_options(self):
+        return dict(export_specular=self.exportSpecular.isChecked(),
+                    export_asym=self.export_SA.isChecked(),
+                    export_gisans=self.exportGISANS.isChecked(),
+                    export_offspec=self.exportOffSpecular.isChecked(),
+                    export_offspec_corr=self.exportOffSpecularCorr.isChecked(),
+                    export_offspec_smooth=self.exportOffSpecularSmoothed.isChecked(),
+                    format_combined=self.combinedAscii.isChecked(),
+                    format_genx=self.genx.isChecked(),
+                    format_matlab=self.matlab.isChecked(),
+                    format_multi=self.multiAscii.isChecked(),
+                    format_numpy=self.numpy.isChecked(),
+                    format_plot=self.plot.isChecked(),
+                    output_sample_size=self.sampleSize.value(),
+                    output_directory=self.directoryEntry.text(),
+                    output_file_template=self.fileNameEntry.text())
+
+    def change_directory(self):
+        """
+            Change the output directory
+        """
+        old_d = self.directoryEntry.text()
+        new_d = QtWidgets.QFileDialog.getExistingDirectory(parent=self,
+                                                           caption=u'Select new directory',
+                                                           directory=old_d)
+        if new_d is not None:
+            self.directoryEntry.setText(new_d)
+
+    def save_settings(self):
+        """
+            Save reduction options in QSettings
+        """
+        self.settings.setValue('output_directory', self.directoryEntry.text())
+        self.settings.setValue('output_file_template', self.fileNameEntry.text())
+        self.settings.setValue('output_sample_size', self.sampleSize.value())
+
+        self.settings.setValue('export_specular', self.exportSpecular.isChecked())
+        self.settings.setValue('export_asym', self.export_SA.isChecked())
+        self.settings.setValue('export_gisans', self.exportGISANS.isChecked())
+        self.settings.setValue('export_offspec', self.exportOffSpecular.isChecked())
+        self.settings.setValue('export_offspec_corr', self.exportOffSpecularCorr.isChecked())
+        self.settings.setValue('export_offspec_smooth', self.exportOffSpecularSmoothed.isChecked())
+
+        self.settings.setValue('format_combined', self.combinedAscii.isChecked())
+        self.settings.setValue('format_genx', self.genx.isChecked())
+        self.settings.setValue('format_matlab', self.matlab.isChecked())
+        self.settings.setValue('format_multi', self.multiAscii.isChecked())
+        self.settings.setValue('format_numpy', self.numpy.isChecked())
+        self.settings.setValue('format_plot', self.plot.isChecked())

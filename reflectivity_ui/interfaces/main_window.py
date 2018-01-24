@@ -14,6 +14,7 @@ from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from .data_manager import DataManager
 from .plotting import PlotManager
+from .reduction_dialog import ReductionDialog
 
 class MainWindow(QtWidgets.QMainWindow,
                  reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow):
@@ -346,9 +347,22 @@ class MainWindow(QtWidgets.QMainWindow,
     def autoRef(self):
         self.file_handler.automated_file_selection()
 
+    def reduceDatasets(self):
+        '''
+        Open a dialog to select reduction options for the current list of
+        reduction items.
+        '''
+        #if len(self.reduction_list)==0:
+        #    self.file_handler.report_message("The data to be reduced must be added to the reduction table",
+        #                                     pop_up=True)
+        #    return
+        dialog=ReductionDialog(self)
+        dialog.exec_()
+        reduction_options = dialog.get_options()
+        dialog.destroy()
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
-    def reduceDatasets(self): return NotImplemented
     def loadExtraction(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
