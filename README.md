@@ -13,6 +13,7 @@ To-do list:
 - Make sure all the config properties make it to QSettings
 - Do something with P0 / PN to clean up the reflectivity
 - Refactor the configuration object of the NexusData class
+- Add mantid script as a possible output file
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
@@ -23,11 +24,16 @@ To-do list:
 - Add filter to direct beam data too.
 - Allow for direct beam data to be a workspace instead of just a run number.
 
-## QUESTION: should we use the same ranges for all cross-sections? Probably.
 
 ## Reduction
-- Stitching
+- Stitching  -> make Stitch1DMany take scaling factor for the first workspace
+- Trim workspaces when stitching
 - Normalize output to 1.
+- Add option for constant Q
+- Add option to cut the first N and last M points -> Needs to be saved properly to file
+- Add an option to choose which cross-sections to use for asymmetry calculation
+- Add Q binning option for output
+- Add InputNormalizationWorkspace as input to MagnetismReflectometerReduction
 
 ## DONE:
 - Add indicator for whether the application things the data set we are looking at is a direct beam or not.
@@ -47,4 +53,5 @@ To-do list:
 - Implement item handling in the direct beam list to be identical to the scattering run list.
 - Calculated sangle needs to update if we change the position ranges
 
+## QUESTION: should we use the same ranges for all cross-sections? Probably.
 

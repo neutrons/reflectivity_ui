@@ -8,7 +8,7 @@ import os
 import numpy as np
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData, NexusMetaData
-from .data_handling.data_manipulation import stitch_reflectivity, extract_meta_data
+from .data_handling import data_manipulation
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -404,10 +404,58 @@ class DataManager(object):
 
     def stitch_data_sets(self, normalize_to_unity=True):
         """
-            Stitch all the reflectivity parts and normalize as needed
+            Determine scaling factors for each data set
             :param bool normalize_to_unity: If True, the reflectivity plateau will be normalized to 1.
         """
-        stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity)
+        data_manipulation.stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity)
+
+    def merge_data_sets(self, asymmetry=True):
+        self.final_merged_reflectivity = {}
+        for pol_state in self.reduction_states:
+            # The scaling factors should have been determined at this point. Just use them
+            # to merge the different runs in a set.
+            merged_ws = data_manipulation.merge_reflectivity(self.reduction_list, xs=pol_state,
+                                                             q_min=0.001, q_step=-0.01)
+            self.final_merged_reflectivity[pol_state] = merged_ws
+        
+        # Compute asymmetry
+        if asymmetry:
+            self.asymmetry()
+
+    def asymmetry(self):
+        """
+            Determine which cross-section to use to compute asymmetry, compute it, and write it to file.
+        """
+        # Inspect cross-section
+        # - For two states, just calculate the asymmetry using those two
+        p_state = None
+        m_state = None
+        if len(self.reduction_states) == 2:
+            p_state = self.reduction_states[0]
+            m_state = self.reduction_states[1]
+
+        # - For the traditional four states, pick the right ones by hand
+        elif len(self.reduction_states) == 4:
+            if '++' in self.reduction_states \
+            and '--' in self.reduction_states:
+                p_state = '++'
+                m_state = '--'
+
+        # - If we haven't made sense of it yet, take the first and last cross-sections 
+        if p_state is None and m_state is None and len(self.reduction_states)>=2:
+            p_state = self.reduction_states[0]
+            m_state = self.reduction_states[-1]
+
+        if p_state is None or m_state is None:
+            return
+
+        # Get the list of workspaces
+        if p_state in self.final_merged_reflectivity and m_state in self.final_merged_reflectivity:
+            p_ws = self.final_merged_reflectivity[p_state]
+            m_ws = self.final_merged_reflectivity[m_state]
+            ratio_ws = (p_ws - m_ws) / (p_ws + m_ws)
+
+            self.final_merged_reflectivity['SA'] = ratio_ws
 
     def extract_meta_data(self, file_path=None):
         """

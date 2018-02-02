@@ -5,7 +5,7 @@ check:
 	# Check dependencies
 
 install: compile_ui
-	python setup.py install
+	python setup.py install --user
 
 compile_ui:
 	python setup.py pyuic

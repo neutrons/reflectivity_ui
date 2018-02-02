@@ -9,7 +9,6 @@ import h5py
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
-from ase.cluster.factory import cross
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 from mantid.simpleapi import *
@@ -65,6 +64,64 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
         _previous_ws = CloneWorkspace(ws)
 
     return scaling_factors
+
+def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
+    """
+        Combine the workspaces for a given cross-section into a single workspace.
+
+        TODO: trim workspaces
+            trim_first = [item.cross_sections[pol_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
+            trim_last = [item.cross_sections[pol_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
+
+    """
+    ws_list = []
+    scaling_factors = []
+    q_max = q_min
+
+    for i in range(len(reduction_list)):
+        _, _q_max = reduction_list[i].get_q_range()
+        q_max = max(q_max, _q_max)
+        ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
+        # Stitch1DMany only scales workspaces relative to the first one
+        if i==0:
+            Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo',
+                  factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
+                  Operation='Multiply')
+            ConvertToHistogram(InputWorkspace=ws_name+'_histo', OutputWorkspace=ws_name+'_histo')
+        else:
+            scaling_factors.append(reduction_list[i].cross_sections[xs].configuration.scaling_factor)
+            ConvertToHistogram(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo')
+        ws_list.append(ws_name+'_histo')
+        params = "%s, %s, %s" % (q_min, q_step, q_max)
+
+    if len(ws_list) > 1:
+        merged_ws, _ = Stitch1DMany(InputWorkspaces=ws_list, Params="%s, %s, %s" % (q_min, q_step, q_max),
+                                    UseManualScaleFactors=True, ManualScaleFactors=scaling_factors,
+                                    OutputWorkspace=ws_name+"_merged")
+    else:
+        merged_ws = CloneWorkspace(ws_list[0], OutputWorkspace=ws_name+"_merged")
+
+    # Remove temporary workspaces
+    for ws in ws_list:
+        DeleteWorkspace(ws)
+
+    SaveAscii(InputWorkspace=merged_ws, Filename="/tmp/test.txt")
+    return merged_ws
+
+def get_scaled_workspaces(reduction_list, xs):
+    ws_list = []
+
+    for i in range(len(reduction_list)):
+        ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
+        ws_tmp = Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_scaled',
+              factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
+              Operation='Multiply')
+        AddSampleLog(Workspace=ws_tmp, LogName='scaling_factor',
+                     LogText=str(reduction_list[i].cross_sections[xs].configuration.scaling_factor),
+                     LogType='Number', LogUnit='')
+        ws_list.append(ws_tmp)
+
+    return ws_list
 
 def extract_meta_data(file_path=None, cross_section_data=None, configuration=None):
     """

@@ -1,5 +1,6 @@
 """
-    Main application window
+   Dialog to select reduction options to choose which outputs are needed
+   and in which formats to write them.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 import os
@@ -7,8 +8,10 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_reduce_dialog
 
 class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_reduce_dialog.Ui_Dialog):
-
-    default_template = u'%(instrument.NAME)s_{numbers}_{item}_{state}.{type}'
+    """
+        Reduction dialog
+    """
+    default_template = u'(instrument)_{numbers}_{item}_{state}.{type}'
     default_sample_size = 10.0 # mm
 
     def __init__(self, parent):
@@ -58,6 +61,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.close()
 
     def get_options(self):
+        """ Return the reduction options as a dict"""
         return dict(export_specular=self.exportSpecular.isChecked(),
                     export_asym=self.export_SA.isChecked(),
                     export_gisans=self.exportGISANS.isChecked(),

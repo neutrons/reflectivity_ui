@@ -3052,6 +3052,9 @@
    <property name="toolTip">
     <string>Reduce the data in the reduction table and save the output</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
   </action>
   <action name="actionAutoYLimits">
    <property name="checkable">

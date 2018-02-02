@@ -15,6 +15,7 @@ from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from .data_manager import DataManager
 from .plotting import PlotManager
 from .reduction_dialog import ReductionDialog
+from .event_handlers.progress_reporter import ProgressReporter
 
 class MainWindow(QtWidgets.QMainWindow,
                  reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow):
@@ -358,8 +359,14 @@ class MainWindow(QtWidgets.QMainWindow,
         #    return
         dialog=ReductionDialog(self)
         dialog.exec_()
-        reduction_options = dialog.get_options()
+        output_options = dialog.get_options()
         dialog.destroy()
+        
+        from .data_handling.processing_workflow import ProcessingWorkflow
+        wrk = ProcessingWorkflow(self.data_manager, output_options)
+        prog = ProgressReporter(create_dialog=False, parent=self)
+        wrk.execute(prog)
+
 
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use

@@ -13,20 +13,29 @@ class ProgressReporter(object):
     def __init__(self, max_value=100, call_back=None, create_dialog=False,
                  window_title="Loading", message="", parent=None):
         self.max_value = max_value
+        self.message = message
+        self.window_title = window_title
         self.call_back = call_back
         self.value = 0
         self.sub_tasks = []
         self.main_window = parent
         self.progress_dialog = None
+        self.created = False
 
         if create_dialog:
-            self.progress_dialog = QtWidgets.QProgressDialog(
-                message, "Close", 0, max_value, self.main_window)
-            self.progress_dialog.setWindowTitle(window_title)
-            self.progress_dialog.setAutoClose(True)
-            self.progress_dialog.setModal(True)
-            self.progress_dialog.show()
-            QtWidgets.QApplication.instance().processEvents()
+            self.create()
+
+    def create(self):
+        if self.created:
+            return
+        self.progress_dialog = QtWidgets.QProgressDialog(
+            self.message, "Close", 0, self.max_value, self.main_window)
+        self.progress_dialog.setWindowTitle(self.window_title)
+        self.progress_dialog.setAutoClose(True)
+        self.progress_dialog.setModal(True)
+        self.progress_dialog.show()
+        QtWidgets.QApplication.instance().processEvents()
+        self.created = True
 
     def __call__(self, value, message='', out_of=None):
         """

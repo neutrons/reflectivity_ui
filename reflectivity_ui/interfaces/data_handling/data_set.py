@@ -11,6 +11,7 @@ from collections import OrderedDict
 import h5py
 import numpy as np
 import copy
+import math
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -202,7 +203,8 @@ class NexusData(object):
                 logging.warning("Loading file %s [%s]", str(self.file_path), str(channel))
                 try:
                     nxs_data = LoadEventNexus(str(self.file_path),
-                                              #OutputWorkspace="nxs_data",
+                                              OutputWorkspace="nxs_data_%s_%s" % (str(os.path.basename(self.file_path)),
+                                                                                  str(channel)),
                                               NXentryName=str(channel))
                 except:
                     logging.error("Could not load file %s [%s]", str(self.file_path), str(channel))
@@ -215,7 +217,7 @@ class NexusData(object):
                 self.cross_sections[name] = cross_section
                 self.number = cross_section.number
                 # Delete workspace
-                DeleteWorkspace(nxs_data)
+                #DeleteWorkspace(nxs_data)
 
     def load(self, progress=None):
         """
@@ -229,7 +231,6 @@ class CrossSectionData(object):
     """
         Data object to hold loaded reflectivity data
     """
-    from_event_mode=True
     def __init__(self, name, configuration, entry_name='entry'):
         self.name = name
         self.entry_name = entry_name
@@ -239,6 +240,7 @@ class CrossSectionData(object):
         self.q = None
         self._r = None
         self._dr = None
+        self._event_workspace = None
         # Flag to tell us whether we succeeded in using the meta data ROI
         self.use_roi_actual = True
         # Flag to tell us whether we found this data to be a direct beam data set
@@ -247,6 +249,10 @@ class CrossSectionData(object):
 
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
+    @property
+    def reflectivity_workspace(self):
+        return mtd[self._reflectivity_workspace]
+
     @property
     def nbytes(self): return self.xydata.nbytes+self.xtofdata.nbytes
 
@@ -361,6 +367,7 @@ class CrossSectionData(object):
         self.configuration.instrument.get_info(workspace, self)
 
     def process_data(self, workspace):
+        self._event_workspace = str(workspace)
         run_object = workspace.getRun()
 
         # Bin events
@@ -452,7 +459,10 @@ class CrossSectionData(object):
                       self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(a[0]), int(a[1])]
-        ws = MagnetismReflectometryReduction(RunNumbers=[str(self.number),],
+        output_ws = "r%s_%s" % (self.number, str(self.entry_name))
+        
+        ws = MagnetismReflectometryReduction(#RunNumbers=[str(self.number),],
+                                             InputWorkspace=self._event_workspace,
                                     NormalizationRunNumber=str(direct_beam.number),
                                     SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
                                     SubtractSignalBackground=True,
@@ -475,12 +485,34 @@ class CrossSectionData(object):
                                     TimeAxisRange=self.tof_range,
                                     SpecularPixel=self.configuration.peak_position,
                                     ConstantQBinning=self.configuration.use_constant_q,
-                                    EntryName=str(self.entry_name))
+                                    EntryName=str(self.entry_name),
+                                    OutputWorkspace=output_ws)
+
+        ################## FOR COMPATIBILITY WITH QUICKNXS ##################
+        run_object = ws.getRun()
+        peak_min = run_object.getProperty("scatt_peak_min").value
+        peak_max = run_object.getProperty("scatt_peak_max").value
+        low_res_min = run_object.getProperty("scatt_low_res_min").value
+        low_res_max = run_object.getProperty("scatt_low_res_max").value
+        norm_x_min = run_object.getProperty("norm_peak_min").value
+        norm_x_max = run_object.getProperty("norm_peak_max").value
+        norm_y_min = run_object.getProperty("norm_low_res_min").value
+        norm_y_max = run_object.getProperty("norm_low_res_max").value
+        tth = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
+        quicknxs_scale = (float(norm_x_max)-float(norm_x_min)) * (float(norm_y_max)-float(norm_y_min))
+        quicknxs_scale /= (float(peak_max)-float(peak_min)) * (float(low_res_max)-float(low_res_min))
+        quicknxs_scale *= 0.005 / math.sin(tth)
+
+        ws = Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws,
+                   factor=quicknxs_scale, Operation='Multiply')
+        #####################################################################
 
         self.q = ws.readX(0)[:].copy()
         self._r = ws.readY(0)[:].copy() #* self.configuration.scaling_factor
         self._dr = ws.readE(0)[:].copy() #* self.configuration.scaling_factor
-        DeleteWorkspace(ws)
+
+        #DeleteWorkspace(ws)
+        self._reflectivity_workspace = str(ws)
 
     def offspec(self, direct_beam=None):
         """

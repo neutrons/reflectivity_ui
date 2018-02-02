@@ -1796,6 +1796,7 @@ class Ui_MainWindow(object):
         self.actionRemove.setToolTip(_translate("MainWindow", "Remove selected data set from the reduction list"))
         self.actionReduce.setText(_translate("MainWindow", "Reduce..."))
         self.actionReduce.setToolTip(_translate("MainWindow", "Reduce the data in the reduction table and save the output"))
+        self.actionReduce.setShortcut(_translate("MainWindow", "Ctrl+R"))
         self.actionAutoYLimits.setText(_translate("MainWindow", "Automatic Y Limits"))
         self.actionAutoYLimits.setToolTip(_translate("MainWindow", "Try to find the Y region of the beam automatically"))
         self.actionAutomaticXPeak.setText(_translate("MainWindow", "Automatic Peak Finder"))
