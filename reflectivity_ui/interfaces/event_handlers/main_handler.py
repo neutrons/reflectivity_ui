@@ -197,7 +197,7 @@ class MainHandler(object):
             file_dir, file_name = os.path.split(unicode(file_path))
             self.main_window.settings.setValue('current_directory', file_dir)
             self._path_watcher.removePath(self._data_manager.current_directory)
-            self._data_manager._current_directory = file_dir
+            self._data_manager.current_directory = file_dir
             self._data_manager.current_file_name = file_name
             self._path_watcher.addPath(self._data_manager.current_directory)
 
@@ -221,6 +221,7 @@ class MainHandler(object):
             except ValueError:
                 self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
                                     detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+        QtWidgets.QApplication.instance().processEvents()
 
     def automated_file_selection(self):
         """
