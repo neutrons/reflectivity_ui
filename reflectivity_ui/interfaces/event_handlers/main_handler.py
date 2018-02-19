@@ -698,12 +698,12 @@ class MainHandler(object):
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
 
-        configuration.peak_roi = [x_pos - x_width/2.0,
-                                                   x_pos + x_width/2.0]
-        configuration.low_res_roi = [y_pos - y_width/2.0,
-                                                      y_pos + y_width/2.0]
-        configuration.bck_roi = [bck_pos - bck_width/2.0,
-                                                  bck_pos + bck_width/2.0]
+        configuration.peak_roi = [int(round(x_pos - x_width/2.0)),
+                                  int(round(x_pos + x_width/2.0))]
+        configuration.low_res_roi = [int(round(y_pos - y_width/2.0)),
+                                     int(round(y_pos + y_width/2.0))]
+        configuration.bck_roi = [int(round(bck_pos - bck_width/2.0)),
+                                 int(round(bck_pos + bck_width/2.0))]
 
         configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
         configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()

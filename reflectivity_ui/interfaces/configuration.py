@@ -90,8 +90,8 @@ class Configuration(object):
     @peak_position.setter
     def peak_position(self, value):
         width = self.peak_width
-        self.peak_roi[0] = value - width/2.0
-        self.peak_roi[1] = value + width/2.0
+        self.peak_roi[0] = int(round(value - width/2.0))
+        self.peak_roi[1] = int(round(value + width/2.0))
 
     @property
     def peak_width(self):
@@ -101,8 +101,8 @@ class Configuration(object):
     @peak_width.setter
     def peak_width(self, value):
         pos = self.peak_position
-        self.peak_roi[0] = pos - value/2.0
-        self.peak_roi[1] = pos + value/2.0
+        self.peak_roi[0] = int(round(pos - value/2.0))
+        self.peak_roi[1] = int(round(pos + value/2.0))
 
     @property
     def low_res_position(self):
@@ -112,8 +112,8 @@ class Configuration(object):
     @low_res_position.setter
     def low_res_position(self, value):
         width = self.low_res_width
-        self.low_res_roi[0] = value - width/2.0
-        self.low_res_roi[1] = value + width/2.0
+        self.low_res_roi[0] = int(round(value - width/2.0))
+        self.low_res_roi[1] = int(round(value + width/2.0))
 
     @property
     def low_res_width(self):
@@ -123,8 +123,8 @@ class Configuration(object):
     @low_res_width.setter
     def low_res_width(self, value):
         pos = self.low_res_position
-        self.low_res_roi[0] = pos - value/2.0
-        self.low_res_roi[1] = pos + value/2.0
+        self.low_res_roi[0] = int(round(pos - value/2.0))
+        self.low_res_roi[1] = int(round(pos + value/2.0))
 
     @property
     def bck_position(self):
@@ -134,8 +134,8 @@ class Configuration(object):
     @bck_position.setter
     def bck_position(self, value):
         width = self.bck_width
-        self.bck_roi[0] = value - width/2.0
-        self.bck_roi[1] = value + width/2.0
+        self.bck_roi[0] = int(round(value - width/2.0))
+        self.bck_roi[1] = int(round(value + width/2.0))
 
     @property
     def bck_width(self):
@@ -145,8 +145,8 @@ class Configuration(object):
     @bck_width.setter
     def bck_width(self, value):
         pos = self.bck_position
-        self.bck_roi[0] = pos - value/2.0
-        self.bck_roi[1] = pos + value/2.0
+        self.bck_roi[0] = int(round(pos - value/2.0))
+        self.bck_roi[1] = int(round(pos + value/2.0))
 
     def to_q_settings(self, settings):
         """
@@ -207,11 +207,11 @@ class Configuration(object):
         self.force_bck_roi = _verify_true('force_bck_roi', self.force_bck_roi)
 
         default = ','.join([str(x) for x in self.peak_roi])
-        self.peak_roi = [float(x) for x in settings.value('peak_roi', default).split(',')]
+        self.peak_roi = [int(x) for x in settings.value('peak_roi', default).split(',')]
         default = ','.join([str(x) for x in self.low_res_roi])
-        self.low_res_roi = [float(x) for x in settings.value('low_res_roi', default).split(',')]
+        self.low_res_roi = [int(x) for x in settings.value('low_res_roi', default).split(',')]
         default = ','.join([str(x) for x in self.bck_roi])
-        self.bck_roi = [float(x) for x in settings.value('bck_roi', default).split(',')]
+        self.bck_roi = [int(x) for x in settings.value('bck_roi', default).split(',')]
 
         self.subtract_background = _verify_true('subtract_background', self.subtract_background)
         self.scaling_factor = float(settings.value('scaling_factor', self.scaling_factor))
