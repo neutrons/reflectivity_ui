@@ -7,5 +7,5 @@ class ApplicationConfiguration(object):
     """
     def __init__(self):
         #self.mantid_path = '.'
-        self.mantid_path = '/opt/mantidnightly/bin'
-        #self.mantid_path = '/opt/mantid311/bin'
+        #self.mantid_path = '/opt/mantidnightly/bin'
+        self.mantid_path = '/SNS/users/m2d/mantid_build/bin'

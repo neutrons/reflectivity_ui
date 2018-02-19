@@ -76,6 +76,8 @@ class DataManager(object):
         if index < len(channels):
             self.active_channel = self.data_sets[channels[index]]
             return True
+        elif len(channels) == 0:
+            logging.error("Could not set active channel: no data available")
         else:
             self.active_channel = self.data_sets[channels[0]]
         return False

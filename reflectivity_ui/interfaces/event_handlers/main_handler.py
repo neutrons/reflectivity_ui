@@ -54,6 +54,11 @@ class MainHandler(object):
             :param bool force: if true, the file will be reloaded
             :param bool silent: if true, the UI will not be updated
         """
+        if not os.path.isfile(file_path):
+            self.report_message("File does not exist",
+                                detailed_message="The following file does not exist:\n  %s" % file_path,
+                                pop_up=True, is_error=True)
+            return
         self.main_window.auto_change_active = True
         try:
             self.report_message("Loading file %s" % file_path)

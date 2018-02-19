@@ -39,6 +39,10 @@ XSECT_MAPPING = {u'entry-Off_Off': u'++',
 
 H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
 
+# Number of events under which we throw away a workspace
+#TODO: This should be a parameter
+N_EVENTS_CUTOFF = 10000
+
 def getIxyt(nxs_data):
     """
         Return [x, y, TOF] array
@@ -174,7 +178,7 @@ class NexusData(object):
         for xs in self.cross_sections:
                 self.cross_sections[xs].update_calculated_values()
 
-    def filter_events(self, progress=None):
+    def _filter_events(self, progress=None):
         """
             Returns a workspace with the selected events
             TODO: make this flexible so we can filter anything we want.
@@ -192,7 +196,7 @@ class NexusData(object):
         # If we have one entry, filter the events to extract channels
         #TODO: for now, just assume it's unpolarized
         self.cross_sections = OrderedDict()
-        if len(keys) == 1:
+        if len(keys) == 1 and keys[0] == 'entry':
             pass
         else:
             progress_value = 0
@@ -219,12 +223,54 @@ class NexusData(object):
                 # Delete workspace
                 #DeleteWorkspace(nxs_data)
 
+    def map_cross_section(self, ws):
+        """
+            Return the proper cross-section label for the provided workspace.
+            For legacy data, we just map Off to + and On to -.
+            #TODO: For new data, use the log entries to determine whether Off is + or -.
+            :param workspace ws: workspace to inspect
+        """
+        entry = ws.getRun().getProperty("cross_section_id").value
+        return XSECT_MAPPING.get('entry-%s' % entry, 'x')
+
     def load(self, progress=None):
         """
             Load cross-sections from a nexus file.
             :param function progress: call-back function to track progress
         """
-        self.filter_events(progress=progress)
+        #TODO: clean this up once MRFilterCrossSections is part of Mantid
+        #self._filter_events(progress=progress)
+
+        if progress is not None:
+            progress(5, "Filtering data...", out_of=100.0)
+
+        try:
+            xs_list = MRFilterCrossSections(self.file_path)
+        except:
+            logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
+            return
+
+        self.cross_sections = OrderedDict()
+        progress_value = 0
+        for ws in xs_list:
+            # Get the unique name for the cross-section, determined by the filtering
+            channel = ws.getRun().getProperty("cross_section_id").value
+            if progress is not None:
+                progress_value += int(100.0/len(xs_list))
+                progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
+
+            # Get rid of emty workspaces
+            if ws.getNumberEvents() < N_EVENTS_CUTOFF:
+                continue
+
+            name = self.map_cross_section(ws)
+            cross_section = CrossSectionData(name, self.configuration, entry_name=channel)
+            cross_section.collect_info(ws)
+            cross_section.process_data(ws)
+            self.cross_sections[name] = cross_section
+            self.number = cross_section.number
+        progress(100, "Complete", out_of=100.0)
+
         return self.cross_sections
 
 class CrossSectionData(object):
