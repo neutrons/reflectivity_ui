@@ -41,7 +41,7 @@ H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
 
 # Number of events under which we throw away a workspace
 #TODO: This should be a parameter
-N_EVENTS_CUTOFF = 10000
+N_EVENTS_CUTOFF = 100
 
 def getIxyt(nxs_data):
     """
@@ -245,7 +245,8 @@ class NexusData(object):
             progress(5, "Filtering data...", out_of=100.0)
 
         try:
-            xs_list = MRFilterCrossSections(self.file_path)
+            xs_list = self.configuration.instrument.load_data(self.file_path)
+            logging.info("%s loaded: %s xs" % (self.file_path, len(xs_list)))
         except:
             logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
             return
@@ -261,6 +262,7 @@ class NexusData(object):
 
             # Get rid of emty workspaces
             if ws.getNumberEvents() < N_EVENTS_CUTOFF:
+                logging.warn("Too few events for %s: %s" % (channel, ws.getNumberEvents()))
                 continue
 
             name = self.map_cross_section(ws)

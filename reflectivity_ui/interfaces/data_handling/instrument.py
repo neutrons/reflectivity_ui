@@ -34,8 +34,28 @@ class Instrument(object):
     instrument_dir = "/SNS/REF_M"
     file_search_template = "/SNS/REF_M/*/data/REF_M_%s"
 
+    # Filtering
+    pol_state = 'SF1'
+    pol_veto = ''
+    ana_state = 'SF2'
+    ana_veto = ''
+
     def __init__(self):
         self.tof_range = [0,0]
+
+    def load_data(self, file_path):
+        """
+            Load a data set according to the needs ot the instrument.
+            Returns a WorkspaceGroup with any number of cross-sections.
+
+            :param str file_path: path to the data file
+        """
+        xs_list = MRFilterCrossSections(Filename=file_path,
+                                        PolState=self.pol_state,
+                                        AnaState=self.ana_state,
+                                        PolVeto=self.pol_veto,
+                                        AnaVeto=self.ana_veto)
+        return xs_list
 
     def get_tof_range(self, run_object):
         """
