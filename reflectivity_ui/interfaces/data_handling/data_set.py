@@ -2,7 +2,7 @@
     Loader for event nexus files.
     Uses Mantid Framework
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except
 from __future__ import absolute_import, division, print_function
 import sys
 import os
@@ -137,7 +137,6 @@ class NexusData(object):
             try:
                 self.cross_sections[xs].gisans(direct_beam=direct_beam)
             except:
-                raise
                 has_errors = True
                 detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
@@ -176,7 +175,7 @@ class NexusData(object):
             Loop through the cross-section data sets and update.
         """
         for xs in self.cross_sections:
-                self.cross_sections[xs].update_calculated_values()
+            self.cross_sections[xs].update_calculated_values()
 
     def _filter_events(self, progress=None):
         """
@@ -246,7 +245,7 @@ class NexusData(object):
 
         try:
             xs_list = self.configuration.instrument.load_data(self.file_path)
-            logging.info("%s loaded: %s xs" % (self.file_path, len(xs_list)))
+            logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
         except:
             logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
             return
@@ -262,7 +261,7 @@ class NexusData(object):
 
             # Get rid of emty workspaces
             if ws.getNumberEvents() < N_EVENTS_CUTOFF:
-                logging.warn("Too few events for %s: %s" % (channel, ws.getNumberEvents()))
+                logging.warn("Too few events for %s: %s", channel, ws.getNumberEvents())
                 continue
 
             name = self.map_cross_section(ws)
@@ -294,6 +293,46 @@ class CrossSectionData(object):
         # Flag to tell us whether we found this data to be a direct beam data set
         self.is_direct_beam = False
         self.tof_range = [0, 0]
+        self._active_area_x = None
+        self._active_area_y = None
+        self.logs={}
+        self.log_minmax={}
+        self.log_units={}
+        self.proton_charge=0
+        self.total_counts=0
+        self.total_time=0
+
+        self.experiment=''
+        self.number=0
+        self.merge_warnings=''
+        self.tof_edges=None
+        self.data=None
+        self.xydata=None
+        self.xtofdata=None
+        self.meta_data_roi_peak = None
+        self.meta_data_roi_bck = None
+        self.direct_pixel = 0
+        self.angle_offset = 0
+        self.scattering_angle = 0
+        self._reflectivity_workspace = None
+
+        # Offset data
+        #TODO: refactor this
+        self.d_wavelength=0
+        self.Qz=None
+        self.Qx=None
+        self.ki_z=None
+        self.kf_z=None
+        self.intensity = 1
+        self.d_intensity = 0
+        self.S = None
+        self.dS = None
+
+        # GISANS
+        #TODO: refactor this
+        self.SGrid=None
+        self.QyGrid = None
+        self.QzGrid = None
 
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
@@ -378,7 +417,7 @@ class CrossSectionData(object):
             TODO: get average of values post filtering so that it truly represents the data
         """
         data = workspace.getRun()
-        self.origin=(os.path.abspath(data['filename'].value), 'entry')
+        #self.origin=(os.path.abspath(data['filename'].value), 'entry')
         self.logs={}
         self.log_minmax={}
         self.log_units={}

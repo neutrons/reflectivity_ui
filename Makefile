@@ -1,5 +1,5 @@
 all:
-	@echo "Run make install to install the live data server"
+	@echo "Run make install to install the reflectivity reduction application"
 
 check:
 	# Check dependencies

@@ -175,7 +175,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 plot.clear_fig()
         elif self.plot_manager.color is None:
             self.plot_manager.color = color
-        if self.ui.plotTab.currentIndex()!=4 and self._gisansThread: #TODO
+        if self.ui.plotTab.currentIndex()!=4 and self._gisansThread:
             self._gisansThread.finished.disconnect()
             self._gisansThread.terminate()
             self._gisansThread.wait(100)
@@ -366,7 +366,6 @@ class MainWindow(QtWidgets.QMainWindow,
         wrk = ProcessingWorkflow(self.data_manager, output_options)
         prog = ProgressReporter(create_dialog=False, parent=self)
         wrk.execute(prog)
-
 
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use

@@ -6,7 +6,7 @@
     Most of those come straight from QuickNXS.
 """
 import time
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
 
 
 def slow_down_events(fn):

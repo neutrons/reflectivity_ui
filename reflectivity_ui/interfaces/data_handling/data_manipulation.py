@@ -1,7 +1,7 @@
 """
     Methods used to process data, usually calling Mantid
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access
 from __future__ import absolute_import, division, print_function
 import sys
 import logging
@@ -95,7 +95,7 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
         params = "%s, %s, %s" % (q_min, q_step, q_max)
 
     if len(ws_list) > 1:
-        merged_ws, _ = Stitch1DMany(InputWorkspaces=ws_list, Params="%s, %s, %s" % (q_min, q_step, q_max),
+        merged_ws, _ = Stitch1DMany(InputWorkspaces=ws_list, Params=params,
                                     UseManualScaleFactors=True, ManualScaleFactors=scaling_factors,
                                     OutputWorkspace=ws_name+"_merged")
     else:

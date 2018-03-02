@@ -17,7 +17,7 @@ class DataInfo(object):
         by MRInspectData.
     """
     # Cutoff below which we can't call a data set a direct beam
-    n_events_cutoff = 2000
+    #n_events_cutoff = 2000
 
     def __init__(self, ws, cross_section, configuration):
         MRInspectData(Workspace=ws, UseROI=configuration.use_roi,
@@ -34,8 +34,8 @@ class DataInfo(object):
         run_object = ws.getRun()
         self.is_direct_beam = run_object.getProperty("is_direct_beam").value.lower()=='true'
         self.data_type = 0 if self.is_direct_beam else 1
-        if ws.getNumberEvents() < self.n_events_cutoff:
-            self.data_type = -1
+        #if ws.getNumberEvents() < self.n_events_cutoff:
+        #    self.data_type = -1
 
         # Processing options
         # Use the ROI rather than finding the ranges

@@ -3,7 +3,7 @@
     that is instrument-specific and abstracts out how we obtain
     information from the data file
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, bare-except
 from __future__ import absolute_import, division, print_function
 import sys
 import math
@@ -296,7 +296,7 @@ class Instrument(object):
                                        DataE=e_values[self.peak_range_offset:max_pixel])
             specular_peak, low_res, _ = LRPeakSelection(InputWorkspace=ws_short)
         except:
-            logging.error("Peak finding error [specular=%s]: %s" % (specular, sys.exc_value))
+            logging.error("Peak finding error [specular=%s]: %s", specular, sys.exc_value)
             return [0,0]
 
         if specular:

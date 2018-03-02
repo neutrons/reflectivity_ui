@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, bare-except, too-many-arguments
+#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, bare-except, protected-access, too-many-arguments
 """
     Manage file-related and UI events
 """

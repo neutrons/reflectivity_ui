@@ -1,3 +1,4 @@
+#pylint: disable=bare-except
 """
     Read and write quicknxs reduced files
     #TODO: replace this by a mantid algorithm

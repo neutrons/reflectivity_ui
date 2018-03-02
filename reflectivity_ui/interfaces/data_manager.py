@@ -1,3 +1,4 @@
+#pylint: disable=bare-except
 """
     Data manager. Holds information about the current data location
     and manages the data cache.
@@ -7,7 +8,7 @@ import sys
 import os
 import numpy as np
 import logging
-from reflectivity_ui.interfaces.data_handling.data_set import NexusData, NexusMetaData
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from .data_handling import data_manipulation
 
 class DataManager(object):
@@ -28,6 +29,7 @@ class DataManager(object):
         self.direct_beam_list = []
         # List of cross-sections common to all reduced data sets
         self.reduction_states = []
+        self.final_merged_reflectivity = {}
 
     @property
     def data_sets(self):
