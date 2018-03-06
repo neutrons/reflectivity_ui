@@ -79,6 +79,10 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
     q_max = q_min
 
     for i in range(len(reduction_list)):
+        # If we couldn't calculate the reflectivity, we won't have a workspace available
+        if reduction_list[i].cross_sections[xs].reflectivity_workspace is None:
+            continue
+
         _, _q_max = reduction_list[i].get_q_range()
         q_max = max(q_max, _q_max)
         ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
@@ -98,8 +102,10 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
         merged_ws, _ = Stitch1DMany(InputWorkspaces=ws_list, Params=params,
                                     UseManualScaleFactors=True, ManualScaleFactors=scaling_factors,
                                     OutputWorkspace=ws_name+"_merged")
-    else:
+    elif len(ws_list) == 1:
         merged_ws = CloneWorkspace(ws_list[0], OutputWorkspace=ws_name+"_merged")
+    else:
+        return None
 
     # Remove temporary workspaces
     for ws in ws_list:
@@ -109,9 +115,18 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
     return merged_ws
 
 def get_scaled_workspaces(reduction_list, xs):
+    """
+        Return a list of scaled workspaces
+        :param list reduction_list: list of NexusData objects
+        :param str xs: cross-section name
+    """
     ws_list = []
 
     for i in range(len(reduction_list)):
+        # If we couldn't calculate the reflectivity, we won't have a workspace available
+        if reduction_list[i].cross_sections[xs].reflectivity_workspace is None:
+            continue
+
         ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
         ws_tmp = Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_scaled',
               factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
@@ -155,6 +170,6 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
             meta_data.is_direct_beam = configuration.instrument.check_direct_beam(ws)
     except:
         logging.error(sys.exc_value)
-        logging.error("Could not load file %s [%s]", file_path, keys[0])
+        raise RuntimeError("Could not load file %s [%s]" % (file_path, keys[0]))
 
     return meta_data

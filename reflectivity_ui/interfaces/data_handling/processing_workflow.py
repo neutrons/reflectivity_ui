@@ -2,9 +2,24 @@
     Data processing workflow, taking results and writing them to files.
     #TODO: write mantid script
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function
 import os
+import math
+import copy
+import numpy as np
+import logging
 from . import quicknxs_io, data_manipulation
+
+# Standard names for array outputs
+STD_CHANNELS={'x': 'unpolarized',
+              '+': 'up',
+              '-': 'down',
+              '++': 'upup',
+              '--': 'downdown',
+              '+-': 'updown',
+              '-+': 'downup',
+              }
+
 
 class ProcessingWorkflow(object):
     """
@@ -20,6 +35,9 @@ class ProcessingWorkflow(object):
             Process data and write output files
             :param ProgressReporter progress: reporter object
         """
+        if len(self.data_manager.reduction_states) == 0:
+            return
+
         progress.create()
         if self.output_options['export_specular']:
             if progress is not None:
@@ -28,55 +46,18 @@ class ProcessingWorkflow(object):
 
         if self.output_options['export_offspec']:
             pass
-        
+
         if self.output_options['export_offspec_corr']:
             pass
-        
+
         if self.output_options['export_offspec_smooth']:
             pass
-        
+
         if self.output_options['export_gisans']:
             pass
         progress(100, "Complete")
 
-    def asymmetry(self):
-        """
-            Determine which cross-section to use to compute asymmetry, compute it, and write it to file.
-        """
-        # Inspect cross-section
-        # - For two states, just calculate the asymmetry using those two
-        p_state = None
-        m_state = None
-        if len(self.data_manager.reduction_states) == 2:
-            p_state = self.data_manager.reduction_states[0]
-            m_state = self.data_manager.reduction_states[1]
-
-        # - For the traditional four states, pick the right ones by hand
-        elif len(self.data_manager.reduction_states) == 4:
-            if '++' in self.data_manager.reduction_states \
-            and '--' in self.data_manager.reduction_states:
-                p_state = '++'
-                m_state = '--'
-
-        # - If we haven't made sense of it yet, take the first and last cross-sections 
-        if p_state is None and m_state is None and len(self.data_manager.reduction_states)>=2:
-            p_state = self.data_manager.reduction_states[0]
-            m_state = self.data_manager.reduction_states[-1]
-
-        if p_state is None or m_state is None:
-            return
-
-        # Get the list of workspaces
-        ws_list = []
-        for item in self.data_manager.reduction_list:
-            p_ws = item.cross_sections[p_state].reflectivity_workspace
-            m_ws = item.cross_sections[m_state].reflectivity_workspace
-            ratio_ws = (p_ws - m_ws) / (p_ws + m_ws)
-            ws_list.append(ratio_ws)
-
-        self._write_quicknxs(ws_list, pol_state='SA', create_combined=False)
-
-    def get_file_name(self, run_list=[], pol_state='', data_type='dat', process_type='Specular'):
+    def get_file_name(self, run_list=[], pol_state=None, data_type='dat', process_type='Specular'):
         """
             Construct a file name according to the measurement type.
             :param list run_list: list of run numbers
@@ -87,60 +68,44 @@ class ProcessingWorkflow(object):
         base_name = self.output_options['output_file_template'].replace('{numbers}', '+'.join(run_list))
         base_name = base_name.replace('{instrument}', self.data_manager.active_channel.configuration.instrument.instrument_name)
         base_name = base_name.replace('{item}', process_type)
-        base_name = base_name.replace('{state}', pol_state)
+        if pol_state is not None:
+            base_name = base_name.replace('{state}', pol_state)
         base_name = base_name.replace('{type}', data_type)
         return os.path.join(self.output_options['output_directory'], base_name)
 
-    def write_quicknxs(self):
+    def write_quicknxs(self, output_data, output_file_base):
         """
-            The QuickNXS format cannot be written from the merged reflectivity, so we
-            have to treat it differently and give it the workspaces for each angle.
+            Write QuickNXS output reflectivity file.
+            :param dict output_data: dictionary of numpy arrays
+            :param str output_file_base: template for output file paths
         """
-        combined_file_created = False
-        for pol_state in self.data_manager.reduction_states:
-            # The scaling factors should have been determined at this point. Just use them
-            # to merge the different runs in a set.
-            ws_list = data_manipulation.get_scaled_workspaces(self.data_manager.reduction_list, pol_state)
+        # List of all output states we have to deal with
+        output_states = copy.copy(self.data_manager.reduction_states)
+        if self.output_options['export_asym'] and 'SA' in output_data:
+            output_states.append("SA")
 
-            trim_first = [item.cross_sections[pol_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
-            trim_last = [item.cross_sections[pol_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
-
-            # Append data to QuickNXS file
-            self._write_quicknxs(ws_list, pol_state=pol_state, create_combined=not combined_file_created)
-            combined_file_created = True
-
-        # Call WriteQuickNXS, with an option to compute the asymmetry from two specified x-sections
-        # Specify which ones with an input paramater: ASYM_INDICES = [0,3]
-
-        if self.output_options['export_asym']:
-            self.asymmetry()
-
-    def _write_quicknxs(self, ws_list, pol_state='', create_combined=True):
-        """
-            Write reflectivity in QuickNXS format
-            :param list ws_list: list of reduced mantid workspaces
-            :param str pol_state: name forthe polarization state
-            :param bool create_combined: if True, a file for the combined states will be created
-        """
-        # Get the list of runs
-        run_list = [str(ws.getRunNumber()) for ws in ws_list]
-
-        # Create a name for the combined file
-        combined_output_path = self.get_file_name(run_list, pol_state='all')
-
-        # Create a name for each cross-section file
-        output_path = self.get_file_name(run_list, pol_state=pol_state)
-
-        exporter = quicknxs_io.Exporter(ws_list)
+        # Create combined file header
+        combined_output_path = output_file_base.replace('{state}', 'all')
         if self.output_options['format_combined']:
-            if create_combined:
-                all_states = ', '.join(self.data_manager.reduction_states)
-                exporter.write_reflectivity_header(combined_output_path, all_states)
-            exporter.write_reflectivity_data(combined_output_path, pol_state, as_multi=True)
+            all_states = ', '.join(self.data_manager.reduction_states)
+            quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, combined_output_path, all_states)
 
-        if self.output_options['format_multi']:
-            exporter.write_reflectivity_header(output_path, pol_state)
-            exporter.write_reflectivity_data(output_path, pol_state, as_multi=False)
+        # Write out the cross-section data
+        for pol_state in output_states:
+
+            # The cross-sections might have different names
+            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
+            # We might not have data for a given cross-section
+            if output_xs_name not in output_data:
+                continue
+
+            if self.output_options['format_combined']:
+                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name], pol_state, as_multi=True)
+
+            if self.output_options['format_multi']:
+                state_output_path = output_file_base.replace('{state}', pol_state) #self.get_file_name(run_list, pol_state=pol_state)
+                quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
+                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, as_multi=False)
 
     def specular_reflectivity(self):
         """
@@ -150,13 +115,19 @@ class ProcessingWorkflow(object):
         # The following would be used to recalculate it:
         #    self.data_manager.calculate_reflectivity(specular=True)
 
-        self.data_manager.merge_data_sets(asymmetry=self.output_options['export_asym'])
+        #self.data_manager.merge_data_sets(asymmetry=self.output_options['export_asym'])
 
-        # The QuickNXS format is treated differently
-        self.write_quicknxs()
+        run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
+        output_data = self.get_output_data()
 
-        if self.output_options['format_numpy']: pass
+        # QuickNXS format
+        output_file_base =  self.get_file_name(run_list)
+        self.write_quicknxs(output_data, output_file_base)
+
+        if self.output_options['format_numpy']:
+            output_file =  self.get_file_name(run_list, data_type='npz', pol_state='all')
+            np.savez(output_file, **output_data)
 
         if self.output_options['format_plot']: pass
 
@@ -164,3 +135,76 @@ class ProcessingWorkflow(object):
 
         if self.output_options['format_genx']: pass
 
+    def get_output_data(self):
+        """
+            The QuickNXS format cannot be written from the merged reflectivity, so we
+            have to treat it differently and give it the workspaces for each angle.
+        """
+        data_dict = dict(units=['1/A', 'a.u.', 'a.u.', '1/A', 'rad'],
+                         columns=['Qz', 'R', 'dR', 'dQz', 'theta'])
+
+        # Extract common information
+        if len(self.data_manager.reduction_states) == 0:
+            logging.error("List of cross-sections is empty")
+            return data_dict
+        first_state = self.data_manager.reduction_states[0]
+        p_0 = [item.cross_sections[first_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
+        p_n = [item.cross_sections[first_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
+
+        for pol_state in self.data_manager.reduction_states:
+            # The scaling factors should have been determined at this point. Just use them
+            # to merge the different runs in a set.
+            ws_list = data_manipulation.get_scaled_workspaces(self.data_manager.reduction_list, pol_state)
+
+            # If the reflectivity calculation failed, we may not have data to work with
+            # for this cross-section.
+            if len(ws_list) == 0:
+                continue
+
+            combined_data = []
+            for i in range(len(ws_list)):
+                ws = ws_list[i]
+                _x = ws.readX(0)
+                n_total = len(_x)
+                x = ws.readX(0)[p_0[i]:n_total-p_n[i]]
+                y = ws.readY(0)[p_0[i]:n_total-p_n[i]]
+                dy = ws.readE(0)[p_0[i]:n_total-p_n[i]]
+                dx = ws.readDx(0)[p_0[i]:n_total-p_n[i]]
+                tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
+                tth = np.ones(len(x)) * tth_value
+                combined_data.append(np.vstack((x,y,dy,dx,tth)).transpose())
+
+            _output_data = np.vstack(combined_data)
+            ordered = np.argsort(_output_data, axis=0).transpose()[0]
+            output_data = _output_data[ordered]
+
+            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
+            data_dict[output_xs_name] = output_data
+
+        # Asymmetry
+        if self.output_options['export_asym']:
+            p_state, m_state = self.data_manager.determine_asymmetry_states()
+            p_state = STD_CHANNELS.get(p_state, p_state)
+            m_state = STD_CHANNELS.get(m_state, m_state)
+
+            # Get the list of workspaces
+            asym_data = []
+            if p_state in data_dict and m_state in data_dict \
+                and len(data_dict[p_state]) == len(data_dict[m_state]):
+
+                for i in range(len(data_dict[p_state])):
+                    p_point = data_dict[p_state][i]
+                    m_point = data_dict[m_state][i]
+
+                    ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
+                    d_ratio = 2.0 / (p_point[1] + m_point[1])**2
+                    d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
+
+                    asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
+    
+                data_dict['SA'] = np.asarray(asym_data)
+            else:
+                logging.error("Asym request but failed: %s %s %s %s", p_state, m_state,
+                              len(data_dict[p_state]), len(data_dict[m_state]))
+
+        return data_dict

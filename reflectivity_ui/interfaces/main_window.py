@@ -353,10 +353,10 @@ class MainWindow(QtWidgets.QMainWindow,
         Open a dialog to select reduction options for the current list of
         reduction items.
         '''
-        #if len(self.reduction_list)==0:
-        #    self.file_handler.report_message("The data to be reduced must be added to the reduction table",
-        #                                     pop_up=True)
-        #    return
+        if len(self.data_manager.reduction_list)==0:
+            self.file_handler.report_message("The data to be reduced must be added to the reduction table",
+                                             pop_up=True)
+            return
         dialog=ReductionDialog(self)
         dialog.exec_()
         output_options = dialog.get_options()

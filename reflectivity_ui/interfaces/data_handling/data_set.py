@@ -5,10 +5,8 @@
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except
 from __future__ import absolute_import, division, print_function
 import sys
-import os
 import logging
 from collections import OrderedDict
-import h5py
 import numpy as np
 import copy
 import math
@@ -128,7 +126,8 @@ class NexusData(object):
                 has_errors = True
                 detailed_msg += "Could not calculate reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
-        return has_errors, detailed_msg
+        if has_errors:
+            raise RuntimeError(detailed_msg)
 
     def calculate_gisans(self, direct_beam):
         has_errors = False
@@ -157,8 +156,9 @@ class NexusData(object):
                 has_errors = True
                 detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
-        return has_errors, detailed_msg
-            
+        if has_errors:
+            raise RuntimeError(detailed_msg)
+
     def update_configuration(self, configuration):
         """
             Loop through the cross-section data sets and update
@@ -177,51 +177,6 @@ class NexusData(object):
         for xs in self.cross_sections:
             self.cross_sections[xs].update_calculated_values()
 
-    def _filter_events(self, progress=None):
-        """
-            Returns a workspace with the selected events
-            TODO: make this flexible so we can filter anything we want.
-
-            A cross-section editor dialog should be written to
-            add (title, definition) pair list of channels.
-
-            :param function progress: call-back function to track progress
-        """
-        progress(5, "Preparing...", out_of=100.0)
-        nxs = h5py.File(self.file_path, mode='r')
-        keys = nxs.keys()
-        keys.sort()
-        nxs.close()
-        # If we have one entry, filter the events to extract channels
-        #TODO: for now, just assume it's unpolarized
-        self.cross_sections = OrderedDict()
-        if len(keys) == 1 and keys[0] == 'entry':
-            pass
-        else:
-            progress_value = 0
-            for channel in keys:
-                if progress is not None:
-                    progress_value += int(100.0/len(keys))
-                    progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
-                logging.warning("Loading file %s [%s]", str(self.file_path), str(channel))
-                try:
-                    nxs_data = LoadEventNexus(str(self.file_path),
-                                              OutputWorkspace="nxs_data_%s_%s" % (str(os.path.basename(self.file_path)),
-                                                                                  str(channel)),
-                                              NXentryName=str(channel))
-                except:
-                    logging.error("Could not load file %s [%s]", str(self.file_path), str(channel))
-                    continue
-
-                name = XSECT_MAPPING.get(channel, 'x')
-                cross_section = CrossSectionData(name, self.configuration, entry_name=channel)
-                cross_section.collect_info(nxs_data)
-                cross_section.process_data(nxs_data)
-                self.cross_sections[name] = cross_section
-                self.number = cross_section.number
-                # Delete workspace
-                #DeleteWorkspace(nxs_data)
-
     def map_cross_section(self, ws):
         """
             Return the proper cross-section label for the provided workspace.
@@ -237,9 +192,6 @@ class NexusData(object):
             Load cross-sections from a nexus file.
             :param function progress: call-back function to track progress
         """
-        #TODO: clean this up once MRFilterCrossSections is part of Mantid
-        #self._filter_events(progress=progress)
-
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)
 
@@ -273,6 +225,7 @@ class NexusData(object):
         progress(100, "Complete", out_of=100.0)
 
         return self.cross_sections
+
 
 class CrossSectionData(object):
     """
@@ -338,7 +291,9 @@ class CrossSectionData(object):
     # return the size of the data stored in memory for this dataset
     @property
     def reflectivity_workspace(self):
-        return mtd[self._reflectivity_workspace]
+        if str(self._reflectivity_workspace) in mtd:
+            return mtd[self._reflectivity_workspace]
+        return None
 
     @property
     def nbytes(self): return self.xydata.nbytes+self.xtofdata.nbytes
@@ -547,33 +502,36 @@ class CrossSectionData(object):
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(a[0]), int(a[1])]
         output_ws = "r%s_%s" % (self.number, str(self.entry_name))
-        
-        ws = MagnetismReflectometryReduction(#RunNumbers=[str(self.number),],
-                                             InputWorkspace=self._event_workspace,
-                                    NormalizationRunNumber=str(direct_beam.number),
-                                    SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
-                                    SubtractSignalBackground=True,
-                                    SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
-                                    ApplyNormalization=apply_norm,
-                                    NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
-                                    SubtractNormBackground=True,
-                                    NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
-                                    CutLowResDataAxis=True,
-                                    LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
-                                    CutLowResNormAxis=True,
-                                    LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
-                                    CutTimeAxis=True,
-                                    QMin=0.001,
-                                    QStep=-0.01,
-                                    AngleOffset = angle_offset,
-                                    UseWLTimeAxis=False,
-                                    TimeAxisStep=self.configuration.tof_bins,
-                                    UseSANGLE=not self.configuration.use_dangle,
-                                    TimeAxisRange=self.tof_range,
-                                    SpecularPixel=self.configuration.peak_position,
-                                    ConstantQBinning=self.configuration.use_constant_q,
-                                    EntryName=str(self.entry_name),
-                                    OutputWorkspace=output_ws)
+
+        ws_norm = None
+        if apply_norm and direct_beam._event_workspace is not None:
+            ws_norm = CloneWorkspace(InputWorkspace=direct_beam._event_workspace)
+
+        ws = MagnetismReflectometryReduction(InputWorkspace=self._event_workspace,
+                                             NormalizationWorkspace=ws_norm,
+                                             SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
+                                             SubtractSignalBackground=True,
+                                             SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
+                                             ApplyNormalization=apply_norm,
+                                             NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
+                                             SubtractNormBackground=True,
+                                             NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
+                                             CutLowResDataAxis=True,
+                                             LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
+                                             CutLowResNormAxis=True,
+                                             LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+                                             CutTimeAxis=True,
+                                             QMin=0.001,
+                                             QStep=-0.01,
+                                             AngleOffset = angle_offset,
+                                             UseWLTimeAxis=False,
+                                             TimeAxisStep=self.configuration.tof_bins,
+                                             UseSANGLE=not self.configuration.use_dangle,
+                                             TimeAxisRange=self.tof_range,
+                                             SpecularPixel=self.configuration.peak_position,
+                                             ConstantQBinning=self.configuration.use_constant_q,
+                                             EntryName=str(self.entry_name),
+                                             OutputWorkspace=output_ws)
 
         ################## FOR COMPATIBILITY WITH QUICKNXS ##################
         run_object = ws.getRun()

@@ -4,7 +4,6 @@
     and manages the data cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import sys
 import os
 import numpy as np
 import logging
@@ -74,6 +73,8 @@ class DataManager(object):
             Set the current channel to the specified index, or zero
             if it doesn't exist.
         """
+        if self.data_sets is None:
+            return False
         channels = self.data_sets.keys()
         if index < len(channels):
             self.active_channel = self.data_sets[channels[index]]
@@ -316,7 +317,6 @@ class DataManager(object):
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """
             Calculater reflectivity using the current configuration
-            #TODO: refactor the error handling
         """
         # Select the data to work on
         if nexus_data is None:
@@ -326,18 +326,11 @@ class DataManager(object):
         direct_beam = self._find_direct_beam(nexus_data)
 
         if not specular:
-            has_errors, detailed_msg = nexus_data.calculate_offspec(direct_beam=direct_beam)
+            nexus_data.calculate_offspec(direct_beam=direct_beam)
         elif active_only:
-            try:
-                self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
-            except:
-                has_errors = True
-                detailed_msg = str(sys.exc_value)
+            self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
         else:
-            has_errors, detailed_msg = nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
-
-        if has_errors:
-            raise RuntimeError(detailed_msg)
+            nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
 
     def find_best_direct_beam(self):
         """
@@ -426,9 +419,9 @@ class DataManager(object):
         if asymmetry:
             self.asymmetry()
 
-    def asymmetry(self):
+    def determine_asymmetry_states(self):
         """
-            Determine which cross-section to use to compute asymmetry, compute it, and write it to file.
+            Determine which cross-section to use to compute asymmetry.
         """
         # Inspect cross-section
         # - For two states, just calculate the asymmetry using those two
@@ -450,8 +443,13 @@ class DataManager(object):
             p_state = self.reduction_states[0]
             m_state = self.reduction_states[-1]
 
-        if p_state is None or m_state is None:
-            return
+        return p_state, m_state
+
+    def asymmetry(self):
+        """
+            Determine which cross-section to use to compute asymmetry, and compute it.
+        """
+        p_state, m_state = self.determine_asymmetry_states()
 
         # Get the list of workspaces
         if p_state in self.final_merged_reflectivity and m_state in self.final_merged_reflectivity:
@@ -467,5 +465,5 @@ class DataManager(object):
             If a file path is provided, the mid q-value will be extracted from that data file.
         """
         if file_path is not None:
-            return extract_meta_data(file_path=file_path, configuration=self.active_channel.configuration)
-        return extract_meta_data(cross_section_data=self.active_channel)
+            return data_manipulation.extract_meta_data(file_path=file_path, configuration=self.active_channel.configuration)
+        return data_manipulation.extract_meta_data(cross_section_data=self.active_channel)
