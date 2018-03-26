@@ -15,6 +15,7 @@ sys.path.insert(0, application_conf.mantid_path)
 import mantid
 
 from ... import __version__
+from ..configuration import Configuration
 
 
 def write_reflectivity_header(reduction_list, output_path, pol_states):
@@ -182,3 +183,76 @@ def write_reflectivity_data(output_path, data, pol_state, as_multi=False):
 
         if as_multi:
             fd.write("# End of channel %s\n\n\n" % pol_state)
+
+def read_reduced_file(file_path):
+    """
+        Read in configurations from a reduced data file.
+        :param str file_path: reduced data file
+    """
+    direct_beam_runs = []
+    data_runs = []
+
+    with open(file_path, 'r') as file_content:
+        # Section identifier
+        #   0: None
+        #   1: direct beams
+        #   2: data runs
+        _in_section = 0
+        for line in file_content.readlines():
+            if "[Direct Beam Runs]" in line:
+                _in_section = 1
+            elif "[Data Runs]" in line:
+                _in_section = 2
+            elif "[Global Options]" in line:
+                _in_section = 0
+
+            # Process direct beam runs
+            if _in_section == 1:
+                toks = line.split()
+                if len(toks)<14 or 'DB_ID' in line:
+                    continue
+                try:
+                    db_id = int(toks[1])
+                    conf = Configuration()
+                    conf.cut_first_n_points = int(toks[2])
+                    conf.cut_last_n_points = int(toks[3])
+                    conf.peak_position = float(toks[4])
+                    conf.peak_width = float(toks[5])
+                    conf.low_res_position = float(toks[6])
+                    conf.low_res_width = float(toks[7])
+                    conf.bck_position = float(toks[8])
+                    conf.bck_width = float(toks[9])
+                    conf.direct_pixel_overwrite = int(toks[10])
+                    run_number = int(toks[12])
+                    run_file = toks[13]
+                    direct_beam_runs.append([db_id, run_number, run_file, conf])
+                except:
+                    logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
+                    logging.error(line)
+
+            # Process data runs
+            if _in_section == 2:
+                toks = line.split()
+                if len(toks)<16 or 'DB_ID' in line:
+                    continue
+                try:
+                    conf = Configuration()
+                    conf.scaling_factor = float(toks[1])
+                    conf.cut_first_n_points = int(toks[2])
+                    conf.cut_last_n_points = int(toks[3])
+                    conf.peak_position = float(toks[4])
+                    conf.peak_width = float(toks[5])
+                    conf.low_res_position = float(toks[6])
+                    conf.low_res_width = float(toks[7])
+                    conf.bck_position = float(toks[8])
+                    conf.bck_width = float(toks[9])
+                    conf.direct_pixel_overwrite = int(toks[11])
+                    conf.normalization = int(toks[14])
+                    run_number = int(toks[13])
+                    run_file = toks[15]
+                    data_runs.append([run_number, run_file, conf])
+                except:
+                    logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
+                    logging.error(line)
+
+    return direct_beam_runs, data_runs
