@@ -9,6 +9,7 @@ import numpy as np
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from .data_handling import data_manipulation
+from .data_handling import quicknxs_io
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -467,3 +468,10 @@ class DataManager(object):
         if file_path is not None:
             return data_manipulation.extract_meta_data(file_path=file_path, configuration=self.active_channel.configuration)
         return data_manipulation.extract_meta_data(cross_section_data=self.active_channel)
+
+    def load_reduced_file(self, file_path):
+        """
+            Pass-through function to hide the file handling from the UI.
+            :param str file_path: reduced file to load
+        """
+        return quicknxs_io.read_reduced_file(file_path)

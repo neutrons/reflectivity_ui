@@ -2,7 +2,7 @@
 """
     Setup script for magnetic reflectivity reduction application
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function
 import sys
 from setuptools import setup, find_packages
 import os
@@ -36,6 +36,8 @@ if 'pyrcc' in sys.argv[:]:
     os.system(command)
     sys.exit(0)
 
+package_data = {"reflectivity_ui.interfaces.data_handling": ["genx_templates/*.gx",]}
+
 setup(name="reflectivity_ui",
       version='0.0',
       description = "Magnetic Reflectivity Reduction",
@@ -46,6 +48,7 @@ setup(name="reflectivity_ui",
       zip_safe=False,
       packages=find_packages(),
       package_dir={},
+      package_data=package_data,
       install_requires=['numpy','matplotlib'],
       setup_requires=[],
 )

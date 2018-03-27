@@ -198,7 +198,11 @@ def read_reduced_file(file_path):
         #   1: direct beams
         #   2: data runs
         _in_section = 0
+        _file_start = True
         for line in file_content.readlines():
+            if _file_start and not line.startswith("# Datafile created by QuickNXS"):
+                raise RuntimeError("The selected file does not conform to the QuickNXS format")
+            _file_start = False
             if "[Direct Beam Runs]" in line:
                 _in_section = 1
             elif "[Data Runs]" in line:
@@ -212,7 +216,6 @@ def read_reduced_file(file_path):
                 if len(toks)<14 or 'DB_ID' in line:
                     continue
                 try:
-                    db_id = int(toks[1])
                     conf = Configuration()
                     conf.cut_first_n_points = int(toks[2])
                     conf.cut_last_n_points = int(toks[3])
@@ -225,7 +228,7 @@ def read_reduced_file(file_path):
                     conf.direct_pixel_overwrite = int(toks[10])
                     run_number = int(toks[12])
                     run_file = toks[13]
-                    direct_beam_runs.append([db_id, run_number, run_file, conf])
+                    direct_beam_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
                     logging.error(line)

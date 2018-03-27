@@ -2,7 +2,9 @@
     Data processing workflow, taking results and writing them to files.
     #TODO: write mantid script
 """
+#pylint: disable=bare-except
 from __future__ import absolute_import, division, print_function
+import sys
 import os
 import math
 import copy
@@ -107,6 +109,48 @@ class ProcessingWorkflow(object):
                 quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
                 quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, as_multi=False)
 
+    def write_genx(self, output_data, output_file_base):
+        '''
+            Create a Genx .gx model file with the right polarization states
+            and the reflectivity data already included for convenience.
+        '''
+        try:
+            import zipfile
+            import cPickle
+        except:
+            logging.error("Problem importing modules: %s", sys.exc_info([1]))
+            return
+
+        output_path = output_file_base.replace('{state}', 'all')
+
+        # Load templates
+        module_dir, _ = os.path.split(__file__)
+        template_dir = os.path.join(module_dir, 'genx_templates')
+        logging.error("GENX: %s", template_dir)
+        if len(self.data_manager.reduction_states) == 1:
+            template_path = os.path.join(template_dir, 'unpolarized.gx')
+        if len(self.data_manager.reduction_states) == 2:
+            template_path = os.path.join(template_dir, 'polarized.gx')
+        else:
+            template_path = os.path.join(template_dir, 'spinflip.gx')
+
+        iz=zipfile.ZipFile(template_path, 'r')
+        oz=zipfile.ZipFile(output_path, 'w', iz.compression)
+        for key in ['script', 'parameters', 'fomfunction', 'config', 'optimizer']:
+            oz.writestr(key, iz.read(key))
+
+        model_data=cPickle.loads(iz.read('data'))
+        for i, channel in enumerate(self.data_manager.reduction_states):
+            model_data[i].x_raw=output_data[channel][:, 0]
+            model_data[i].y_raw=output_data[channel][:, 1]
+            model_data[i].error_raw=output_data[channel][:, 2]
+            model_data[i].xerror_raw=output_data[channel][:, 3]
+            model_data[i].name=channel
+            model_data[i].run_command()
+        oz.writestr('data', cPickle.dumps(model_data, 0)) # dup as version 2 pickle
+        iz.close()
+        oz.close()
+
     def specular_reflectivity(self):
         """
             Retrieve the computed reflectivity and save it to file
@@ -125,15 +169,24 @@ class ProcessingWorkflow(object):
         output_file_base =  self.get_file_name(run_list)
         self.write_quicknxs(output_data, output_file_base)
 
+        # Numpy arrays
         if self.output_options['format_numpy']:
             output_file =  self.get_file_name(run_list, data_type='npz', pol_state='all')
             np.savez(output_file, **output_data)
 
         if self.output_options['format_plot']: pass
 
-        if self.output_options['format_matlab']: pass
+        # Matlab output
+        if self.output_options['format_matlab']:
+            try:
+                from scipy.io import savemat
+                output_file =  self.get_file_name(run_list, data_type='mat', pol_state='all')
+                savemat(output_file, output_data, oned_as='column')
+            except:
+                logging.error("Could not save in matlab format: %s", sys.exc_info([1]))
 
-        if self.output_options['format_genx']: pass
+        if self.output_options['format_genx']:
+            self.write_genx(output_data, output_file_base)
 
     def get_output_data(self):
         """

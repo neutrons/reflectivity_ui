@@ -281,6 +281,55 @@ class MainHandler(object):
             self.file_loaded()
         self.main_window.auto_change_active=False
 
+    def open_reduced_file_dialog(self):
+        """
+            Open a reduced file and all the data files needed to reproduce it.
+        """
+        # Open file dialog
+        filter_ = u'QuickNXS files (*.dat);;All (*.*)'
+        output_dir = self.main_window.settings.value('output_directory', os.path.expanduser('~'))
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open reduced file...',
+                                                    directory=output_dir,
+                                                    filter=filter_)
+        n_count = 0
+        if file_path:
+            # Update output directory
+            file_dir, _ = os.path.split(unicode(file_path))
+            self.main_window.settings.setValue('output_directory', file_dir)
+
+            # Read the file and go load the data
+            db_files, data_files = self._data_manager.load_reduced_file(file_path)
+            for r_id, run_file, conf in db_files:
+                logging.error("%s: sf=%s:", r_id, conf.scaling_factor)
+                self.open_file(run_file, silent=True)
+                n_count += 1
+
+                self.main_window.auto_change_active = True
+                self.populate_from_configuration(conf)
+                #self._data_manager.update_configuration(conf)
+                self.add_direct_beam(silent=True)
+
+            for r_id, run_file, conf in data_files:
+                logging.error("%s: sf=%s:", r_id, conf.scaling_factor)
+                self.open_file(run_file, silent=True)
+                n_count += 1
+
+                self.main_window.auto_change_active = True
+                #self._data_manager.update_configuration(conf)
+                self.populate_from_configuration(conf)
+                self.add_reflectivity(silent=True)
+
+            # Update the UI
+            if self._data_manager.active_channel is not None:
+                self.populate_from_configuration(self._data_manager.active_channel.configuration)
+                self.update_file_list(file_path)
+
+        # At the very end, update the UI and plot reflectivity
+        if n_count > 0:
+            self.main_window.auto_change_active = True
+            self.file_loaded()
+        self.main_window.auto_change_active=False
+
     # Actions defined in Qt Designer
     def file_open_dialog(self):
         """
@@ -288,9 +337,9 @@ class MainHandler(object):
             TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
         if self.ui.histogramActive.isChecked():
-            filter_ = u'Histo Nexus (*histo.nxs);;All (*.*)'
+            filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
         else:
-            filter_ = u'Event Nexus (*nxs.h5);;Event Nexus (*event.nxs);;All (*.*)'
+            filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
                                                     directory=self._data_manager.current_directory,
                                                     filter=filter_)
@@ -352,7 +401,7 @@ class MainHandler(object):
                 i += 1
         table.resizeColumnsToContents()
 
-    def add_reflectivity(self):
+    def add_reflectivity(self, silent=False):
         """
             Collect information about the current extraction settings and store them
             in the list of reduction items.
@@ -370,7 +419,8 @@ class MainHandler(object):
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
-            self.report_message("Data incompatible or already in the list.", pop_up=True)
+            if not silent:
+                self.report_message("Data incompatible or already in the list.", pop_up=True)
             return False
         self.main_window.auto_change_active = True
 
@@ -522,7 +572,7 @@ class MainHandler(object):
 
         self.main_window.initiate_reflectivity_plot.emit(True)
 
-    def add_direct_beam(self):
+    def add_direct_beam(self, silent=False):
         """
             Add / remove dataset to the available normalizations or clear the normalization list.
         """
@@ -533,7 +583,8 @@ class MainHandler(object):
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_normalization():
-            self.report_message("Data incompatible or already in the list.", pop_up=True)
+            if not silent:
+                self.report_message("Data incompatible or already in the list.", pop_up=True)
             return False
 
         self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))

@@ -28,16 +28,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_6">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -65,16 +56,7 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -159,16 +141,7 @@
         <item>
          <widget class="QWidget" name="eventModeEntries" native="true">
           <layout class="QVBoxLayout" name="verticalLayout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -363,28 +336,19 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>412</width>
-             <height>180</height>
+             <width>371</width>
+             <height>183</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Reflectivity Extraction (Basic)</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_3">
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <property name="verticalSpacing">
              <number>1</number>
+            </property>
+            <property name="margin">
+             <number>2</number>
             </property>
             <item row="1" column="2">
              <widget class="QDoubleSpinBox" name="refYPos">
@@ -634,28 +598,19 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>343</width>
-             <height>119</height>
+             <width>322</width>
+             <height>106</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Reflectivity Extraction (Advanced)</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_15">
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <property name="verticalSpacing">
              <number>0</number>
+            </property>
+            <property name="margin">
+             <number>2</number>
             </property>
             <item row="0" column="2" colspan="2">
              <widget class="QDoubleSpinBox" name="directPixelOverwrite">
@@ -802,28 +757,19 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>412</width>
-             <height>180</height>
+             <width>226</width>
+             <height>110</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Peak Finder</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_17">
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <property name="verticalSpacing">
              <number>0</number>
+            </property>
+            <property name="margin">
+             <number>2</number>
             </property>
             <item row="10" column="0">
              <widget class="QLabel" name="label_26">
@@ -961,16 +907,7 @@
            <bool>true</bool>
           </property>
           <layout class="QGridLayout" name="gridLayout_16">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1161,16 +1098,7 @@
              <property name="spacing">
               <number>0</number>
              </property>
-             <property name="leftMargin">
-              <number>2</number>
-             </property>
-             <property name="topMargin">
-              <number>2</number>
-             </property>
-             <property name="rightMargin">
-              <number>2</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>2</number>
              </property>
              <item>
@@ -1215,16 +1143,7 @@
                 <enum>QFrame::NoFrame</enum>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_13">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
+                <property name="margin">
                  <number>0</number>
                 </property>
                 <item>
@@ -1236,16 +1155,7 @@
                    <enum>QFrame::Raised</enum>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_4">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
+                   <property name="margin">
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
@@ -1344,16 +1254,7 @@
                 <item>
                  <widget class="QWidget" name="widget_8" native="true">
                   <layout class="QGridLayout" name="gridLayout_11">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
+                   <property name="margin">
                     <number>0</number>
                    </property>
                    <item row="1" column="0">
@@ -1514,16 +1415,7 @@
                 <item>
                  <widget class="QWidget" name="widget_7" native="true">
                   <layout class="QGridLayout" name="gridLayout_10">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
+                   <property name="margin">
                     <number>0</number>
                    </property>
                    <item row="2" column="0">
@@ -1648,16 +1540,7 @@
                 <property name="spacing">
                  <number>0</number>
                 </property>
-                <property name="leftMargin">
-                 <number>2</number>
-                </property>
-                <property name="topMargin">
-                 <number>2</number>
-                </property>
-                <property name="rightMargin">
-                 <number>2</number>
-                </property>
-                <property name="bottomMargin">
+                <property name="margin">
                  <number>2</number>
                 </property>
                 <item>
@@ -1897,16 +1780,7 @@
                     <string>A list of datasets that will be used for reduction</string>
                    </attribute>
                    <layout class="QVBoxLayout" name="verticalLayout_16">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
+                    <property name="margin">
                      <number>0</number>
                     </property>
                     <item>
@@ -2063,16 +1937,7 @@
                     <string>A list of datasets available for wavelength normalization</string>
                    </attribute>
                    <layout class="QVBoxLayout" name="verticalLayout_17">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
+                    <property name="margin">
                      <number>0</number>
                     </property>
                     <item>
@@ -2193,16 +2058,7 @@
          <string>X-Y intensity maps for all channels in this file</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -2294,16 +2150,7 @@
          <string>X-ToF intensity maps for all channels in this file</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_2">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -2367,16 +2214,7 @@
          <string>Off-Specular scattering intensity preview for all files in the reduction list</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_5">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -2610,16 +2448,7 @@
          <string>GISANS Preview</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_13">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -2794,16 +2623,7 @@
          <string>Motor and parameter log read from the file</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_8">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -2815,16 +2635,7 @@
             <string>Recorded values for all Motors/Devices:</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_19">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>0</number>
             </property>
             <item>
@@ -2874,16 +2685,7 @@
          <string>Compare</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_9">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <item>
@@ -2918,16 +2720,7 @@
         <enum>QFrame::Raised</enum>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
-        <property name="leftMargin">
-         <number>2</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
-        </property>
-        <property name="rightMargin">
-         <number>2</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>2</number>
         </property>
         <item>
@@ -3072,7 +2865,7 @@
      <x>0</x>
      <y>0</y>
      <width>1843</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuReduction">
@@ -3106,6 +2899,14 @@
     <addaction name="separator"/>
     <addaction name="action_use_common_ranges"/>
    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionLoad_Extraction"/>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuReduction"/>
    <addaction name="menuAutomatics"/>
   </widget>
@@ -3127,6 +2928,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
+   <addaction name="actionLoad_Extraction"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
    <addaction name="actionNorm"/>
@@ -3161,7 +2963,7 @@
     <string>Open...</string>
    </property>
    <property name="toolTip">
-    <string>Open a new file (Ctrl+O)</string>
+    <string>Open a data file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -3176,7 +2978,7 @@
     <string>Set as normalization</string>
    </property>
    <property name="toolTip">
-    <string>Take current data set as direct beam for wavelength normalization (Ctrl+W)</string>
+    <string>Take current data set as direct beam for wavelength normalization</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -3206,7 +3008,7 @@
     <string>Clear reduction list</string>
    </property>
    <property name="toolTip">
-    <string>Remove all data sets from the reduction list (CTRL+SHIFT+Q)</string>
+    <string>Remove all data sets from the reduction list</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Q</string>
@@ -3314,8 +3116,15 @@
    </property>
   </action>
   <action name="actionLoad_Extraction">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/MPL Toolbar/document-open-reduced.png</normaloff>:/MPL Toolbar/document-open-reduced.png</iconset>
+   </property>
    <property name="text">
-    <string>Load Extraction...</string>
+    <string>Open Reduced File...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a reduced file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+O</string>
@@ -3330,7 +3139,7 @@
     <string>Clear normalization list</string>
    </property>
    <property name="toolTip">
-    <string>Remove all data sets from the direct beam list (CTRL+SHIFT+W)</string>
+    <string>Remove all data sets from the direct beam list</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+W</string>
@@ -3384,7 +3193,7 @@
     <string>Auto Reflectivity</string>
    </property>
    <property name="toolTip">
-    <string>Start with active dataset as total reflectivity region and continue adding datasets until the incident angle gets lower than for the last dataset (Ctrl+Shift+A)</string>
+    <string>Start with active dataset as total reflectivity region and continue adding datasets until the incident angle gets lower than for the last data set</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+A</string>
@@ -3399,7 +3208,7 @@
     <string>Strip Overlap</string>
    </property>
    <property name="toolTip">
-    <string>Strip points from datasets that overlap with the subsequent dataset in the reflectivity (Ctrl+Shift+S)</string>
+    <string>Strip points from datasets that overlap with the subsequent dataset in the reflectivity</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>

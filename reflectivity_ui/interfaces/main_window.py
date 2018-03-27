@@ -367,9 +367,11 @@ class MainWindow(QtWidgets.QMainWindow,
         prog = ProgressReporter(create_dialog=False, parent=self)
         wrk.execute(prog)
 
+    def loadExtraction(self):
+        self.file_handler.open_reduced_file_dialog()
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
-    def loadExtraction(self): return NotImplemented
     def change_gisans_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
     def live_open(self): return NotImplemented
