@@ -2,9 +2,10 @@
    Dialog to select reduction options to choose which outputs are needed
    and in which formats to write them.
 """
+#pylint: disable=bare-except
 from __future__ import absolute_import, division, print_function, unicode_literals
 import os
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_reduce_dialog
 
 class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_reduce_dialog.Ui_Dialog):
@@ -48,6 +49,8 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.numpy.setChecked(self._verify_true('format_numpy', False))
         self.plot.setChecked(self._verify_true('format_plot', False))
 
+        self.is_accepted = False
+
     def _verify_true(self, parameter, default):
         """ Utility function to read a bool """
         _value = self.settings.value(parameter, str(default))
@@ -58,10 +61,13 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
             Save the current options and close dialog
         """
         self.save_settings()
+        self.is_accepted = True
         self.close()
 
     def get_options(self):
         """ Return the reduction options as a dict"""
+        if self.is_accepted is False:
+            return None
         return dict(export_specular=self.exportSpecular.isChecked(),
                     export_asym=self.export_SA.isChecked(),
                     export_gisans=self.exportGISANS.isChecked(),

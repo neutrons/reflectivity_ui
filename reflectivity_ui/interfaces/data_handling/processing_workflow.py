@@ -141,11 +141,14 @@ class ProcessingWorkflow(object):
 
         model_data=cPickle.loads(iz.read('data'))
         for i, channel in enumerate(self.data_manager.reduction_states):
-            model_data[i].x_raw=output_data[channel][:, 0]
-            model_data[i].y_raw=output_data[channel][:, 1]
-            model_data[i].error_raw=output_data[channel][:, 2]
-            model_data[i].xerror_raw=output_data[channel][:, 3]
-            model_data[i].name=channel
+            output_xs_name = STD_CHANNELS.get(channel, channel)
+            if output_xs_name not in output_data:
+                logging.error("Cross-section %s not in %s", output_xs_name, str(output_data.keys()))
+            model_data[i].x_raw=output_data[output_xs_name][:, 0]
+            model_data[i].y_raw=output_data[output_xs_name][:, 1]
+            model_data[i].error_raw=output_data[output_xs_name][:, 2]
+            model_data[i].xerror_raw=output_data[output_xs_name][:, 3]
+            model_data[i].name=output_xs_name
             model_data[i].run_command()
         oz.writestr('data', cPickle.dumps(model_data, 0)) # dup as version 2 pickle
         iz.close()

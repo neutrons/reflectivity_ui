@@ -310,19 +310,17 @@ class MainHandler(object):
                 self.add_direct_beam(silent=True)
 
             for r_id, run_file, conf in data_files:
-                logging.error("%s: sf=%s:", r_id, conf.scaling_factor)
                 self.open_file(run_file, silent=True)
                 n_count += 1
 
-                self.main_window.auto_change_active = True
-                #self._data_manager.update_configuration(conf)
+                #self.main_window.auto_change_active = True
                 self.populate_from_configuration(conf)
                 self.add_reflectivity(silent=True)
 
             # Update the UI
             if self._data_manager.active_channel is not None:
                 self.populate_from_configuration(self._data_manager.active_channel.configuration)
-                self.update_file_list(file_path)
+                self.update_file_list(self._data_manager.current_file)
 
         # At the very end, update the UI and plot reflectivity
         if n_count > 0:

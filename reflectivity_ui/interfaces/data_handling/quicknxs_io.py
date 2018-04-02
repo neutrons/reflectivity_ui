@@ -227,7 +227,7 @@ def read_reduced_file(file_path):
                     conf.bck_width = float(toks[9])
                     conf.direct_pixel_overwrite = int(toks[10])
                     run_number = int(toks[12])
-                    run_file = toks[13]
+                    run_file = toks[-1]
                     direct_beam_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
@@ -250,9 +250,9 @@ def read_reduced_file(file_path):
                     conf.bck_position = float(toks[8])
                     conf.bck_width = float(toks[9])
                     conf.direct_pixel_overwrite = int(toks[11])
-                    conf.normalization = int(toks[14])
+                    conf.normalization = direct_beam_runs[int(toks[14])-1][0]
                     run_number = int(toks[13])
-                    run_file = toks[15]
+                    run_file = toks[-1]
                     data_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])

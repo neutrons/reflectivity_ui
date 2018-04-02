@@ -11,6 +11,8 @@ class DataLoaderTest(unittest.TestCase):
         db_list, data_list = read_reduced_file(file_path)
         self.assertEqual(len(db_list), 7)
         self.assertEqual(len(data_list), 7)
+        self.assertEqual(data_list[0][2].peak_position, 183.0)
+        self.assertEqual(data_list[0][2].normalization, 28610)
 
 if __name__ == '__main__':
     unittest.main()

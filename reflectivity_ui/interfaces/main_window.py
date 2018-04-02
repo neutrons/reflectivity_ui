@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 import os
 import logging
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_main_window
 
 from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
@@ -361,11 +361,12 @@ class MainWindow(QtWidgets.QMainWindow,
         dialog.exec_()
         output_options = dialog.get_options()
         dialog.destroy()
-        
-        from .data_handling.processing_workflow import ProcessingWorkflow
-        wrk = ProcessingWorkflow(self.data_manager, output_options)
-        prog = ProgressReporter(create_dialog=False, parent=self)
-        wrk.execute(prog)
+
+        if output_options is not None:
+            from .data_handling.processing_workflow import ProcessingWorkflow
+            wrk = ProcessingWorkflow(self.data_manager, output_options)
+            prog = ProgressReporter(create_dialog=False, parent=self)
+            wrk.execute(prog)
 
     def loadExtraction(self):
         self.file_handler.open_reduced_file_dialog()
