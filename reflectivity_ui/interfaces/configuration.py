@@ -89,36 +89,36 @@ class Configuration(object):
 
     @property
     def peak_roi(self):
-        peak_min = int(round(self.peak_position - self.peak_width/2.0))
-        peak_max = int(round(self.peak_position + self.peak_width/2.0))
+        peak_min = int(round(self.peak_position - (self.peak_width - 1)/2.0))
+        peak_max = int(round(self.peak_position + (self.peak_width - 1)/2.0))
         return [peak_min, peak_max]
 
     @peak_roi.setter
     def peak_roi(self, value):
         self.peak_position = (value[1] + value[0]) / 2.0
-        self.peak_width = value[1] - value[0]
+        self.peak_width = value[1] - value[0] + 1
 
     @property
     def low_res_roi(self):
-        peak_min = int(round(self.low_res_position - self.low_res_width/2.0))
-        peak_max = int(round(self.low_res_position + self.low_res_width/2.0))
+        peak_min = int(round(self.low_res_position - (self.low_res_width - 1)/2.0))
+        peak_max = int(round(self.low_res_position + (self.low_res_width - 1)/2.0))
         return [peak_min, peak_max]
 
     @low_res_roi.setter
     def low_res_roi(self, value):
         self.low_res_position = (value[1] + value[0]) / 2.0
-        self.low_res_width = value[1] - value[0]
+        self.low_res_width = value[1] - value[0] + 1
 
     @property
     def bck_roi(self):
-        peak_min = int(round(self.bck_position - self.bck_width/2.0))
-        peak_max = int(round(self.bck_position + self.bck_width/2.0))
+        peak_min = int(round(self.bck_position - (self.bck_width - 1)/2.0))
+        peak_max = int(round(self.bck_position + (self.bck_width - 1)/2.0))
         return [peak_min, peak_max]
 
     @bck_roi.setter
     def bck_roi(self, value):
         self.bck_position = (value[1] + value[0]) / 2.0
-        self.bck_width = value[1] - value[0]
+        self.bck_width = value[1] - value[0] + 1
 
     def to_q_settings(self, settings):
         """
