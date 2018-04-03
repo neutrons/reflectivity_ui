@@ -685,17 +685,17 @@ class MainHandler(object):
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
 
-        new_peak_roi = [x_pos - x_width/2.0, x_pos + x_width/2.0]
         valid_change = valid_change or \
-            not configuration.peak_roi == new_peak_roi
+            not configuration.peak_position == x_pos or \
+            not configuration.peak_width == x_width
 
-        new_low_res_roi = [y_pos - y_width/2.0, y_pos + y_width/2.0]
         valid_change = valid_change or \
-            not configuration.low_res_roi == new_low_res_roi
+            not configuration.low_res_position == y_pos or \
+            not configuration.low_res_width == y_width
 
-        new_bck_roi = [bck_pos - bck_width/2.0, bck_pos + bck_width/2.0]
         valid_change = valid_change or \
-            not configuration.bck_roi == new_bck_roi
+            not configuration.bck_position == bck_pos or \
+            not configuration.bck_width == bck_width
 
         try:
             scale = math.pow(10.0, self.ui.refScale.value())
@@ -747,12 +747,12 @@ class MainHandler(object):
         bck_pos = self.ui.bgCenter.value()
         bck_width = self.ui.bgWidth.value()
 
-        configuration.peak_roi = [int(round(x_pos - x_width/2.0)),
-                                  int(round(x_pos + x_width/2.0))]
-        configuration.low_res_roi = [int(round(y_pos - y_width/2.0)),
-                                     int(round(y_pos + y_width/2.0))]
-        configuration.bck_roi = [int(round(bck_pos - bck_width/2.0)),
-                                 int(round(bck_pos + bck_width/2.0))]
+        configuration.peak_position = x_pos
+        configuration.peak_width = x_width
+        configuration.low_res_position = y_pos
+        configuration.low_res_width = y_width
+        configuration.bck_position = bck_pos
+        configuration.bck_width = bck_width
 
         configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
         configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()

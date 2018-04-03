@@ -47,11 +47,16 @@ class Configuration(object):
 
         # Options to override the range
         self.force_peak_roi = False
-        self.peak_roi = [120, 140]
+        self.peak_position = 130
+        self.peak_width = 20
+
         self.force_low_res_roi = False
-        self.low_res_roi = [120, 140]
+        self.low_res_position = 130
+        self.low_res_width = 20
+
         self.force_bck_roi = False
-        self.bck_roi = [10, 50]
+        self.bck_position = 30
+        self.bck_width = 20
 
         # Subtract background
         self.subtract_background = True
@@ -83,70 +88,37 @@ class Configuration(object):
                 logging.error("Could not process application settings\n  %s", sys.exc_value)
 
     @property
-    def peak_position(self):
-        """ Peak position property """
-        return (self.peak_roi[1]+self.peak_roi[0])/2.0
+    def peak_roi(self):
+        peak_min = int(round(self.peak_position - self.peak_width/2.0))
+        peak_max = int(round(self.peak_position + self.peak_width/2.0))
+        return [peak_min, peak_max]
 
-    @peak_position.setter
-    def peak_position(self, value):
-        width = self.peak_width
-        self.peak_roi[0] = int(round(value - width/2.0))
-        self.peak_roi[1] = int(round(value + width/2.0))
-
-    @property
-    def peak_width(self):
-        """ Peak width property """
-        return self.peak_roi[1]-self.peak_roi[0]
-
-    @peak_width.setter
-    def peak_width(self, value):
-        pos = self.peak_position
-        self.peak_roi[0] = int(round(pos - value/2.0))
-        self.peak_roi[1] = int(round(pos + value/2.0))
+    @peak_roi.setter
+    def peak_roi(self, value):
+        self.peak_position = (value[1] + value[0]) / 2.0
+        self.peak_width = value[1] - value[0]
 
     @property
-    def low_res_position(self):
-        """ Peak position in the low-resolution direction """
-        return (self.low_res_roi[1]+self.low_res_roi[0])/2.0
+    def low_res_roi(self):
+        peak_min = int(round(self.low_res_position - self.low_res_width/2.0))
+        peak_max = int(round(self.low_res_position + self.low_res_width/2.0))
+        return [peak_min, peak_max]
 
-    @low_res_position.setter
-    def low_res_position(self, value):
-        width = self.low_res_width
-        self.low_res_roi[0] = int(round(value - width/2.0))
-        self.low_res_roi[1] = int(round(value + width/2.0))
-
-    @property
-    def low_res_width(self):
-        """ Peak width in the low-resolution direction """
-        return self.low_res_roi[1]-self.low_res_roi[0]
-
-    @low_res_width.setter
-    def low_res_width(self, value):
-        pos = self.low_res_position
-        self.low_res_roi[0] = int(round(pos - value/2.0))
-        self.low_res_roi[1] = int(round(pos + value/2.0))
+    @low_res_roi.setter
+    def low_res_roi(self, value):
+        self.low_res_position = (value[1] + value[0]) / 2.0
+        self.low_res_width = value[1] - value[0]
 
     @property
-    def bck_position(self):
-        """ Center of the background range """
-        return (self.bck_roi[1]+self.bck_roi[0])/2.0
+    def bck_roi(self):
+        peak_min = int(round(self.bck_position - self.bck_width/2.0))
+        peak_max = int(round(self.bck_position + self.bck_width/2.0))
+        return [peak_min, peak_max]
 
-    @bck_position.setter
-    def bck_position(self, value):
-        width = self.bck_width
-        self.bck_roi[0] = int(round(value - width/2.0))
-        self.bck_roi[1] = int(round(value + width/2.0))
-
-    @property
-    def bck_width(self):
-        """ Width of the background range """
-        return self.bck_roi[1]-self.bck_roi[0]
-
-    @bck_width.setter
-    def bck_width(self, value):
-        pos = self.bck_position
-        self.bck_roi[0] = int(round(pos - value/2.0))
-        self.bck_roi[1] = int(round(pos + value/2.0))
+    @bck_roi.setter
+    def bck_roi(self, value):
+        self.bck_position = (value[1] + value[0]) / 2.0
+        self.bck_width = value[1] - value[0]
 
     def to_q_settings(self, settings):
         """
