@@ -109,7 +109,7 @@ class ProcessingWorkflow(object):
                 quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
                 quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, as_multi=False)
 
-    def write_genx(self, output_data, output_file_base):
+    def write_genx(self, output_data, output_path):
         '''
             Create a Genx .gx model file with the right polarization states
             and the reflectivity data already included for convenience.
@@ -120,8 +120,6 @@ class ProcessingWorkflow(object):
         except:
             logging.error("Problem importing modules: %s", sys.exc_info([1]))
             return
-
-        output_path = output_file_base.replace('{state}', 'all')
 
         # Load templates
         module_dir, _ = os.path.split(__file__)
@@ -148,7 +146,7 @@ class ProcessingWorkflow(object):
             model_data[i].y_raw=output_data[output_xs_name][:, 1]
             model_data[i].error_raw=output_data[output_xs_name][:, 2]
             model_data[i].xerror_raw=output_data[output_xs_name][:, 3]
-            model_data[i].name=output_xs_name
+            model_data[i].name=output_data['cross_sections'][output_xs_name]
             model_data[i].run_command()
         oz.writestr('data', cPickle.dumps(model_data, 0)) # dup as version 2 pickle
         iz.close()
@@ -169,12 +167,12 @@ class ProcessingWorkflow(object):
         output_data = self.get_output_data()
 
         # QuickNXS format
-        output_file_base =  self.get_file_name(run_list)
+        output_file_base = self.get_file_name(run_list)
         self.write_quicknxs(output_data, output_file_base)
 
         # Numpy arrays
         if self.output_options['format_numpy']:
-            output_file =  self.get_file_name(run_list, data_type='npz', pol_state='all')
+            output_file = self.get_file_name(run_list, data_type='npz', pol_state='all')
             np.savez(output_file, **output_data)
 
         if self.output_options['format_plot']: pass
@@ -183,13 +181,14 @@ class ProcessingWorkflow(object):
         if self.output_options['format_matlab']:
             try:
                 from scipy.io import savemat
-                output_file =  self.get_file_name(run_list, data_type='mat', pol_state='all')
+                output_file = self.get_file_name(run_list, data_type='mat', pol_state='all')
                 savemat(output_file, output_data, oned_as='column')
             except:
                 logging.error("Could not save in matlab format: %s", sys.exc_info([1]))
 
         if self.output_options['format_genx']:
-            self.write_genx(output_data, output_file_base)
+            output_path = self.get_file_name(run_list, data_type='gx', pol_state='all')
+            self.write_genx(output_data, output_path)
 
     def get_output_data(self):
         """
@@ -197,7 +196,8 @@ class ProcessingWorkflow(object):
             have to treat it differently and give it the workspaces for each angle.
         """
         data_dict = dict(units=['1/A', 'a.u.', 'a.u.', '1/A', 'rad'],
-                         columns=['Qz', 'R', 'dR', 'dQz', 'theta'])
+                         columns=['Qz', 'R', 'dR', 'dQz', 'theta'],
+                         cross_sections={})
 
         # Extract common information
         if len(self.data_manager.reduction_states) == 0:
@@ -236,6 +236,7 @@ class ProcessingWorkflow(object):
 
             output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
             data_dict[output_xs_name] = output_data
+            data_dict["cross_sections"][output_xs_name] = pol_state
 
         # Asymmetry
         if self.output_options['export_asym']:
