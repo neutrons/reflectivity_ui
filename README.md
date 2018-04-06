@@ -14,8 +14,11 @@ To-do list:
 - Do something with P0 / PN to clean up the reflectivity
 - Refactor the configuration object of the NexusData class
 - Add mantid script as a possible output file
+- Jupyter notebook as output
+- Proper mantid script as output
 - Norm TOF-lambda doesn't work.
 - Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names
+- Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
@@ -30,6 +33,11 @@ To-do list:
 - Add option to cut the first N and last M points -> Needs to be saved properly to file
 - Add an option to choose which cross-sections to use for asymmetry calculation
 - Add Q binning option for output
+
+## Testing
+- Test numpy output
+- Test Matlab output
+- Test Genx output
 
 ## DONE:
 - Add indicator for whether the application things the data set we are looking at is a direct beam or not.
@@ -52,6 +60,7 @@ To-do list:
 - Add filter to direct beam data too.
 - Allow for direct beam data to be a workspace instead of just a run number.
 - Add InputNormalizationWorkspace as input to MagnetismReflectometerReduction
+- Fixed saving/loading of peak ranges
 
 ## QUESTION: should we use the same ranges for all cross-sections? Probably.
 

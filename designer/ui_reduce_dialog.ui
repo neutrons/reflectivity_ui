@@ -134,16 +134,6 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="plot">
-            <property name="text">
-             <string>Show Plot</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
            <widget class="QCheckBox" name="genx">
             <property name="text">
@@ -279,7 +269,6 @@
   <tabstop>combinedAscii</tabstop>
   <tabstop>matlab</tabstop>
   <tabstop>numpy</tabstop>
-  <tabstop>plot</tabstop>
   <tabstop>toolButton</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>

@@ -47,7 +47,6 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.matlab.setChecked(self._verify_true('format_matlab', False))
         self.multiAscii.setChecked(self._verify_true('format_multi', False))
         self.numpy.setChecked(self._verify_true('format_numpy', False))
-        self.plot.setChecked(self._verify_true('format_plot', False))
 
         self.is_accepted = False
 
@@ -79,7 +78,6 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                     format_matlab=self.matlab.isChecked(),
                     format_multi=self.multiAscii.isChecked(),
                     format_numpy=self.numpy.isChecked(),
-                    format_plot=self.plot.isChecked(),
                     output_sample_size=self.sampleSize.value(),
                     output_directory=self.directoryEntry.text(),
                     output_file_template=self.fileNameEntry.text())
@@ -115,4 +113,3 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.settings.setValue('format_matlab', self.matlab.isChecked())
         self.settings.setValue('format_multi', self.multiAscii.isChecked())
         self.settings.setValue('format_numpy', self.numpy.isChecked())
-        self.settings.setValue('format_plot', self.plot.isChecked())

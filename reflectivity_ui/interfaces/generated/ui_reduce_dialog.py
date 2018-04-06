@@ -72,10 +72,6 @@ class Ui_Dialog(object):
         self.numpy = QtWidgets.QCheckBox(self.groupBox_3)
         self.numpy.setObjectName("numpy")
         self.gridLayout.addWidget(self.numpy, 1, 1, 1, 1)
-        self.plot = QtWidgets.QCheckBox(self.groupBox_3)
-        self.plot.setChecked(True)
-        self.plot.setObjectName("plot")
-        self.gridLayout.addWidget(self.plot, 2, 1, 1, 1)
         self.genx = QtWidgets.QCheckBox(self.groupBox_3)
         self.genx.setObjectName("genx")
         self.gridLayout.addWidget(self.genx, 2, 0, 1, 1)
@@ -151,8 +147,7 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.multiAscii, self.combinedAscii)
         Dialog.setTabOrder(self.combinedAscii, self.matlab)
         Dialog.setTabOrder(self.matlab, self.numpy)
-        Dialog.setTabOrder(self.numpy, self.plot)
-        Dialog.setTabOrder(self.plot, self.toolButton)
+        Dialog.setTabOrder(self.numpy, self.toolButton)
         Dialog.setTabOrder(self.toolButton, self.tabWidget)
 
     def retranslateUi(self, Dialog):
@@ -170,7 +165,6 @@ class Ui_Dialog(object):
         self.combinedAscii.setText(_translate("Dialog", "Combined ASCII"))
         self.matlab.setText(_translate("Dialog", "Matlab"))
         self.numpy.setText(_translate("Dialog", "Numpy .npz"))
-        self.plot.setText(_translate("Dialog", "Show Plot"))
         self.genx.setText(_translate("Dialog", "GenX"))
         self.label_7.setText(_translate("Dialog", "Sample Size"))
         self.sampleSize.setSuffix(_translate("Dialog", " mm"))

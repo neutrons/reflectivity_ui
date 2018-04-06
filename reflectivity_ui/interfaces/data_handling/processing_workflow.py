@@ -142,6 +142,7 @@ class ProcessingWorkflow(object):
             output_xs_name = STD_CHANNELS.get(channel, channel)
             if output_xs_name not in output_data:
                 logging.error("Cross-section %s not in %s", output_xs_name, str(output_data.keys()))
+                continue
             model_data[i].x_raw=output_data[output_xs_name][:, 0]
             model_data[i].y_raw=output_data[output_xs_name][:, 1]
             model_data[i].error_raw=output_data[output_xs_name][:, 2]
@@ -174,8 +175,6 @@ class ProcessingWorkflow(object):
         if self.output_options['format_numpy']:
             output_file = self.get_file_name(run_list, data_type='npz', pol_state='all')
             np.savez(output_file, **output_data)
-
-        if self.output_options['format_plot']: pass
 
         # Matlab output
         if self.output_options['format_matlab']:
