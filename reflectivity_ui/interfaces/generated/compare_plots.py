@@ -1,114 +1,150 @@
-#-*- coding: utf-8 -*-
-'''
-  Widget to compare different reflectivities on the fly.
-'''
+# -*- coding: utf-8 -*-
+#pylint: disable=bare-except
+"""
+  Widget to compare different reflectivities.
+"""
 from __future__ import absolute_import, division, print_function, unicode_literals
+import sys
 import os
-from numpy import *
-try:
-    from PyQt4.QtGui import QWidget, QFileDialog, QTableWidgetItem, QDialog, QVBoxLayout, QColor, QColorDialog
-    from PyQt4.QtCore import Qt
-except:
-    from PyQt5.QtGui import QColor
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtWidgets import QWidget, QFileDialog, QTableWidgetItem, QDialog, QVBoxLayout, QColorDialog
-   
+import logging
+import numpy as np
+import matplotlib.pyplot as plt
+
+from PyQt5 import QtCore, QtWidgets, QtGui
+
 from .ui_compare_widget import Ui_Form
 
-class CompareWidget(QWidget):
-  active_folder='.'
-  _refl_color_list=['#0000ff', '#ff0000', '#00ff00', '#8b00ff', '#aaaa00', '#00aaaa']
-  changing_table=False
+class CompareWidget(QtWidgets.QWidget):
+    changing_table=False
 
-  def __init__(self, parent):
-    QWidget.__init__(self, parent)
-    self.ui=Ui_Form()
-    self.ui.setupUi(self)
-    #self.ui.compareList.verticalHeader().setMovable(True)
-    self.ui.compareList.verticalHeader().sectionMoved.connect(self.draw)
-    self.file_paths={}
+    def __init__(self, parent):
+        QtWidgets.QWidget.__init__(self, parent)
 
-  def open_file(self):
-    filter_=u'Reflectivity (*.dat);;All (*.*)'
-    names=QFileDialog.getOpenFileNames(self, u'Open reflectivity file...',
-                                               directory=self.active_folder,
-                                               filter=filter_)
-    if names:
-      self.active_folder=os.path.abspath(os.path.dirname(names[0]))
-      for name in names:
-        self.read_file(name)
-      self.ui.compareList.resizeColumnToContents(1)
-      self.ui.compareList.resizeColumnToContents(2)
-      self.draw()
+        self._refl_color_map = plt.get_cmap('Set1')
+        self.ui=Ui_Form()
+        self.ui.setupUi(self)
+        self.ui.compareList.verticalHeader().sectionMoved.connect(self.draw)
+        self.file_paths={}
+        self.settings = QtCore.QSettings('.refredm')
+        current_dir = self.settings.value('current_directory', os.path.expanduser('~'))
+        self.active_folder = self.settings.value('compare_directory', current_dir)
 
-  def read_file(self, name):
-    label=os.path.basename(name)
-    idx=self.ui.compareList.rowCount()
-    color=self._refl_color_list[idx%len(self._refl_color_list)]
-    self.changing_table=True
-    self.ui.compareList.setRowCount(idx+1)
-    item=QTableWidgetItem(label)
-    item.setFlags(Qt.ItemIsEnabled)
-    try:
-      plotlabel=label.split("REF_M_", 1)[1]
-      plotlabel=plotlabel.split("_Specular")[0]+"  "+plotlabel.split("Specular_")[1].split('.')[0]
-    except:
-      plotlabel=label
-    self.ui.compareList.setItem(idx, 0, item)
-    item=QTableWidgetItem(color)
-    item.setBackgroundColor(QColor(color))
-    item.setTextColor(QColor('#ffffff'))
-    item.setFlags(Qt.ItemIsEnabled)
-    self.ui.compareList.setItem(idx, 1, item)
-    self.ui.compareList.setItem(idx, 2, QTableWidgetItem(plotlabel))
-    self.file_paths[label]=os.path.abspath(name)
-    self.changing_table=False
+    def open_file(self):
+        """
+            Show Open-File dialog
+        """
+        filter_ = u'Reflectivity (*.dat *.txt);;All (*.*)'
+        names, _ = QtWidgets.QFileDialog.getOpenFileNames(self, u'Open reflectivity file...',
+                                                          directory=self.active_folder,
+                                                          filter=filter_)
 
-  def clear_plot(self):
-    self.ui.compareList.setRowCount(0)
-    self.draw()
+        if names:
+            self.active_folder = os.path.abspath(os.path.dirname(names[0]))
+            self.settings.setValue('compare_directory', self.active_folder)
+            for name in names:
+                self.read_file(name)
+            self.ui.compareList.resizeColumnToContents(1)
+            self.ui.compareList.resizeColumnToContents(2)
+            self.draw()
+        # Make sure the Open button is reset
+        self.ui.pushButton_2.setDown(False)
 
-  def draw(self):
-    if self.changing_table:
-      return
-    try:
-      self.ui.comparePlot.clear()
-      header=self.ui.compareList.verticalHeader()
-      for i in range(self.ui.compareList.rowCount()):
-        idx=header.logicalIndex(i)
-        name=self.file_paths[self.ui.compareList.item(idx, 0).text()]
-        label=self.ui.compareList.item(idx, 2).text()
-        color=self.ui.compareList.item(idx, 1).text()
-        data=loadtxt(name, comments='#', delimiter='\t').transpose()
-        self.ui.comparePlot.errorbar(data[0], data[1], data[2], label=label, color=color)
-      if self.ui.compareList.rowCount()>0:
-        self.ui.comparePlot.legend()
-        self.ui.comparePlot.canvas.ax.set_yscale('log')
-        self.ui.comparePlot.set_xlabel(u'Q$_z$ [Å$^{-1}$]')
-        self.ui.comparePlot.set_ylabel(u'R')
-      self.ui.comparePlot.draw()
-    except:
-      pass
+    def read_file(self, file_path):
+        """
+            Read data file
+            :param str file_path: file to load
+        """
+        label = os.path.basename(file_path)
+        idx = self.ui.compareList.rowCount()
 
-  def edit_cell(self, row, column):
-    if column==1:
-      color_item=self.ui.compareList.item(row, column)
-      color=QColor(color_item.text())
-      result=QColorDialog.getColor(initial=color, parent=self)
-      if result.isValid():
-        color_item.setText(result.name())
-        color_item.setBackgroundColor(result)
+        # Find a color
+        color_skip = 30
+        color_offset =  int(idx/255.0 * color_skip/2.0)
+        color_id = (color_skip*idx + color_offset)%255
+        color = '#'+ ''.join([r'%02x' % int(f * 255) for f in self._refl_color_map(color_id)[:-1]])
 
-class CompareDialog(QDialog):
-  '''
-  A simple dialog window with a CompareWidget.
-  '''
+        self.changing_table = True
+        self.ui.compareList.setRowCount(idx+1)
+        item = QtWidgets.QTableWidgetItem(label)
+        item.setFlags(QtCore.Qt.ItemIsEnabled)
+        
+        # Check that we can read the file
+        data = np.loadtxt(file_path, comments='#').transpose()
+        if len(data) == 0:
+            plotlabel = "Empty file"
+        else:
+            try:
+                plotlabel=label.split("REF_M_", 1)[1]
+                plotlabel=plotlabel.split("_Specular")[0]+"  "+plotlabel.split("Specular_")[1].split('.')[0]
+            except:
+                plotlabel=label
+        self.ui.compareList.setItem(idx, 0, item)
+        item=QtWidgets.QTableWidgetItem(color)
+        item.setBackground(QtGui.QColor(color))
+        item.setForeground(QtGui.QColor('#ffffff'))
+        item.setFlags(QtCore.Qt.ItemIsEnabled)
+        self.ui.compareList.setItem(idx, 1, item)
+        self.ui.compareList.setItem(idx, 2, QtWidgets.QTableWidgetItem(plotlabel))
+        self.file_paths[label] = os.path.abspath(file_path)
+        self.changing_table = False
 
-  def __init__(self, *args, **kwargs):
-    QDialog.__init__(self, *args, **kwargs)
-    self.setWindowTitle("QuickNXS reflectiviy compare")
-    self.cw=CompareWidget(self)
-    vbox=QVBoxLayout(self)
-    vbox.addWidget(self.cw)
-    self.setLayout(vbox)
-    self.layout()
+    def clear_plot(self):
+        """
+            Remove all current plotted data
+        """
+        self.ui.compareList.setRowCount(0)
+        self.draw()
+
+    def draw(self):
+        """
+            Draw data
+        """
+        if self.changing_table:
+            return
+        try:
+            self.ui.comparePlot.clear()
+            header = self.ui.compareList.verticalHeader()
+            for i in range(self.ui.compareList.rowCount()):
+                idx = header.logicalIndex(i)
+                name = self.file_paths[self.ui.compareList.item(idx, 0).text()]
+                label = self.ui.compareList.item(idx, 2).text()
+                color = self.ui.compareList.item(idx, 1).text()
+                data = np.loadtxt(name, comments='#').transpose()
+                if len(data) == 0:
+                    logging.error("No data for %s", name)
+                    continue
+                self.ui.comparePlot.errorbar(data[0], data[1], data[2], label=label, color=color)
+            if self.ui.compareList.rowCount()>0:
+                self.ui.comparePlot.legend(frameon=False)
+                self.ui.comparePlot.canvas.ax.set_yscale('log')
+                self.ui.comparePlot.set_xlabel(u'Q$_z$ [Å$^{-1}$]')
+                self.ui.comparePlot.set_ylabel(u'R')
+            self.ui.comparePlot.draw()
+        except:
+            logging.error("CompareDialog: %s", sys.exc_info()[1])
+
+    def edit_cell(self, row, column):
+        """
+            Cell editing call-back. Deal with color picking.
+        """
+        if column == 1:
+            color_item = self.ui.compareList.item(row, column)
+            color = QtGui.QColor(color_item.text())
+            result = QtWidgets.QColorDialog.getColor(initial=color, parent=self)
+            if result.isValid():
+                color_item.setText(result.name())
+                color_item.setBackground(result)
+
+
+class CompareDialog(QtWidgets.QDialog):
+    """
+        A simple dialog window with a CompareWidget.
+    """
+    def __init__(self, *args, **kwargs):
+        QtWidgets.QDialog.__init__(self, *args, **kwargs)
+        self.setWindowTitle("Reflectivity comparison")
+        self.cw = CompareWidget(self)
+        vbox = QtWidgets.QVBoxLayout(self)
+        vbox.addWidget(self.cw)
+        self.setLayout(vbox)
+        self.layout()

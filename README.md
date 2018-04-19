@@ -19,6 +19,7 @@ To-do list:
 - Norm TOF-lambda doesn't work.
 - Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names
 - Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
+- Plotting: allow for log(x)
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
@@ -30,9 +31,9 @@ To-do list:
 - Trim workspaces when stitching
 - Normalize output to 1 [broken when turned off]
 - Add option for constant Q
-- Add option to cut the first N and last M points -> Needs to be saved properly to file
 - Add an option to choose which cross-sections to use for asymmetry calculation
 - Add Q binning option for output
+- Background subtraction for offspec and GISANS
 
 ## Testing
 - Test numpy output
@@ -61,6 +62,7 @@ To-do list:
 - Allow for direct beam data to be a workspace instead of just a run number.
 - Add InputNormalizationWorkspace as input to MagnetismReflectometerReduction
 - Fixed saving/loading of peak ranges
+- Add option to cut the first N and last M points -> Needs to be saved properly to file
 
 ## QUESTION: should we use the same ranges for all cross-sections? Probably.
 

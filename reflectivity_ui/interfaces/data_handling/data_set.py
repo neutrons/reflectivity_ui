@@ -500,7 +500,7 @@ class CrossSectionData(object):
                       self.number, self.entry_name, direct_beam.number,
                       self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
-        def _as_ints(a): return [int(a[0]), int(a[1])]
+        def _as_ints(a): return [int(round(a[0])), int(round(a[1]))]
         output_ws = "r%s_%s" % (self.number, str(self.entry_name))
 
         ws_norm = None
