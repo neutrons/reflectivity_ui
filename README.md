@@ -31,6 +31,7 @@ To-do list:
 - Add an option to choose which cross-sections to use for asymmetry calculation
 - Add Q binning option for output
 - Background subtraction for offspec and GISANS
+- Mantid: add option not to rebin in Q at the end.
 
 ## Testing
 - Test numpy output

@@ -47,6 +47,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.matlab.setChecked(self._verify_true('format_matlab', False))
         self.multiAscii.setChecked(self._verify_true('format_multi', False))
         self.numpy.setChecked(self._verify_true('format_numpy', False))
+        self.mantid_script_checkbox.setChecked(self._verify_true('format_mantid', False))
 
         self.is_accepted = False
 
@@ -76,6 +77,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                     format_combined=self.combinedAscii.isChecked(),
                     format_genx=self.genx.isChecked(),
                     format_matlab=self.matlab.isChecked(),
+                    format_mantid=self.mantid_script_checkbox.isChecked(),
                     format_multi=self.multiAscii.isChecked(),
                     format_numpy=self.numpy.isChecked(),
                     output_sample_size=self.sampleSize.value(),
@@ -113,3 +115,4 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.settings.setValue('format_matlab', self.matlab.isChecked())
         self.settings.setValue('format_multi', self.multiAscii.isChecked())
         self.settings.setValue('format_numpy', self.numpy.isChecked())
+        self.settings.setValue('format_mantid', self.mantid_script_checkbox.isChecked())

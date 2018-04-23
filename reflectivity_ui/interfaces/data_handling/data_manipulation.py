@@ -17,6 +17,28 @@ from .instrument import Instrument
 from .data_set import NexusMetaData
 
 
+def generate_script(reduction_list, pol_state):
+    """
+        Generate a Mantid script for the reflectivity reduction
+
+        :param list reduction_list: list of NexusData objects
+        :param str pol_state: cross-section name
+    """
+    ws_list = get_scaled_workspaces(reduction_list, pol_state)
+
+    # If the reflectivity calculation failed, we may not have data to work with
+    # for this cross-section.
+    if len(ws_list) == 0:
+        return ''
+
+    script = '# Cross-section: %s\n' % pol_state
+    for ws in ws_list:
+        script += '# Run:%s\n' % ws.getRunNumber()
+        script_text = GeneratePythonScript(ws)
+        script += script_text.replace(', ',',\n                                ')
+        script += '\n'
+    return script
+
 def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
     """
         Stitch and normalize data sets

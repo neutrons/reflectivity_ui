@@ -31,7 +31,16 @@
        <string>Output Options</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -141,6 +150,13 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="mantid_script_checkbox">
+            <property name="text">
+             <string>Mantid script</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -215,8 +231,7 @@
            </property>
            <property name="icon">
             <iconset theme="document-open">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>

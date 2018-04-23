@@ -189,6 +189,14 @@ class ProcessingWorkflow(object):
             output_path = self.get_file_name(run_list, data_type='gx', pol_state='all')
             self.write_genx(output_data, output_path)
 
+        if self.output_options['format_mantid']:
+            output_file = self.get_file_name(run_list, data_type='py', pol_state='all')
+            script = ''
+            for pol_state in self.data_manager.reduction_states:
+                script += data_manipulation.generate_script(self.data_manager.reduction_list, pol_state)
+            with open(output_file, 'w') as fd:
+                fd.write(script)
+
     def get_output_data(self):
         """
             The QuickNXS format cannot be written from the merged reflectivity, so we
