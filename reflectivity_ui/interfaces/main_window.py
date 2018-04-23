@@ -157,7 +157,7 @@ class MainWindow(QtWidgets.QMainWindow,
             data so that we can normalize the distributions we are plotting.
             See plotting.plot_xtof and plotting.plot_overview
         """
-        return None
+        return self.data_manager.get_active_direct_beam()
 
     def plotActiveTab(self):
         '''

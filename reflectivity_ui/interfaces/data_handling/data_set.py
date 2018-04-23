@@ -296,7 +296,7 @@ class CrossSectionData(object):
         return None
 
     @property
-    def nbytes(self): return self.xydata.nbytes+self.xtofdata.nbytes
+    def nbytes(self): return self.data.nbytes
 
     @property
     def xdata(self): return self.xydata.mean(axis=0)
@@ -463,6 +463,24 @@ class CrossSectionData(object):
             self.angle_offset = self.configuration.direct_angle_offset_overwrite
 
         self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
+
+    def get_counts_vs_TOF(self):
+        """
+            Used for normalization, returns ROI counts vs TOF.
+        """
+        # Calculate ROI intensities and normalize by number of points
+        raw_data = self.data[self.configuration.peak_roi[0]:self.configuration.peak_roi[1],
+                         self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
+        size_roi = float((self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0])*(self.configuration.peak_roi[1]-self.configuration.peak_roi[0]))
+        summed_raw = raw_data.sum(axis=0).sum(axis=0)
+
+        # Remove the background
+        raw_bck = self.data[self.configuration.bck_roi[0]:self.configuration.bck_roi[1],
+                        self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
+        summed_bck = raw_bck.sum(axis=0).sum(axis=0)
+        size_bck = float((self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0]) * (self.configuration.bck_roi[1]-self.configuration.bck_roi[0]))
+
+        return (summed_raw/math.fabs(size_roi) - summed_bck/math.fabs(size_bck))/self.proton_charge
 
     def update_calculated_values(self):
         """

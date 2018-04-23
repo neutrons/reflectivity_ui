@@ -269,6 +269,12 @@ class DataManager(object):
         else:
             self._nexus_data.update_configuration(configuration)
 
+    def get_active_direct_beam(self):
+        """
+            Return the direct beam data object for the active data
+        """
+        return self._find_direct_beam(self._nexus_data)
+
     def _find_direct_beam(self, nexus_data):
         """
             Determine whether we have a direct beam data set available

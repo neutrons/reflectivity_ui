@@ -1801,7 +1801,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
@@ -2421,7 +2421,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="refresh_offspec">
+            <widget class="QPushButton" name="refresh_offspec_button">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -3721,7 +3721,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>refresh_offspec</sender>
+   <sender>refresh_offspec_button</sender>
    <signal>pressed()</signal>
    <receiver>MainWindow</receiver>
    <slot>refresh_offspec()</slot>

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import logging
 import numpy as np
 
 class PlotManager(object):
@@ -48,10 +49,15 @@ class PlotManager(object):
             return
 
         xy=data.xydata
-        xtof=data.xtofdata
+        xtof=data.xtofdata/data.proton_charge
+
+        if len(xtof[xtof>0]) == 0:
+            logging.error("No positive data found")
+            return
+
         ref_norm=main_window.getNorm()
         if main_window.ui.normalizeXTof.isChecked() and ref_norm is not None:
-            ref_norm=ref_norm.Rraw
+            ref_norm=ref_norm.get_counts_vs_TOF()
             # normalize ToF dataset for wavelength distribution
             ref_norm=np.where(ref_norm>0., ref_norm, 1.)
             xtof=xtof.astype(float)/ref_norm[np.newaxis, :]
@@ -203,7 +209,7 @@ class PlotManager(object):
         xtofnormed=[]
         ref_norm=main_window.getNorm()
         if ref_norm is not None:
-            ref_norm=ref_norm.Rraw
+            ref_norm=ref_norm.get_counts_vs_TOF()
             ref_norm=np.where(ref_norm>0, ref_norm, 1.)
 
         for key in data_set_keys[:4]:
