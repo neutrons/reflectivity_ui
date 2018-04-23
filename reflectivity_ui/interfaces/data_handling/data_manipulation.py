@@ -45,6 +45,8 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
         if weights > 0:
             scaling_factor = weights / total
         reduction_list[0].set_parameter("scaling_factor", scaling_factor)
+    else:
+        scaling_factor = reduction_list[0].cross_sections[xs].configuration.scaling_factor
 
     # Stitch the data sets together
     _previous_ws = None
