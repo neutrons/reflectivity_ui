@@ -47,7 +47,9 @@ class ProcessingWorkflow(object):
             self.specular_reflectivity()
 
         if self.output_options['export_offspec']:
-            pass
+            if progress is not None:
+                progress(20, "Computing reflectivity")
+            self.offspec()
 
         if self.output_options['export_offspec_corr']:
             pass
@@ -81,6 +83,11 @@ class ProcessingWorkflow(object):
             :param dict output_data: dictionary of numpy arrays
             :param str output_file_base: template for output file paths
         """
+        # Get the column names
+        units = output_data['units']
+        cols = output_data['columns']
+        col_names = [u'%s [%s]' % (cols[i], units[i]) for i in range(len(cols))]
+
         # List of all output states we have to deal with
         output_states = copy.copy(self.data_manager.reduction_states)
         if self.output_options['export_asym'] and 'SA' in output_data:
@@ -102,12 +109,12 @@ class ProcessingWorkflow(object):
                 continue
 
             if self.output_options['format_combined']:
-                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name], pol_state, as_multi=True)
+                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=True)
 
             if self.output_options['format_multi']:
                 state_output_path = output_file_base.replace('{state}', pol_state) #self.get_file_name(run_list, pol_state=pol_state)
                 quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
-                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, as_multi=False)
+                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=False)
 
     def write_genx(self, output_data, output_path):
         '''
@@ -196,6 +203,61 @@ class ProcessingWorkflow(object):
                 script += data_manipulation.generate_script(self.data_manager.reduction_list, pol_state)
             with open(output_file, 'w') as fd:
                 fd.write(script)
+
+    def offspec(self):
+        run_list = [str(item.number) for item in self.data_manager.reduction_list]
+
+        # Refresh the reflectivity calculation
+        self.data_manager.reduce_offspec()
+        output_data = self.get_offspec_data()
+
+        # QuickNXS format
+        output_file_base = self.get_file_name(run_list, process_type='OffSpec')
+        self.write_quicknxs(output_data, output_file_base)
+    
+    def get_offspec_data(self):
+        """
+            Get a data dictionary ready for saving
+        """
+        data_dict = dict(units=['1/A', '1/A', '1/A', '1/A', '1/A', 'a.u.', 'a.u.'],
+                         columns=['Qx', 'Qz', 'ki_z', 'kf_z', 'ki_z-kf_z', 'I', 'dI'],
+                         cross_sections={})
+
+        # Extract common information
+        if len(self.data_manager.reduction_states) == 0:
+            logging.error("List of cross-sections is empty")
+            return data_dict
+
+        first_state = self.data_manager.reduction_states[0]
+        p_0 = [item.cross_sections[first_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
+        p_n = [item.cross_sections[first_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
+
+        ki_max=0.01
+        for pol_state in self.data_manager.reduction_states:
+            # The scaling factors should have been determined at this point. Just use them
+            # to merge the different runs in a set.
+
+            combined_data = []
+
+            for item in self.data_manager.reduction_list:
+                offspec = item.cross_sections[pol_state].off_spec
+                Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z,
+                                            offspec.S, offspec.dS)
+
+                n_total = len(S[0])
+                p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
+                p_n = n_total-item.cross_sections[pol_state].configuration.cut_last_n_points
+ 
+                rdata=np.array([Qx[:, p_0:p_n], Qz[:, p_0:p_n], ki_z[:, p_0:p_n], kf_z[:, p_0:p_n],
+                                ki_z[:, p_0:p_n]-kf_z[:, p_0:p_n], S[:, p_0:p_n], dS[:, p_0:p_n]]).transpose((1, 2, 0))
+                combined_data.append(rdata)
+                ki_max=max(ki_max, ki_z.max())
+            
+            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
+            data_dict[output_xs_name] = combined_data
+            data_dict["cross_sections"][output_xs_name] = pol_state
+        data_dict['ki_max']=ki_max
+        return data_dict
 
     def get_output_data(self):
         """

@@ -11,6 +11,9 @@ compile_ui:
 	python setup.py pyuic
 	python setup.py pyrcc
 
+rpm:
+	python setup.py bdist_rpm
+
 test:
 	cd $(prefix)/app; python manage.py test
 

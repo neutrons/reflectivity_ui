@@ -4,6 +4,7 @@
     and manages the data cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import sys
 import os
 import numpy as np
 import logging
@@ -320,6 +321,21 @@ class DataManager(object):
             raise RuntimeError("Please select a direct beam data set for your data.")
 
         nexus_data.calculate_gisans(direct_beam=direct_beam)
+
+    def reduce_offspec(self):
+        """
+            Since the specular reflectivity is prominently displayed, it is updated as
+            soon as parameters change. This is not the case for the off-specular, which is
+            computed on-demand.
+            This method goes through the data sets in the reduction list and re-calculate
+            the off-specular reflectivity.
+        """
+        for nexus_data in self.reduction_list:
+            try:
+                self.calculate_reflectivity(nexus_data=nexus_data, specular=False)
+            except:
+                logging.error("Could not compute reflectivity for %s\n  %s",
+                              nexus_data.number, sys.exc_info()[1])
 
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """

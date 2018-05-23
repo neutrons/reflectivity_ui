@@ -20,6 +20,7 @@ from mantid.simpleapi import *
 ConfigService.setConsoleLogLevel(4)
 
 from .data_info import DataInfo
+from . import off_specular
 
 ### Parameters needed for some calculations.
 
@@ -231,6 +232,17 @@ class CrossSectionData(object):
     """
         Data object to hold loaded reflectivity data
     """
+    # Instrument specific attributes filled out by the instrument object
+    dist_sam_det = 0
+    dist_mod_det = 0
+    dist_mod_mon = 0
+    dist_mod_mon = 0
+    dist_mod_mon = 0
+    dangle = 0
+    dangle0 = 0
+    det_size_x = 0.0007
+    det_size_y = 0.0007
+
     def __init__(self, name, configuration, entry_name='entry'):
         self.name = name
         self.entry_name = entry_name
@@ -270,16 +282,7 @@ class CrossSectionData(object):
         self._reflectivity_workspace = None
 
         # Offset data
-        #TODO: refactor this
-        self.d_wavelength=0
-        self.Qz=None
-        self.Qx=None
-        self.ki_z=None
-        self.kf_z=None
-        self.intensity = 1
-        self.d_intensity = 0
-        self.S = None
-        self.dS = None
+        self.off_spec = None
 
         # GISANS
         #TODO: refactor this
@@ -475,12 +478,19 @@ class CrossSectionData(object):
         summed_raw = raw_data.sum(axis=0).sum(axis=0)
 
         # Remove the background
+        bck = self.get_background_vs_TOF()
+
+        return (summed_raw/math.fabs(size_roi) - bck)/self.proton_charge
+
+    def get_background_vs_TOF(self):
+        """
+            Returns the background counts vs TOF
+        """
         raw_bck = self.data[self.configuration.bck_roi[0]:self.configuration.bck_roi[1],
                         self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
         summed_bck = raw_bck.sum(axis=0).sum(axis=0)
         size_bck = float((self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0]) * (self.configuration.bck_roi[1]-self.configuration.bck_roi[0]))
-
-        return (summed_raw/math.fabs(size_roi) - summed_bck/math.fabs(size_bck))/self.proton_charge
+        return summed_bck/math.fabs(size_bck)
 
     def update_calculated_values(self):
         """
@@ -587,76 +597,8 @@ class CrossSectionData(object):
 
             :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
         """
-        #TODO: correct for detector sensitivity
-        #TODO: Background calculation
-
-        x_pos = self.configuration.peak_position
-        x_width = self.configuration.peak_width
-        y_pos = self.configuration.low_res_position
-        y_width = self.configuration.low_res_width
-        scale = 1./self.proton_charge * self.configuration.scaling_factor
-
-        # Get regions in pixels as integers
-        reg=map(lambda item: int(round(item)),
-                [x_pos-x_width/2., x_pos+x_width/2.+1,
-                 y_pos-y_width/2., y_pos+y_width/2.+1])
-
-        rad_per_pixel = self.det_size_x / self.dist_sam_det / self.xydata.shape[1]
-
-        xtth = self.direct_pixel - np.arange(self.data.shape[0])[self.active_area_x[0]:
-                                                                 self.active_area_x[1]]
-        pix_offset_spec = self.direct_pixel - x_pos
-        delta_dangle = self.dangle - self.dangle0
-        tth_spec = delta_dangle * np.pi/180. + pix_offset_spec * rad_per_pixel
-        af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
-        ai = np.ones_like(af) * tth_spec / 2.
-
-        #self._calc_bg()
-
-        v_edges = self.dist_mod_det/self.tof_edges * 1e6 #m/s
-        lambda_edges = H_OVER_M_NEUTRON / v_edges * 1e10 #A
-
-        wl = (lambda_edges[:-1] + lambda_edges[1:]) / 2.
-        # The resolution for lambda is digital range with equal probability
-        # therefore it is the bin size divided by sqrt(12)
-        self.d_wavelength = np.abs(lambda_edges[:-1] - lambda_edges[1:]) / np.sqrt(12)
-        k = 2. * np.pi / wl
-
-        # calculate reciprocal space, incident and outgoing perpendicular wave vectors
-        self.Qz=k[np.newaxis, :]*(np.sin(af)+np.sin(ai))[:, np.newaxis]
-        self.Qx=k[np.newaxis, :]*(np.cos(af)-np.cos(ai))[:, np.newaxis]
-        self.ki_z=k[np.newaxis, :]*np.sin(ai)[:, np.newaxis]
-        self.kf_z=k[np.newaxis, :]*np.sin(af)[:, np.newaxis]
-
-        # calculate ROI intensities and normalize by number of points
-        raw_multi_dim=self.data[self.active_area_x[0]:self.active_area_x[1], reg[2]:reg[3], :]
-        raw = raw_multi_dim.sum(axis=1)
-        d_raw = np.sqrt(raw)
-
-        # normalize data by width in y and multiply scaling factor
-        self.intensity = raw/(reg[3]-reg[2]) * scale
-        self.d_intensity = d_raw/(reg[3]-reg[2]) * scale
-        self.S = self.intensity #self.intensity-self.BG[np.newaxis, :]
-        self.dS = self.d_intensity #np.sqrt(self.d_intensity**2+(self.dBG**2)[np.newaxis, :])
-
-        if direct_beam is not None:
-            if not direct_beam.configuration.tof_bins == self.configuration.tof_bins:
-                logging.error("Trying to normalize with a direct beam data set with different binning")
-
-            norm_raw_multi_dim=direct_beam.data[self.active_area_x[0]:self.active_area_x[1], reg[2]:reg[3], :]
-            norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
-            norm_d_raw = np.sqrt(norm_raw)
-            norm_raw /= (reg[3]-reg[2]) * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
-            norm_d_raw /= (reg[3]-reg[2]) * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
-
-            idxs=norm_raw>0.
-            self.dS[:, idxs]=np.sqrt(
-                         (self.dS[:, idxs]/norm_raw[idxs][np.newaxis, :])**2+
-                         (self.S[:, idxs]/norm_raw[idxs][np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, :])**2
-                         )
-            self.S[:, idxs]/=norm_raw[idxs][np.newaxis, :]
-            self.S[:, np.logical_not(idxs)]=0.
-            self.dS[:, np.logical_not(idxs)]=0.
+        self.off_spec = off_specular.OffSpecular(self)
+        return self.off_spec(direct_beam)
 
     def gisans(self, direct_beam=None):
         """

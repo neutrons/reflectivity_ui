@@ -7,6 +7,7 @@ import sys
 import time
 import math
 import logging
+import numpy as np
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -158,28 +159,32 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     fd.write("#\n")
     fd.close()
 
-def write_reflectivity_data(output_path, data, pol_state, as_multi=False):
+def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=False):
     """
         Write out reflectivity header in a format readable by QuickNXS
-        :param list ws_list: list of mantid workspaces
         :param str output_path: output file path
+        :param ndarray or list data: data to be written
         :param str pol_state: descriptor for the polarization state
+        :param list col_names: list of column names
         :param bool as_multi: it True, the data will be appended with extra comments
     """
     with open(output_path, 'a') as fd:
-        data_block = ''
-        for p in data:
-            #data_block += "%12.6g  %12.6g  %12.6g  %12.6g  %12.6g\n" % (x[i], y[i], dy[i], dx[i], tth)
-            data_block += "%12.6g\t%12.6g\t%12.6g\t%12.6g\t%12.6g\n" % (p[0], p[1], p[2], p[3], p[4])
-
         if as_multi:
             fd.write("# Start of channel %s\n" % pol_state)
 
         fd.write("# [Data]\n") 
-        toks = [u'%12s' % item for item in [u'Qz [1/A]', u'R [a.u.]', u'dR [a.u.]', u'dQz [1/A]', u'theta [rad]']]
-        #fd.write(u"# %s\n" % '   '.join(toks))
+        toks = [u'%12s' % item for item in col_names]
         fd.write(u"# %s\n" % '\t'.join(toks))
-        fd.write(u"%s\n" % data_block)
+
+        for p in data:
+
+            if len(p.shape) > 1:
+                # [TOF][pixel][parameter]
+                for tof_item in p:
+                    for pixel_item in tof_item:
+                        np.savetxt(fd, pixel_item, delimiter='\t', fmt='%12.6g')
+            else:
+                np.savetxt(fd, p, delimiter='\t', fmt='%12.6g')
 
         if as_multi:
             fd.write("# End of channel %s\n\n\n" % pol_state)

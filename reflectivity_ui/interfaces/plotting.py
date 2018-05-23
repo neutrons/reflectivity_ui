@@ -388,7 +388,7 @@ class PlotManager(object):
             try:
                 self.main_window.data_manager.calculate_reflectivity(nexus_data=nexus_data, specular=False)
             except:
-                self.main_window.file_handler.report_message("Could not compute reflectivity for %s" % self._data_manager.current_file_name,
+                self.main_window.file_handler.report_message("Could not compute reflectivity for %s" % self.main_window.data_manager.current_file_name,
                                                              detailed_message=str(sys.exc_value), pop_up=False, is_error=False)
 
             for i, channel in enumerate(data_set_keys):
@@ -398,8 +398,8 @@ class PlotManager(object):
 
                 P0 = len(selected_data.tof)-nexus_data.configuration.cut_first_n_points
                 PN = nexus_data.configuration.cut_last_n_points
-                ki_z, kf_z, Qx, Qz, S = selected_data.ki_z, selected_data.kf_z, selected_data.Qx, selected_data.Qz, selected_data.S
-
+                ki_z, kf_z = selected_data.off_spec.ki_z, selected_data.off_spec.kf_z
+                Qx, Qz, S =  selected_data.off_spec.Qx, selected_data.off_spec.Qz, selected_data.off_spec.S
                 qz_max = max(Qz[S>0].max(), qz_max)
                 qz_min = min(Qz[S>0].min(), qz_min)
                 qx_min = min(qx_min, Qx[S>0].min())

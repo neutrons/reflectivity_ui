@@ -18,6 +18,7 @@ To-do list:
 - Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names
 - Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
 - Plotting: allow for log(x)
+- Plot slices in 2D off-specular data
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
@@ -38,8 +39,8 @@ To-do list:
 - Test Matlab output
 - Test Genx output
 
-## DONE:
-- Normalize output to 1 [broken when turned off]
+## DONE
+- Normalize output to 1 (broken when turned off).
 - Norm TOF-lambda doesn't work.
 - Do something with P0 / PN to clean up the reflectivity
 - Add indicator for whether the application things the data set we are looking at is a direct beam or not.
@@ -47,12 +48,12 @@ To-do list:
 - Switch active data when clicking on the reduction table.
 - Tie main UI to normalization list as well as reduction list.
 - When clicking on an entry in the reduction table:
-    - Flag as active with a color indicator.
-    - Get it's config and push it to the main UI.
+ - Flag as active with a color indicator.
+ - Get it's config and push it to the main UI.
 
 - When loading a data set from cache:
-    - Check whether it's also in the reduction table.
-    - If so, get it's config and push it to the main UI.
+ - Check whether it's also in the reduction table.
+ - If so, get it's config and push it to the main UI.
 
 - When updating the main UI, check whether we need to update the reduction table.
 - Match direct beam should update the reduction list.

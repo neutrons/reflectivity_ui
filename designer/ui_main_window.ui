@@ -598,8 +598,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>322</width>
-             <height>106</height>
+             <width>371</width>
+             <height>183</height>
             </rect>
            </property>
            <attribute name="label">
@@ -757,8 +757,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>226</width>
-             <height>110</height>
+             <width>371</width>
+             <height>183</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2208,7 +2208,7 @@
        </widget>
        <widget class="QWidget" name="OffSpec_Tab">
         <attribute name="title">
-         <string>OffSpec Preview</string>
+         <string>Off-Specular</string>
         </attribute>
         <attribute name="toolTip">
          <string>Off-Specular scattering intensity preview for all files in the reduction list</string>
