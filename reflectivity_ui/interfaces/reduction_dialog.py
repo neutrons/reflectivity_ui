@@ -49,6 +49,9 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.numpy.setChecked(self._verify_true('format_numpy', False))
         self.mantid_script_checkbox.setChecked(self._verify_true('format_mantid', False))
 
+        # Hide unused option
+        self.exportOffSpecularCorr.hide()
+
         self.is_accepted = False
 
     def _verify_true(self, parameter, default):

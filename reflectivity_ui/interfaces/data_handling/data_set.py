@@ -486,10 +486,17 @@ class CrossSectionData(object):
         """
             Returns the background counts vs TOF
         """
-        raw_bck = self.data[self.configuration.bck_roi[0]:self.configuration.bck_roi[1],
-                        self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
+        # Find the background pixels to use, excluding the peak if there's an overlap.
+        dims = self.data.shape
+        indices = [(i>=self.configuration.bck_roi[0] and i<self.configuration.bck_roi[1]) \
+                   and not (i>=self.configuration.peak_roi[0] and i<self.configuration.peak_roi[1]) for i in range(dims[0])]
+        indices = np.asarray(indices)
+        n_bins = len(indices[indices==True])
+        raw_bck = self.data[indices,
+                            self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
         summed_bck = raw_bck.sum(axis=0).sum(axis=0)
-        size_bck = float((self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0]) * (self.configuration.bck_roi[1]-self.configuration.bck_roi[0]))
+        size_bck = float(n_bins * (self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0]))
+
         return summed_bck/math.fabs(size_bck)
 
     def update_calculated_values(self):

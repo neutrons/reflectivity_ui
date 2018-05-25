@@ -31,16 +31,7 @@
        <string>Output Options</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -92,7 +83,7 @@
           <item>
            <widget class="QCheckBox" name="exportOffSpecularSmoothed">
             <property name="text">
-             <string>Off-Specular Smoothed</string>
+             <string>Off-Specular Binned</string>
             </property>
            </widget>
           </item>
@@ -231,7 +222,8 @@
            </property>
            <property name="icon">
             <iconset theme="document-open">
-             <normaloff>.</normaloff>.</iconset>
+             <normaloff/>
+            </iconset>
            </property>
           </widget>
          </item>

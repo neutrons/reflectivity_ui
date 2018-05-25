@@ -11,6 +11,14 @@ class OffSpecular(object):
     """
         Compute off-specular reflectivity
     """
+    d_wavelength = 0
+    Qx = None
+    Qz = None
+    ki_z = None
+    kf_z = None
+    S = None
+    dS = None
+
     def __init__(self, cross_section_data):
         """
             :param CrossSectionData cross_section_data: processed data object
@@ -28,7 +36,6 @@ class OffSpecular(object):
             :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
         """
         #TODO: correct for detector sensitivity
-        #TODO: Background calculation
 
         x_pos = self.data_set.configuration.peak_position
         x_width = self.data_set.configuration.peak_width
@@ -50,7 +57,8 @@ class OffSpecular(object):
         af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
         ai = np.ones_like(af) * tth_spec / 2.
 
-        #self._calc_bg()
+        # Background
+        bck = self.data_set.get_background_vs_TOF() * scale
 
         v_edges = self.data_set.dist_mod_det/self.data_set.tof_edges * 1e6 #m/s
         lambda_edges = H_OVER_M_NEUTRON / v_edges * 1e10 #A
@@ -73,10 +81,10 @@ class OffSpecular(object):
         d_raw = np.sqrt(raw)
 
         # normalize data by width in y and multiply scaling factor
-        self.intensity = raw/(reg[3]-reg[2]) * scale
-        self.d_intensity = d_raw/(reg[3]-reg[2]) * scale
-        self.S = self.intensity #self.intensity-self.BG[np.newaxis, :]
-        self.dS = self.d_intensity #np.sqrt(self.d_intensity**2+(self.dBG**2)[np.newaxis, :])
+        intensity = raw/(reg[3]-reg[2]) * scale
+        d_intensity = d_raw/(reg[3]-reg[2]) * scale
+        self.S = intensity - bck[np.newaxis, :]
+        self.dS = np.sqrt(d_intensity**2+(bck**2)[np.newaxis, :])
 
         if direct_beam is not None:
             if not direct_beam.configuration.tof_bins == self.data_set.configuration.tof_bins:
