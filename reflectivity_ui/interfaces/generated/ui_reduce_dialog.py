@@ -161,7 +161,7 @@ class Ui_Dialog(object):
         self.export_SA.setText(_translate("Dialog", "Spin-Asymmetry"))
         self.exportOffSpecular.setText(_translate("Dialog", "Off-Specular Raw"))
         self.exportOffSpecularCorr.setText(_translate("Dialog", "Off-Specular Corrected"))
-        self.exportOffSpecularSmoothed.setText(_translate("Dialog", "Off-Specular Smoothed"))
+        self.exportOffSpecularSmoothed.setText(_translate("Dialog", "Off-Specular Binned"))
         self.exportGISANS.setText(_translate("Dialog", "GISANS"))
         self.groupBox_3.setTitle(_translate("Dialog", "Output Formats"))
         self.multiAscii.setText(_translate("Dialog", "ASCII for each channel"))

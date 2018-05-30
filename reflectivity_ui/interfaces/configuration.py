@@ -12,6 +12,11 @@ class Configuration(object):
     """
         Hold reduction options
     """
+    # Choice of axes for off-specular binning
+    QX_VS_QZ = 0
+    KZI_VS_KZF = 1
+    DELTA_KZ_VS_QZ = 3
+
     def __init__(self, settings=None):
         self.instrument = Instrument()
         # Number of TOF bins
@@ -76,6 +81,9 @@ class Configuration(object):
         self.angle_map = False
         self.log_1d = True
         self.log_2d = True
+
+        # Off-specular options
+        self.off_spec_x_axis = Configuration.DELTA_KZ_VS_QZ
 
         # Reduction options
         self.match_direct_beam = False

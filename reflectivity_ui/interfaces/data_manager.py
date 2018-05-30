@@ -11,6 +11,7 @@ import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from .data_handling import data_manipulation
 from .data_handling import quicknxs_io
+from .data_handling import off_specular
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -336,6 +337,15 @@ class DataManager(object):
             except:
                 logging.error("Could not compute reflectivity for %s\n  %s",
                               nexus_data.number, sys.exc_info()[1])
+
+    def rebin_offspec(self, pol_state, y_list=None, use_weights=True, n_bins_x=350, n_bins_y=350):
+        """
+            Merge all the off-specular reflectivity data and rebin.
+        """
+        return off_specular.rebin_extract(self.reduction_list, pol_state,
+                                          y_list=y_list, output_dir='\tmp',
+                                          use_weights=use_weights,
+                                          n_bins_x=n_bins_x, n_bins_y=n_bins_y)
 
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """

@@ -3,6 +3,8 @@
 """
 import logging
 import numpy as np
+import scipy.stats
+from reflectivity_ui.interfaces.configuration import Configuration
 
 H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
 
@@ -38,14 +40,10 @@ class OffSpecular(object):
         #TODO: correct for detector sensitivity
 
         x_pos = self.data_set.configuration.peak_position
-        x_width = self.data_set.configuration.peak_width
-        y_pos = self.data_set.configuration.low_res_position
-        y_width = self.data_set.configuration.low_res_width
         scale = 1./self.data_set.proton_charge * self.data_set.configuration.scaling_factor
 
-        # Get regions in pixels as integers
-        reg = [int(round(item)) for item in [x_pos-x_width/2., x_pos+x_width/2.+1,
-                                             y_pos-y_width/2., y_pos+y_width/2.+1]]
+        # Range in low-res direction
+        y_min, y_max = self.data_set.configuration.low_res_roi
 
         rad_per_pixel = self.data_set.det_size_x / self.data_set.dist_sam_det / self.data_set.xydata.shape[1]
 
@@ -76,13 +74,13 @@ class OffSpecular(object):
         self.kf_z=k[np.newaxis, :]*np.sin(af)[:, np.newaxis]
 
         # calculate ROI intensities and normalize by number of points
-        raw_multi_dim=self.data_set.data[self.data_set.active_area_x[0]:self.data_set.active_area_x[1], reg[2]:reg[3], :]
+        raw_multi_dim=self.data_set.data[self.data_set.active_area_x[0]:self.data_set.active_area_x[1], y_min:y_max, :]
         raw = raw_multi_dim.sum(axis=1)
         d_raw = np.sqrt(raw)
 
         # normalize data by width in y and multiply scaling factor
-        intensity = raw/(reg[3]-reg[2]) * scale
-        d_intensity = d_raw/(reg[3]-reg[2]) * scale
+        intensity = raw/(y_max-y_min) * scale
+        d_intensity = d_raw/(y_max-y_min) * scale
         self.S = intensity - bck[np.newaxis, :]
         self.dS = np.sqrt(d_intensity**2+(bck**2)[np.newaxis, :])
 
@@ -90,11 +88,16 @@ class OffSpecular(object):
             if not direct_beam.configuration.tof_bins == self.data_set.configuration.tof_bins:
                 logging.error("Trying to normalize with a direct beam data set with different binning")
 
-            norm_raw_multi_dim=direct_beam.data[self.data_set.active_area_x[0]:self.data_set.active_area_x[1], reg[2]:reg[3], :]
+            norm_y_min, norm_y_max = direct_beam.configuration.low_res_roi
+            norm_x_min, norm_x_max = direct_beam.configuration.peak_roi
+            norm_raw_multi_dim=direct_beam.data[norm_x_min:norm_x_max,
+                                                norm_y_min:norm_y_max, :]
+
             norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
             norm_d_raw = np.sqrt(norm_raw)
-            norm_raw /= (reg[3]-reg[2]) * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
-            norm_d_raw /= (reg[3]-reg[2]) * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
+            norm_scale = (float(norm_x_max)-float(norm_x_min)) * (float(norm_y_max)-float(norm_y_min))
+            norm_raw /= norm_scale * direct_beam.proton_charge
+            norm_d_raw /= norm_scale * direct_beam.proton_charge
 
             idxs=norm_raw>0.
             self.dS[:, idxs]=np.sqrt(
@@ -104,3 +107,159 @@ class OffSpecular(object):
             self.S[:, idxs]/=norm_raw[idxs][np.newaxis, :]
             self.S[:, np.logical_not(idxs)]=0.
             self.dS[:, np.logical_not(idxs)]=0.
+
+def merge(reduction_list, pol_state):
+    """
+        Merge the off-specular data from a reduction list.
+        :param list reduction_list: list of NexusData objects
+        :param string pol_state: polarization state to consider
+
+        The scaling factors should have been determined at this point. Just use them
+        to merge the different runs in a set.
+    """
+    _Qx = np.empty(0)
+    _Qz = np.empty(0)
+    _ki_z = np.empty(0)
+    _kf_z = np.empty(0)
+    _S = np.empty(0)
+    _dS = np.empty(0)
+
+    for item in reduction_list:
+        offspec = item.cross_sections[pol_state].off_spec
+        Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z,
+                                    offspec.S, offspec.dS)
+
+        n_total = len(S[0])
+        p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
+        p_n = n_total-item.cross_sections[pol_state].configuration.cut_last_n_points
+
+        #NOTE: need to unravel the arrays from [TOF][pixel] to [q_points]
+        Qx = np.ravel(Qx[:, p_0:p_n])
+        Qz = np.ravel(Qz[:, p_0:p_n])
+        ki_z = np.ravel(ki_z[:, p_0:p_n])
+        kf_z = np.ravel(kf_z[:, p_0:p_n])
+        S = np.ravel(S[:, p_0:p_n])
+        dS = np.ravel(dS[:, p_0:p_n])
+
+        _Qx = np.concatenate((_Qx, Qx))
+        _Qz = np.concatenate((_Qz, Qz))
+        _ki_z = np.concatenate((_ki_z, ki_z))
+        _kf_z = np.concatenate((_kf_z, kf_z))
+        _S = np.concatenate((_S, S))
+        _dS = np.concatenate((_dS, dS))
+
+    return _Qx, _Qz, _ki_z, _kf_z, _ki_z-_kf_z, _S, _dS
+
+def closest_bin(q, bin_edges):
+    for i in range(len(bin_edges)):
+        if q > bin_edges[i] and q < bin_edges[i+1]:
+            return i
+    return None
+
+def rebin_extract(reduction_list, pol_state, y_list=None, output_dir=None, use_weights=True,
+            n_bins_x=350, n_bins_y=350):
+    """
+        Rebin off-specular data and extract cut at given Qz values.
+        Note: the analysis computers with RHEL7 have Scipy 0.12 installed, which makes
+        this code uglier. Refactor once we get a more recent version.
+    """
+    # Sanity check
+    if len(reduction_list) == 0:
+        return
+    if not isinstance(y_list, list):
+        y_list = []
+
+    run_numbers = [item.number for item in reduction_list]
+
+    Qx, Qz, ki_z, kf_z, delta_k, S, dS = merge(reduction_list, pol_state)
+
+    # Specify how many bins we want in each direction.
+    _bins = [n_bins_x, n_bins_y]
+
+    # Specify the axes
+    x_label = 'ki_z-kf_z'
+    y_label = 'Qz'
+    x_values = delta_k
+    y_values = Qz
+    if reduction_list[0].cross_sections[pol_state].configuration.off_spec_x_axis == Configuration.QX_VS_QZ:
+        x_label = 'Qx'
+        x_values = Qx
+    elif reduction_list[0].cross_sections[pol_state].configuration.off_spec_x_axis == Configuration.KZI_VS_KZF:
+        x_label = 'ki_z'
+        y_label = 'kf_z'
+        x_values = ki_z
+        y_values = kf_z
+
+    # Find the indices of S[TOF][main_axis_pixel] where we have non-zero data.
+    indices = S > 0
+    if use_weights:
+        # Compute the weighted average
+        # - Weighted sum
+        _r = S/dS**2
+        statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values[indices],
+                                                                       y_values[indices],
+                                                                       _r[indices], 
+                                                                       statistic='sum',
+                                                                       bins=_bins)
+        # - Sum of weights
+        _w = 1/dS**2
+        w_statistic, _, _, _  = scipy.stats.binned_statistic_2d(x_values[indices], y_values[indices], _w[indices], 
+                                                  statistic='sum',
+                                                  bins=[x_edge, y_edge])
+
+        result = statistic / w_statistic
+        result = result.T
+        error = np.sqrt(1.0/w_statistic).T
+    else:
+        # Compute the simple average, with errors
+        statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values[indices],
+                                                                       y_values[indices],
+                                                                       S[indices], 
+                                                                       statistic='mean',
+                                                                       bins=_bins)
+        # Compute the errors
+        _w = dS**2
+        w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices],
+                                                               y_values[indices],
+                                                               _w[indices], 
+                                                               statistic='sum',
+                                                               bins=[x_edge, y_edge])
+
+        _c = np.ones(len(x_values))
+        counts, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices],
+                                                          y_values[indices],
+                                                          _c[indices], 
+                                                          statistic='sum',
+                                                          bins=[x_edge, y_edge])
+
+        result = statistic.T
+        error = (np.sqrt(w_statistic) / counts).T
+
+    x_middle = x_edge[:-1] + (x_edge[1] - x_edge[0]) / 2.0
+    y_middle = y_edge[:-1] + (y_edge[1] - y_edge[0]) / 2.0
+
+    _q_data = []
+
+    #TODO: Checkpoint note: the following is incomplete.
+    for q in y_list:
+        i_q = closest_bin(q, y_edge)
+        indices = abs(x_middle)<0.01
+        if error is not None:
+            _r = result[i_q][indices]
+            _dr = error[i_q][indices]
+            _q_data.append( [[x_middle[indices], _r, _dr],
+                           '%s %s=%s' % (str(run_numbers), y_label, q)] )
+        else:
+            _r = result[i_q][indices]
+            _q_data.append( [[x_middle[indices], _r],
+                           '%s %s=%s' % (str(run_numbers), y_label, q)] )
+        
+        if output_dir is not None:
+            _file_path = get_output_path(f, str(q).replace('.', '_'), output_dir)
+            if error is not None:
+                _to_save = np.asarray([x_middle, result[i_q], error[i_q]]).T
+            else:
+                _to_save = np.asarray([x_middle, result[i_q]]).T
+            np.savetxt(_file_path, _to_save, delimiter=' ')
+
+    return result, error, x_middle, y_middle, _q_data, [x_label, y_label]

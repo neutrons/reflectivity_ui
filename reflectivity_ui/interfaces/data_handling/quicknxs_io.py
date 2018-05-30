@@ -176,15 +176,13 @@ def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=Fa
         toks = [u'%12s' % item for item in col_names]
         fd.write(u"# %s\n" % '\t'.join(toks))
 
-        for p in data:
-
-            if len(p.shape) > 1:
-                # [TOF][pixel][parameter]
-                for tof_item in p:
-                    for pixel_item in tof_item:
-                        np.savetxt(fd, pixel_item, delimiter='\t', fmt='%12.6g')
-            else:
-                np.savetxt(fd, p, delimiter='\t', fmt='%12.6g')
+        if isinstance(data, list):
+            # [TOF][pixel][parameter]
+            for tof_item in data:
+                for pixel_item in tof_item:
+                    np.savetxt(fd, pixel_item, delimiter='\t', fmt='%12.6g')
+        else:
+            np.savetxt(fd, data, delimiter='\t', fmt='%12.6g')
 
         if as_multi:
             fd.write("# End of channel %s\n\n\n" % pol_state)
@@ -233,6 +231,15 @@ def read_reduced_file(file_path):
                     conf.direct_pixel_overwrite = int(toks[10])
                     run_number = int(toks[12])
                     run_file = toks[-1]
+                    # This application only deals with event data, to be able to load
+                    # reduced files created with histo nexus files, we have to
+                    # use the corresponding event file instead.
+                    # Similarly, the number of points cut on each side probably
+                    # doesn't make sense, so reset those options.
+                    if run_file.endswith('histo.nxs'):
+                        run_file = run_file.replace('histo.', 'event.')
+                        conf.cut_first_n_points = 0
+                        conf.cut_last_n_points = 0
                     direct_beam_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
@@ -258,6 +265,10 @@ def read_reduced_file(file_path):
                     conf.normalization = direct_beam_runs[int(toks[14])-1][0]
                     run_number = int(toks[13])
                     run_file = toks[-1]
+                    if run_file.endswith('histo.nxs'):
+                        run_file = run_file.replace('histo.', 'event.')
+                        conf.cut_first_n_points = 0
+                        conf.cut_last_n_points = 0
                     data_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])

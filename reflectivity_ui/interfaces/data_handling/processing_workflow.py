@@ -46,15 +46,15 @@ class ProcessingWorkflow(object):
                 progress(10, "Computing reflectivity")
             self.specular_reflectivity()
 
-        if self.output_options['export_offspec']:
+        if self.output_options['export_offspec'] or self.output_options['export_offspec_smooth']:
             if progress is not None:
-                progress(20, "Computing reflectivity")
-            self.offspec()
+                progress(20, "Computing off-specular reflectivity")
+            self.offspec(raw=self.output_options['export_offspec'],
+                         binned=self.output_options['export_offspec_smooth'])
 
+        # The correction is currently not in place because the original
+        # QuickNXS calculations are not documented.
         if self.output_options['export_offspec_corr']:
-            pass
-
-        if self.output_options['export_offspec_smooth']:
             pass
 
         if self.output_options['export_gisans']:
@@ -101,7 +101,6 @@ class ProcessingWorkflow(object):
 
         # Write out the cross-section data
         for pol_state in output_states:
-
             # The cross-sections might have different names
             output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
             # We might not have data for a given cross-section
@@ -204,17 +203,70 @@ class ProcessingWorkflow(object):
             with open(output_file, 'w') as fd:
                 fd.write(script)
 
-    def offspec(self):
+    def offspec(self, raw=True, binned=False):
+        """
+            Export off-specular reflectivity.
+            :param bool raw: if true, the raw results will be saved
+            :param bool binned: if true, the raw results will be binned and saved
+        """
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
         # Refresh the reflectivity calculation
         self.data_manager.reduce_offspec()
-        output_data = self.get_offspec_data()
 
-        # QuickNXS format
-        output_file_base = self.get_file_name(run_list, process_type='OffSpec')
-        self.write_quicknxs(output_data, output_file_base)
-    
+        # Export raw result
+        if raw:
+            output_data = self.get_offspec_data()
+
+            # QuickNXS format
+            output_file_base = self.get_file_name(run_list, process_type='OffSpec')
+            self.write_quicknxs(output_data, output_file_base)
+
+        # Export binned result
+        #TODO: save cuts
+        if binned:
+            output_data = self.get_rebinned_offspec_data()
+            # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
+            output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
+            self.write_quicknxs(output_data, output_file_base)
+
+    def get_rebinned_offspec_data(self):
+        """
+            Get a data dictionary ready for saving
+        """
+        data_dict = None
+
+        # Extract common information
+        if len(self.data_manager.reduction_states) == 0:
+            logging.error("List of cross-sections is empty")
+            return {}
+
+        for pol_state in self.data_manager.reduction_states:
+            r, dr, x, y, q_data, labels = self.data_manager.rebin_offspec(pol_state,
+                                                                          y_list=None, use_weights=True,
+                                                                          n_bins_x=350, n_bins_y=350)
+            if data_dict is None:
+                data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'],
+                                 columns=[labels[0], labels[1], 'I', 'dI'],
+                                 cross_sections={})
+
+            # Create array of x-values
+            x_tiled = np.tile(x, len(y))
+            x_tiled = x_tiled.reshape([len(y), len(x)])
+
+            # Create array of y-values
+            y_tiled = np.tile(y, len(x))
+            y_tiled = y_tiled.reshape([len(x), len(y)])
+            y_tiled = y_tiled.T
+
+            rdata=np.array([x_tiled, y_tiled, r, dr]).transpose((1, 2, 0))
+
+            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
+            data_dict[output_xs_name] = [np.nan_to_num(rdata)]
+            data_dict["cross_sections"][output_xs_name] = pol_state
+
+        return data_dict
+
     def get_offspec_data(self):
         """
             Get a data dictionary ready for saving
@@ -242,9 +294,10 @@ class ProcessingWorkflow(object):
             for item in self.data_manager.reduction_list:
                 offspec = item.cross_sections[pol_state].off_spec
                 Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z,
-                                            offspec.S, offspec.dS)
+                                             offspec.S, offspec.dS)
 
                 n_total = len(S[0])
+                # P_0 and P_N are the number of points to cut in TOF on each side
                 p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
                 p_n = n_total-item.cross_sections[pol_state].configuration.cut_last_n_points
  

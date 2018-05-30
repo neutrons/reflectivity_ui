@@ -68,7 +68,7 @@ class MainHandler(object):
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
         except:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
-                                detailed_message=str(sys.exc_value), pop_up=True, is_error=True)
+                                detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
         if not silent:
             self.file_loaded()
         self.main_window.auto_change_active = False
