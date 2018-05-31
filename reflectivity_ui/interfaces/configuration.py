@@ -171,6 +171,14 @@ class Configuration(object):
         settings.setValue('set_direct_angle_offset', self.set_direct_angle_offset)
         settings.setValue('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite)
 
+        # Off-specular options
+        settings.setValue('off_spec_x_axis', self.off_spec_x_axis)
+        settings.setValue('off_spec_slice', self.off_spec_slice)
+        settings.setValue('off_spec_qz_list', ','.join([str(x) for x in self.off_spec_qz_list]))
+        settings.setValue('off_spec_err_weight', self.off_spec_err_weight)
+        settings.setValue('off_spec_nxbins', self.off_spec_nxbins)
+        settings.setValue('off_spec_nybins', self.off_spec_nybins)
+
     def from_q_settings(self, settings):
         """ Retrieve configuration from QSettings """
 
@@ -215,3 +223,12 @@ class Configuration(object):
         self.direct_pixel_overwrite = float(settings.value('direct_pixel_overwrite', self.direct_pixel_overwrite))
         self.set_direct_angle_offset = _verify_true('set_direct_angle_offset', self.set_direct_angle_offset)
         self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
+
+        # Off-specular options
+        self.off_spec_x_axis = int(settings.value('off_spec_x_axis', self.off_spec_x_axis))
+        self.off_spec_slice = _verify_true('off_spec_slice', self.off_spec_slice)
+        default = ','.join([str(x) for x in self.off_spec_qz_list])
+        self.off_spec_qz_list = [float(x) for x in settings.value('off_spec_qz_list', default).split(',')]
+        self.off_spec_err_weight = _verify_true('off_spec_err_weight', self.off_spec_err_weight)
+        self.off_spec_nxbins = int(settings.value('off_spec_nxbins', self.off_spec_nxbins))
+        self.off_spec_nybins = int(settings.value('off_spec_nybins', self.off_spec_nybins))

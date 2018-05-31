@@ -795,7 +795,7 @@ class MainHandler(object):
         else:
             configuration.off_spec_x_axis = Configuration.KZI_VS_KZF
         configuration.off_spec_slice = self.ui.offspec_slice_checkbox.isChecked()
-        configuration.off_spec_qz_list = self.ui.offspec_qz_list_edit.text()
+        configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
         configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
         configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
         configuration.off_spec_nxbins = self.ui.offspec_rebin_y_bins_spinbox.value()
@@ -869,8 +869,7 @@ class MainHandler(object):
         else:
             self.ui.kizVSkfz.setChecked(True)
         self.ui.offspec_slice_checkbox.setChecked(configuration.off_spec_slice)
-
-        self.ui.offspec_qz_list_edit.setText(str(configuration.off_spec_qz_list))
+        self.ui.offspec_qz_list_edit.setText(','.join([str(x) for x in configuration.off_spec_qz_list]))
         self.ui.offspec_err_weight_checkbox.setChecked(configuration.off_spec_err_weight)
         self.ui.offspec_rebin_x_bins_spinbox.setValue(configuration.off_spec_nxbins)
         self.ui.offspec_rebin_y_bins_spinbox.setValue(configuration.off_spec_nybins)
