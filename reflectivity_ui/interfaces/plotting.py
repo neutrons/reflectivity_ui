@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#pylint: bare-except
 import sys
 import logging
 import numpy as np
@@ -347,7 +348,7 @@ class PlotManager(object):
         main_window.ui.x_project.draw()
         main_window.ui.y_project.draw()
 
-    def plot_offspec(self):
+    def plot_offspec(self, recalc=True):
         """
             Create an offspecular plot for all channels of the datasets in the
             reduction list. The user can define upper and lower bounds for the 
@@ -386,7 +387,8 @@ class PlotManager(object):
         for nexus_data in self.main_window.data_manager.reduction_list:
             # Recalculate the off-specular reflectivity
             try:
-                self.main_window.data_manager.calculate_reflectivity(nexus_data=nexus_data, specular=False)
+                if recalc:
+                    self.main_window.data_manager.calculate_reflectivity(nexus_data=nexus_data, specular=False)
             except:
                 self.main_window.file_handler.report_message("Could not compute reflectivity for %s" % self.main_window.data_manager.current_file_name,
                                                              detailed_message=str(sys.exc_value), pop_up=False, is_error=False)

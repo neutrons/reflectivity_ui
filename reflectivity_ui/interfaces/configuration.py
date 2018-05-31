@@ -84,6 +84,11 @@ class Configuration(object):
 
         # Off-specular options
         self.off_spec_x_axis = Configuration.DELTA_KZ_VS_QZ
+        self.off_spec_slice = False
+        self.off_spec_qz_list = []
+        self.off_spec_err_weight = False
+        self.off_spec_nxbins = 450
+        self.off_spec_nybins = 200
 
         # Reduction options
         self.match_direct_beam = False

@@ -332,20 +332,21 @@ class PlotHandler(object):
         self.plot_manager.xtof_bck2.set_ydata([bg_pos+bg_width/2., bg_pos+bg_width/2.])
         self.ui.xtof_overview.draw()
 
+        # TODO: refactor this
         if self.ui.fanReflectivity.isChecked() and self.refl and not self.refl.options['extract_fan']:
-            old_aca=self.auto_change_active
-            self.auto_change_active=False
+            old_aca=self.main_window.auto_change_active
+            self.main_window.auto_change_active=False
             self.ui.rangeStart.setValue(self.cut_areas['fan'][0])
             self.ui.rangeEnd.setValue(self.cut_areas['fan'][1])
-            self.auto_change_active=old_aca
+            self.main_window.auto_change_active=old_aca
         elif not self.ui.fanReflectivity.isChecked() and self.refl and self.refl.options['extract_fan']:
             norm=self.getNorm()
             if norm in self.cut_areas:
-                old_aca=self.auto_change_active
-                self.auto_change_active=False
+                old_aca=self.main_window.auto_change_active
+                self.main_window.auto_change_active=False
                 self.ui.rangeStart.setValue(self.cut_areas[norm][0])
                 self.ui.rangeEnd.setValue(self.cut_areas[norm][1])
-                self.auto_change_active=old_aca
+                self.main_window.auto_change_active=old_aca
 
     def change_offspec_colorscale(self):
         """ Modify color scale """
@@ -361,7 +362,7 @@ class PlotHandler(object):
             if plot.cplot is not None:
                 for item in plot.canvas.ax.collections:
                     item.set_clim(Imin, Imax)
-            plot.draw()
+        self.plot_manager.plot_offspec(recalc=False)
 
     def clip_offspec_colorscale(self):
         """ Modify color scale """

@@ -787,6 +787,19 @@ class MainHandler(object):
         configuration.log_1d = self.ui.logarithmic_y.isChecked()
         configuration.log_2d = self.ui.logarithmic_colorscale.isChecked()
 
+        # Off-specular options
+        if self.ui.kizmkfzVSqz.isChecked():
+            configuration.off_spec_x_axis = Configuration.DELTA_KZ_VS_QZ
+        elif self.ui.qxVSqz.isChecked():
+            configuration.off_spec_x_axis = Configuration.QX_VS_QZ
+        else:
+            configuration.off_spec_x_axis = Configuration.KZI_VS_KZF
+        configuration.off_spec_slice = self.ui.offspec_slice_checkbox.isChecked()
+        configuration.off_spec_qz_list = self.ui.offspec_qz_list_edit.text()
+        configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
+        configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
+        configuration.off_spec_nxbins = self.ui.offspec_rebin_y_bins_spinbox.value()
+
         # Make the changes persistent
         configuration.to_q_settings(self.main_window.settings)
         return configuration
@@ -847,6 +860,20 @@ class MainHandler(object):
         self.ui.tthPhi.setChecked(configuration.angle_map)
         self.ui.logarithmic_y.setChecked(configuration.log_1d)
         self.ui.logarithmic_colorscale.setChecked(configuration.log_2d)
+
+        # Off-specular options
+        if configuration.off_spec_x_axis == Configuration.DELTA_KZ_VS_QZ:
+            self.ui.kizmkfzVSqz.setChecked(True)
+        elif configuration.off_spec_x_axis == Configuration.QX_VS_QZ:
+            self.ui.qxVSqz.setChecked(True)
+        else:
+            self.ui.kizVSkfz.setChecked(True)
+        self.ui.offspec_slice_checkbox.setChecked(configuration.off_spec_slice)
+
+        self.ui.offspec_qz_list_edit.setText(str(configuration.off_spec_qz_list))
+        self.ui.offspec_err_weight_checkbox.setChecked(configuration.off_spec_err_weight)
+        self.ui.offspec_rebin_x_bins_spinbox.setValue(configuration.off_spec_nxbins)
+        self.ui.offspec_rebin_y_bins_spinbox.setValue(configuration.off_spec_nybins)
 
     def stitch_reflectivity(self):
         """
