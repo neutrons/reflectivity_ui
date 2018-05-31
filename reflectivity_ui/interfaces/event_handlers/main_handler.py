@@ -798,7 +798,7 @@ class MainHandler(object):
         configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
         configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
         configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
-        configuration.off_spec_nxbins = self.ui.offspec_rebin_y_bins_spinbox.value()
+        configuration.off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()
 
         # Make the changes persistent
         configuration.to_q_settings(self.main_window.settings)
