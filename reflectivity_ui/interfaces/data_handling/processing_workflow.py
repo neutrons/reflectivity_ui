@@ -77,11 +77,12 @@ class ProcessingWorkflow(object):
         base_name = base_name.replace('{type}', data_type)
         return os.path.join(self.output_options['output_directory'], base_name)
 
-    def write_quicknxs(self, output_data, output_file_base):
+    def write_quicknxs(self, output_data, output_file_base, xs=None):
         """
             Write QuickNXS output reflectivity file.
             :param dict output_data: dictionary of numpy arrays
             :param str output_file_base: template for output file paths
+            :param list xs: list of cross sections available in the output_data
         """
         # Get the column names
         units = output_data['units']
@@ -89,9 +90,16 @@ class ProcessingWorkflow(object):
         col_names = [u'%s [%s]' % (cols[i], units[i]) for i in range(len(cols))]
 
         # List of all output states we have to deal with
-        output_states = copy.copy(self.data_manager.reduction_states)
-        if self.output_options['export_asym'] and 'SA' in output_data:
-            output_states.append("SA")
+        if xs is not None:
+            output_states = xs
+        else:
+            output_states = copy.copy(self.data_manager.reduction_states)
+            if self.output_options['export_asym'] and 'SA' in output_data:
+                output_states.append("SA")
+
+        # Sanity check
+        if len(output_states) == 0:
+            return
 
         # Create combined file header
         combined_output_path = output_file_base.replace('{state}', 'all')
@@ -223,18 +231,21 @@ class ProcessingWorkflow(object):
             self.write_quicknxs(output_data, output_file_base)
 
         # Export binned result
-        #TODO: save cuts
         if binned:
-            output_data = self.get_rebinned_offspec_data()
+            output_data, slice_data_dict = self.get_rebinned_offspec_data()
             # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
             output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
             self.write_quicknxs(output_data, output_file_base)
+            if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
+                output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
+                self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
 
     def get_rebinned_offspec_data(self):
         """
             Get a data dictionary ready for saving
         """
         data_dict = None
+        slice_data_dict = None
 
         # Extract common information
         if len(self.data_manager.reduction_states) == 0:
@@ -242,13 +253,22 @@ class ProcessingWorkflow(object):
             return {}
 
         for pol_state in self.data_manager.reduction_states:
+            y_list = []
+            if self.output_options['off_spec_slice']:
+                y_list = self.output_options['off_spec_qz_list']
             r, dr, x, y, q_data, labels = self.data_manager.rebin_offspec(pol_state,
-                                                                          y_list=None, use_weights=True,
-                                                                          n_bins_x=350, n_bins_y=350)
+                                                                          axes = self.output_options['off_spec_x_axis'],
+                                                                          y_list=y_list,
+                                                                          use_weights=self.output_options['off_spec_err_weight'],
+                                                                          n_bins_x=self.output_options['off_spec_nxbins'],
+                                                                          n_bins_y=self.output_options['off_spec_nybins'])
             if data_dict is None:
                 data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'],
                                  columns=[labels[0], labels[1], 'I', 'dI'],
                                  cross_sections={})
+                slice_data_dict = dict(units=['1/A', 'a.u.', 'a.u.'],
+                                       columns=[labels[0], 'I', 'dI'],
+                                       cross_sections={})
 
             # Create array of x-values
             x_tiled = np.tile(x, len(y))
@@ -265,7 +285,12 @@ class ProcessingWorkflow(object):
             data_dict[output_xs_name] = [np.nan_to_num(rdata)]
             data_dict["cross_sections"][output_xs_name] = pol_state
 
-        return data_dict
+            if q_data is not None and len(q_data)>0:
+                for item in q_data:
+                    slice_data_dict["cross_sections"][item[1]] = item[1]
+                    slice_data_dict[item[1]] = item[0]
+
+        return data_dict, slice_data_dict
 
     def get_offspec_data(self):
         """

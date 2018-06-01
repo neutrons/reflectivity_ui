@@ -795,7 +795,11 @@ class MainHandler(object):
         else:
             configuration.off_spec_x_axis = Configuration.KZI_VS_KZF
         configuration.off_spec_slice = self.ui.offspec_slice_checkbox.isChecked()
-        configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
+        try:
+            logging.error(self.ui.offspec_qz_list_edit.text())
+            configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
+        except:
+            logging.error("Could not parse off_spec_qz_list: %s", configuration.off_spec_qz_list)
         configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
         configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
         configuration.off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()

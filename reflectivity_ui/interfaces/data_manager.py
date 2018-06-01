@@ -338,11 +338,11 @@ class DataManager(object):
                 logging.error("Could not compute reflectivity for %s\n  %s",
                               nexus_data.number, sys.exc_info()[1])
 
-    def rebin_offspec(self, pol_state, y_list=None, use_weights=True, n_bins_x=350, n_bins_y=350):
+    def rebin_offspec(self, pol_state, axes=None, y_list=None, use_weights=True, n_bins_x=350, n_bins_y=350):
         """
             Merge all the off-specular reflectivity data and rebin.
         """
-        return off_specular.rebin_extract(self.reduction_list, pol_state,
+        return off_specular.rebin_extract(self.reduction_list, pol_state, axes=None,
                                           y_list=y_list, output_dir='\tmp',
                                           use_weights=use_weights,
                                           n_bins_x=n_bins_x, n_bins_y=n_bins_y)

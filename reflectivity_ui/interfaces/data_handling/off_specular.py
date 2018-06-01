@@ -156,7 +156,7 @@ def closest_bin(q, bin_edges):
             return i
     return None
 
-def rebin_extract(reduction_list, pol_state, y_list=None, output_dir=None, use_weights=True,
+def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, output_dir=None, use_weights=True,
             n_bins_x=350, n_bins_y=350):
     """
         Rebin off-specular data and extract cut at given Qz values.
@@ -177,14 +177,16 @@ def rebin_extract(reduction_list, pol_state, y_list=None, output_dir=None, use_w
     _bins = [n_bins_x, n_bins_y]
 
     # Specify the axes
+    if axes is None:
+        axes = reduction_list[0].cross_sections[pol_state].configuration.off_spec_x_axis
     x_label = 'ki_z-kf_z'
     y_label = 'Qz'
     x_values = delta_k
     y_values = Qz
-    if reduction_list[0].cross_sections[pol_state].configuration.off_spec_x_axis == Configuration.QX_VS_QZ:
+    if axes == Configuration.QX_VS_QZ:
         x_label = 'Qx'
         x_values = Qx
-    elif reduction_list[0].cross_sections[pol_state].configuration.off_spec_x_axis == Configuration.KZI_VS_KZF:
+    elif axes == Configuration.KZI_VS_KZF:
         x_label = 'ki_z'
         y_label = 'kf_z'
         x_values = ki_z
@@ -240,26 +242,12 @@ def rebin_extract(reduction_list, pol_state, y_list=None, output_dir=None, use_w
 
     _q_data = []
 
-    #TODO: Checkpoint note: the following is incomplete.
     for q in y_list:
         i_q = closest_bin(q, y_edge)
-        indices = abs(x_middle)<0.01
         if error is not None:
-            _r = result[i_q][indices]
-            _dr = error[i_q][indices]
-            _q_data.append( [[x_middle[indices], _r, _dr],
-                           '%s %s=%s' % (str(run_numbers), y_label, q)] )
+            _to_save = np.asarray([x_middle, result[i_q], error[i_q]]).T
         else:
-            _r = result[i_q][indices]
-            _q_data.append( [[x_middle[indices], _r],
-                           '%s %s=%s' % (str(run_numbers), y_label, q)] )
-        
-        if output_dir is not None:
-            _file_path = get_output_path(f, str(q).replace('.', '_'), output_dir)
-            if error is not None:
-                _to_save = np.asarray([x_middle, result[i_q], error[i_q]]).T
-            else:
-                _to_save = np.asarray([x_middle, result[i_q]]).T
-            np.savetxt(_file_path, _to_save, delimiter=' ')
+            _to_save = np.asarray([x_middle, result[i_q]]).T
+        _q_data.append([_to_save, '%s_%s_%s' % (pol_state, y_label, q)])
 
     return result, error, x_middle, y_middle, _q_data, [x_label, y_label]

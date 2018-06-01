@@ -363,6 +363,14 @@ class MainWindow(QtWidgets.QMainWindow,
         dialog.destroy()
 
         if output_options is not None:
+            configuration = self.file_handler.get_configuration()
+            output_options['off_spec_x_axis'] = configuration.off_spec_x_axis
+            output_options['off_spec_slice'] = configuration.off_spec_slice
+            output_options['off_spec_qz_list'] = configuration.off_spec_qz_list
+            output_options['off_spec_err_weight'] = configuration.off_spec_err_weight
+            output_options['off_spec_nxbins'] = configuration.off_spec_nxbins
+            output_options['off_spec_nybins'] = configuration.off_spec_nybins
+
             from .data_handling.processing_workflow import ProcessingWorkflow
             wrk = ProcessingWorkflow(self.data_manager, output_options)
             prog = ProgressReporter(create_dialog=False, parent=self)
