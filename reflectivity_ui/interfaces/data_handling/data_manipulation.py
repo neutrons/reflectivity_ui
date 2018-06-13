@@ -197,3 +197,27 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         raise RuntimeError("Could not load file %s [%s]" % (file_path, keys[0]))
 
     return meta_data
+
+def read_log(ws, name, target_units='', assumed_units=''):
+    """
+        Read a log value, taking care of units.
+        If the log entry has no units, the target units are assumed.
+        :param ws: workspace
+        :param str name: name of the property to read
+        :param str target_units: units to convert to
+        :param str assumed_units: units of origin, if not specified in the log itself
+    """
+    _units = {'m': {'mm': 1000.0,},
+              'mm': {'m': 0.001,},
+              'deg': {'rad': math.pi/180.,},
+              'rad': {'deg': 180./math.pi,},
+              }
+    prop = ws.getRun().getProperty(name)
+    value = prop.getStatistics().mean
+    
+    # If the property has units we don't recognize, use the assumed units
+    units = prop.units if prop.units in _units else assumed_units
+
+    if units in _units and target_units in _units[units]:
+        return value * _units[units][target_units]
+    return value

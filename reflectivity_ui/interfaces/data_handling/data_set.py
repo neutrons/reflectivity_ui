@@ -205,6 +205,10 @@ class NexusData(object):
 
         self.cross_sections = OrderedDict()
         progress_value = 0
+        # Keep track of cross-section with max counts so we can use it to
+        # select peak regions
+        _max_counts = 0
+        _max_xs = None
         for ws in xs_list:
             # Get the unique name for the cross-section, determined by the filtering
             channel = ws.getRun().getProperty("cross_section_id").value
@@ -213,6 +217,7 @@ class NexusData(object):
                 progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
 
             # Get rid of emty workspaces
+            logging.info("Loading %s: %s events", str(channel), ws.getNumberEvents())
             if ws.getNumberEvents() < N_EVENTS_CUTOFF:
                 logging.warn("Too few events for %s: %s", channel, ws.getNumberEvents())
                 continue
@@ -223,6 +228,15 @@ class NexusData(object):
             cross_section.process_data(ws)
             self.cross_sections[name] = cross_section
             self.number = cross_section.number
+            if cross_section.total_counts > _max_counts:
+                _max_counts = cross_section.total_counts
+                _max_xs = name
+        # Push the configuration (reduction options and peak regions) from the
+        # cross-section with the most data to all other cross-sections.
+        if _max_xs is not None:
+            self.cross_sections[_max_xs].get_reduction_parameters()
+            self.update_configuration(self.cross_sections[_max_xs].configuration)
+
         progress(100, "Complete", out_of=100.0)
 
         return self.cross_sections
@@ -441,7 +455,28 @@ class CrossSectionData(object):
         self.xydata=Ixy.transpose().astype(float) # 2D dataset
         self.xtofdata=Ixt.astype(float) # 2D dataset
 
-        # Determine reduction parameter
+        # Get initial reduction parameters. They may be overwritten later.
+        self.get_reduction_parameters(workspace)
+
+        if self.configuration.set_direct_pixel:
+            self.direct_pixel = self.configuration.direct_pixel_overwrite
+
+        if self.configuration.set_direct_angle_offset:
+            self.angle_offset = self.configuration.direct_angle_offset_overwrite
+
+        self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
+
+    def get_reduction_parameters(self, workspace=None):
+        """
+            Determine reduction parameter
+            :param workspace: mantid workspace
+        """
+        if workspace is None:
+            if self._event_workspace is None:
+                return
+            else:
+                workspace = mtd[self._event_workspace]
+
         data_info = DataInfo(workspace, self.name, self.configuration)
         self.use_roi_actual = data_info.use_roi_actual
         self.is_direct_beam = data_info.is_direct_beam
@@ -458,14 +493,6 @@ class CrossSectionData(object):
 
         if not self.configuration.force_bck_roi:
             self.configuration.bck_roi = data_info.background
-
-        if self.configuration.set_direct_pixel:
-            self.direct_pixel = self.configuration.direct_pixel_overwrite
-
-        if self.configuration.set_direct_angle_offset:
-            self.angle_offset = self.configuration.direct_angle_offset_overwrite
-
-        self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
 
     def get_counts_vs_TOF(self):
         """
@@ -527,7 +554,7 @@ class CrossSectionData(object):
             return
 
         # If a direct beam object was passed, use it.
-        apply_norm = direct_beam is not None and not self.is_direct_beam
+        apply_norm = direct_beam is not None # and not self.is_direct_beam
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
 

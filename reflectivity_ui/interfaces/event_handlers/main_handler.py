@@ -359,10 +359,11 @@ class MainHandler(object):
         configuration = self.get_configuration()
         search_string = configuration.instrument.file_search_template % number
 
-        file_list = glob.glob(search_string+'_event.nxs')
+        file_list = glob.glob(search_string+'.nxs.h5')
         # Look for old-style nexus file name
         if len(file_list) == 0:
-            file_list = glob.glob(search_string+'.nxs.h5')
+            search_string = configuration.instrument.legacy_search_template % number
+            file_list = glob.glob(search_string+'_event.nxs')
         self.ui.numberSearchEntry.setText('')
 
         success = False
