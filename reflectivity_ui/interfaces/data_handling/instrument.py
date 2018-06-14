@@ -26,22 +26,55 @@ class Instrument(object):
     """
     n_x_pixel = 304
     n_y_pixel = 256
-    huber_x_cut = 0
+    huber_x_cut = 6.5
     peak_range_offset = 50
     tolerance = 0.05
     pixel_width = 0.0007
     instrument_name = "REF_M"
     instrument_dir = "/SNS/REF_M"
-    file_search_template = "/SNS/REF_M/*/data/REF_M_%s"
+    file_search_template = "/SNS/REF_M/*/nexus/REF_M_%s"
+    legacy_search_template = "/SNS/REF_M/*/data/REF_M_%s"
 
     # Filtering
     pol_state = 'SF1'
-    pol_veto = ''
+    pol_veto = 'SF1_Veto'
     ana_state = 'SF2'
-    ana_veto = ''
+    ana_veto = 'SF2_Veto'
 
     def __init__(self):
         self.tof_range = [0,0]
+
+    def dummy_filter_cross_sections(self, ws):
+        """
+            Filter events according to an aggregated state log.
+            :param str file_path: file to read
+    
+            BL4A:SF:ICP:getDI
+    
+            015 (0000 1111): SF1=OFF, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
+            047 (0010 1111): SF1=ON, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
+            031 (0001 1111): SF1=OFF, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+            063 (0011 1111): SF1=ON, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+        """
+        state_log = "BL4A:SF:ICP:getDI"
+        states = {'Off_Off': 15,
+                  'On_Off': 47,
+                  'Off_On': 31,
+                  'On_On': 63}
+        cross_sections = []
+    
+        for pol_state in states:
+            try:
+                _ws = FilterByLogValue(InputWorkspace=ws, LogName=state_log, TimeTolerance=0.1,
+                                      MinimumValue=states[pol_state],
+                                      MaximumValue=states[pol_state], LogBoundary='Left',
+                                      OutputWorkspace='%s_entry-%s' % (ws.getRunNumber(), pol_state))
+                _ws.getRun()['cross_section_id'] = pol_state
+                cross_sections.append(_ws)
+            except:
+                logging.error("Could not filter %s: %s", pol_state, sys.exc_info()[1])
+    
+        return cross_sections
 
     def load_data(self, file_path):
         """
@@ -50,45 +83,28 @@ class Instrument(object):
 
             :param str file_path: path to the data file
         """
-        xs_list = MRFilterCrossSections(Filename=file_path,
-                                        PolState=self.pol_state,
-                                        AnaState=self.ana_state,
-                                        PolVeto=self.pol_veto,
-                                        AnaVeto=self.ana_veto)
+        if False:
+            base_name = os.path.basename(file_path)
+            _xs_list = MRFilterCrossSections(Filename=file_path,
+                                            PolState=self.pol_state,
+                                            AnaState=self.ana_state,
+                                            PolVeto=self.pol_veto,
+                                            AnaVeto=self.ana_veto,
+                                            CrossSectionWorkspaces="%s_entry" % base_name)
+            # Only keep good workspaced and get rid of the rejected events
+            xs_list = [ws for ws in _xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
+        else:
+            ws = LoadEventNexus(Filename=file_path, OutputWorkspace="raw_events")
+            xs_list = self.dummy_filter_cross_sections(ws)
+
         return xs_list
-
-    def get_tof_range(self, run_object):
-        """
-            Determine TOF range from the data
-        """
-        sample_detector_distance = run_object['SampleDetDis'].getStatistics().mean / 1000.0
-        source_sample_distance = run_object['ModeratorSamDis'].getStatistics().mean / 1000.0
-        source_detector_distance = source_sample_distance + sample_detector_distance
-
-        wl = run_object.getProperty('LambdaRequest').value[0]
-        chopper_speed = run_object.getProperty('SpeedRequest1').value[0]
-        wl_offset = 0
-        cst = source_detector_distance / h * m
-        tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - 1.4 * 60.0 / chopper_speed) * 1e-4
-        tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + 1.4 * 60.0 / chopper_speed) * 1e-4
-
-        self.tof_range = [tof_min, tof_max]
-        return [tof_min, tof_max]
 
     @classmethod
     def scattering_angle(cls, ws, peak_position=None):
         """
             Determine the scattering angle in degrees
         """
-        dangle = ws.getRun().getProperty("DANGLE").getStatistics().mean
-        dangle0 = ws.getRun().getProperty("DANGLE0").getStatistics().mean
-        direct_beam_pix = ws.getRun().getProperty("DIRPIX").getStatistics().mean
-        det_distance = ws.getRun().getProperty("SampleDetDis").getStatistics().mean / 1000.0
-
-        peak_pos = peak_position if peak_position is not None else direct_beam_pix
-        theta_d = (dangle - dangle0) / 2.0
-        theta_d += ((direct_beam_pix - peak_pos) * cls.pixel_width) * 180.0 / math.pi / (2.0 * det_distance)
-        return theta_d
+        return MRGetTheta(ws, SpecularPixel=peak_position) * 180.0 / math.pi
 
     @classmethod
     def mid_q_value(cls, ws):
@@ -165,11 +181,6 @@ class Instrument(object):
         data_object.slit3_width=data['S3HWidth'].value[0]
         data_object.huber_x=data['HuberX'].getStatistics().mean
 
-        #TODO: these don't exist in the DASLogs
-        #data_object.slit1_dist=-data['instrument/aperture1/distance'].value[0]*1000.
-        #data_object.slit2_dist=-data['instrument/aperture2/distance'].value[0]*1000.
-        #data_object.slit3_dist=-data['instrument/aperture3/distance'].value[0]*1000.
-
         data_object.sangle=data['SANGLE'].value[0]
 
         data_object.dist_sam_det=data['SampleDetDis'].value[0]*1e-3
@@ -191,80 +202,6 @@ class Instrument(object):
         data_object.direct_pixel = data_object.dpix
         data_object.angle_offset = data_object.dangle0
 
-    def process_roi(self, ws):
-        """
-            Process the ROI information and determine the peak
-            range, the low-resolution range, and the background range.
-        """
-        roi_peak = [0,0]
-        roi_low_res = [0,0]
-        roi_background = [0,0]
-
-        # Read ROI 1
-        roi1_valid = True
-        if 'ROI1StartX' in ws.getRun():
-            roi1_x0 = ws.getRun()['ROI1StartX'].getStatistics().mean
-            roi1_y0 = ws.getRun()['ROI1StartY'].getStatistics().mean
-            roi1_x1 = ws.getRun()['ROI1EndX'].getStatistics().mean
-            roi1_y1 = ws.getRun()['ROI1EndY'].getStatistics().mean
-            if roi1_x1 > roi1_x0:
-                peak1 = [int(roi1_x0), int(roi1_x1)]
-            else:
-                peak1 = [int(roi1_x1), int(roi1_x0)]
-            if roi1_y1 > roi1_y0:
-                low_res1 = [int(roi1_y0), int(roi1_y1)]
-            else:
-                low_res1 = [int(roi1_y1), int(roi1_y0)]
-            if peak1 == [0,0] and low_res1 == [0,0]:
-                roi1_valid = False
-
-            # Read ROI 2
-            roi2_valid = True
-            roi2_x0 = ws.getRun()['ROI2StartX'].getStatistics().mean
-            roi2_y0 = ws.getRun()['ROI2StartY'].getStatistics().mean
-            roi2_x1 = ws.getRun()['ROI2EndX'].getStatistics().mean
-            roi2_y1 = ws.getRun()['ROI2EndY'].getStatistics().mean
-            if roi2_x1 > roi2_x0:
-                peak2 = [int(roi2_x0), int(roi2_x1)]
-            else:
-                peak2 = [int(roi2_x1), int(roi2_x0)]
-            if roi2_y1 > roi2_y0:
-                low_res2 = [int(roi2_y0), int(roi2_y1)]
-            else:
-                low_res2 = [int(roi2_y1), int(roi2_y0)]
-            if peak2 == [0,0] and low_res2 == [0,0]:
-                roi2_valid = False
-        else:
-            roi1_valid = False
-            roi2_valid = False
-
-        # Pick the ROI that describes the reflectivity peak
-        if roi1_valid and not roi2_valid:
-            roi_peak = peak1
-            roi_low_res = low_res1
-            roi_background = [0,0]
-        elif roi2_valid and not roi1_valid:
-            roi_peak = peak2
-            roi_low_res = low_res2
-            roi_background = [0,0]
-        elif roi1_valid and roi2_valid:
-            # If ROI 2 is within ROI 1, treat it as the peak,
-            # otherwise, use ROI 1
-            if peak1[0] >= peak2[0] and peak1[1] <= peak2[1]:
-                roi_peak = peak1
-                roi_low_res = low_res1
-                roi_background = peak2
-            elif peak2[0] >= peak1[0] and peak2[1] <= peak1[1]:
-                roi_peak = peak2
-                roi_low_res = low_res2
-                roi_background = peak1
-            else:
-                roi_peak = peak1
-                roi_low_res = low_res1
-                roi_background = [0,0]
-
-        return roi_peak, roi_low_res, roi_background
-
     def integrate_detector(self, ws, specular=True):
         """
             Integrate a workspace along either the main direction (specular=False) or
@@ -281,34 +218,6 @@ class Instrument(object):
         integrated = Integration(ws_summed)
         integrated = Transpose(integrated)
         return integrated
-
-    def determine_peak_range(self, integrated_ws, specular=True, max_pixel=230):
-        """
-            Determine a peak position.
-            :param integrated_ws: Mantid workspace, integrated over the low resolution direction.
-        """
-        x_values = integrated_ws.readX(0)
-        y_values = integrated_ws.readY(0)
-        e_values = integrated_ws.readE(0)
-        try:
-            ws_short = CreateWorkspace(DataX=x_values[self.peak_range_offset:max_pixel],
-                                       DataY=y_values[self.peak_range_offset:max_pixel],
-                                       DataE=e_values[self.peak_range_offset:max_pixel])
-            specular_peak, low_res, _ = LRPeakSelection(InputWorkspace=ws_short)
-        except:
-            logging.error("Peak finding error [specular=%s]: %s", specular, sys.exc_value)
-            return [0,0]
-
-        if specular:
-            peak = [specular_peak[0]+self.peak_range_offset, specular_peak[1]+self.peak_range_offset]
-        else:
-            # The low-resolution range finder tends to be a bit tight.
-            # Broaden it by a third.
-            #TODO: Fix the range finder algorithm
-            broadening = (low_res[1]-low_res[0])/3.0
-            peak = [low_res[0]+self.peak_range_offset-broadening,
-                    low_res[1]+self.peak_range_offset+broadening]
-        return peak
 
     @classmethod
     def find_direct_beam(cls):

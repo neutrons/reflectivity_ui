@@ -100,7 +100,19 @@ class DataManager(object):
             Determine whether the currently active data set is compatible
             with the data sets that are currently part of the reduction list.
         """
-        return self.reduction_states == self.data_sets.keys() or self.reduction_list == []
+        # If we are starting a new reduction list, just proceed
+        if self.reduction_list == []:
+            return True
+
+        # First, check that we have the same number of states
+        if not len(self.reduction_states) == len(self.data_sets.keys()):
+            return False
+
+        # Second, make sure the states match
+        for item in self.data_sets.keys():
+            if not item in self.reduction_states:
+                return False
+        return True 
 
     def find_data_in_reduction_list(self, nexus_data):
         """

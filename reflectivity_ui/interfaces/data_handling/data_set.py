@@ -427,20 +427,20 @@ class CrossSectionData(object):
 
     def process_data(self, workspace):
         self._event_workspace = str(workspace)
-        run_object = workspace.getRun()
+
+        # Get initial reduction parameters. They may be overwritten later.
+        self.get_reduction_parameters(workspace)
 
         # Bin events
         if self.configuration.tof_overwrite is not None:
             tof_edges = self.configuration.tof_overwrite
         else:
-            tmin, tmax = self.configuration.instrument.get_tof_range(run_object)
-
             if self.configuration.tof_bin_type == 1: # constant Q
-                tof_edges = 1./np.linspace(1./tmin, 1./tmax, self.configuration.tof_bins+1)
+                tof_edges = 1./np.linspace(1./self.tof_range[0], 1./self.tof_range[1], self.configuration.tof_bins+1)
             elif self.configuration.tof_bin_type == 2: # constant 1/wavelength
-                tof_edges = tmin*(((tmax/tmin)**(1./self.configuration.tof_bins))**np.arange(self.configuration.tof_bins+1))
+                tof_edges = self.tof_range[0]*(((self.tof_range[1]/self.tof_range[0])**(1./self.configuration.tof_bins))**np.arange(self.configuration.tof_bins+1))
             else:
-                tof_edges = np.linspace(tmin, tmax, self.configuration.tof_bins+1)
+                tof_edges = np.linspace(self.tof_range[0], self.tof_range[1], self.configuration.tof_bins+1)
 
         binning_ws = CreateWorkspace(DataX=tof_edges, DataY=np.zeros(len(tof_edges)-1))
         data_rebinned = RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
@@ -454,9 +454,6 @@ class CrossSectionData(object):
         self.data=Ixyt.astype(float) # 3D dataset
         self.xydata=Ixy.transpose().astype(float) # 2D dataset
         self.xtofdata=Ixt.astype(float) # 2D dataset
-
-        # Get initial reduction parameters. They may be overwritten later.
-        self.get_reduction_parameters(workspace)
 
         if self.configuration.set_direct_pixel:
             self.direct_pixel = self.configuration.direct_pixel_overwrite
