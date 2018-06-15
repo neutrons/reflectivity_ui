@@ -4,7 +4,6 @@ python:
 before_install:
   - echo $TRAVIS_OS_NAME
 install:
-  - pip install pylint
-  - echo 0
+  - pip install pylint; echo 0
 script:
   - pylint -f parseable reflectivity_ui/interfaces/data_handling reflectivity_ui/interfaces/event_handlers
