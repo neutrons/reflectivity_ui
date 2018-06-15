@@ -48,6 +48,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.multiAscii.setChecked(self._verify_true('format_multi', False))
         self.numpy.setChecked(self._verify_true('format_numpy', False))
         self.mantid_script_checkbox.setChecked(self._verify_true('format_mantid', False))
+        self.five_cols_checkbox.setChecked(self._verify_true('format_5cols', True))
 
         # Hide unused option
         self.exportOffSpecularCorr.hide()
@@ -83,6 +84,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                     format_mantid=self.mantid_script_checkbox.isChecked(),
                     format_multi=self.multiAscii.isChecked(),
                     format_numpy=self.numpy.isChecked(),
+                    format_5cols=self.five_cols_checkbox.isChecked(),
                     output_sample_size=self.sampleSize.value(),
                     output_directory=self.directoryEntry.text(),
                     output_file_template=self.fileNameEntry.text())
@@ -119,3 +121,4 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.settings.setValue('format_multi', self.multiAscii.isChecked())
         self.settings.setValue('format_numpy', self.numpy.isChecked())
         self.settings.setValue('format_mantid', self.mantid_script_checkbox.isChecked())
+        self.settings.setValue('format_5cols', self.five_cols_checkbox.isChecked())

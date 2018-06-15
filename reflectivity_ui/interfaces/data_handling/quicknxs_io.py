@@ -119,12 +119,15 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         # It seems to be because that same offset is applied later in the QuickNXS calculation.
         # Correct tth here so that it can load properly in QuickNXS and produce the same result.
         tth = run_object.getProperty("two_theta").value
+
+        #TODO: get scattering angle by calling data_set.configuration.instrument.scattering_angle()
+
         det_distance = run_object['SampleDetDis'].getStatistics().mean / 1000.0
         direct_beam_pix = run_object['DIRPIX'].getStatistics().mean
 
         # Get pixel size from instrument properties
-        if ws.getInstrument().hasParameter("pixel_width"):
-            pixel_width = float(ws.getInstrument().getNumberParameter("pixel_width")[0]) / 1000.0
+        if ws.getInstrument().hasParameter("pixel-width"):
+            pixel_width = float(ws.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
         else:
             pixel_width = 0.0007
         tth -= ((direct_beam_pix - scatt_pos) * pixel_width) / det_distance * 180.0 / math.pi
@@ -159,21 +162,28 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     fd.write("#\n")
     fd.close()
 
-def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=False):
+def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=False, as_5col=True):
     """
         Write out reflectivity header in a format readable by QuickNXS
         :param str output_path: output file path
         :param ndarray or list data: data to be written
         :param str pol_state: descriptor for the polarization state
         :param list col_names: list of column names
-        :param bool as_multi: it True, the data will be appended with extra comments
+        :param bool as_multi: if True, the data will be appended with extra comments
+        :param bool as_5col: if True, a 5-column ascii will be written (theta is the last column)
     """
     with open(output_path, 'a') as fd:
         if as_multi:
             fd.write("# Start of channel %s\n" % pol_state)
 
+        # Determine how many columns to write
+        four_cols = not as_5col and data.shape[1] > 4
+
         fd.write("# [Data]\n") 
-        toks = [u'%12s' % item for item in col_names]
+        if four_cols:
+            toks = [u'%12s' % item for item in col_names[:4]]
+        else:
+            toks = [u'%12s' % item for item in col_names]
         fd.write(u"# %s\n" % '\t'.join(toks))
 
         if isinstance(data, list):
@@ -182,7 +192,10 @@ def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=Fa
                 for pixel_item in tof_item:
                     np.savetxt(fd, pixel_item, delimiter='\t', fmt='%12.6g')
         else:
-            np.savetxt(fd, data, delimiter='\t', fmt='%12.6g')
+            if four_cols:
+                np.savetxt(fd, data[:,:4], delimiter=' ', fmt='%12.6g')
+            else:
+                np.savetxt(fd, data, delimiter='\t', fmt='%12.6g')
 
         if as_multi:
             fd.write("# End of channel %s\n\n\n" % pol_state)

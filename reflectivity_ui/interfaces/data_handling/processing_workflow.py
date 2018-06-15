@@ -2,7 +2,7 @@
     Data processing workflow, taking results and writing them to files.
     #TODO: write mantid script
 """
-#pylint: disable=bare-except
+#pylint: disable=bare-except, len-as-condition
 from __future__ import absolute_import, division, print_function
 import sys
 import os
@@ -20,7 +20,7 @@ STD_CHANNELS={'x': 'unpolarized',
               '--': 'downdown',
               '+-': 'updown',
               '-+': 'downup',
-              }
+             }
 
 
 class ProcessingWorkflow(object):
@@ -108,6 +108,7 @@ class ProcessingWorkflow(object):
             quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, combined_output_path, all_states)
 
         # Write out the cross-section data
+        five_cols = self.output_options['format_5cols']
         for pol_state in output_states:
             # The cross-sections might have different names
             output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
@@ -116,12 +117,12 @@ class ProcessingWorkflow(object):
                 continue
 
             if self.output_options['format_combined']:
-                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=True)
+                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=True, as_5col=five_cols)
 
             if self.output_options['format_multi']:
                 state_output_path = output_file_base.replace('{state}', pol_state) #self.get_file_name(run_list, pol_state=pol_state)
                 quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
-                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=False)
+                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=False, as_5col=five_cols)
 
     def write_genx(self, output_data, output_path):
         '''
@@ -325,12 +326,12 @@ class ProcessingWorkflow(object):
                 # P_0 and P_N are the number of points to cut in TOF on each side
                 p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
                 p_n = n_total-item.cross_sections[pol_state].configuration.cut_last_n_points
- 
+
                 rdata=np.array([Qx[:, p_0:p_n], Qz[:, p_0:p_n], ki_z[:, p_0:p_n], kf_z[:, p_0:p_n],
                                 ki_z[:, p_0:p_n]-kf_z[:, p_0:p_n], S[:, p_0:p_n], dS[:, p_0:p_n]]).transpose((1, 2, 0))
                 combined_data.append(rdata)
                 ki_max=max(ki_max, ki_z.max())
-            
+
             output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
             data_dict[output_xs_name] = combined_data
             data_dict["cross_sections"][output_xs_name] = pol_state
@@ -405,7 +406,7 @@ class ProcessingWorkflow(object):
                     d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
 
                     asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
-    
+
                 data_dict['SA'] = np.asarray(asym_data)
             else:
                 logging.error("Asym request but failed: %s %s %s %s", p_state, m_state,
