@@ -7,4 +7,4 @@ before_install:
 install:
   - pip install pylint
 script:
-  - pylint -f parseable reflectivity_ui
+  - pylint -f parseable reflectivity_ui/interfaces/data_handling reflectivity_ui/interfaces/event_handlers
