@@ -2,25 +2,25 @@
     Data processing workflow, taking results and writing them to files.
     #TODO: write mantid script
 """
-#pylint: disable=bare-except, len-as-condition
+#pylint: disable=bare-except, len-as-condition, too-many-locals
 from __future__ import absolute_import, division, print_function
 import sys
 import os
 import math
 import copy
-import numpy as np
 import logging
+import numpy as np
 from . import quicknxs_io, data_manipulation
 
 # Standard names for array outputs
-STD_CHANNELS={'x': 'unpolarized',
-              '+': 'up',
-              '-': 'down',
-              '++': 'upup',
-              '--': 'downdown',
-              '+-': 'updown',
-              '-+': 'downup',
-             }
+STD_CHANNELS = {'x': 'unpolarzip_templateed',
+                '+': 'up',
+                '-': 'down',
+                '++': 'upup',
+                '--': 'downdown',
+                '+-': 'updown',
+                '-+': 'downup',
+               }
 
 
 class ProcessingWorkflow(object):
@@ -61,7 +61,7 @@ class ProcessingWorkflow(object):
             pass
         progress(100, "Complete")
 
-    def get_file_name(self, run_list=[], pol_state=None, data_type='dat', process_type='Specular'):
+    def get_file_name(self, run_list=None, pol_state=None, data_type='dat', process_type='Specular'):
         """
             Construct a file name according to the measurement type.
             :param list run_list: list of run numbers
@@ -69,6 +69,8 @@ class ProcessingWorkflow(object):
             :param str data_type: file extension
             :param str process_type: descriptor for the process type
         """
+        if run_list is None:
+            run_list = []
         base_name = self.output_options['output_file_template'].replace('{numbers}', '+'.join(run_list))
         base_name = base_name.replace('{instrument}', self.data_manager.active_channel.configuration.instrument.instrument_name)
         base_name = base_name.replace('{item}', process_type)
@@ -117,12 +119,14 @@ class ProcessingWorkflow(object):
                 continue
 
             if self.output_options['format_combined']:
-                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=True, as_5col=five_cols)
+                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name],
+                                                    pol_state, col_names, as_multi=True, as_5col=five_cols)
 
             if self.output_options['format_multi']:
-                state_output_path = output_file_base.replace('{state}', pol_state) #self.get_file_name(run_list, pol_state=pol_state)
+                state_output_path = output_file_base.replace('{state}', pol_state)
                 quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
-                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name], pol_state, col_names, as_multi=False, as_5col=five_cols)
+                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name],
+                                                    pol_state, col_names, as_multi=False, as_5col=five_cols)
 
     def write_genx(self, output_data, output_path):
         '''
@@ -147,26 +151,26 @@ class ProcessingWorkflow(object):
         else:
             template_path = os.path.join(template_dir, 'spinflip.gx')
 
-        iz=zipfile.ZipFile(template_path, 'r')
-        oz=zipfile.ZipFile(output_path, 'w', iz.compression)
+        zip_template = zipfile.ZipFile(template_path, 'r')
+        zip_output = zipfile.ZipFile(output_path, 'w', zip_template.compression)
         for key in ['script', 'parameters', 'fomfunction', 'config', 'optimizer']:
-            oz.writestr(key, iz.read(key))
+            zip_output.writestr(key, zip_template.read(key))
 
-        model_data=cPickle.loads(iz.read('data'))
+        model_data = cPickle.loads(zip_template.read('data'))
         for i, channel in enumerate(self.data_manager.reduction_states):
             output_xs_name = STD_CHANNELS.get(channel, channel)
             if output_xs_name not in output_data:
                 logging.error("Cross-section %s not in %s", output_xs_name, str(output_data.keys()))
                 continue
-            model_data[i].x_raw=output_data[output_xs_name][:, 0]
-            model_data[i].y_raw=output_data[output_xs_name][:, 1]
-            model_data[i].error_raw=output_data[output_xs_name][:, 2]
-            model_data[i].xerror_raw=output_data[output_xs_name][:, 3]
-            model_data[i].name=output_data['cross_sections'][output_xs_name]
+            model_data[i].x_raw = output_data[output_xs_name][:, 0]
+            model_data[i].y_raw = output_data[output_xs_name][:, 1]
+            model_data[i].error_raw = output_data[output_xs_name][:, 2]
+            model_data[i].xerror_raw = output_data[output_xs_name][:, 3]
+            model_data[i].name = output_data['cross_sections'][output_xs_name]
             model_data[i].run_command()
-        oz.writestr('data', cPickle.dumps(model_data, 0)) # dup as version 2 pickle
-        iz.close()
-        oz.close()
+        zip_output.writestr('data', cPickle.dumps(model_data, 0))
+        zip_template.close()
+        zip_output.close()
 
     def specular_reflectivity(self):
         """
@@ -209,8 +213,8 @@ class ProcessingWorkflow(object):
             script = ''
             for pol_state in self.data_manager.reduction_states:
                 script += data_manipulation.generate_script(self.data_manager.reduction_list, pol_state)
-            with open(output_file, 'w') as fd:
-                fd.write(script)
+            with open(output_file, 'w') as file_object:
+                file_object.write(script)
 
     def offspec(self, raw=True, binned=False):
         """
@@ -258,7 +262,7 @@ class ProcessingWorkflow(object):
             if self.output_options['off_spec_slice']:
                 y_list = self.output_options['off_spec_qz_list']
             r, dr, x, y, q_data, labels = self.data_manager.rebin_offspec(pol_state,
-                                                                          axes = self.output_options['off_spec_x_axis'],
+                                                                          axes=self.output_options['off_spec_x_axis'],
                                                                           y_list=y_list,
                                                                           use_weights=self.output_options['off_spec_err_weight'],
                                                                           n_bins_x=self.output_options['off_spec_nxbins'],
@@ -280,13 +284,13 @@ class ProcessingWorkflow(object):
             y_tiled = y_tiled.reshape([len(x), len(y)])
             y_tiled = y_tiled.T
 
-            rdata=np.array([x_tiled, y_tiled, r, dr]).transpose((1, 2, 0))
+            rdata = np.array([x_tiled, y_tiled, r, dr]).transpose((1, 2, 0))
 
             output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
             data_dict[output_xs_name] = [np.nan_to_num(rdata)]
             data_dict["cross_sections"][output_xs_name] = pol_state
 
-            if q_data is not None and len(q_data)>0:
+            if q_data is not None and len(q_data) > 0:
                 for item in q_data:
                     slice_data_dict["cross_sections"][item[1]] = item[1]
                     slice_data_dict[item[1]] = item[0]
@@ -310,7 +314,7 @@ class ProcessingWorkflow(object):
         p_0 = [item.cross_sections[first_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
         p_n = [item.cross_sections[first_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
 
-        ki_max=0.01
+        ki_max = 0.01
         for pol_state in self.data_manager.reduction_states:
             # The scaling factors should have been determined at this point. Just use them
             # to merge the different runs in a set.
@@ -327,15 +331,15 @@ class ProcessingWorkflow(object):
                 p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
                 p_n = n_total-item.cross_sections[pol_state].configuration.cut_last_n_points
 
-                rdata=np.array([Qx[:, p_0:p_n], Qz[:, p_0:p_n], ki_z[:, p_0:p_n], kf_z[:, p_0:p_n],
-                                ki_z[:, p_0:p_n]-kf_z[:, p_0:p_n], S[:, p_0:p_n], dS[:, p_0:p_n]]).transpose((1, 2, 0))
+                rdata = np.array([Qx[:, p_0:p_n], Qz[:, p_0:p_n], ki_z[:, p_0:p_n], kf_z[:, p_0:p_n],
+                                  ki_z[:, p_0:p_n]-kf_z[:, p_0:p_n], S[:, p_0:p_n], dS[:, p_0:p_n]]).transpose((1, 2, 0))
                 combined_data.append(rdata)
-                ki_max=max(ki_max, ki_z.max())
+                ki_max = max(ki_max, ki_z.max())
 
             output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
             data_dict[output_xs_name] = combined_data
             data_dict["cross_sections"][output_xs_name] = pol_state
-        data_dict['ki_max']=ki_max
+        data_dict['ki_max'] = ki_max
         return data_dict
 
     def get_output_data(self):
@@ -366,8 +370,7 @@ class ProcessingWorkflow(object):
                 continue
 
             combined_data = []
-            for i in range(len(ws_list)):
-                ws = ws_list[i]
+            for i, ws in enumerate(ws_list):
                 _x = ws.readX(0)
                 n_total = len(_x)
                 x = ws.readX(0)[p_0[i]:n_total-p_n[i]]
@@ -376,7 +379,7 @@ class ProcessingWorkflow(object):
                 dx = ws.readDx(0)[p_0[i]:n_total-p_n[i]]
                 tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
                 tth = np.ones(len(x)) * tth_value
-                combined_data.append(np.vstack((x,y,dy,dx,tth)).transpose())
+                combined_data.append(np.vstack((x, y, dy, dx, tth)).transpose())
 
             _output_data = np.vstack(combined_data)
             ordered = np.argsort(_output_data, axis=0).transpose()[0]
