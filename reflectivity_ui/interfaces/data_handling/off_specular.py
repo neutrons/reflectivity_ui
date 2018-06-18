@@ -1,3 +1,4 @@
+#pylint: disable=too-many-locals, too-many-arguments
 """
     Class to execute and hold the off-specular reflectivity calculation.
 """
@@ -68,13 +69,13 @@ class OffSpecular(object):
         k = 2. * np.pi / wl
 
         # calculate reciprocal space, incident and outgoing perpendicular wave vectors
-        self.Qz=k[np.newaxis, :]*(np.sin(af)+np.sin(ai))[:, np.newaxis]
-        self.Qx=k[np.newaxis, :]*(np.cos(af)-np.cos(ai))[:, np.newaxis]
-        self.ki_z=k[np.newaxis, :]*np.sin(ai)[:, np.newaxis]
-        self.kf_z=k[np.newaxis, :]*np.sin(af)[:, np.newaxis]
+        self.Qz = k[np.newaxis, :] * (np.sin(af)+np.sin(ai))[:, np.newaxis]
+        self.Qx = k[np.newaxis, :] * (np.cos(af)-np.cos(ai))[:, np.newaxis]
+        self.ki_z = k[np.newaxis, :] * np.sin(ai)[:, np.newaxis]
+        self.kf_z = k[np.newaxis, :] * np.sin(af)[:, np.newaxis]
 
         # calculate ROI intensities and normalize by number of points
-        raw_multi_dim=self.data_set.data[self.data_set.active_area_x[0]:self.data_set.active_area_x[1], y_min:y_max, :]
+        raw_multi_dim = self.data_set.data[self.data_set.active_area_x[0]:self.data_set.active_area_x[1], y_min:y_max, :]
         raw = raw_multi_dim.sum(axis=1)
         d_raw = np.sqrt(raw)
 
@@ -90,8 +91,8 @@ class OffSpecular(object):
 
             norm_y_min, norm_y_max = direct_beam.configuration.low_res_roi
             norm_x_min, norm_x_max = direct_beam.configuration.peak_roi
-            norm_raw_multi_dim=direct_beam.data[norm_x_min:norm_x_max,
-                                                norm_y_min:norm_y_max, :]
+            norm_raw_multi_dim = direct_beam.data[norm_x_min:norm_x_max,
+                                                  norm_y_min:norm_y_max, :]
 
             norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
             norm_d_raw = np.sqrt(norm_raw)
@@ -99,14 +100,13 @@ class OffSpecular(object):
             norm_raw /= norm_scale * direct_beam.proton_charge
             norm_d_raw /= norm_scale * direct_beam.proton_charge
 
-            idxs=norm_raw>0.
-            self.dS[:, idxs]=np.sqrt(
-                         (self.dS[:, idxs]/norm_raw[idxs][np.newaxis, :])**2+
-                         (self.S[:, idxs]/norm_raw[idxs][np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, :])**2
-                         )
-            self.S[:, idxs]/=norm_raw[idxs][np.newaxis, :]
-            self.S[:, np.logical_not(idxs)]=0.
-            self.dS[:, np.logical_not(idxs)]=0.
+            idxs = norm_raw > 0.
+            self.dS[:, idxs] = np.sqrt((self.dS[:, idxs]/norm_raw[idxs][np.newaxis, :])**2 +
+                                       (self.S[:, idxs]/norm_raw[idxs][np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, :])**2
+                                      )
+            self.S[:, idxs] /= norm_raw[idxs][np.newaxis, :]
+            self.S[:, np.logical_not(idxs)] = 0.
+            self.dS[:, np.logical_not(idxs)] = 0.
 
 def merge(reduction_list, pol_state):
     """
@@ -117,17 +117,17 @@ def merge(reduction_list, pol_state):
         The scaling factors should have been determined at this point. Just use them
         to merge the different runs in a set.
     """
-    _Qx = np.empty(0)
-    _Qz = np.empty(0)
+    _qx = np.empty(0)
+    _qz = np.empty(0)
     _ki_z = np.empty(0)
     _kf_z = np.empty(0)
-    _S = np.empty(0)
-    _dS = np.empty(0)
+    _s = np.empty(0)
+    _ds = np.empty(0)
 
     for item in reduction_list:
         offspec = item.cross_sections[pol_state].off_spec
         Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z,
-                                    offspec.S, offspec.dS)
+                                     offspec.S, offspec.dS)
 
         n_total = len(S[0])
         p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
@@ -141,35 +141,35 @@ def merge(reduction_list, pol_state):
         S = np.ravel(S[:, p_0:p_n])
         dS = np.ravel(dS[:, p_0:p_n])
 
-        _Qx = np.concatenate((_Qx, Qx))
-        _Qz = np.concatenate((_Qz, Qz))
+        _qx = np.concatenate((_qx, Qx))
+        _qz = np.concatenate((_qz, Qz))
         _ki_z = np.concatenate((_ki_z, ki_z))
         _kf_z = np.concatenate((_kf_z, kf_z))
-        _S = np.concatenate((_S, S))
-        _dS = np.concatenate((_dS, dS))
+        _s = np.concatenate((_s, S))
+        _ds = np.concatenate((_ds, dS))
 
-    return _Qx, _Qz, _ki_z, _kf_z, _ki_z-_kf_z, _S, _dS
+    return _qx, _qz, _ki_z, _kf_z, _ki_z-_kf_z, _s, _ds
 
 def closest_bin(q, bin_edges):
+    """
+        Find closest bin to a q-value
+        :param float q: q-value
+        :param list bin_edges: list of bin edges
+    """
     for i in range(len(bin_edges)):
         if q > bin_edges[i] and q < bin_edges[i+1]:
             return i
     return None
 
-def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, output_dir=None, use_weights=True,
-            n_bins_x=350, n_bins_y=350):
+def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights=True,
+                  n_bins_x=350, n_bins_y=350):
     """
         Rebin off-specular data and extract cut at given Qz values.
         Note: the analysis computers with RHEL7 have Scipy 0.12 installed, which makes
         this code uglier. Refactor once we get a more recent version.
     """
-    # Sanity check
-    if len(reduction_list) == 0:
-        return
     if not isinstance(y_list, list):
         y_list = []
-
-    run_numbers = [item.number for item in reduction_list]
 
     Qx, Qz, ki_z, kf_z, delta_k, S, dS = merge(reduction_list, pol_state)
 
@@ -200,14 +200,14 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, output_dir=
         _r = S/dS**2
         statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values[indices],
                                                                        y_values[indices],
-                                                                       _r[indices], 
+                                                                       _r[indices],
                                                                        statistic='sum',
                                                                        bins=_bins)
         # - Sum of weights
         _w = 1/dS**2
-        w_statistic, _, _, _  = scipy.stats.binned_statistic_2d(x_values[indices], y_values[indices], _w[indices], 
-                                                  statistic='sum',
-                                                  bins=[x_edge, y_edge])
+        w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices], y_values[indices], _w[indices],
+                                                               statistic='sum',
+                                                               bins=[x_edge, y_edge])
 
         result = statistic / w_statistic
         result = result.T
@@ -216,21 +216,21 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, output_dir=
         # Compute the simple average, with errors
         statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values[indices],
                                                                        y_values[indices],
-                                                                       S[indices], 
+                                                                       S[indices],
                                                                        statistic='mean',
                                                                        bins=_bins)
         # Compute the errors
         _w = dS**2
         w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices],
                                                                y_values[indices],
-                                                               _w[indices], 
+                                                               _w[indices],
                                                                statistic='sum',
                                                                bins=[x_edge, y_edge])
 
         _c = np.ones(len(x_values))
         counts, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices],
                                                           y_values[indices],
-                                                          _c[indices], 
+                                                          _c[indices],
                                                           statistic='sum',
                                                           bins=[x_edge, y_edge])
 
