@@ -2,7 +2,7 @@
     Loader for event nexus files.
     Uses Mantid Framework
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
 from __future__ import absolute_import, division, print_function
 import sys
 import logging
@@ -17,7 +17,7 @@ application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 # Set Mantid logging level to warnings
-ConfigService.setConsoleLogLevel(4)
+api.ConfigService.setConsoleLogLevel(4)
 
 from .data_info import DataInfo
 from . import off_specular
@@ -76,6 +76,9 @@ class NexusData(object):
 
     @property
     def nbytes(self):
+        """
+            Approximate data size
+        """
         total_size = 0
         for d in self.cross_sections.keys():
             total_size += self.cross_sections[d].nbytes
@@ -131,6 +134,9 @@ class NexusData(object):
             raise RuntimeError(detailed_msg)
 
     def calculate_gisans(self, direct_beam):
+        """
+            Compute GISANS
+        """
         has_errors = False
         detailed_msg = ""
         for xs in self.cross_sections:
@@ -193,6 +199,7 @@ class NexusData(object):
             Load cross-sections from a nexus file.
             :param function progress: call-back function to track progress
         """
+        self.cross_sections = OrderedDict()
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)
 
@@ -201,9 +208,8 @@ class NexusData(object):
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
         except:
             logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
-            return
+            return self.cross_sections
 
-        self.cross_sections = OrderedDict()
         progress_value = 0
         # Keep track of cross-section with max counts so we can use it to
         # select peak regions
@@ -364,8 +370,7 @@ class CrossSectionData(object):
     def active_area_x(self):
         if self._active_area_x is None:
             return (0, self.xydata.shape[1])
-        else:
-            return self._active_area_x
+        return self._active_area_x
     @active_area_x.setter
     def active_area_x(self, value):
         self._active_area_x = value
@@ -374,8 +379,7 @@ class CrossSectionData(object):
     def active_area_y(self):
         if self._active_area_y is None:
             return (0, self.xydata.shape[1])
-        else:
-            return self._active_area_y
+        return self._active_area_y
 
     @active_area_y.setter
     def active_area_y(self, value):
@@ -428,6 +432,10 @@ class CrossSectionData(object):
         self.configuration.instrument.get_info(workspace, self)
 
     def process_data(self, workspace):
+        """
+            Process loaded data
+            :param workspace: Mantid workspace
+        """
         self._event_workspace = str(workspace)
 
         # Get initial reduction parameters. They may be overwritten later.
