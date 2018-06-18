@@ -1,4 +1,4 @@
-#pylint: disable=bare-except
+#pylint: disable=bare-except, too-many-locals, too-many-statements, too-many-branches, wrong-import-order, too-many-arguments
 """
     Read and write quicknxs reduced files
 """
@@ -11,8 +11,8 @@ import numpy as np
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
-application_conf = ApplicationConfiguration()
-sys.path.insert(0, application_conf.mantid_path)
+APP_CONF = ApplicationConfiguration()
+sys.path.insert(0, APP_CONF.mantid_path)
 import mantid
 
 from ... import __version__
@@ -26,13 +26,13 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         :param str pol_state: descriptor for the polarization state
     """
     # Sanity check
-    if len(reduction_list) == 0:
+    if not reduction_list:
         return
 
-    direct_beam_options=['DB_ID', 'P0', 'PN', 'x_pos', 'x_width', 'y_pos', 'y_width',
-                         'bg_pos', 'bg_width', 'dpix', 'tth', 'number', 'File']
-    dataset_options=['scale', 'P0', 'PN', 'x_pos', 'x_width', 'y_pos', 'y_width',
-                     'bg_pos', 'bg_width', 'fan', 'dpix', 'tth', 'number', 'DB_ID', 'File']
+    direct_beam_options = ['DB_ID', 'P0', 'PN', 'x_pos', 'x_width', 'y_pos', 'y_width',
+                           'bg_pos', 'bg_width', 'dpix', 'tth', 'number', 'File']
+    dataset_options = ['scale', 'P0', 'PN', 'x_pos', 'x_width', 'y_pos', 'y_width',
+                       'bg_pos', 'bg_width', 'fan', 'dpix', 'tth', 'number', 'DB_ID', 'File']
 
     fd = open(output_path, 'w')
     fd.write("# Datafile created by QuickNXS %s\n" % __version__)
@@ -47,9 +47,9 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     toks = ['%8s' % item for item in direct_beam_options]
     fd.write("# %s\n" % '  '.join(toks))
 
-    # Get the 
+    # Get the list of cross-sections
     pol_list = reduction_list[0].cross_sections.keys()
-    if len(pol_list) == 0:
+    if not pol_list:
         logging.error("No data found in run %s", reduction_list[0].number)
         return
 
@@ -92,8 +92,8 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         fd.write(template.format(**_clean_dict))
 
     # Scattering data
-    fd.write("#\n") 
-    fd.write("# [Data Runs]\n") 
+    fd.write("#\n")
+    fd.write("# [Data Runs]\n")
     toks = ['%8s' % item for item in dataset_options]
     fd.write("# %s\n" % '  '.join(toks))
     i_direct_beam = 0
@@ -179,7 +179,7 @@ def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=Fa
         # Determine how many columns to write
         four_cols = not as_5col and data.shape[1] > 4
 
-        fd.write("# [Data]\n") 
+        fd.write("# [Data]\n")
         if four_cols:
             toks = [u'%12s' % item for item in col_names[:4]]
         else:
@@ -193,7 +193,7 @@ def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=Fa
                     np.savetxt(fd, pixel_item, delimiter='\t', fmt='%12.6g')
         else:
             if four_cols:
-                np.savetxt(fd, data[:,:4], delimiter=' ', fmt='%12.6g')
+                np.savetxt(fd, data[:, :4], delimiter=' ', fmt='%12.6g')
             else:
                 np.savetxt(fd, data, delimiter='\t', fmt='%12.6g')
 
@@ -229,7 +229,7 @@ def read_reduced_file(file_path):
             # Process direct beam runs
             if _in_section == 1:
                 toks = line.split()
-                if len(toks)<14 or 'DB_ID' in line:
+                if len(toks) < 14 or 'DB_ID' in line:
                     continue
                 try:
                     conf = Configuration()
@@ -261,7 +261,7 @@ def read_reduced_file(file_path):
             # Process data runs
             if _in_section == 2:
                 toks = line.split()
-                if len(toks)<16 or 'DB_ID' in line:
+                if len(toks) < 16 or 'DB_ID' in line:
                     continue
                 try:
                     conf = Configuration()
