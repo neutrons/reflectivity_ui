@@ -2,20 +2,20 @@
     Loader for event nexus files.
     Uses Mantid Framework
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods
 from __future__ import absolute_import, division, print_function
 import sys
 import logging
 from collections import OrderedDict
-import numpy as np
 import copy
 import math
+import numpy as np
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
-from mantid.simpleapi import *
+import mantid.simpleapi as api
 # Set Mantid logging level to warnings
 ConfigService.setConsoleLogLevel(4)
 
@@ -24,11 +24,11 @@ from . import off_specular
 
 ### Parameters needed for some calculations.
 
-ANALYZER_IN=(0., 100.) # position and maximum deviation of analyzer in it's working position
-POLARIZER_IN=(-348., 50.) # position and maximum deviation of polarizer in it's working position
-SUPERMIRROR_IN=(19.125, 10.) # position and maximum deviation of the supermirror translation
-POLY_CORR_PARAMS=[-4.74152261e-05,-4.62469580e-05, 1.25995446e-02, 2.13654008e-02,
-                  1.02334517e+01] # parameters used in polynomial detector sensitivity correction
+ANALYZER_IN = (0., 100.) # position and maximum deviation of analyzer in it's working position
+POLARIZER_IN = (-348., 50.) # position and maximum deviation of polarizer in it's working position
+SUPERMIRROR_IN = (19.125, 10.) # position and maximum deviation of the supermirror translation
+POLY_CORR_PARAMS = [-4.74152261e-05, -4.62469580e-05, 1.25995446e-02, 2.13654008e-02,
+                    1.02334517e+01] # parameters used in polynomial detector sensitivity correction
 
 XSECT_MAPPING = {u'entry-Off_Off': u'++',
                  u'entry-On_On': u'--',
@@ -60,7 +60,7 @@ def getIxyt(nxs_data):
         for y in range(sz_y_axis):
             _index = int(sz_y_axis*x+y)
             _tmp_data = nxs_data.readY(_index)[:]
-            _y_axis[x,y,:] = _tmp_data
+            _y_axis[x, y, :] = _tmp_data
 
     return _y_axis
 
@@ -274,20 +274,20 @@ class CrossSectionData(object):
         self.tof_range = [0, 0]
         self._active_area_x = None
         self._active_area_y = None
-        self.logs={}
-        self.log_minmax={}
-        self.log_units={}
-        self.proton_charge=0
-        self.total_counts=0
-        self.total_time=0
+        self.logs = {}
+        self.log_minmax = {}
+        self.log_units = {}
+        self.proton_charge = 0
+        self.total_counts = 0
+        self.total_time = 0
 
-        self.experiment=''
-        self.number=0
-        self.merge_warnings=''
-        self.tof_edges=None
-        self.data=None
-        self.xydata=None
-        self.xtofdata=None
+        self.experiment = ''
+        self.number = 0
+        self.merge_warnings = ''
+        self.tof_edges = None
+        self.data = None
+        self.xydata = None
+        self.xtofdata = None
         self.meta_data_roi_peak = None
         self.meta_data_roi_bck = None
         self.direct_pixel = 0
@@ -300,16 +300,17 @@ class CrossSectionData(object):
 
         # GISANS
         #TODO: refactor this
-        self.SGrid=None
+        self.SGrid = None
         self.QyGrid = None
         self.QzGrid = None
 
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
+    #pylint: disable=missing-docstring
     @property
     def reflectivity_workspace(self):
-        if str(self._reflectivity_workspace) in mtd:
-            return mtd[self._reflectivity_workspace]
+        if str(self._reflectivity_workspace) in api.mtd:
+            return api.mtd[self._reflectivity_workspace]
         return None
 
     @property
@@ -356,7 +357,7 @@ class CrossSectionData(object):
     def wavelength(self):
         h = 6.626e-34  # m^2 kg s^-1
         m = 1.675e-27  # kg
-        v_n=self.dist_mod_det/self.tof*1e6 #m/s
+        v_n = self.dist_mod_det/self.tof*1e6 #m/s
         return h/m/v_n*1e10 #A
 
     @property
@@ -367,7 +368,7 @@ class CrossSectionData(object):
             return self._active_area_x
     @active_area_x.setter
     def active_area_x(self, value):
-        self._active_area_x=value
+        self._active_area_x = value
 
     @property
     def active_area_y(self):
@@ -378,8 +379,9 @@ class CrossSectionData(object):
 
     @active_area_y.setter
     def active_area_y(self, value):
-        self._active_area_y=value
+        self._active_area_y = value
 
+    #pylint: enable=missing-docstring
     ################## Properties for easy data access ##########################
 
     def collect_info(self, workspace):
@@ -390,16 +392,16 @@ class CrossSectionData(object):
         """
         data = workspace.getRun()
         #self.origin=(os.path.abspath(data['filename'].value), 'entry')
-        self.logs={}
-        self.log_minmax={}
-        self.log_units={}
+        self.logs = {}
+        self.log_minmax = {}
+        self.log_units = {}
 
         for motor in data.keys():
             if motor in ['proton_charge', 'frequency', 'Veto_pulse']:
                 continue
             item = data[motor]
             try:
-                self.log_units[motor]=unicode(item.units, encoding='utf8')
+                self.log_units[motor] = unicode(item.units, encoding='utf8')
                 if item.type == 'string':
                     pass
                     #self.logs[motor] = item.value
@@ -414,13 +416,13 @@ class CrossSectionData(object):
             except:
                 logging.error("Error reading DASLogs %s: %s", motor, sys.exc_value)
 
-        self.proton_charge=data['gd_prtn_chrg'].value
-        self.total_counts=workspace.getNumberEvents()
-        self.total_time=data['duration'].value
+        self.proton_charge = data['gd_prtn_chrg'].value
+        self.total_counts = workspace.getNumberEvents()
+        self.total_time = data['duration'].value
 
-        self.experiment=str(data['experiment_identifier'].value)
-        self.number=int(workspace.getRunNumber())
-        self.merge_warnings=''
+        self.experiment = str(data['experiment_identifier'].value)
+        self.number = int(workspace.getRunNumber())
+        self.merge_warnings = ''
 
         # Retrieve instrument-specific information
         self.configuration.instrument.get_info(workspace, self)
@@ -442,18 +444,18 @@ class CrossSectionData(object):
             else:
                 tof_edges = np.linspace(self.tof_range[0], self.tof_range[1], self.configuration.tof_bins+1)
 
-        binning_ws = CreateWorkspace(DataX=tof_edges, DataY=np.zeros(len(tof_edges)-1))
-        data_rebinned = RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
+        binning_ws = api.CreateWorkspace(DataX=tof_edges, DataY=np.zeros(len(tof_edges)-1))
+        data_rebinned = api.RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
         Ixyt = getIxyt(data_rebinned)
 
         # Create projections for the 2D datasets
-        Ixy=Ixyt.sum(axis=2)
-        Ixt=Ixyt.sum(axis=1)
+        Ixy = Ixyt.sum(axis=2)
+        Ixt = Ixyt.sum(axis=1)
         # Store the data
-        self.tof_edges=tof_edges
-        self.data=Ixyt.astype(float) # 3D dataset
-        self.xydata=Ixy.transpose().astype(float) # 2D dataset
-        self.xtofdata=Ixt.astype(float) # 2D dataset
+        self.tof_edges = tof_edges
+        self.data = Ixyt.astype(float) # 3D dataset
+        self.xydata = Ixy.transpose().astype(float) # 2D dataset
+        self.xtofdata = Ixt.astype(float) # 2D dataset
 
         if self.configuration.set_direct_pixel:
             self.direct_pixel = self.configuration.direct_pixel_overwrite
@@ -472,7 +474,7 @@ class CrossSectionData(object):
             if self._event_workspace is None:
                 return
             else:
-                workspace = mtd[self._event_workspace]
+                workspace = api.mtd[self._event_workspace]
 
         data_info = DataInfo(workspace, self.name, self.configuration)
         self.use_roi_actual = data_info.use_roi_actual
@@ -497,8 +499,8 @@ class CrossSectionData(object):
         """
         # Calculate ROI intensities and normalize by number of points
         raw_data = self.data[self.configuration.peak_roi[0]:self.configuration.peak_roi[1],
-                         self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
-        size_roi = float((self.configuration.low_res_roi[1]-self.configuration.low_res_roi[0])*(self.configuration.peak_roi[1]-self.configuration.peak_roi[0]))
+                             self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
+        size_roi = float((self.configuration.low_res_roi[1] - self.configuration.low_res_roi[0]) * (self.configuration.peak_roi[1] - self.configuration.peak_roi[0]))
         summed_raw = raw_data.sum(axis=0).sum(axis=0)
 
         # Remove the background
@@ -512,10 +514,10 @@ class CrossSectionData(object):
         """
         # Find the background pixels to use, excluding the peak if there's an overlap.
         dims = self.data.shape
-        indices = [(i>=self.configuration.bck_roi[0] and i<self.configuration.bck_roi[1]) \
-                   and not (i>=self.configuration.peak_roi[0] and i<self.configuration.peak_roi[1]) for i in range(dims[0])]
+        indices = [(i >= self.configuration.bck_roi[0] and i < self.configuration.bck_roi[1]) \
+                   and not (i >= self.configuration.peak_roi[0] and i < self.configuration.peak_roi[1]) for i in range(dims[0])]
         indices = np.asarray(indices)
-        n_bins = len(indices[indices==True])
+        n_bins = len(indices[indices == True])
         raw_bck = self.data[indices,
                             self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
         summed_bck = raw_bck.sum(axis=0).sum(axis=0)
@@ -564,33 +566,33 @@ class CrossSectionData(object):
 
         ws_norm = None
         if apply_norm and direct_beam._event_workspace is not None:
-            ws_norm = CloneWorkspace(InputWorkspace=direct_beam._event_workspace)
+            ws_norm = api.CloneWorkspace(InputWorkspace=direct_beam._event_workspace)
 
-        ws = MagnetismReflectometryReduction(InputWorkspace=self._event_workspace,
-                                             NormalizationWorkspace=ws_norm,
-                                             SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
-                                             SubtractSignalBackground=True,
-                                             SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
-                                             ApplyNormalization=apply_norm,
-                                             NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
-                                             SubtractNormBackground=True,
-                                             NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
-                                             CutLowResDataAxis=True,
-                                             LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
-                                             CutLowResNormAxis=True,
-                                             LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
-                                             CutTimeAxis=True,
-                                             QMin=0.001,
-                                             QStep=-0.01,
-                                             AngleOffset = angle_offset,
-                                             UseWLTimeAxis=False,
-                                             TimeAxisStep=self.configuration.tof_bins,
-                                             UseSANGLE=not self.configuration.use_dangle,
-                                             TimeAxisRange=self.tof_range,
-                                             SpecularPixel=self.configuration.peak_position,
-                                             ConstantQBinning=self.configuration.use_constant_q,
-                                             EntryName=str(self.entry_name),
-                                             OutputWorkspace=output_ws)
+        ws = api.MagnetismReflectometryReduction(InputWorkspace=self._event_workspace,
+                                                 NormalizationWorkspace=ws_norm,
+                                                 SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
+                                                 SubtractSignalBackground=True,
+                                                 SignalBackgroundPixelRange=_as_ints(self.configuration.bck_roi),
+                                                 ApplyNormalization=apply_norm,
+                                                 NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
+                                                 SubtractNormBackground=True,
+                                                 NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
+                                                 CutLowResDataAxis=True,
+                                                 LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
+                                                 CutLowResNormAxis=True,
+                                                 LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+                                                 CutTimeAxis=True,
+                                                 QMin=0.001,
+                                                 QStep=-0.01,
+                                                 AngleOffset=angle_offset,
+                                                 UseWLTimeAxis=False,
+                                                 TimeAxisStep=self.configuration.tof_bins,
+                                                 UseSANGLE=not self.configuration.use_dangle,
+                                                 TimeAxisRange=self.tof_range,
+                                                 SpecularPixel=self.configuration.peak_position,
+                                                 ConstantQBinning=self.configuration.use_constant_q,
+                                                 EntryName=str(self.entry_name),
+                                                 OutputWorkspace=output_ws)
 
         ################## FOR COMPATIBILITY WITH QUICKNXS ##################
         run_object = ws.getRun()
@@ -607,8 +609,8 @@ class CrossSectionData(object):
         quicknxs_scale /= (float(peak_max)-float(peak_min)) * (float(low_res_max)-float(low_res_min))
         quicknxs_scale *= 0.005 / math.sin(tth)
 
-        ws = Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws,
-                   factor=quicknxs_scale, Operation='Multiply')
+        ws = api.Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws,
+                       factor=quicknxs_scale, Operation='Multiply')
         #####################################################################
 
         self.q = ws.readX(0)[:].copy()
@@ -651,25 +653,25 @@ class CrossSectionData(object):
         af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
         ai = np.ones_like(af) * tth_spec / 2.
 
-        phi=(np.arange(self.data.shape[1])[self.active_area_y[0]:
-                                           self.active_area_y[1]]-y_pos)*rad_per_pixel
+        phi = (np.arange(self.data.shape[1])[self.active_area_y[0]:
+                                             self.active_area_y[1]]-y_pos)*rad_per_pixel
 
-        v_edges=self.dist_mod_det/self.tof_edges*1e6 #m/s
+        v_edges = self.dist_mod_det/self.tof_edges*1e6 #m/s
         lambda_edges = H_OVER_M_NEUTRON/v_edges*1e10 #A
         wl = (lambda_edges[:-1] + lambda_edges[1:]) / 2.
-        k = 2.*np.pi / wl
+        k = 2. * np.pi / wl
 
         # calculate ROI intensities and normalize by number of points
         P0 = self.configuration.cut_first_n_points
         PN = len(self.tof) - self.configuration.cut_last_n_points
 
         # calculate reciprocal space, incident and outgoing perpendicular wave vectors
-        Qy=k[np.newaxis, np.newaxis, P0:PN]*(np.sin(phi)*np.cos(af)[:, np.newaxis])[:, :, np.newaxis]
-        p_i=k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(ai)[:, np.newaxis])[:, :, np.newaxis]
-        p_f=k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(af)[:, np.newaxis])[:, :, np.newaxis]
-        Qz=p_i+p_f
+        Qy = k[np.newaxis, np.newaxis, P0:PN]*(np.sin(phi)*np.cos(af)[:, np.newaxis])[:, :, np.newaxis]
+        p_i = k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(ai)[:, np.newaxis])[:, :, np.newaxis]
+        p_f = k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(af)[:, np.newaxis])[:, :, np.newaxis]
+        Qz = p_i + p_f
 
-        raw=self.data[self.active_area_x[0]:self.active_area_x[1],
+        raw = self.data[self.active_area_x[0]:self.active_area_x[1],
                         self.active_area_y[0]:self.active_area_y[1],
                         P0:PN]
 
@@ -680,24 +682,23 @@ class CrossSectionData(object):
             if not direct_beam.configuration.tof_bins == self.configuration.tof_bins:
                 logging.error("Trying to normalize with a direct beam data set with different binning")
 
-            norm_raw_multi_dim=direct_beam.data[self.active_area_x[0]:self.active_area_x[1],
-                                                self.active_area_y[0]:self.active_area_y[1], P0:PN]
+            norm_raw_multi_dim = direct_beam.data[self.active_area_x[0]:self.active_area_x[1],
+                                                  self.active_area_y[0]:self.active_area_y[1], P0:PN]
             norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
             norm_d_raw = np.sqrt(norm_raw)
-            
+
             surface = (self.active_area_x[1]-self.active_area_x[0]) * (self.active_area_y[1]-self.active_area_y[0])
-            
+
             norm_raw /= surface * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
             norm_d_raw /= surface * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
 
-            idxs=norm_raw>0.
-            d_intensity[:, :, idxs]=np.sqrt(
-                         (d_intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :])**2+
-                         (intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, np.newaxis, :])**2
-                         )
-            intensity[:, :, idxs]/=norm_raw[idxs][np.newaxis, np.newaxis, :]
-            intensity[:, :, np.logical_not(idxs)]=0.
-            d_intensity[:, :, np.logical_not(idxs)]=0.
+            idxs = norm_raw > 0.
+            d_intensity[:, :, idxs] = np.sqrt((d_intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :])**2+
+                                              (intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, np.newaxis, :])**2
+                                             )
+            intensity[:, :, idxs] /= norm_raw[idxs][np.newaxis, np.newaxis, :]
+            intensity[:, :, np.logical_not(idxs)] = 0.
+            d_intensity[:, :, np.logical_not(idxs)] = 0.
 
         # Create grid
         # bins=(self.options['gisans_gridy'], self.options['gisans_gridz']),
@@ -707,10 +708,10 @@ class CrossSectionData(object):
                                             weights=intensity.flatten())
         npoints, _, _ = np.histogram2d(Qy.flatten(), Qz.flatten(),
                                        bins=(50, 50))
-        self.SGrid[npoints>0]/=npoints[npoints>0]
-        self.SGrid=self.SGrid.transpose()
-        qy=(qy[:-1]+qy[1:])/2.
-        qz=(qz[:-1]+qz[1:])/2.
+        self.SGrid[npoints > 0] /= npoints[npoints > 0]
+        self.SGrid = self.SGrid.transpose()
+        qy = (qy[:-1]+qy[1:])/2.
+        qz = (qz[:-1]+qz[1:])/2.
         self.QyGrid, self.QzGrid = np.meshgrid(qy, qz)
 
 class NexusMetaData(object):
