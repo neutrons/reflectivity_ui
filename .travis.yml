@@ -30,6 +30,8 @@ install:
 
   - source activate test-environment
   - python setup.py install
+  # - conda config --add channels conda-forge      # add conda-forge channel
+  - conda install -c mantid mantid-framework
 
 script:
   - pylint --rcfile build_tools/pylint.rc -f parseable reflectivity_ui/interfaces/data_handling reflectivity_ui/interfaces/event_handlers || exit 0
