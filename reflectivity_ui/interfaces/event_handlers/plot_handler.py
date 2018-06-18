@@ -19,7 +19,7 @@ def slow_down_events(fn):
             Wrap a function to slow it down
         """
         if self.last_event is not None and time.time()-self.last_event < 0.3:
-            return
+            return None
         self.last_event = time.time()
         return fn(self, *args, **kws)
     return function_wrapper
@@ -31,7 +31,7 @@ class PlotHandler(object):
     _picked_line = None
     control_down = False
     last_event = None
-    refl= None
+    refl = None
 
     def __init__(self, main_window):
         self.main_window = main_window
@@ -68,13 +68,13 @@ class PlotHandler(object):
         self.ui.xtof_overview.canvas.mpl_connect('button_release_event', self.plot_release)
 
         # Status bar indicator
-        self.x_position_indicator=QtWidgets.QLabel(u" x=%g" % 0.)
+        self.x_position_indicator = QtWidgets.QLabel(u" x=%g" % 0.)
         self.x_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
                                                 QtWidgets.QSizePolicy.Preferred)
         self.x_position_indicator.setMaximumWidth(100)
         self.x_position_indicator.setMinimumWidth(100)
         self.ui.statusbar.addPermanentWidget(self.x_position_indicator)
-        self.y_position_indicator=QtWidgets.QLabel(u" y=%g" % 0.)
+        self.y_position_indicator = QtWidgets.QLabel(u" y=%g" % 0.)
         self.y_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
                                                 QtWidgets.QSizePolicy.Preferred)
         self.y_position_indicator.setMaximumWidth(100)
@@ -103,19 +103,19 @@ class PlotHandler(object):
         _scale = 1.5
         _step = 0.42
 
-        canvas=None
+        canvas = None
         for plot in [self.ui.xy_overview, self.ui.xtof_overview]:
             if plot.canvas is event.canvas:
-                canvas=[plot]
+                canvas = [plot]
         if event.canvas in [self.ui.xy_pp.canvas, self.ui.xy_mp.canvas,
                             self.ui.xy_pm.canvas, self.ui.xy_mm.canvas]:
-            canvas=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm]
+            canvas = [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm]
         if event.canvas in [self.ui.xtof_pp.canvas, self.ui.xtof_mp.canvas,
                             self.ui.xtof_pm.canvas, self.ui.xtof_mm.canvas]:
-            canvas=[self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm]
+            canvas = [self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm]
         if not (canvas and canvas[0].cplot):
             return
-        clim=canvas[0].cplot.get_clim()
+        clim = canvas[0].cplot.get_clim()
         for canv in canvas:
             if canv.cplot is None:
                 continue
@@ -140,38 +140,38 @@ class PlotHandler(object):
         """
         if event.button is not None and self.ui.x_project.toolbar._active is None and \
             event.xdata is not None:
-            self.main_window.auto_change_active=True
-            if event.button==1:
-                xcen=self.ui.refXPos.value()
-                bgc=self.ui.bgCenter.value()
-                bgw=self.ui.bgWidth.value()
-                bgl=bgc-bgw/2.
-                bgr=bgc+bgw/2.
-                dists=[abs(event.xdata-item) for item in [xcen, bgl, bgr]]
-                min_dist=dists.index(min(dists))
-                pl=self._picked_line
-                if pl=='bgl' or (pl is None and min_dist==1):
+            self.main_window.auto_change_active = True
+            if event.button == 1:
+                xcen = self.ui.refXPos.value()
+                bgc = self.ui.bgCenter.value()
+                bgw = self.ui.bgWidth.value()
+                bgl = bgc-bgw/2.
+                bgr = bgc+bgw/2.
+                dists = [abs(event.xdata-item) for item in [xcen, bgl, bgr]]
+                min_dist = dists.index(min(dists))
+                pl = self._picked_line
+                if pl == 'bgl' or (pl is None and min_dist == 1):
                     # left of right background bar and closer to left one
-                    bgl=event.xdata
-                    bgc=(bgr+bgl)/2.
-                    bgw=(bgr-bgl)
+                    bgl = event.xdata
+                    bgc = (bgr+bgl)/2.
+                    bgw = (bgr-bgl)
                     self.ui.bgCenter.setValue(bgc)
                     self.ui.bgWidth.setValue(bgw)
-                    self._picked_line='bgl'
-                elif pl=='bgr' or (pl is None and min_dist==2):
+                    self._picked_line = 'bgl'
+                elif pl == 'bgr' or (pl is None and min_dist == 2):
                     # left of right background bar or closer to right background than peak
-                    bgr=event.xdata
-                    bgc=(bgr+bgl)/2.
-                    bgw=(bgr-bgl)
+                    bgr = event.xdata
+                    bgc = (bgr+bgl)/2.
+                    bgw = (bgr-bgl)
                     self.ui.bgCenter.setValue(bgc)
                     self.ui.bgWidth.setValue(bgw)
-                    self._picked_line='bgr'
+                    self._picked_line = 'bgr'
                 else:
                     self.ui.refXPos.setValue(event.xdata)
-                    self._picked_line='xpos'
-            elif event.button==3:
+                    self._picked_line = 'xpos'
+            elif event.button == 3:
                 self.ui.refXWidth.setValue(abs(self.ui.refXPos.value()-event.xdata)*2.)
-            self.main_window.auto_change_active=False
+            self.main_window.auto_change_active = False
             self.change_region_values()
 
     def plot_pick_y(self, event):
@@ -180,25 +180,25 @@ class PlotHandler(object):
             :param self QMainWindow: main window object
             :param event: event object
         """
-        self.main_window.auto_change_active=True
-        if event.button==1 and self.ui.y_project.toolbar._active is None and \
+        self.main_window.auto_change_active = True
+        if event.button == 1 and self.ui.y_project.toolbar._active is None and \
             event.xdata is not None:
-            ypos=self.ui.refYPos.value()
-            yw=self.ui.refYWidth.value()
-            yl=ypos-yw/2.
-            yr=ypos+yw/2.
-            pl=self._picked_line
-            if pl=='yl' or (pl is None and abs(event.xdata-yl)<abs(event.xdata-yr)):
-                yl=event.xdata
-                self._picked_line='yl'
+            ypos = self.ui.refYPos.value()
+            yw = self.ui.refYWidth.value()
+            yl = ypos-yw/2.
+            yr = ypos+yw/2.
+            pl = self._picked_line
+            if pl == 'yl' or (pl is None and abs(event.xdata-yl) < abs(event.xdata-yr)):
+                yl = event.xdata
+                self._picked_line = 'yl'
             else:
-                yr=event.xdata
-                self._picked_line='yr'
-            ypos=(yr+yl)/2.
-            yw=(yr-yl)
+                yr = event.xdata
+                self._picked_line = 'yr'
+            ypos = (yr+yl)/2.
+            yw = (yr-yl)
             self.ui.refYPos.setValue(ypos)
             self.ui.refYWidth.setValue(yw)
-        self.main_window.auto_change_active=False
+        self.main_window.auto_change_active = False
         self.change_region_values()
 
     def plot_pick_xy(self, event):
@@ -207,69 +207,69 @@ class PlotHandler(object):
             :param self QMainWindow: main window object
             :param event: event object
         """
-        self.main_window.auto_change_active=True
-        if event.button==1 and self.ui.xy_overview.toolbar._active is None and \
+        self.main_window.auto_change_active = True
+        if event.button == 1 and self.ui.xy_overview.toolbar._active is None and \
             event.xdata is not None:
             self.ui.refXPos.setValue(event.xdata)
-        elif event.button==3 and self.ui.xy_overview.toolbar._active is None and \
+        elif event.button == 3 and self.ui.xy_overview.toolbar._active is None and \
             event.ydata is not None:
-            ypos=self.ui.refYPos.value()
-            yw=self.ui.refYWidth.value()
-            yl=ypos-yw/2.
-            yr=ypos+yw/2.
-            pl=self._picked_line
-            if pl=='yl' or (pl is None and abs(event.ydata-yl)<abs(event.ydata-yr)):
-                yl=event.ydata
-                self._picked_line='yl'
+            ypos = self.ui.refYPos.value()
+            yw = self.ui.refYWidth.value()
+            yl = ypos-yw/2.
+            yr = ypos+yw/2.
+            pl = self._picked_line
+            if pl == 'yl' or (pl is None and abs(event.ydata-yl) < abs(event.ydata-yr)):
+                yl = event.ydata
+                self._picked_line = 'yl'
             else:
-                yr=event.ydata
-                self._picked_line='yr'
-            ypos=(yr+yl)/2.
-            yw=(yr-yl)
+                yr = event.ydata
+                self._picked_line = 'yr'
+            ypos = (yr+yl)/2.
+            yw = (yr-yl)
             self.ui.refYPos.setValue(ypos)
             self.ui.refYWidth.setValue(yw)
-        self.main_window.auto_change_active=False
+        self.main_window.auto_change_active = False
         self.change_region_values()
 
     def plot_pick_xtof(self, event):
         """
             :param event: event object
         """
-        self.main_window.auto_change_active=True
-        if event.button==1 and self.ui.xtof_overview.toolbar._active is None and \
+        self.main_window.auto_change_active = True
+        if event.button == 1 and self.ui.xtof_overview.toolbar._active is None and \
             event.ydata is not None:
-            xcen=self.ui.refXPos.value()
-            bgc=self.ui.bgCenter.value()
-            bgw=self.ui.bgWidth.value()
-            bgl=bgc-bgw/2.
-            bgr=bgc+bgw/2.
-            dists=[abs(event.ydata-item) for item in [xcen, bgl, bgr]]
-            min_dist=dists.index(min(dists))
-            pl=self._picked_line
-            if pl=='bgl' or (pl is None and min_dist==1):
+            xcen = self.ui.refXPos.value()
+            bgc = self.ui.bgCenter.value()
+            bgw = self.ui.bgWidth.value()
+            bgl = bgc-bgw/2.
+            bgr = bgc+bgw/2.
+            dists = [abs(event.ydata-item) for item in [xcen, bgl, bgr]]
+            min_dist = dists.index(min(dists))
+            pl = self._picked_line
+            if pl == 'bgl' or (pl is None and min_dist == 1):
                 # left of right background bar and closer to left one
-                bgl=event.ydata
-                bgc=(bgr+bgl)/2.
-                bgw=(bgr-bgl)
+                bgl = event.ydata
+                bgc = (bgr+bgl)/2.
+                bgw = (bgr-bgl)
                 self.ui.bgCenter.setValue(bgc)
                 self.ui.bgWidth.setValue(bgw)
-                self._picked_line='bgl'
-            elif pl=='bgr' or (pl is None and min_dist==2):
+                self._picked_line = 'bgl'
+            elif pl == 'bgr' or (pl is None and min_dist == 2):
                 # left of right background bar or closer to right background than peak
-                bgr=event.ydata
-                bgc=(bgr+bgl)/2.
-                bgw=(bgr-bgl)
+                bgr = event.ydata
+                bgc = (bgr+bgl)/2.
+                bgw = (bgr-bgl)
                 self.ui.bgCenter.setValue(bgc)
                 self.ui.bgWidth.setValue(bgw)
-                self._picked_line='bgr'
+                self._picked_line = 'bgr'
             else:
                 self.ui.refXPos.setValue(event.ydata)
-                self._picked_line='xpos'
-        elif event.button==3 and self.ui.xtof_overview.toolbar._active is None and \
+                self._picked_line = 'xpos'
+        elif event.button == 3 and self.ui.xtof_overview.toolbar._active is None and \
             event.ydata is not None:
-            xpos=self.ui.refXPos.value()
+            xpos = self.ui.refXPos.value()
             self.ui.refXWidth.setValue(abs(xpos-event.ydata)*2.)
-        self.main_window.auto_change_active=False
+        self.main_window.auto_change_active = False
         self.change_region_values()
 
     @slow_down_events
@@ -277,18 +277,18 @@ class PlotHandler(object):
         """
             :param event: event object
         """
-        steps=event.step
-        xpos=event.xdata
+        steps = event.step
+        xpos = event.xdata
         if xpos is None:
             return
         for i, refl in enumerate(self.data_manager.reduction_list):
             _, q_max = refl.get_q_range()
             if q_max > xpos:
-                Ival=refl.configuration.scaling_factor
+                Ival = refl.configuration.scaling_factor
                 if self.control_down:
-                    Inew=Ival*10**(0.05*steps)
+                    Inew = Ival*10**(0.05*steps)
                 else:
-                    Inew=Ival*10**(0.01*steps)
+                    Inew = Ival*10**(0.01*steps)
                 self.ui.reductionTable.setItem(i, 1,
                                                QtWidgets.QTableWidgetItem("%.4f"%(Inew)))
 
@@ -300,14 +300,14 @@ class PlotHandler(object):
         """
         if self.plot_manager.proj_lines is None:
             return
-        lines=self.plot_manager.proj_lines
+        lines = self.plot_manager.proj_lines
 
-        x_peak=self.ui.refXPos.value()
-        x_width=self.ui.refXWidth.value()
-        y_pos=self.ui.refYPos.value()
-        y_width=self.ui.refYWidth.value()
-        bg_pos=self.ui.bgCenter.value()
-        bg_width=self.ui.bgWidth.value()
+        x_peak = self.ui.refXPos.value()
+        x_width = self.ui.refXWidth.value()
+        y_pos = self.ui.refYPos.value()
+        y_width = self.ui.refYWidth.value()
+        bg_pos = self.ui.bgCenter.value()
+        bg_width = self.ui.bgWidth.value()
 
         lines[0].set_xdata([x_peak-x_width/2., x_peak-x_width/2.])
         lines[1].set_xdata([x_peak, x_peak])
@@ -333,32 +333,32 @@ class PlotHandler(object):
         self.ui.xtof_overview.draw()
 
         # TODO: refactor this
-        if self.ui.fanReflectivity.isChecked() and self.refl and not self.refl.options['extract_fan']:
-            old_aca=self.main_window.auto_change_active
-            self.main_window.auto_change_active=False
-            self.ui.rangeStart.setValue(self.cut_areas['fan'][0])
-            self.ui.rangeEnd.setValue(self.cut_areas['fan'][1])
-            self.main_window.auto_change_active=old_aca
-        elif not self.ui.fanReflectivity.isChecked() and self.refl and self.refl.options['extract_fan']:
-            norm=self.getNorm()
-            if norm in self.cut_areas:
-                old_aca=self.main_window.auto_change_active
-                self.main_window.auto_change_active=False
-                self.ui.rangeStart.setValue(self.cut_areas[norm][0])
-                self.ui.rangeEnd.setValue(self.cut_areas[norm][1])
-                self.main_window.auto_change_active=old_aca
+        #if self.ui.fanReflectivity.isChecked() and self.refl and not self.refl.options['extract_fan']:
+        #    old_aca = self.main_window.auto_change_active
+        #    self.main_window.auto_change_active = False
+        #    self.ui.rangeStart.setValue(self.cut_areas['fan'][0])
+        #    self.ui.rangeEnd.setValue(self.cut_areas['fan'][1])
+        #    self.main_window.auto_change_active = old_aca
+        #elif not self.ui.fanReflectivity.isChecked() and self.refl and self.refl.options['extract_fan']:
+        #    norm = self.getNorm()
+        #    if norm in self.cut_areas:
+        #        old_aca = self.main_window.auto_change_active
+        #        self.main_window.auto_change_active = False
+        #        self.ui.rangeStart.setValue(self.cut_areas[norm][0])
+        #        self.ui.rangeEnd.setValue(self.cut_areas[norm][1])
+        #        self.main_window.auto_change_active = old_aca
 
     def change_offspec_colorscale(self):
         """ Modify color scale """
-        plots=[self.ui.offspec_pp, self.ui.offspec_mm,
-               self.ui.offspec_pm, self.ui.offspec_mp]
-        Imin=10**self.ui.offspecImin.value()
-        Imax=10**self.ui.offspecImax.value()
-        if Imin>=Imax:
+        plots = [self.ui.offspec_pp, self.ui.offspec_mm,
+                 self.ui.offspec_pm, self.ui.offspec_mp]
+        Imin = 10**self.ui.offspecImin.value()
+        Imax = 10**self.ui.offspecImax.value()
+        if Imin >= Imax:
             return
         data_set_keys = self.main_window.data_manager.data_sets.keys()
         for i in range(len(data_set_keys)):
-            plot=plots[i]
+            plot = plots[i]
             if plot.cplot is not None:
                 for item in plot.canvas.ax.collections:
                     item.set_clim(Imin, Imax)
@@ -366,21 +366,21 @@ class PlotHandler(object):
 
     def clip_offspec_colorscale(self):
         """ Modify color scale """
-        plots=[self.ui.offspec_pp, self.ui.offspec_mm,
-               self.ui.offspec_pm, self.ui.offspec_mp]
-        Imin=1e10
+        plots = [self.ui.offspec_pp, self.ui.offspec_mm,
+                 self.ui.offspec_pm, self.ui.offspec_mp]
+        Imin = 1e10
         data_set_keys = self.main_window.data_manager.data_sets.keys()
         for i in range(len(data_set_keys)):
-            plot=plots[i]
+            plot = plots[i]
             if plot.cplot is not None:
                 for item in plot.canvas.ax.collections:
-                    I=item.get_array()
-                    Imin=min(Imin, I[I>0].min())
+                    I = item.get_array()
+                    Imin = min(Imin, I[I > 0].min())
         for i in range(len(data_set_keys)):
-            plot=plots[i]
+            plot = plots[i]
             if plot.cplot is not None:
                 for item in plot.canvas.ax.collections:
-                    I=item.get_array()
-                    I[I<=0]=Imin
+                    I = item.get_array()
+                    I[I <= 0] = Imin
                     item.set_array(I)
             plot.draw()
