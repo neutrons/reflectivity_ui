@@ -1,17 +1,18 @@
 """
     Methods used to process data, usually calling Mantid
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access
+#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
 from __future__ import absolute_import, division, print_function
 import sys
 import logging
 import h5py
+import math
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
-from mantid.simpleapi import *
+import mantid.simpleapi as api
 
 from .instrument import Instrument
 from .data_set import NexusMetaData
@@ -28,25 +29,25 @@ def generate_script(reduction_list, pol_state):
 
     # If the reflectivity calculation failed, we may not have data to work with
     # for this cross-section.
-    if len(ws_list) == 0:
+    if not ws_list:
         return ''
 
     script = '# Cross-section: %s\n' % pol_state
     for ws in ws_list:
         script += '# Run:%s\n' % ws.getRunNumber()
-        script_text = GeneratePythonScript(ws)
-        script += script_text.replace(', ',',\n                                ')
+        script_text = api.GeneratePythonScript(ws)
+        script += script_text.replace(', ', ',\n                                ')
         script += '\n'
     return script
 
 def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
     """
         Stitch and normalize data sets
-        
+
         :param string xs: name of the cross-section to use
         :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
     """
-    if len(reduction_list) == 0:
+    if not reduction_list:
         return []
 
     # Select the cross-section we will use to determine the scaling factors
@@ -76,16 +77,16 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
     scaling_factors = [running_scale]
 
     for i in range(len(reduction_list)):
-        ws = CreateWorkspace(DataX=reduction_list[i].cross_sections[xs].q,
-                             DataY=reduction_list[i].cross_sections[xs]._r,
-                             DataE=reduction_list[i].cross_sections[xs]._dr)
-        ws = ConvertToHistogram(ws)
+        ws = api.CreateWorkspace(DataX=reduction_list[i].cross_sections[xs].q,
+                                 DataY=reduction_list[i].cross_sections[xs]._r,
+                                 DataE=reduction_list[i].cross_sections[xs]._dr)
+        ws = api.ConvertToHistogram(ws)
         if _previous_ws is not None:
-            _, scale = Stitch1D(_previous_ws, ws)
+            _, scale = api.Stitch1D(_previous_ws, ws)
             running_scale *= scale
             scaling_factors.append(running_scale)
             reduction_list[i].set_parameter("scaling_factor", running_scale)
-        _previous_ws = CloneWorkspace(ws)
+        _previous_ws = api.CloneWorkspace(ws)
 
     return scaling_factors
 
@@ -111,31 +112,31 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
         q_max = max(q_max, _q_max)
         ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
         # Stitch1DMany only scales workspaces relative to the first one
-        if i==0:
-            Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo',
-                  factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
-                  Operation='Multiply')
-            ConvertToHistogram(InputWorkspace=ws_name+'_histo', OutputWorkspace=ws_name+'_histo')
+        if i == 0:
+            api.Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo',
+                      factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
+                      Operation='Multiply')
+            api.ConvertToHistogram(InputWorkspace=ws_name+'_histo', OutputWorkspace=ws_name+'_histo')
         else:
             scaling_factors.append(reduction_list[i].cross_sections[xs].configuration.scaling_factor)
-            ConvertToHistogram(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo')
+            api.ConvertToHistogram(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo')
         ws_list.append(ws_name+'_histo')
         params = "%s, %s, %s" % (q_min, q_step, q_max)
 
     if len(ws_list) > 1:
-        merged_ws, _ = Stitch1DMany(InputWorkspaces=ws_list, Params=params,
-                                    UseManualScaleFactors=True, ManualScaleFactors=scaling_factors,
-                                    OutputWorkspace=ws_name+"_merged")
+        merged_ws, _ = api.Stitch1DMany(InputWorkspaces=ws_list, Params=params,
+                                        UseManualScaleFactors=True, ManualScaleFactors=scaling_factors,
+                                        OutputWorkspace=ws_name+"_merged")
     elif len(ws_list) == 1:
-        merged_ws = CloneWorkspace(ws_list[0], OutputWorkspace=ws_name+"_merged")
+        merged_ws = api.CloneWorkspace(ws_list[0], OutputWorkspace=ws_name+"_merged")
     else:
         return None
 
     # Remove temporary workspaces
     for ws in ws_list:
-        DeleteWorkspace(ws)
+        api.DeleteWorkspace(ws)
 
-    SaveAscii(InputWorkspace=merged_ws, Filename="/tmp/test.txt")
+    api.SaveAscii(InputWorkspace=merged_ws, Filename="/tmp/test.txt")
     return merged_ws
 
 def get_scaled_workspaces(reduction_list, xs):
@@ -152,12 +153,12 @@ def get_scaled_workspaces(reduction_list, xs):
             continue
 
         ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
-        ws_tmp = Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_scaled',
-              factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
-              Operation='Multiply')
-        AddSampleLog(Workspace=ws_tmp, LogName='scaling_factor',
-                     LogText=str(reduction_list[i].cross_sections[xs].configuration.scaling_factor),
-                     LogType='Number', LogUnit='')
+        ws_tmp = api.Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_scaled',
+                           factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
+                           Operation='Multiply')
+        api.AddSampleLog(Workspace=ws_tmp, LogName='scaling_factor',
+                         LogText=str(reduction_list[i].cross_sections[xs].configuration.scaling_factor),
+                         LogType='Number', LogUnit='')
         ws_list.append(ws_tmp)
 
     return ws_list
@@ -186,9 +187,9 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         return meta_data
 
     try:
-        ws = LoadEventNexus(str(file_path),
-                            MetaDataOnly=True,
-                            NXentryName=str(keys[0]))
+        ws = api.LoadEventNexus(str(file_path),
+                                MetaDataOnly=True,
+                                NXentryName=str(keys[0]))
         meta_data.mid_q = Instrument.mid_q_value(ws)
         if configuration is not None:
             meta_data.is_direct_beam = configuration.instrument.check_direct_beam(ws)
@@ -211,10 +212,10 @@ def read_log(ws, name, target_units='', assumed_units=''):
               'mm': {'m': 0.001,},
               'deg': {'rad': math.pi/180.,},
               'rad': {'deg': 180./math.pi,},
-              }
+             }
     prop = ws.getRun().getProperty(name)
     value = prop.getStatistics().mean
-    
+
     # If the property has units we don't recognize, use the assumed units
     units = prop.units if prop.units in _units else assumed_units
 
