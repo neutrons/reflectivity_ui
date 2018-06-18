@@ -8,7 +8,7 @@ import sys
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
 sys.path.insert(0, ApplicationConfiguration().mantid_path)
-from mantid.simpleapi import *
+import mantid.simpleapi as api
 
 
 class DataInfo(object):
@@ -20,13 +20,13 @@ class DataInfo(object):
     #n_events_cutoff = 2000
 
     def __init__(self, ws, cross_section, configuration):
-        MRInspectData(Workspace=ws, UseROI=configuration.use_roi,
-                      UpdatePeakRange=configuration.update_peak_range,
-                      UseROIBck=configuration.use_roi_bck, UseTightBck=configuration.use_tight_bck,
-                      BckWidth=int(round(configuration.bck_offset)), HuberXCut=0.0,
-                      ForcePeakROI=configuration.force_peak_roi, PeakROI=configuration.peak_roi,
-                      ForceLowResPeakROI=configuration.force_low_res_roi, LowResPeakROI=configuration.low_res_roi,
-                      ForceBckROI=configuration.force_bck_roi, BckROI=configuration.bck_roi)
+        api.MRInspectData(Workspace=ws, UseROI=configuration.use_roi,
+                          UpdatePeakRange=configuration.update_peak_range,
+                          UseROIBck=configuration.use_roi_bck, UseTightBck=configuration.use_tight_bck,
+                          BckWidth=int(round(configuration.bck_offset)), HuberXCut=0.0,
+                          ForcePeakROI=configuration.force_peak_roi, PeakROI=configuration.peak_roi,
+                          ForceLowResPeakROI=configuration.force_low_res_roi, LowResPeakROI=configuration.low_res_roi,
+                          ForceBckROI=configuration.force_bck_roi, BckROI=configuration.bck_roi)
 
         self.cross_section = cross_section
         self.run_number = ws.getRunNumber()
