@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 import sys
 import time
+import copy
 import math
 import logging
 import numpy as np
@@ -200,7 +201,7 @@ def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=Fa
         if as_multi:
             fd.write("# End of channel %s\n\n\n" % pol_state)
 
-def read_reduced_file(file_path):
+def read_reduced_file(file_path, configuration=None):
     """
         Read in configurations from a reduced data file.
         :param str file_path: reduced data file
@@ -232,7 +233,10 @@ def read_reduced_file(file_path):
                 if len(toks) < 14 or 'DB_ID' in line:
                     continue
                 try:
-                    conf = Configuration()
+                    if configuration is not None:
+                        conf = copy.deepcopy(configuration)
+                    else:
+                        conf = Configuration()
                     conf.cut_first_n_points = int(toks[2])
                     conf.cut_last_n_points = int(toks[3])
                     conf.peak_position = float(toks[4])
@@ -264,7 +268,10 @@ def read_reduced_file(file_path):
                 if len(toks) < 16 or 'DB_ID' in line:
                     continue
                 try:
-                    conf = Configuration()
+                    if configuration is not None:
+                        conf = copy.deepcopy(configuration)
+                    else:
+                        conf = Configuration()
                     conf.scaling_factor = float(toks[1])
                     conf.cut_first_n_points = int(toks[2])
                     conf.cut_last_n_points = int(toks[3])

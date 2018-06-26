@@ -15,10 +15,13 @@ application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 from mantid.simpleapi import *
 
+# Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
+USE_SLOW_FLIPPER_LOG = True
 
 # Constants
 h = 6.626e-34  # m^2 kg s^-1
 m = 1.675e-27  # kg
+
 
 class Instrument(object):
     """
@@ -42,7 +45,7 @@ class Instrument(object):
     ana_veto = 'SF2_Veto'
 
     def __init__(self):
-        self.tof_range = [0,0]
+        logging.debug("Creating instrument")
 
     def dummy_filter_cross_sections(self, ws):
         """
@@ -83,7 +86,7 @@ class Instrument(object):
 
             :param str file_path: path to the data file
         """
-        if False:
+        if not USE_SLOW_FLIPPER_LOG:
             base_name = os.path.basename(file_path)
             _xs_list = MRFilterCrossSections(Filename=file_path,
                                             PolState=self.pol_state,

@@ -21,6 +21,7 @@ class Configuration(object):
         self.instrument = Instrument()
         # Number of TOF bins
         self.tof_bins = 40
+        self.tof_range = [0,0]
         # Bin type:
         #    0 = Constant bin width
         #    1 = Constant Q bin width
@@ -140,6 +141,7 @@ class Configuration(object):
         """
         settings.setValue('use_roi', self.use_roi)
         settings.setValue('tof_bins', self.tof_bins)
+        settings.setValue('tof_range', ','.join([str(x) for x in self.tof_range]))
         settings.setValue('tof_bin_type', self.tof_bin_type)
         settings.setValue('update_peak_range', self.update_peak_range)
         settings.setValue('use_roi_bck', self.use_roi_bck)
@@ -189,6 +191,7 @@ class Configuration(object):
 
         self.use_roi = _verify_true('use_roi', self.use_roi)
         self.tof_bins = int(settings.value('tof_bins', self.tof_bins))
+        self.tof_range = [float(x) for x in settings.value('tof_range', [0,0]).split(',')]
         self.tof_bin_type = int(settings.value('tof_bin_type', self.tof_bin_type))
         self.update_peak_range = _verify_true('update_peak_range', self.update_peak_range)
         self.use_roi_bck = _verify_true('use_roi_bck', self.use_roi_bck)

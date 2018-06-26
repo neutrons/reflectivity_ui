@@ -9,6 +9,7 @@ import os
 import logging
 import glob
 import math
+import time
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from ..configuration import Configuration
@@ -29,13 +30,19 @@ class MainHandler(object):
                                                        self.main_window)
         self._path_watcher.directoryChanged.connect(self.update_file_list)
 
-        self.cache_indicator = QtWidgets.QLabel("Cache Size: 0.0MB")
+        self.cache_indicator = QtWidgets.QLabel("Files loaded: 0")
         self.ui.statusbar.addPermanentWidget(self.cache_indicator)
         button = QtWidgets.QPushButton('Empty Cache')
         self.ui.statusbar.addPermanentWidget(button)
         button.pressed.connect(self.empty_cache)
         button.setFlat(True)
         button.setMaximumSize(150, 20)
+
+        # Create progress bar in statusbar
+        self.eventProgress=QtWidgets.QProgressBar(self.ui.statusbar)
+        self.eventProgress.setMinimumSize(20, 14)
+        self.eventProgress.setMaximumSize(140, 100)
+        self.ui.statusbar.addPermanentWidget(self.eventProgress)
 
         self.status_message = QtWidgets.QLabel("")
         self.ui.statusbar.insertWidget(0, self.status_message)
@@ -45,7 +52,7 @@ class MainHandler(object):
             Empty the data cache
         """
         self._data_manager.clear_cache()
-        self.cache_indicator.setText('Cache Size: 0.0MB')
+        self.cache_indicator.setText("Files loaded: 0")
 
     def open_file(self, file_path, force=False, silent=False):
         """
@@ -59,6 +66,7 @@ class MainHandler(object):
                                 detailed_message="The following file does not exist:\n  %s" % file_path,
                                 pop_up=True, is_error=True)
             return
+        t_0 = time.time()
         self.main_window.auto_change_active = True
         try:
             self.report_message("Loading file %s" % file_path)
@@ -72,6 +80,7 @@ class MainHandler(object):
         if not silent:
             self.file_loaded()
         self.main_window.auto_change_active = False
+        logging.info("DONE: %s sec", time.time()-t_0)
 
     def file_loaded(self):
         """
@@ -99,7 +108,7 @@ class MainHandler(object):
         self.main_window.initiate_reflectivity_plot.emit(False)
         self.main_window.initiate_projection_plot.emit(False)
 
-        self.cache_indicator.setText('Cache Size: %.1fMB'%(self._data_manager.get_cachesize()/1024.**2))
+        self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
 
     def update_tables(self):
         """
@@ -290,42 +299,35 @@ class MainHandler(object):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open reduced file...',
                                                              directory=output_dir,
                                                              filter=filter_)
-        n_count = 0
+
+        t_0 = time.time()
         if file_path:
+            configuration = self.get_configuration()
+            self._data_manager.load_data_from_reduced_file(file_path, configuration=configuration)
+
             # Update output directory
             file_dir, _ = os.path.split(unicode(file_path))
             self.main_window.settings.setValue('output_directory', file_dir)
 
-            # Read the file and go load the data
-            db_files, data_files = self._data_manager.load_reduced_file(file_path)
-            for r_id, run_file, conf in db_files:
-                logging.error("%s: sf=%s:", r_id, conf.scaling_factor)
-                self.open_file(run_file, silent=True)
-                n_count += 1
+            self.main_window.auto_change_active = True
 
-                self.main_window.auto_change_active = True
-                self.populate_from_configuration(conf)
-                #self._data_manager.update_configuration(conf)
-                self.add_direct_beam(silent=True)
+            self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
+            self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
+            for idx, _ in enumerate(self._data_manager.reduction_list):
+                self._data_manager.set_active_data_from_reduction_list(idx)
+                self.update_reduction_table(idx, self._data_manager.active_channel)
 
-            for r_id, run_file, conf in data_files:
-                self.open_file(run_file, silent=True)
-                n_count += 1
+            direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
+            self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
 
-                #self.main_window.auto_change_active = True
-                self.populate_from_configuration(conf)
-                self.add_reflectivity(silent=True)
+            self.file_loaded()
 
-            # Update the UI
             if self._data_manager.active_channel is not None:
                 self.populate_from_configuration(self._data_manager.active_channel.configuration)
                 self.update_file_list(self._data_manager.current_file)
+            self.main_window.auto_change_active = False
 
-        # At the very end, update the UI and plot reflectivity
-        if n_count > 0:
-            self.main_window.auto_change_active = True
-            self.file_loaded()
-        self.main_window.auto_change_active = False
+            logging.info("UI updated: %s", time.time()-t_0)
 
     # Actions defined in Qt Designer
     def file_open_dialog(self):
@@ -796,8 +798,9 @@ class MainHandler(object):
             configuration.off_spec_x_axis = Configuration.KZI_VS_KZF
         configuration.off_spec_slice = self.ui.offspec_slice_checkbox.isChecked()
         try:
-            logging.error(self.ui.offspec_qz_list_edit.text())
-            configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
+            qz_list = self.ui.offspec_qz_list_edit.text()
+            if len(qz_list) > 0:
+                configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
         except:
             logging.error("Could not parse off_spec_qz_list: %s", configuration.off_spec_qz_list)
         configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()

@@ -6,6 +6,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import sys
 import os
+import time
 import numpy as np
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
@@ -46,7 +47,7 @@ class DataManager(object):
         return self._nexus_data.file_path
 
     def get_cachesize(self):
-        return sum([d.nbytes for d in self._cache])
+        return len(self._cache)
 
     def clear_cache(self):
         self._cache = []
@@ -207,7 +208,7 @@ class DataManager(object):
         _value = start_value + (stop_value-start_value)*value
         call_back(_value, message)
 
-    def load(self, file_path, configuration, force=False, progress=None):
+    def load(self, file_path, configuration, force=False, update_parameters=True, progress=None):
         """
             Load a data file
             :param str file_path: file path
@@ -238,7 +239,8 @@ class DataManager(object):
         # If we don't have the data, load it
         if nexus_data is None:
             nexus_data = NexusData(file_path, configuration)
-            nexus_data.load(progress=progress.create_sub_task(max_value=70))
+            sub_task = progress.create_sub_task(max_value=70) if progress else None
+            nexus_data.load(progress=sub_task, update_parameters=update_parameters)
 
         if progress is not None:
             progress(80, "Calculating...")
@@ -254,7 +256,8 @@ class DataManager(object):
             # then add it and compute its reflectivity.
             if not is_from_cache:
                 # Find suitable direct beam
-                if configuration.match_direct_beam:
+                logging.info("Direct beam from loader: %s", configuration.normalization)
+                if configuration.normalization is None and configuration.match_direct_beam:
                     self.find_best_direct_beam()
 
                 # Replace reduction and normalization entries as needed
@@ -512,9 +515,27 @@ class DataManager(object):
             return data_manipulation.extract_meta_data(file_path=file_path, configuration=self.active_channel.configuration)
         return data_manipulation.extract_meta_data(cross_section_data=self.active_channel)
 
-    def load_reduced_file(self, file_path):
+    def load_data_from_reduced_file(self, file_path, configuration=None):
         """
-            Pass-through function to hide the file handling from the UI.
+            Load the information from a reduced file, the load the data.
+            Ask the main event handler to update the UI once we are done.
             :param str file_path: reduced file to load
+            :param Configuration configuration: configuration to base the loaded data on
         """
-        return quicknxs_io.read_reduced_file(file_path)
+        t_0 = time.time()
+        db_files, data_files = quicknxs_io.read_reduced_file(file_path, configuration)
+        logging.info("Reduced file loaded: %s sec", time.time()-t_0)
+
+        for r_id, run_file, conf in db_files:
+            t_i = time.time()
+            self.load(run_file, conf, update_parameters=False)
+            self.add_active_to_normalization()
+            logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
+
+        for r_id, run_file, conf in data_files:
+            t_i = time.time()
+            self.load(run_file, conf, update_parameters=False)
+            self.add_active_to_reduction()
+            logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
+
+        logging.info("DONE: %s sec", time.time()-t_0)

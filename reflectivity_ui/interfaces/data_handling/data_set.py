@@ -9,6 +9,7 @@ import logging
 from collections import OrderedDict
 import copy
 import math
+import time
 import numpy as np
 
 # Import mantid according to the application configuration
@@ -17,7 +18,7 @@ application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 # Set Mantid logging level to warnings
-api.ConfigService.setConsoleLogLevel(4)
+api.ConfigService.setConsoleLogLevel(3)
 
 from .data_info import DataInfo
 from . import off_specular
@@ -73,6 +74,7 @@ class NexusData(object):
         self.number = 0
         self.configuration = configuration
         self.cross_sections = {}
+        self.main_cross_section = None
 
     @property
     def nbytes(self):
@@ -121,17 +123,82 @@ class NexusData(object):
             Loop through the cross-section data sets and update
             the reflectivity.
         """
-        has_errors = False
-        detailed_msg = ""
-        for xs in self.cross_sections:
-            try:
-                self.cross_sections[xs].reflectivity(direct_beam=direct_beam, configuration=configuration)
-            except:
-                has_errors = True
-                detailed_msg += "Could not calculate reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
-                logging.error("Could not calculate reflectivity for %s\n  %s", xs, sys.exc_value)
-        if has_errors:
-            raise RuntimeError(detailed_msg)
+        if configuration is not None:
+            self.configuration = copy.deepcopy(configuration)
+
+        if self.configuration is None:
+            return
+
+        # If a direct beam object was passed, use it.
+        apply_norm = direct_beam is not None # and not self.is_direct_beam
+        if not apply_norm:
+            direct_beam = CrossSectionData('none', self.configuration, 'none')
+
+        logging.error("%s Reduction with DB: %s [config: %s]",
+                      self.number, direct_beam.number,
+                      self.configuration.normalization)
+        angle_offset = 0 # Offset from dangle0, in radians
+        def _as_ints(a): return [int(round(a[0])), int(round(a[1]))]
+        output_ws = "r%s" % self.number
+
+        ws_norm = None
+        if apply_norm and direct_beam._event_workspace is not None:
+            ws_norm = direct_beam._event_workspace
+
+        ws_list = [self.cross_sections[xs]._event_workspace for xs in self.cross_sections]
+        conf = self.cross_sections[self.main_cross_section].configuration
+        wsg = api.GroupWorkspaces(InputWorkspaces=ws_list)
+        ws = api.MagnetismReflectometryReduction(InputWorkspace=wsg,
+                                                 NormalizationWorkspace=ws_norm,
+                                                 SignalPeakPixelRange=_as_ints(conf.peak_roi),
+                                                 SubtractSignalBackground=True,
+                                                 SignalBackgroundPixelRange=_as_ints(conf.bck_roi),
+                                                 ApplyNormalization=apply_norm,
+                                                 NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
+                                                 SubtractNormBackground=True,
+                                                 NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
+                                                 CutLowResDataAxis=True,
+                                                 LowResDataAxisPixelRange=_as_ints(conf.low_res_roi),
+                                                 CutLowResNormAxis=True,
+                                                 LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+                                                 CutTimeAxis=True,
+                                                 QMin=0.001,
+                                                 QStep=-0.01,
+                                                 AngleOffset=angle_offset,
+                                                 UseWLTimeAxis=False,
+                                                 TimeAxisStep=conf.tof_bins,
+                                                 UseSANGLE=not conf.use_dangle,
+                                                 TimeAxisRange=conf.tof_range,
+                                                 SpecularPixel=conf.peak_position,
+                                                 ConstantQBinning=conf.use_constant_q,
+                                                 OutputWorkspace=output_ws)
+
+        ################## FOR COMPATIBILITY WITH QUICKNXS ##################
+        _ws = ws[0] if len(ws_list) > 1 else ws
+        run_object = _ws.getRun()
+        peak_min = run_object.getProperty("scatt_peak_min").value
+        peak_max = run_object.getProperty("scatt_peak_max").value
+        low_res_min = run_object.getProperty("scatt_low_res_min").value
+        low_res_max = run_object.getProperty("scatt_low_res_max").value
+        norm_x_min = run_object.getProperty("norm_peak_min").value
+        norm_x_max = run_object.getProperty("norm_peak_max").value
+        norm_y_min = run_object.getProperty("norm_low_res_min").value
+        norm_y_max = run_object.getProperty("norm_low_res_max").value
+        tth = run_object.getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
+        quicknxs_scale = (float(norm_x_max)-float(norm_x_min)) * (float(norm_y_max)-float(norm_y_min))
+        quicknxs_scale /= (float(peak_max)-float(peak_min)) * (float(low_res_max)-float(low_res_min))
+        quicknxs_scale *= 0.005 / math.sin(tth)
+
+        ws = api.Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws,
+                       factor=quicknxs_scale, Operation='Multiply')
+        #####################################################################
+        _ws = ws if len(ws_list) > 1 else [ws]
+        for xs in _ws:
+            xs_id = self.map_cross_section(xs)
+            self.cross_sections[xs_id].q = xs.readX(0)[:].copy()
+            self.cross_sections[xs_id]._r = xs.readY(0)[:].copy()
+            self.cross_sections[xs_id]._dr = xs.readE(0)[:].copy()
+            self.cross_sections[xs_id]._reflectivity_workspace = str(xs)
 
     def calculate_gisans(self, direct_beam):
         """
@@ -144,8 +211,8 @@ class NexusData(object):
                 self.cross_sections[xs].gisans(direct_beam=direct_beam)
             except:
                 has_errors = True
-                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
-                logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
+                detailed_msg += "Could not calculate GISANS reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
+                logging.error("Could not calculate GISANS reflectivity for %s\n  %s", xs, sys.exc_value)
         if has_errors:
             raise RuntimeError(detailed_msg)
 
@@ -194,7 +261,7 @@ class NexusData(object):
         entry = ws.getRun().getProperty("cross_section_id").value
         return XSECT_MAPPING.get('entry-%s' % entry, 'x')
 
-    def load(self, progress=None):
+    def load(self, update_parameters=True, progress=None):
         """
             Load cross-sections from a nexus file.
             :param function progress: call-back function to track progress
@@ -231,19 +298,30 @@ class NexusData(object):
             name = self.map_cross_section(ws)
             cross_section = CrossSectionData(name, self.configuration, entry_name=channel)
             cross_section.collect_info(ws)
-            cross_section.process_data(ws)
             self.cross_sections[name] = cross_section
             self.number = cross_section.number
             if cross_section.total_counts > _max_counts:
                 _max_counts = cross_section.total_counts
                 _max_xs = name
+
+        # Now that we know which cross section has the most data,
+        # use that one to get the reduction parameters
+        self.main_cross_section = _max_xs
+        self.cross_sections[_max_xs].get_reduction_parameters(update_parameters=update_parameters)
+
+        for xs in self.cross_sections:
+            if not xs == _max_xs:
+                self.cross_sections[xs].update_configuration(self.cross_sections[_max_xs].configuration)
+            self.cross_sections[xs].process_data()
+
         # Push the configuration (reduction options and peak regions) from the
         # cross-section with the most data to all other cross-sections.
         if _max_xs is not None:
-            self.cross_sections[_max_xs].get_reduction_parameters()
+            #self.cross_sections[_max_xs].get_reduction_parameters()
             self.update_configuration(self.cross_sections[_max_xs].configuration)
 
-        progress(100, "Complete", out_of=100.0)
+        if progress is not None:
+            progress(100, "Complete", out_of=100.0)
 
         return self.cross_sections
 
@@ -277,7 +355,6 @@ class CrossSectionData(object):
         self.use_roi_actual = True
         # Flag to tell us whether we found this data to be a direct beam data set
         self.is_direct_beam = False
-        self.tof_range = [0, 0]
         self._active_area_x = None
         self._active_area_y = None
         self.logs = {}
@@ -288,12 +365,14 @@ class CrossSectionData(object):
         self.total_time = 0
 
         self.experiment = ''
-        self.number = 0
         self.merge_warnings = ''
         self.tof_edges = None
+
+        # Data used for plotting
         self.data = None
         self.xydata = None
         self.xtofdata = None
+
         self.meta_data_roi_peak = None
         self.meta_data_roi_bck = None
         self.direct_pixel = 0
@@ -394,6 +473,7 @@ class CrossSectionData(object):
 
             TODO: get average of values post filtering so that it truly represents the data
         """
+        self._event_workspace = str(workspace)
         data = workspace.getRun()
         #self.origin=(os.path.abspath(data['filename'].value), 'entry')
         self.logs = {}
@@ -431,40 +511,12 @@ class CrossSectionData(object):
         # Retrieve instrument-specific information
         self.configuration.instrument.get_info(workspace, self)
 
-    def process_data(self, workspace):
+    def process_data(self):
         """
             Process loaded data
-            :param workspace: Mantid workspace
+            :param bool update_parameters: If true, we will determine reduction parameters
         """
-        self._event_workspace = str(workspace)
-
-        # Get initial reduction parameters. They may be overwritten later.
-        self.get_reduction_parameters(workspace)
-
-        # Bin events
-        if self.configuration.tof_overwrite is not None:
-            tof_edges = self.configuration.tof_overwrite
-        else:
-            if self.configuration.tof_bin_type == 1: # constant Q
-                tof_edges = 1./np.linspace(1./self.tof_range[0], 1./self.tof_range[1], self.configuration.tof_bins+1)
-            elif self.configuration.tof_bin_type == 2: # constant 1/wavelength
-                tof_edges = self.tof_range[0]*(((self.tof_range[1]/self.tof_range[0])**(1./self.configuration.tof_bins))**np.arange(self.configuration.tof_bins+1))
-            else:
-                tof_edges = np.linspace(self.tof_range[0], self.tof_range[1], self.configuration.tof_bins+1)
-
-        binning_ws = api.CreateWorkspace(DataX=tof_edges, DataY=np.zeros(len(tof_edges)-1))
-        data_rebinned = api.RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
-        Ixyt = getIxyt(data_rebinned)
-
-        # Create projections for the 2D datasets
-        Ixy = Ixyt.sum(axis=2)
-        Ixt = Ixyt.sum(axis=1)
-        # Store the data
-        self.tof_edges = tof_edges
-        self.data = Ixyt.astype(float) # 3D dataset
-        self.xydata = Ixy.transpose().astype(float) # 2D dataset
-        self.xtofdata = Ixt.astype(float) # 2D dataset
-
+        # Store some useful information
         if self.configuration.set_direct_pixel:
             self.direct_pixel = self.configuration.direct_pixel_overwrite
 
@@ -473,38 +525,70 @@ class CrossSectionData(object):
 
         self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
 
-    def get_reduction_parameters(self, workspace=None):
+        # Determine binning
+        if self.configuration.tof_overwrite is not None:
+            tof_edges = self.configuration.tof_overwrite
+        else:
+            if self.configuration.tof_bin_type == 1: # constant Q
+                tof_edges = 1./np.linspace(1./self.configuration.tof_range[0], 1./self.configuration.tof_range[1], self.configuration.tof_bins+1)
+            elif self.configuration.tof_bin_type == 2: # constant 1/wavelength
+                tof_edges = self.configuration.tof_range[0]*(((self.configuration.tof_range[1]/self.configuration.tof_range[0])**(1./self.configuration.tof_bins))**np.arange(self.configuration.tof_bins+1))
+            else:
+                tof_edges = np.linspace(self.configuration.tof_range[0], self.configuration.tof_range[1], self.configuration.tof_bins+1)
+        self.tof_edges = tof_edges
+
+    def prepare_plot_data(self):
+        """
+            Bin events to be used for plotting and in-app calculations
+        """
+        workspace = api.mtd[self._event_workspace]
+        if self.xtofdata is None:
+            t_0 = time.time()
+            binning_ws = api.CreateWorkspace(DataX=self.tof_edges, DataY=np.zeros(len(self.tof_edges)-1))
+            data_rebinned = api.RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
+            Ixyt = getIxyt(data_rebinned)
+    
+            # Create projections for the 2D datasets
+            Ixy = Ixyt.sum(axis=2)
+            Ixt = Ixyt.sum(axis=1)
+            # Store the data
+            self.data = Ixyt.astype(float) # 3D dataset
+            self.xydata = Ixy.transpose().astype(float) # 2D dataset
+            self.xtofdata = Ixt.astype(float) # 2D dataset
+            logging.warning("Plot data generated: %s sec", time.time()-t_0)
+
+    def get_reduction_parameters(self, update_parameters=True):
         """
             Determine reduction parameter
-            :param workspace: mantid workspace
+            :param bool update_parameters: if True, we will find peak ranges
         """
-        if workspace is None:
-            if self._event_workspace is None:
-                return
-            else:
-                workspace = api.mtd[self._event_workspace]
+        workspace = api.mtd[self._event_workspace]
 
-        data_info = DataInfo(workspace, self.name, self.configuration)
-        self.use_roi_actual = data_info.use_roi_actual
-        self.is_direct_beam = data_info.is_direct_beam
-        self.tof_range = data_info.tof_range
-
-        self.meta_data_roi_peak = data_info.roi_peak
-        self.meta_data_roi_bck = data_info.roi_background
-
-        if not self.configuration.force_peak_roi:
-            self.configuration.peak_roi = data_info.peak_range
-
-        if not self.configuration.force_low_res_roi:
-            self.configuration.low_res_roi = data_info.low_res_range
-
-        if not self.configuration.force_bck_roi:
-            self.configuration.bck_roi = data_info.background
+        if update_parameters:
+            data_info = DataInfo(workspace, self.name, self.configuration)
+            self.use_roi_actual = data_info.use_roi_actual
+            self.is_direct_beam = data_info.is_direct_beam
+            self.configuration.tof_range = data_info.tof_range
+    
+            self.meta_data_roi_peak = data_info.roi_peak
+            self.meta_data_roi_bck = data_info.roi_background
+    
+            if not self.configuration.force_peak_roi:
+                self.configuration.peak_roi = data_info.peak_range
+    
+            if not self.configuration.force_low_res_roi:
+                self.configuration.low_res_roi = data_info.low_res_range
+    
+            if not self.configuration.force_bck_roi:
+                self.configuration.bck_roi = data_info.background
+        else:
+            self.configuration.tof_range = [workspace.getTofMin(), workspace.getTofMax()]
 
     def get_counts_vs_TOF(self):
         """
             Used for normalization, returns ROI counts vs TOF.
         """
+        self.prepare_plot_data()
         # Calculate ROI intensities and normalize by number of points
         raw_data = self.data[self.configuration.peak_roi[0]:self.configuration.peak_roi[1],
                              self.configuration.low_res_roi[0]:self.configuration.low_res_roi[1], :]
@@ -574,8 +658,11 @@ class CrossSectionData(object):
 
         ws_norm = None
         if apply_norm and direct_beam._event_workspace is not None:
-            ws_norm = api.CloneWorkspace(InputWorkspace=direct_beam._event_workspace)
+            ws_norm = direct_beam._event_workspace
 
+        logging.error("Calc: %s %s %s", str(_as_ints(self.configuration.peak_roi)),
+                      str(_as_ints(self.configuration.bck_roi)),
+                      str(_as_ints(self.configuration.low_res_roi)))
         ws = api.MagnetismReflectometryReduction(InputWorkspace=self._event_workspace,
                                                  NormalizationWorkspace=ws_norm,
                                                  SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
@@ -596,10 +683,10 @@ class CrossSectionData(object):
                                                  UseWLTimeAxis=False,
                                                  TimeAxisStep=self.configuration.tof_bins,
                                                  UseSANGLE=not self.configuration.use_dangle,
-                                                 TimeAxisRange=self.tof_range,
+                                                 TimeAxisRange=self.configuration.tof_range,
                                                  SpecularPixel=self.configuration.peak_position,
                                                  ConstantQBinning=self.configuration.use_constant_q,
-                                                 EntryName=str(self.entry_name),
+                                                 #EntryName=str(self.entry_name),
                                                  OutputWorkspace=output_ws)
 
         ################## FOR COMPATIBILITY WITH QUICKNXS ##################
@@ -638,6 +725,9 @@ class CrossSectionData(object):
 
             :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
         """
+        self.prepare_plot_data()
+        if direct_beam:
+            direct_beam.prepare_plot_data()
         self.off_spec = off_specular.OffSpecular(self)
         return self.off_spec(direct_beam)
 

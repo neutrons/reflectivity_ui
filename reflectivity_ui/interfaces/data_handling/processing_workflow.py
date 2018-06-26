@@ -2,7 +2,7 @@
     Data processing workflow, taking results and writing them to files.
     #TODO: write mantid script
 """
-#pylint: disable=bare-except, len-as-condition, too-many-locals
+#pylint: disable=bare-except, too-many-locals
 from __future__ import absolute_import, division, print_function
 import sys
 import os
@@ -37,7 +37,7 @@ class ProcessingWorkflow(object):
             Process data and write output files
             :param ProgressReporter progress: reporter object
         """
-        if len(self.data_manager.reduction_states) == 0:
+        if not self.data_manager.reduction_states:
             return
 
         progress.create()

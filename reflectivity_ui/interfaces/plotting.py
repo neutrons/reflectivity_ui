@@ -44,6 +44,9 @@ class PlotManager(object):
         main_window.ui.xtof_overview.clear()
 
         data=main_window.data_manager.active_channel
+        # Initialize data as needed
+        data.prepare_plot_data()
+
         if data.total_counts==0:
             main_window.ui.xy_overview.draw()
             main_window.ui.xtof_overview.draw()
@@ -155,6 +158,7 @@ class PlotManager(object):
 
         for key in data_set_keys[:4]:
             dataset = main_window.data_manager.data_sets[key]
+            dataset.prepare_plot_data()
             d=dataset.xydata/dataset.proton_charge
             xynormed.append(d)
             if dataset.total_counts==0:
@@ -215,6 +219,7 @@ class PlotManager(object):
 
         for key in data_set_keys[:4]:
             dataset = main_window.data_manager.data_sets[key]
+            dataset.prepare_plot_data()
             d=dataset.xtofdata/dataset.proton_charge
             if main_window.ui.normalizeXTof.isChecked() and ref_norm is not None:
                 # normalize all datasets for wavelength distribution
@@ -273,6 +278,8 @@ class PlotManager(object):
         if main_window.data_manager.active_channel is None:
             return
         data = main_window.data_manager.active_channel
+        data.prepare_plot_data()
+
         if data.total_counts == 0:
             main_window.ui.x_project.clear()
             main_window.ui.x_project.draw()
@@ -396,7 +403,7 @@ class PlotManager(object):
             for i, channel in enumerate(data_set_keys):
                 plot = plots[i]
                 selected_data=nexus_data.cross_sections[channel]
-                #selected_data.offspec()
+                selected_data.offspec()
 
                 P0 = len(selected_data.tof)-nexus_data.configuration.cut_first_n_points
                 PN = nexus_data.configuration.cut_last_n_points
@@ -510,6 +517,8 @@ class PlotManager(object):
 
             channel_name = self.main_window.data_manager.active_channel.name
             for i, refli in enumerate(self.main_window.data_manager.reduction_list):
+                if refli.cross_sections[channel_name].q is None:
+                    continue
                 P0i=refli.cross_sections[channel_name].configuration.cut_first_n_points
                 PNi=len(refli.cross_sections[channel_name].q)-refli.cross_sections[channel_name].configuration.cut_last_n_points
                 ynormed=refli.cross_sections[channel_name].r[P0i:PNi]
