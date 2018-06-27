@@ -38,20 +38,15 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.export_SA.setChecked(self._verify_true('export_asym', True))
         self.exportGISANS.setChecked(self._verify_true('export_gisans', False))
         self.exportOffSpecular.setChecked(self._verify_true('export_offspec', False))
-        self.exportOffSpecularCorr.setChecked(self._verify_true('export_offspec_corr', False))
         self.exportOffSpecularSmoothed.setChecked(self._verify_true('export_offspec_smooth', False))
 
         # Formats
-        self.combinedAscii.setChecked(self._verify_true('format_combined', True))
         self.genx.setChecked(self._verify_true('format_genx', False))
         self.matlab.setChecked(self._verify_true('format_matlab', False))
         self.multiAscii.setChecked(self._verify_true('format_multi', False))
         self.numpy.setChecked(self._verify_true('format_numpy', False))
         self.mantid_script_checkbox.setChecked(self._verify_true('format_mantid', False))
         self.five_cols_checkbox.setChecked(self._verify_true('format_5cols', True))
-
-        # Hide unused option
-        self.exportOffSpecularCorr.hide()
 
         self.is_accepted = False
 
@@ -76,9 +71,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                     export_asym=self.export_SA.isChecked(),
                     export_gisans=self.exportGISANS.isChecked(),
                     export_offspec=self.exportOffSpecular.isChecked(),
-                    export_offspec_corr=self.exportOffSpecularCorr.isChecked(),
                     export_offspec_smooth=self.exportOffSpecularSmoothed.isChecked(),
-                    format_combined=self.combinedAscii.isChecked(),
                     format_genx=self.genx.isChecked(),
                     format_matlab=self.matlab.isChecked(),
                     format_mantid=self.mantid_script_checkbox.isChecked(),
@@ -112,10 +105,8 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.settings.setValue('export_asym', self.export_SA.isChecked())
         self.settings.setValue('export_gisans', self.exportGISANS.isChecked())
         self.settings.setValue('export_offspec', self.exportOffSpecular.isChecked())
-        self.settings.setValue('export_offspec_corr', self.exportOffSpecularCorr.isChecked())
         self.settings.setValue('export_offspec_smooth', self.exportOffSpecularSmoothed.isChecked())
 
-        self.settings.setValue('format_combined', self.combinedAscii.isChecked())
         self.settings.setValue('format_genx', self.genx.isChecked())
         self.settings.setValue('format_matlab', self.matlab.isChecked())
         self.settings.setValue('format_multi', self.multiAscii.isChecked())

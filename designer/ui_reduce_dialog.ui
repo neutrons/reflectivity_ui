@@ -83,13 +83,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="exportOffSpecularCorr">
-            <property name="text">
-             <string>Off-Specular Corrected</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="exportOffSpecularSmoothed">
             <property name="text">
              <string>Off-Specular Binned</string>
@@ -114,25 +107,20 @@
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
            <widget class="QCheckBox" name="multiAscii">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="mouseTracking">
+             <bool>true</bool>
+            </property>
             <property name="text">
-             <string>ASCII for each channel</string>
+             <string>ASCII</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
             </property>
             <property name="checked">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="combinedAscii">
-            <property name="text">
-             <string>Combined ASCII</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QCheckBox" name="numpy">
-            <property name="text">
-             <string>Numpy .npz</string>
             </property>
            </widget>
           </item>
@@ -140,20 +128,6 @@
            <widget class="QCheckBox" name="genx">
             <property name="text">
              <string>GenX</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="mantid_script_checkbox">
-            <property name="text">
-             <string>Mantid script</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="matlab">
-            <property name="text">
-             <string>Matlab</string>
             </property>
            </widget>
           </item>
@@ -189,6 +163,27 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="numpy">
+            <property name="text">
+             <string>Numpy .npz</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="mantid_script_checkbox">
+            <property name="text">
+             <string>Mantid script</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="matlab">
+            <property name="text">
+             <string>Matlab</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -310,12 +305,9 @@
   <tabstop>buttonBox</tabstop>
   <tabstop>exportSpecular</tabstop>
   <tabstop>exportOffSpecular</tabstop>
-  <tabstop>exportOffSpecularCorr</tabstop>
   <tabstop>exportOffSpecularSmoothed</tabstop>
   <tabstop>exportGISANS</tabstop>
   <tabstop>multiAscii</tabstop>
-  <tabstop>combinedAscii</tabstop>
-  <tabstop>numpy</tabstop>
   <tabstop>toolButton</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>

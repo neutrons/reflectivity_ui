@@ -40,7 +40,6 @@ class ProcessingWorkflow(object):
         if not self.data_manager.reduction_states:
             return
 
-        progress.create()
         if self.output_options['export_specular']:
             if progress is not None:
                 progress(10, "Computing reflectivity")
@@ -51,11 +50,6 @@ class ProcessingWorkflow(object):
                 progress(20, "Computing off-specular reflectivity")
             self.offspec(raw=self.output_options['export_offspec'],
                          binned=self.output_options['export_offspec_smooth'])
-
-        # The correction is currently not in place because the original
-        # QuickNXS calculations are not documented.
-        if self.output_options['export_offspec_corr']:
-            pass
 
         if self.output_options['export_gisans']:
             pass
@@ -103,12 +97,6 @@ class ProcessingWorkflow(object):
         if len(output_states) == 0:
             return
 
-        # Create combined file header
-        combined_output_path = output_file_base.replace('{state}', 'all')
-        if self.output_options['format_combined']:
-            all_states = ', '.join(self.data_manager.reduction_states)
-            quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, combined_output_path, all_states)
-
         # Write out the cross-section data
         five_cols = self.output_options['format_5cols']
         for pol_state in output_states:
@@ -118,15 +106,10 @@ class ProcessingWorkflow(object):
             if output_xs_name not in output_data:
                 continue
 
-            if self.output_options['format_combined']:
-                quicknxs_io.write_reflectivity_data(combined_output_path, output_data[output_xs_name],
-                                                    pol_state, col_names, as_multi=True, as_5col=five_cols)
-
-            if self.output_options['format_multi']:
-                state_output_path = output_file_base.replace('{state}', pol_state)
-                quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
-                quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name],
-                                                    pol_state, col_names, as_multi=False, as_5col=five_cols)
+            state_output_path = output_file_base.replace('{state}', pol_state)
+            quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
+            quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name],
+                                                col_names, as_5col=five_cols)
 
     def write_genx(self, output_data, output_path):
         '''
@@ -187,8 +170,9 @@ class ProcessingWorkflow(object):
         output_data = self.get_output_data()
 
         # QuickNXS format
-        output_file_base = self.get_file_name(run_list)
-        self.write_quicknxs(output_data, output_file_base)
+        if self.output_options['format_multi']:
+            output_file_base = self.get_file_name(run_list)
+            self.write_quicknxs(output_data, output_file_base)
 
         # Numpy arrays
         if self.output_options['format_numpy']:

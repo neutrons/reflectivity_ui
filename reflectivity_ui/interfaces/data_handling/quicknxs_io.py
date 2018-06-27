@@ -163,20 +163,15 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     fd.write("#\n")
     fd.close()
 
-def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=False, as_5col=True):
+def write_reflectivity_data(output_path, data, col_names, as_5col=True):
     """
         Write out reflectivity header in a format readable by QuickNXS
         :param str output_path: output file path
         :param ndarray or list data: data to be written
-        :param str pol_state: descriptor for the polarization state
         :param list col_names: list of column names
-        :param bool as_multi: if True, the data will be appended with extra comments
         :param bool as_5col: if True, a 5-column ascii will be written (theta is the last column)
     """
     with open(output_path, 'a') as fd:
-        if as_multi:
-            fd.write("# Start of channel %s\n" % pol_state)
-
         # Determine how many columns to write
         four_cols = not as_5col and data.shape[1] > 4
 
@@ -197,9 +192,6 @@ def write_reflectivity_data(output_path, data, pol_state, col_names, as_multi=Fa
                 np.savetxt(fd, data[:, :4], delimiter=' ', fmt='%12.6g')
             else:
                 np.savetxt(fd, data, delimiter='\t', fmt='%12.6g')
-
-        if as_multi:
-            fd.write("# End of channel %s\n\n\n" % pol_state)
 
 def read_reduced_file(file_path, configuration=None):
     """
