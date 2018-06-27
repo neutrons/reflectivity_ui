@@ -1,41 +1,25 @@
-#pylint: disable=too-many-arguments
 """
     Class used to report on progress. It allows for sub-tasks and
     computes a meaningful progress status accordingly.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-from PyQt5 import QtGui, QtCore, QtWidgets
 
 class ProgressReporter(object):
     """
         Progress reporter class that allows for sub-tasks.
     """
-    def __init__(self, max_value=100, call_back=None, create_dialog=False,
-                 window_title="Loading", message="", parent=None):
+    def __init__(self, max_value=100, call_back=None,
+                 status_bar=None, progress_bar=None):
+        """
+            :param str message: message to be displayed
+        """
         self.max_value = max_value
-        self.message = message
-        self.window_title = window_title
+        self.message = ''
         self.call_back = call_back
         self.value = 0
         self.sub_tasks = []
-        self.main_window = parent
-        self.progress_dialog = None
-        self.created = False
-
-        if create_dialog:
-            self.create()
-
-    def create(self):
-        if self.created:
-            return
-        self.progress_dialog = QtWidgets.QProgressDialog(
-            self.message, "Close", 0, self.max_value, self.main_window)
-        self.progress_dialog.setWindowTitle(self.window_title)
-        self.progress_dialog.setAutoClose(True)
-        self.progress_dialog.setModal(True)
-        self.progress_dialog.show()
-        QtWidgets.QApplication.instance().processEvents()
-        self.created = True
+        self.status_bar = status_bar
+        self.progress_bar = progress_bar
 
     def __call__(self, value, message='', out_of=None):
         """
@@ -59,6 +43,8 @@ class ProgressReporter(object):
         """
             Updates the progress status according to
             sub-tasks.
+
+            :param str message: message to be displayed
         """
         _value = self.value
         for item in self.sub_tasks:
@@ -67,10 +53,12 @@ class ProgressReporter(object):
 
         if self.call_back is not None:
             self.call_back(message)
-        if self.progress_dialog:
-            self.progress_dialog.setValue(_value)
-            self.progress_dialog.setLabelText(message)
-            QtWidgets.QApplication.instance().processEvents()
+
+        if self.status_bar:
+            self.progress_bar.setValue(_value)
+
+        if message and self.status_bar:
+            self.status_bar.setText(message)
 
     def create_sub_task(self, max_value):
         """

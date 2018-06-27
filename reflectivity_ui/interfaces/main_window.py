@@ -373,8 +373,7 @@ class MainWindow(QtWidgets.QMainWindow,
 
             from .data_handling.processing_workflow import ProcessingWorkflow
             wrk = ProcessingWorkflow(self.data_manager, output_options)
-            prog = ProgressReporter(create_dialog=False, parent=self)
-            wrk.execute(prog)
+            wrk.execute(self.file_handler.new_progress_reporter())
 
     def loadExtraction(self):
         self.file_handler.open_reduced_file_dialog()

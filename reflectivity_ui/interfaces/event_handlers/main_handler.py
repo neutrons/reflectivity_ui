@@ -39,13 +39,18 @@ class MainHandler(object):
         button.setMaximumSize(150, 20)
 
         # Create progress bar in statusbar
-        self.eventProgress=QtWidgets.QProgressBar(self.ui.statusbar)
-        self.eventProgress.setMinimumSize(20, 14)
-        self.eventProgress.setMaximumSize(140, 100)
-        self.ui.statusbar.addPermanentWidget(self.eventProgress)
+        self.progress_bar = QtWidgets.QProgressBar(self.ui.statusbar)
+        self.progress_bar.setMinimumSize(20, 14)
+        self.progress_bar.setMaximumSize(140, 100)
+        self.ui.statusbar.addPermanentWidget(self.progress_bar)
 
         self.status_message = QtWidgets.QLabel("")
+        self.status_message.setMinimumWidth(1000)
         self.ui.statusbar.insertWidget(0, self.status_message)
+
+    def new_progress_reporter(self):
+        """ Return a progress reporter """
+        return ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
 
     def empty_cache(self):
         """
@@ -70,7 +75,7 @@ class MainHandler(object):
         self.main_window.auto_change_active = True
         try:
             self.report_message("Loading file %s" % file_path)
-            prog = ProgressReporter(create_dialog=True, parent=self.main_window)
+            prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force, progress=prog)
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
@@ -303,7 +308,9 @@ class MainHandler(object):
         t_0 = time.time()
         if file_path:
             configuration = self.get_configuration()
-            self._data_manager.load_data_from_reduced_file(file_path, configuration=configuration)
+            prog = self.new_progress_reporter()
+            self._data_manager.load_data_from_reduced_file(file_path, configuration=configuration,
+                                                           progress=prog)
 
             # Update output directory
             file_dir, _ = os.path.split(unicode(file_path))

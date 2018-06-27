@@ -515,7 +515,7 @@ class DataManager(object):
             return data_manipulation.extract_meta_data(file_path=file_path, configuration=self.active_channel.configuration)
         return data_manipulation.extract_meta_data(cross_section_data=self.active_channel)
 
-    def load_data_from_reduced_file(self, file_path, configuration=None):
+    def load_data_from_reduced_file(self, file_path, configuration=None, progress=None):
         """
             Load the information from a reduced file, the load the data.
             Ask the main event handler to update the UI once we are done.
@@ -526,16 +526,26 @@ class DataManager(object):
         db_files, data_files = quicknxs_io.read_reduced_file(file_path, configuration)
         logging.info("Reduced file loaded: %s sec", time.time()-t_0)
 
+        n_loaded = 0
+        n_total = 1.0+len(db_files)+len(data_files)
+        if progress:
+            progress.set_value(1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total)
         for r_id, run_file, conf in db_files:
             t_i = time.time()
             self.load(run_file, conf, update_parameters=False)
             self.add_active_to_normalization()
             logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
+            if progress:
+                n_loaded += 1
+                progress.set_value(n_loaded, message="%s loaded" % r_id, out_of=n_total)
 
         for r_id, run_file, conf in data_files:
             t_i = time.time()
             self.load(run_file, conf, update_parameters=False)
             self.add_active_to_reduction()
             logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
+            if progress:
+                n_loaded += 1
+                progress.set_value(n_loaded, message="%s loaded" % r_id, out_of=n_total)
 
         logging.info("DONE: %s sec", time.time()-t_0)
