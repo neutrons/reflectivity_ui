@@ -296,8 +296,7 @@ class NexusData(object):
                 continue
 
             name = self.map_cross_section(ws)
-            cross_section = CrossSectionData(name, self.configuration, entry_name=channel)
-            cross_section.collect_info(ws)
+            cross_section = CrossSectionData(name, self.configuration, entry_name=channel, workspace=ws)
             self.cross_sections[name] = cross_section
             self.number = cross_section.number
             if cross_section.total_counts > _max_counts:
@@ -309,16 +308,12 @@ class NexusData(object):
         self.main_cross_section = _max_xs
         self.cross_sections[_max_xs].get_reduction_parameters(update_parameters=update_parameters)
 
-        for xs in self.cross_sections:
-            if not xs == _max_xs:
-                self.cross_sections[xs].update_configuration(self.cross_sections[_max_xs].configuration)
-            self.cross_sections[xs].process_data()
-
         # Push the configuration (reduction options and peak regions) from the
         # cross-section with the most data to all other cross-sections.
-        if _max_xs is not None:
-            #self.cross_sections[_max_xs].get_reduction_parameters()
-            self.update_configuration(self.cross_sections[_max_xs].configuration)
+        for xs in self.cross_sections:
+            if xs == _max_xs:
+                continue
+            self.cross_sections[xs].update_configuration(self.cross_sections[_max_xs].configuration)
 
         if progress is not None:
             progress(100, "Complete", out_of=100.0)
@@ -341,7 +336,7 @@ class CrossSectionData(object):
     det_size_x = 0.0007
     det_size_y = 0.0007
 
-    def __init__(self, name, configuration, entry_name='entry'):
+    def __init__(self, name, configuration, entry_name='entry', workspace=None):
         self.name = name
         self.entry_name = entry_name
         self.measurement_type = 'polarized'
@@ -388,6 +383,9 @@ class CrossSectionData(object):
         self.SGrid = None
         self.QyGrid = None
         self.QzGrid = None
+
+        if workspace:
+            self.collect_info(workspace)
 
     ################## Properties for easy data access ##########################
     # return the size of the data stored in memory for this dataset
@@ -475,7 +473,6 @@ class CrossSectionData(object):
         """
         self._event_workspace = str(workspace)
         data = workspace.getRun()
-        #self.origin=(os.path.abspath(data['filename'].value), 'entry')
         self.logs = {}
         self.log_minmax = {}
         self.log_units = {}
@@ -511,7 +508,7 @@ class CrossSectionData(object):
         # Retrieve instrument-specific information
         self.configuration.instrument.get_info(workspace, self)
 
-    def process_data(self):
+    def process_configuration(self):
         """
             Process loaded data
             :param bool update_parameters: If true, we will determine reduction parameters
@@ -569,20 +566,21 @@ class CrossSectionData(object):
             self.use_roi_actual = data_info.use_roi_actual
             self.is_direct_beam = data_info.is_direct_beam
             self.configuration.tof_range = data_info.tof_range
-    
+
             self.meta_data_roi_peak = data_info.roi_peak
             self.meta_data_roi_bck = data_info.roi_background
-    
+
             if not self.configuration.force_peak_roi:
                 self.configuration.peak_roi = data_info.peak_range
-    
+
             if not self.configuration.force_low_res_roi:
                 self.configuration.low_res_roi = data_info.low_res_range
-    
+
             if not self.configuration.force_bck_roi:
                 self.configuration.bck_roi = data_info.background
         else:
             self.configuration.tof_range = [workspace.getTofMin(), workspace.getTofMax()]
+        self.process_configuration()
 
     def get_counts_vs_TOF(self):
         """
@@ -630,6 +628,7 @@ class CrossSectionData(object):
         if configuration is not None:
             self.configuration = copy.deepcopy(configuration)
             self.update_calculated_values()
+            self.process_configuration()
 
     def reflectivity(self, direct_beam=None, configuration=None):
         """
