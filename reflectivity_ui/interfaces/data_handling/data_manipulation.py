@@ -40,7 +40,7 @@ def generate_script(reduction_list, pol_state):
         script += '\n'
     return script
 
-def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
+def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01):
     """
         Stitch and normalize data sets
 
@@ -57,7 +57,7 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True):
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
     if normalize_to_unity:
-        idx_list = reduction_list[0].cross_sections[xs].q < reduction_list[0].cross_sections[xs].configuration.total_reflectivity_q_cutoff
+        idx_list = reduction_list[0].cross_sections[xs].q < q_cutoff
         total = 0
         weights = 0
         for i in range(len(reduction_list[0].cross_sections[xs]._r)):

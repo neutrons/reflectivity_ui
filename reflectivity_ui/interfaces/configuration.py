@@ -160,6 +160,10 @@ class Configuration(object):
         settings.setValue('cut_first_n_points', self.cut_first_n_points)
         settings.setValue('cut_last_n_points', self.cut_last_n_points)
 
+        # Normalize to unity when stitching
+        settings.setValue('normalize_to_unity', self.normalize_to_unity)
+        settings.setValue('total_reflectivity_q_cutoff', self.total_reflectivity_q_cutoff)
+
         settings.setValue('normalize_x_tof', self.normalize_x_tof)
         settings.setValue('x_wl_map', self.x_wl_map)
         settings.setValue('angle_map', self.angle_map)
@@ -213,6 +217,10 @@ class Configuration(object):
         self.scaling_factor = float(settings.value('scaling_factor', self.scaling_factor))
         self.cut_first_n_points = int(settings.value('cut_first_n_points', self.cut_first_n_points))
         self.cut_last_n_points = int(settings.value('cut_last_n_points', self.cut_last_n_points))
+
+        # Normalize to unity when stitching
+        self.normalize_to_unity = _verify_true('normalize_to_unity', self.normalize_to_unity)
+        self.total_reflectivity_q_cutoff = float(settings.value('total_reflectivity_q_cutoff', self.total_reflectivity_q_cutoff))
 
         self.normalize_x_tof = _verify_true('normalize_x_tof', self.normalize_x_tof)
         self.x_wl_map = _verify_true('x_wl_map', self.x_wl_map)

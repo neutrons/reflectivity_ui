@@ -6,6 +6,7 @@
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, bare-except
 from __future__ import absolute_import, division, print_function
 import sys
+import os
 import math
 import logging
 
@@ -13,7 +14,7 @@ import logging
 from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
-from mantid.simpleapi import *
+import mantid.simpleapi as api
 
 # Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
 USE_SLOW_FLIPPER_LOG = True
@@ -51,9 +52,9 @@ class Instrument(object):
         """
             Filter events according to an aggregated state log.
             :param str file_path: file to read
-    
+
             BL4A:SF:ICP:getDI
-    
+
             015 (0000 1111): SF1=OFF, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
             047 (0010 1111): SF1=ON, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
             031 (0001 1111): SF1=OFF, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
@@ -65,18 +66,18 @@ class Instrument(object):
                   'Off_On': 31,
                   'On_On': 63}
         cross_sections = []
-    
+
         for pol_state in states:
             try:
-                _ws = FilterByLogValue(InputWorkspace=ws, LogName=state_log, TimeTolerance=0.1,
-                                      MinimumValue=states[pol_state],
-                                      MaximumValue=states[pol_state], LogBoundary='Left',
-                                      OutputWorkspace='%s_entry-%s' % (ws.getRunNumber(), pol_state))
+                _ws = api.FilterByLogValue(InputWorkspace=ws, LogName=state_log, TimeTolerance=0.1,
+                                           MinimumValue=states[pol_state],
+                                           MaximumValue=states[pol_state], LogBoundary='Left',
+                                           OutputWorkspace='%s_entry-%s' % (ws.getRunNumber(), pol_state))
                 _ws.getRun()['cross_section_id'] = pol_state
                 cross_sections.append(_ws)
             except:
                 logging.error("Could not filter %s: %s", pol_state, sys.exc_info()[1])
-    
+
         return cross_sections
 
     def load_data(self, file_path):
@@ -86,18 +87,20 @@ class Instrument(object):
 
             :param str file_path: path to the data file
         """
-        if not USE_SLOW_FLIPPER_LOG:
+        # Be careful with legacy data
+        is_legacy = file_path.endswith(".nxs")
+        if is_legacy or not USE_SLOW_FLIPPER_LOG:
             base_name = os.path.basename(file_path)
-            _xs_list = MRFilterCrossSections(Filename=file_path,
-                                            PolState=self.pol_state,
-                                            AnaState=self.ana_state,
-                                            PolVeto=self.pol_veto,
-                                            AnaVeto=self.ana_veto,
-                                            CrossSectionWorkspaces="%s_entry" % base_name)
+            _xs_list = api.MRFilterCrossSections(Filename=file_path,
+                                                 PolState=self.pol_state,
+                                                 AnaState=self.ana_state,
+                                                 PolVeto=self.pol_veto,
+                                                 AnaVeto=self.ana_veto,
+                                                 CrossSectionWorkspaces="%s_entry" % base_name)
             # Only keep good workspaced and get rid of the rejected events
             xs_list = [ws for ws in _xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
         else:
-            ws = LoadEventNexus(Filename=file_path, OutputWorkspace="raw_events")
+            ws = api.LoadEventNexus(Filename=file_path, OutputWorkspace="raw_events")
             xs_list = self.dummy_filter_cross_sections(ws)
 
         return xs_list
@@ -107,7 +110,7 @@ class Instrument(object):
         """
             Determine the scattering angle in degrees
         """
-        return MRGetTheta(ws, SpecularPixel=peak_position) * 180.0 / math.pi
+        return api.MRGetTheta(ws, SpecularPixel=peak_position) * 180.0 / math.pi
 
     @classmethod
     def mid_q_value(cls, ws):
@@ -175,20 +178,20 @@ class Instrument(object):
             @param data_object: CrossSectionData object
         """
         data = workspace.getRun()
-        data_object.lambda_center=data['LambdaRequest'].value[0]
-        data_object.dangle=data['DANGLE'].value[0]
-        data_object.dangle0=data['DANGLE0'].value[0]
-        data_object.dpix=data['DIRPIX'].value[0]
-        data_object.slit1_width=data['S1HWidth'].value[0]
-        data_object.slit2_width=data['S2HWidth'].value[0]
-        data_object.slit3_width=data['S3HWidth'].value[0]
-        data_object.huber_x=data['HuberX'].getStatistics().mean
+        data_object.lambda_center = data['LambdaRequest'].value[0]
+        data_object.dangle = data['DANGLE'].value[0]
+        data_object.dangle0 = data['DANGLE0'].value[0]
+        data_object.dpix = data['DIRPIX'].value[0]
+        data_object.slit1_width = data['S1HWidth'].value[0]
+        data_object.slit2_width = data['S2HWidth'].value[0]
+        data_object.slit3_width = data['S3HWidth'].value[0]
+        data_object.huber_x = data['HuberX'].getStatistics().mean
 
-        data_object.sangle=data['SANGLE'].value[0]
+        data_object.sangle = data['SANGLE'].value[0]
 
-        data_object.dist_sam_det=data['SampleDetDis'].value[0]*1e-3
-        data_object.dist_mod_det=data['ModeratorSamDis'].value[0]*1e-3+data_object.dist_sam_det
-        data_object.dist_mod_mon=data['ModeratorSamDis'].value[0]*1e-3-2.75
+        data_object.dist_sam_det = data['SampleDetDis'].value[0]*1e-3
+        data_object.dist_mod_det = data['ModeratorSamDis'].value[0]*1e-3+data_object.dist_sam_det
+        data_object.dist_mod_mon = data['ModeratorSamDis'].value[0]*1e-3-2.75
 
         # Get these from instrument
         data_object.pixel_width = float(workspace.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
@@ -213,21 +216,11 @@ class Instrument(object):
             :param ws: Mantid workspace
             :param specular bool: if True, the low-resolution direction is integrated over
         """
-        ws_summed = RefRoi(InputWorkspace=ws, IntegrateY=specular,
-                           NXPixel=self.n_x_pixel, NYPixel=self.n_y_pixel,
-                           ConvertToQ=False,
-                           OutputWorkspace="ws_summed")
+        ws_summed = api.RefRoi(InputWorkspace=ws, IntegrateY=specular,
+                               NXPixel=self.n_x_pixel, NYPixel=self.n_y_pixel,
+                               ConvertToQ=False,
+                               OutputWorkspace="ws_summed")
 
-        integrated = Integration(ws_summed)
-        integrated = Transpose(integrated)
+        integrated = api.Integration(ws_summed)
+        integrated = api.Transpose(integrated)
         return integrated
-
-    @classmethod
-    def find_direct_beam(cls):
-        """
-            Find a direct beam suitable for this data set by looking into
-            its data directory.
-            :param ws: Mantid workspace
-        """
-        
-        return

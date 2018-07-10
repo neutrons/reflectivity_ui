@@ -326,7 +326,7 @@ class DataManager(object):
 
         return direct_beam
 
-    def calculate_gisans(self, nexus_data=None):
+    def calculate_gisans(self, nexus_data=None, progress=None):
         # Select the data to work on
         if nexus_data is None:
             nexus_data = self._nexus_data
@@ -336,7 +336,7 @@ class DataManager(object):
         if direct_beam is None:
             raise RuntimeError("Please select a direct beam data set for your data.")
 
-        nexus_data.calculate_gisans(direct_beam=direct_beam)
+        nexus_data.calculate_gisans(direct_beam=direct_beam, progress=progress)
 
     def reduce_offspec(self):
         """
@@ -446,12 +446,14 @@ class DataManager(object):
                 n_points = len(item.cross_sections[xs].q)-overlap_idx[0][0]
                 item.set_parameter("cut_last_n_points", n_points)
 
-    def stitch_data_sets(self, normalize_to_unity=True):
+    def stitch_data_sets(self, normalize_to_unity=True, q_cutoff=0.01):
         """
             Determine scaling factors for each data set
             :param bool normalize_to_unity: If True, the reflectivity plateau will be normalized to 1.
+            :param float q_cutoff: critical q-value below which we expect R=1
         """
-        data_manipulation.stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity)
+        data_manipulation.stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity,
+                                              q_cutoff=q_cutoff)
 
     def merge_data_sets(self, asymmetry=True):
         self.final_merged_reflectivity = {}

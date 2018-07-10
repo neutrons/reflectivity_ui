@@ -156,7 +156,10 @@ class PlotManager(object):
         imax=1e-20
         xynormed=[]
 
-        for key in data_set_keys[:4]:
+        progress = self.main_window.file_handler.new_progress_reporter()
+        n_total = len(data_set_keys)
+        progress(0.1, message="Compiling plots", out_of=n_total+1)
+        for i, key in enumerate(data_set_keys[:4]):
             dataset = main_window.data_manager.data_sets[key]
             dataset.prepare_plot_data()
             d=dataset.xydata/dataset.proton_charge
@@ -165,6 +168,7 @@ class PlotManager(object):
                 continue
             imin=min(imin, d[d>0].min())
             imax=max(imax, d.max())
+            progress(i, message="Prepared %s plot" % key, out_of=n_total+1)
 
         if len(xynormed)>1:
             main_window.ui.frame_xy_mm.show()
@@ -175,7 +179,8 @@ class PlotManager(object):
         else:
             main_window.ui.frame_xy_mm.hide()
             main_window.ui.frame_xy_sf.hide()
-    
+
+        progress(n_total, message="Plotting...", out_of=n_total+1)
         for i, datai in enumerate(xynormed):
             if main_window.data_manager.data_sets[data_set_keys[i]].total_counts==0:
                 continue
@@ -202,6 +207,7 @@ class PlotManager(object):
             if plots[i].cplot is not None and main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                 plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
+        progress(100, message="Ready", out_of=100)
 
     def plot_xtof(self):
         """
@@ -217,7 +223,10 @@ class PlotManager(object):
             ref_norm=ref_norm.get_counts_vs_TOF()
             ref_norm=np.where(ref_norm>0, ref_norm, 1.)
 
-        for key in data_set_keys[:4]:
+        progress = self.main_window.file_handler.new_progress_reporter()
+        n_total = len(data_set_keys)
+        progress(0.1, message="Compiling plots", out_of=n_total+1)
+        for i, key in enumerate(data_set_keys[:4]):
             dataset = main_window.data_manager.data_sets[key]
             dataset.prepare_plot_data()
             d=dataset.xtofdata/dataset.proton_charge
@@ -229,6 +238,10 @@ class PlotManager(object):
                 continue
             imin=min(imin, d[d>0].min())
             imax=max(imax, d.max())
+            progress(i, message="Prepared %s plot" % key, out_of=n_total+1)
+
+        progress(n_total, message="Plotting...", out_of=n_total+1)
+
         wavelength = main_window.data_manager.active_channel.wavelength
         tof = main_window.data_manager.active_channel.tof
     
@@ -265,6 +278,7 @@ class PlotManager(object):
             if plots[i].cplot is not None and main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                 plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
+        progress(100, message="Ready", out_of=100)
 
     def plot_projections(self, preserve_lim=False):
         """
@@ -391,7 +405,10 @@ class PlotManager(object):
         k_diff_min = 0.01
         k_diff_max = -0.01
 
-        for nexus_data in self.main_window.data_manager.reduction_list:
+        progress = self.main_window.file_handler.new_progress_reporter()
+        n_total = len(self.main_window.data_manager.reduction_list)
+        progress(0.1, message="Computing off-specular", out_of=n_total)
+        for i_run, nexus_data in enumerate(self.main_window.data_manager.reduction_list):
             # Recalculate the off-specular reflectivity
             try:
                 if recalc:
@@ -404,6 +421,7 @@ class PlotManager(object):
                 plot = plots[i]
                 selected_data=nexus_data.cross_sections[channel]
                 selected_data.offspec()
+                progress(i_run+i/4.0, message="Processed run %s %s" % (selected_data.number, channel), out_of=n_total)
 
                 P0 = len(selected_data.tof)-nexus_data.configuration.cut_first_n_points
                 PN = nexus_data.configuration.cut_last_n_points
@@ -457,6 +475,7 @@ class PlotManager(object):
                 if self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                     plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plot.draw()
+        progress(100, message="Off-specular calculation complete", out_of=100)
 
     def plot_refl(self, preserve_lim=False):
         '''
@@ -583,11 +602,13 @@ class PlotManager(object):
             if plots[i].cplot is not None:
                 plots[i].draw()
 
-        #TODO: Here would be a good place to reset the progress bar
+        progress = self.main_window.file_handler.new_progress_reporter()
+        n_total = len(data_set_keys)
+        progress(0.1, message="Computing GISANS", out_of=n_total)
 
         # Compute GISANS
         try:
-            self.main_window.data_manager.calculate_gisans()
+            self.main_window.data_manager.calculate_gisans(progress=progress)
         except:
             self.main_window.file_handler.report_message("Could not compute GISANS for %s" % self.main_window.data_manager.current_file_name,
                                                          detailed_message=str(sys.exc_value),
@@ -621,3 +642,4 @@ class PlotManager(object):
             if plots[i].cplot is not None and self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                 plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
+        progress(100, message="Ready", out_of=100)

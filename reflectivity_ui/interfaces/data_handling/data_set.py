@@ -134,9 +134,9 @@ class NexusData(object):
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
 
-        logging.error("%s Reduction with DB: %s [config: %s]",
-                      self.number, direct_beam.number,
-                      self.configuration.normalization)
+        logging.info("%s Reduction with DB: %s [config: %s]",
+                     self.number, direct_beam.number,
+                     self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
         def _as_ints(a): return [int(round(a[0])), int(round(a[1]))]
         output_ws = "r%s" % self.number
@@ -200,19 +200,21 @@ class NexusData(object):
             self.cross_sections[xs_id]._dr = xs.readE(0)[:].copy()
             self.cross_sections[xs_id]._reflectivity_workspace = str(xs)
 
-    def calculate_gisans(self, direct_beam):
+    def calculate_gisans(self, direct_beam, progress=None):
         """
             Compute GISANS
         """
         has_errors = False
         detailed_msg = ""
-        for xs in self.cross_sections:
+        for i, xs in enumerate(self.cross_sections):
             try:
                 self.cross_sections[xs].gisans(direct_beam=direct_beam)
             except:
                 has_errors = True
                 detailed_msg += "Could not calculate GISANS reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
                 logging.error("Could not calculate GISANS reflectivity for %s\n  %s", xs, sys.exc_value)
+            if progress:
+                progress(i, message="Computed GISANS %s" % xs, out_of=len(self.cross_sections))
         if has_errors:
             raise RuntimeError(detailed_msg)
 
@@ -552,7 +554,7 @@ class CrossSectionData(object):
             self.data = Ixyt.astype(float) # 3D dataset
             self.xydata = Ixy.transpose().astype(float) # 2D dataset
             self.xtofdata = Ixt.astype(float) # 2D dataset
-            logging.warning("Plot data generated: %s sec", time.time()-t_0)
+            logging.info("Plot data generated: %s sec", time.time()-t_0)
 
     def get_reduction_parameters(self, update_parameters=True):
         """
@@ -648,7 +650,7 @@ class CrossSectionData(object):
         if not apply_norm:
             direct_beam = CrossSectionData('none', self.configuration, 'none')
 
-        logging.error("%s:%s Reduction with DB: %s [config: %s]",
+        logging.info("%s:%s Reduction with DB: %s [config: %s]",
                       self.number, self.entry_name, direct_beam.number,
                       self.configuration.normalization)
         angle_offset = 0 # Offset from dangle0, in radians
@@ -659,7 +661,7 @@ class CrossSectionData(object):
         if apply_norm and direct_beam._event_workspace is not None:
             ws_norm = direct_beam._event_workspace
 
-        logging.error("Calc: %s %s %s", str(_as_ints(self.configuration.peak_roi)),
+        logging.info("Calc: %s %s %s", str(_as_ints(self.configuration.peak_roi)),
                       str(_as_ints(self.configuration.bck_roi)),
                       str(_as_ints(self.configuration.low_res_roi)))
         ws = api.MagnetismReflectometryReduction(InputWorkspace=self._event_workspace,
@@ -736,6 +738,10 @@ class CrossSectionData(object):
 
             :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
         """
+        self.prepare_plot_data()
+        if direct_beam:
+            direct_beam.prepare_plot_data()
+
         #TODO: Perform sensitivity correction
         x_pos = self.configuration.peak_position
         y_pos = self.configuration.low_res_position

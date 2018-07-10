@@ -31,6 +31,10 @@ class MainHandler(object):
         self._path_watcher.directoryChanged.connect(self.update_file_list)
 
         self.cache_indicator = QtWidgets.QLabel("Files loaded: 0")
+        self.cache_indicator.setMargin(5)
+        self.cache_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                           QtWidgets.QSizePolicy.Preferred)
+        self.cache_indicator.setMinimumWidth(110)
         self.ui.statusbar.addPermanentWidget(self.cache_indicator)
         button = QtWidgets.QPushButton('Empty Cache')
         self.ui.statusbar.addPermanentWidget(button)
@@ -46,6 +50,7 @@ class MainHandler(object):
 
         self.status_message = QtWidgets.QLabel("")
         self.status_message.setMinimumWidth(1000)
+        self.status_message.setMargin(5)
         self.ui.statusbar.insertWidget(0, self.status_message)
 
     def new_progress_reporter(self):
@@ -781,6 +786,7 @@ class MainHandler(object):
         configuration.cut_first_n_points = self.ui.rangeStart.value()
         configuration.cut_last_n_points = self.ui.rangeEnd.value()
         configuration.normalize_to_unity = self.ui.normalize_to_unity_checkbox.isChecked()
+        configuration.total_reflectivity_q_cutoff = self.ui.normalization_q_cutoff_spinbox.value()
 
         configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
         configuration.use_dangle = self.ui.trustDANGLE.isChecked()
@@ -860,6 +866,8 @@ class MainHandler(object):
         # Cut first and last points
         self.ui.rangeStart.setValue(configuration.cut_first_n_points)
         self.ui.rangeEnd.setValue(configuration.cut_last_n_points)
+        self.ui.normalize_to_unity_checkbox.setChecked(configuration.normalize_to_unity)
+        self.ui.normalization_q_cutoff_spinbox.setValue(configuration.total_reflectivity_q_cutoff)
 
         self.ui.fanReflectivity.setChecked(configuration.use_constant_q)
         self.ui.trustDANGLE.setChecked(configuration.use_dangle)
@@ -892,7 +900,11 @@ class MainHandler(object):
         """
             Stitch the reflectivity parts and normalize to 1.
         """
-        self._data_manager.stitch_data_sets(normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked())
+        # Update the configuration so we can remember the cutoff value
+        # later if it was changed
+        self.get_configuration()
+        self._data_manager.stitch_data_sets(normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked(),
+                                            q_cutoff=self.ui.normalization_q_cutoff_spinbox.value())
 
         for i in range(len(self._data_manager.reduction_list)):
             xs = self._data_manager.active_channel.name
