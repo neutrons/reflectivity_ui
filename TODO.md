@@ -3,7 +3,6 @@ To-do list:
 
 ## Interface
 - Make sure matplotlib widgets work.
-- Add progress bar
 - Add log window
 - Add pop-up message boxes for errors?
 - Create a widget to change the mantid path
@@ -19,13 +18,18 @@ To-do list:
 - Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
 - Plotting: allow for log(x)
 - Plot slices in 2D off-specular data
+- When loading a reduced file, the table of DB is not updated. (Rows are added but are blank)
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
 - Figure out which cross-section to use for the direct beam if there are more than a single one.
 - Deal with peak position when it's not in the middle of the range
+- Emptying cache should also delete the mantid workspaces
 
 ## Reduction
+- q_range = [qMin, qStep, constant / tof_range[0] * 1.2]   If supplied q_min is larger than q_max, deal with it.
+- Add option not to rebin, perhaps when qMin is set to zero or not supplied
+- Add use-sangle option to output QuickNXS file.
 - Stitching  -> make Stitch1DMany take scaling factor for the first workspace
 - Trim workspaces when stitching
 - Add option for constant Q
@@ -40,6 +44,7 @@ To-do list:
 - Test Genx output
 
 ## DONE
+- Add progress bar
 - Normalize output to 1 (broken when turned off).
 - Norm TOF-lambda doesn't work.
 - Do something with P0 / PN to clean up the reflectivity

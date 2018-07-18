@@ -312,6 +312,9 @@ class MainHandler(object):
 
         t_0 = time.time()
         if file_path:
+            # Clear the reduction list first so that we don't create problems later
+            self.clear_direct_beams()
+            self.clear_reflectivity()
             configuration = self.get_configuration()
             prog = self.new_progress_reporter()
             self._data_manager.load_data_from_reduced_file(file_path, configuration=configuration,
@@ -324,6 +327,9 @@ class MainHandler(object):
             self.main_window.auto_change_active = True
 
             self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
+            for idx, _ in enumerate(self._data_manager.direct_beam_list):
+                self._data_manager.set_active_data_from_direct_beam_list(idx)
+                self.update_direct_beam_table(idx, self._data_manager.active_channel)
             self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
             for idx, _ in enumerate(self._data_manager.reduction_list):
                 self._data_manager.set_active_data_from_reduction_list(idx)

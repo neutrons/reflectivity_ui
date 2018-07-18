@@ -4,6 +4,7 @@
 """
 from __future__ import absolute_import, division, print_function
 import sys
+import os
 import time
 import copy
 import math
@@ -19,6 +20,20 @@ import mantid
 from ... import __version__
 from ..configuration import Configuration
 
+
+def _find_h5_data(filename):
+    """
+        Because we have legacy data and new data re-processed for QuickNXS, we have to
+        ensure that we get the proper data file.
+    """
+    if filename.endswith('.nxs'):
+        _new_filename = filename.replace('_histo.nxs', '.nxs.h5')
+        _new_filename = _new_filename.replace('_event.nxs', '.nxs.h5')
+        _new_filename = _new_filename.replace('data', 'nexus')
+        if os.path.isfile(_new_filename):
+            logging.warning("Using %s" % _new_filename)
+            return _new_filename
+    return filename
 
 def write_reflectivity_header(reduction_list, output_path, pol_states):
     """
@@ -249,6 +264,8 @@ def read_reduced_file(file_path, configuration=None):
                         run_file = run_file.replace('histo.', 'event.')
                         conf.cut_first_n_points = 0
                         conf.cut_last_n_points = 0
+                    # Catch data files meant for QuickNXS and use the raw file instead
+                    run_file = _find_h5_data(run_file)
                     direct_beam_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
@@ -281,6 +298,7 @@ def read_reduced_file(file_path, configuration=None):
                         run_file = run_file.replace('histo.', 'event.')
                         conf.cut_first_n_points = 0
                         conf.cut_last_n_points = 0
+                    run_file = _find_h5_data(run_file)
                     data_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])

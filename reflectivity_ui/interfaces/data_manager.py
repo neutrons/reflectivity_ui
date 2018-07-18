@@ -266,7 +266,10 @@ class DataManager(object):
                 if direct_beam_list_id is not None:
                     self.direct_beam_list[direct_beam_list_id] = nexus_data
                 # Compute reflectivity
-                self.calculate_reflectivity()
+                try:
+                    self.calculate_reflectivity()
+                except:
+                    logging.error("Reflectivity calculation failed for %s", file_name)
 
                 while len(self._cache)>=self.MAX_CACHE:
                     self._cache.pop(0)
@@ -534,20 +537,30 @@ class DataManager(object):
             progress.set_value(1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total)
         for r_id, run_file, conf in db_files:
             t_i = time.time()
-            self.load(run_file, conf, update_parameters=False)
-            self.add_active_to_normalization()
-            logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
-            if progress:
-                n_loaded += 1
-                progress.set_value(n_loaded, message="%s loaded" % r_id, out_of=n_total)
+            if os.path.isfile(run_file):
+                self.load(run_file, conf, update_parameters=False)
+                self.add_active_to_normalization()
+                logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
+                if progress:
+                    progress.set_value(n_loaded, message="%s loaded" % os.path.basename(run_file), out_of=n_total)
+            else:
+                logging.error("File does not exist: %s", run_file)
+                if progress:
+                    progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
+            n_loaded += 1
 
         for r_id, run_file, conf in data_files:
             t_i = time.time()
-            self.load(run_file, conf, update_parameters=False)
-            self.add_active_to_reduction()
-            logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
-            if progress:
-                n_loaded += 1
-                progress.set_value(n_loaded, message="%s loaded" % r_id, out_of=n_total)
+            if os.path.isfile(run_file):
+                self.load(run_file, conf, update_parameters=False)
+                self.add_active_to_reduction()
+                logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
+                if progress:
+                    progress.set_value(n_loaded, message="%s loaded" % os.path.basename(run_file), out_of=n_total)
+            else:
+                logging.error("File does not exist: %s", run_file)
+                if progress:
+                    progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
+            n_loaded += 1
 
         logging.info("DONE: %s sec", time.time()-t_0)

@@ -4,8 +4,11 @@ all:
 check:
 	# Check dependencies
 
-install: compile_ui
+local: compile_ui
 	python setup.py install --user
+
+install: compile_ui
+	python setup.py install
 
 compile_ui:
 	python setup.py pyuic
