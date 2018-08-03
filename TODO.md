@@ -19,6 +19,7 @@ To-do list:
 - Plotting: allow for log(x)
 - Plot slices in 2D off-specular data
 - When loading a reduced file, the table of DB is not updated. (Rows are added but are blank)
+- SORT RUNS WHEN LOADING REDUCED FILE
 
 ## Data Manager Design
 - Improve data manager design to handle direct beams more cleanly
@@ -37,8 +38,11 @@ To-do list:
 - Add Q binning option for output
 - Background subtraction for offspec and GISANS
 - Mantid: add option not to rebin in Q at the end.
+- Write output algo that takes group workspace.
+- Automate selection of const-Q binning
 
 ## Testing
+- Automated testing
 - Test numpy output
 - Test Matlab output
 - Test Genx output

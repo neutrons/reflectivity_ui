@@ -39,7 +39,7 @@ if 'pyrcc' in sys.argv[:]:
 package_data = {"reflectivity_ui.interfaces.data_handling": ["genx_templates/*.gx",]}
 
 setup(name="reflectivity_ui",
-      version='0.0.1',
+      version='0.4.0',
       description = "Magnetic Reflectivity Reduction",
       url = "https://github.com/mdoucet/reflectivity_ui",
       long_description = """Desktop application for magnetic reflectivity reduction""",

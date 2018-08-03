@@ -211,12 +211,16 @@ class MainHandler(object):
         """
             Update the list of data files
         """
-        if file_path is not None:
-            file_dir, file_name = os.path.split(unicode(file_path))
+        self.main_window.auto_change_active = True
+        if file_path is not None and not file_path==self._data_manager.current_directory:
+            if os.path.isdir(file_path):
+                file_dir = file_path
+            else:
+                file_dir, file_name = os.path.split(unicode(file_path))
+                self._data_manager.current_file_name = file_name
             self.main_window.settings.setValue('current_directory', file_dir)
             self._path_watcher.removePath(self._data_manager.current_directory)
             self._data_manager.current_directory = file_dir
-            self._data_manager.current_file_name = file_name
             self._path_watcher.addPath(self._data_manager.current_directory)
 
         # Update the list of files
@@ -239,7 +243,7 @@ class MainHandler(object):
             except ValueError:
                 self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
                                     detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
-        QtWidgets.QApplication.instance().processEvents()
+        self.main_window.auto_change_active = False
 
     def automated_file_selection(self):
         """

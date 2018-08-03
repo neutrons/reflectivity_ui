@@ -77,9 +77,12 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
     scaling_factors = [running_scale]
 
     for i in range(len(reduction_list)):
-        ws = api.CreateWorkspace(DataX=reduction_list[i].cross_sections[xs].q,
-                                 DataY=reduction_list[i].cross_sections[xs]._r,
-                                 DataE=reduction_list[i].cross_sections[xs]._dr)
+        n_total = len(reduction_list[i].cross_sections[xs].q)
+        p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
+        p_n = n_total - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points
+        ws = api.CreateWorkspace(DataX=reduction_list[i].cross_sections[xs].q[p_0:p_n],
+                                 DataY=reduction_list[i].cross_sections[xs]._r[p_0:p_n],
+                                 DataE=reduction_list[i].cross_sections[xs]._dr[p_0:p_n])
         ws = api.ConvertToHistogram(ws)
         if _previous_ws is not None:
             _, scale = api.Stitch1D(_previous_ws, ws)

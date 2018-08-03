@@ -23,7 +23,7 @@ class DataInfo(object):
         api.MRInspectData(Workspace=ws, UseROI=configuration.use_roi,
                           UpdatePeakRange=configuration.update_peak_range,
                           UseROIBck=configuration.use_roi_bck, UseTightBck=configuration.use_tight_bck,
-                          BckWidth=int(round(configuration.bck_offset)), HuberXCut=0.0,
+                          BckWidth=int(round(configuration.bck_offset)),
                           ForcePeakROI=configuration.force_peak_roi, PeakROI=configuration.peak_roi,
                           ForceLowResPeakROI=configuration.force_low_res_roi, LowResPeakROI=configuration.low_res_roi,
                           ForceBckROI=configuration.force_bck_roi, BckROI=configuration.bck_roi)
@@ -32,10 +32,12 @@ class DataInfo(object):
         self.run_number = ws.getRunNumber()
 
         run_object = ws.getRun()
-        self.is_direct_beam = run_object.getProperty("is_direct_beam").value.lower() == 'true'
-        self.data_type = 0 if self.is_direct_beam else 1
-        #if ws.getNumberEvents() < self.n_events_cutoff:
-        #    self.data_type = -1
+        try:
+            self.is_direct_beam = run_object.getProperty("data_type").value[0] == 1
+            self.data_type = 0 if self.is_direct_beam else 1
+        except:
+            self.is_direct_beam = False
+            self.data_type = 1
 
         # Processing options
         # Use the ROI rather than finding the ranges
