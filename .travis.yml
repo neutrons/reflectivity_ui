@@ -35,8 +35,10 @@ install:
 
 script:
   - python setup.py install
+  - cd test
   - python -c "import reflectivity_ui; print(reflectivity_ui.__file__)"
-  - cd test; coverage run data_handling_test.py
+  - coverage run data_handling_test.py
+  - cd ..
   - pylint --rcfile build_tools/pylint.rc -f parseable reflectivity_ui/interfaces/data_handling reflectivity_ui/interfaces/event_handlers || exit 0
 
 after_success:
