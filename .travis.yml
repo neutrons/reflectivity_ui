@@ -28,6 +28,9 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5;
   - source activate test-environment
+  - conda config --add channels conda-forge
+  - conda config --add channels mantid
+  - conda install --yes -c mantid mantid-framework
   - pip install --upgrade codecov
   - python setup.py install
   
