@@ -6,6 +6,7 @@ dist: trusty
 
 before_install:
   - echo $TRAVIS_OS_NAME
+  - pip install --upgrade codecov
 
 install:
   - sudo apt-get update
@@ -35,3 +36,4 @@ install:
 
 script:
   - pylint --rcfile build_tools/pylint.rc -f parseable reflectivity_ui/interfaces/data_handling reflectivity_ui/interfaces/event_handlers || exit 0
+  - coverage run test/data_handling_test.py
