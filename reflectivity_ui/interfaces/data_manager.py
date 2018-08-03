@@ -159,12 +159,12 @@ class DataManager(object):
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
                     self.reduction_states = self.data_sets.keys()
-                # Append to the reduction list, but keep the Q ordering
-                q_min, _ = self._nexus_data.get_q_range()
+                # Append to the reduction list, but keep the run number ordering
+                run_no = self._nexus_data.number
                 is_inserted = False
                 for i in range(len(self.reduction_list)):
-                    _q_min, _ = self.reduction_list[i].get_q_range()
-                    if q_min < _q_min:
+                    _run_no = self.reduction_list[i].number
+                    if run_no < _run_no:
                         self.reduction_list.insert(i, self._nexus_data)
                         is_inserted = True
                         break

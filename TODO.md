@@ -19,10 +19,8 @@ To-do list:
 - Plotting: allow for log(x)
 - Plot slices in 2D off-specular data
 - When loading a reduced file, the table of DB is not updated. (Rows are added but are blank)
-- SORT RUNS WHEN LOADING REDUCED FILE
 
 ## Data Manager Design
-- Improve data manager design to handle direct beams more cleanly
 - Figure out which cross-section to use for the direct beam if there are more than a single one.
 - Deal with peak position when it's not in the middle of the range
 - Emptying cache should also delete the mantid workspaces
@@ -48,6 +46,8 @@ To-do list:
 - Test Genx output
 
 ## DONE
+- Improve data manager design to handle direct beams more cleanly
+- SORT RUNS WHEN LOADING REDUCED FILE
 - Add progress bar
 - Normalize output to 1 (broken when turned off).
 - Norm TOF-lambda doesn't work.
