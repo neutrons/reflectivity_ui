@@ -34,8 +34,8 @@ install:
   - pip install --upgrade codecov
   
 script:
-  - chmod 755 build_tools/travis_ci_build.sh
-  - /bin/sh -xe build_tools/travis_ci_build.sh
+  - python setup.py install
+  - coverage run test/data_handling_test.py
 
 after_success:
   - codecov
