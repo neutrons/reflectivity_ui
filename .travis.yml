@@ -34,7 +34,7 @@ install:
   - pip install --upgrade codecov
   
   # - conda config --add channels conda-forge      # add conda-forge channel
-  # - conda install -c mantid mantid-framework
+  # - conda install -c mantid/label/nightly mantid-framework
 
 script:
   - chmod 755 build_tools/travis_ci_build.sh
