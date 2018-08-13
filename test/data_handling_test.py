@@ -14,8 +14,5 @@ class DataLoaderTest(unittest.TestCase):
         self.assertEqual(data_list[0][2].peak_position, 179.5)
         self.assertEqual(data_list[0][2].normalization, 28610)
 
-    def test_failure(self):
-        raise RuntimeError("TEST")
-
 if __name__ == '__main__':
     unittest.main()
