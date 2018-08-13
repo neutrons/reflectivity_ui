@@ -30,12 +30,9 @@ install:
   - source activate test-environment
   - conda config --add channels conda-forge
   - conda config --add channels mantid
-  - conda install --yes -c mantid mantid-framework
+  - conda install --yes -c mantid/label/nightly mantid-framework
   - pip install --upgrade codecov
   
-  # - conda config --add channels conda-forge      # add conda-forge channel
-  # - conda install -c mantid/label/nightly mantid-framework
-
 script:
   - chmod 755 build_tools/travis_ci_build.sh
   - /bin/sh -xe build_tools/travis_ci_build.sh
