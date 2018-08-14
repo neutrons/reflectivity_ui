@@ -1,4 +1,6 @@
 import unittest
+import sys
+sys.path.append('..')
 import os
 
 from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file

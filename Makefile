@@ -17,8 +17,5 @@ compile_ui:
 rpm:
 	python setup.py bdist_rpm
 
-test:
-	cd $(prefix)/app; python manage.py test
-
 .PHONY: check
 .PHONY: install
