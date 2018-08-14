@@ -8,8 +8,8 @@ import sys
 import os
 import logging
 from PyQt5 import QtCore, QtWidgets
+import reflectivity_ui
 import reflectivity_ui.interfaces.generated.ui_main_window
-
 from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from .data_manager import DataManager
@@ -38,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # Initialize the UI widgets
         self.ui = reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle(u'QuickNXS %s' % reflectivity_ui.__version__)
 
         # Application settings
         self.settings = QtCore.QSettings('.refredm')

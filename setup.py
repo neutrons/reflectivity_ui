@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 from setuptools import setup, find_packages
 import os
+import reflectivity_ui
 
 if 'pyuic' in sys.argv[:]:
     indir = 'designer'
@@ -39,7 +40,7 @@ if 'pyrcc' in sys.argv[:]:
 package_data = {"reflectivity_ui.interfaces.data_handling": ["genx_templates/*.gx",]}
 
 setup(name="reflectivity_ui",
-      version='0.4.0',
+      version=reflectivity_ui.__version__,
       description = "Magnetic Reflectivity Reduction",
       url = "https://github.com/mdoucet/reflectivity_ui",
       long_description = """Desktop application for magnetic reflectivity reduction""",

@@ -18,7 +18,7 @@ application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 # Set Mantid logging level to warnings
-api.ConfigService.setConsoleLogLevel(3)
+#api.ConfigService.setConsoleLogLevel(3)
 
 from .data_info import DataInfo
 from . import off_specular
