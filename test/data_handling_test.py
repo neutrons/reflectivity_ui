@@ -4,7 +4,8 @@ sys.path.append('..')
 import os
 
 from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
-
+from reflectivity_ui.interfaces.data_manager import DataManager
+from reflectivity_ui.interfaces.configuration import Configuration
 
 class DataLoaderTest(unittest.TestCase):
     def test_simple_load(self):
@@ -15,6 +16,11 @@ class DataLoaderTest(unittest.TestCase):
         self.assertEqual(len(data_list), 7)
         self.assertEqual(data_list[0][2].peak_position, 179.5)
         self.assertEqual(data_list[0][2].normalization, 28610)
+
+class DataManagerTest(unittest.TestCase):
+    def test_manager(self):
+        manager = DataManager(os.getcwd())
+        manager.load("REF_M_29160", Configuration())
 
 if __name__ == '__main__':
     unittest.main()
