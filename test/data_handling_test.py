@@ -82,13 +82,5 @@ class DataManagerTest(unittest.TestCase):
         manager = DataManager(os.getcwd())
         manager.load_data_from_reduced_file('data/REF_M_29160_Specular_++.dat')
 
-class ConfigTest(unittest.TestCase):
-    def test_config(self):
-        from PyQt5 import QtCore
-        settings = QtCore.QSettings('.tmp')
-        c = Configuration(settings=settings)
-        c.to_q_settings(settings)
-        c.from_q_settings(settings)
-
 if __name__ == '__main__':
     unittest.main()
