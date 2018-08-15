@@ -70,6 +70,7 @@ class DataManagerTest(unittest.TestCase):
         manager.set_active_data_from_direct_beam_list(0)
         manager.calculate_reflectivity()
         manager.calculate_reflectivity(specular=False)
+        manager.strip_overlap()
 
         dm.generate_script(manager.reduction_list, manager.reduction_states[0])
         dm.stitch_reflectivity(manager.reduction_list)
