@@ -72,11 +72,11 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     # Direct beam section
     i_direct_beam = 0
     for data_set in reduction_list:
-        i_direct_beam += 1
         run_object = data_set.cross_sections[pol_list[0]].reflectivity_workspace.getRun()
         normalization_run = run_object.getProperty("normalization_run").value
         if normalization_run == "None":
             continue
+        i_direct_beam += 1
         peak_min = run_object.getProperty("norm_peak_min").value
         peak_max = run_object.getProperty("norm_peak_max").value
         bg_min = run_object.getProperty("norm_bg_min").value
@@ -115,7 +115,6 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     i_direct_beam = 0
 
     for data_set in reduction_list:
-        i_direct_beam += 1
         conf = data_set.cross_sections[pol_list[0]].configuration
         ws = data_set.cross_sections[pol_list[0]].reflectivity_workspace
         run_object = ws.getRun()
@@ -148,7 +147,14 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
             pixel_width = 0.0007
         tth -= ((direct_beam_pix - scatt_pos) * pixel_width) / det_distance * 180.0 / math.pi
 
-        item = dict(scale=scaling_factor, DB_ID=i_direct_beam,
+        normalization_run = run_object.getProperty("normalization_run").value
+        if normalization_run == "None":
+            db_id = 0
+        else:
+            i_direct_beam += 1
+            db_id = i_direct_beam
+
+        item = dict(scale=scaling_factor, DB_ID=db_id,
                     P0=conf.cut_first_n_points, PN=conf.cut_last_n_points, tth=tth,
                     fan=constant_q_binning,
                     x_pos=scatt_pos,
@@ -291,7 +297,8 @@ def read_reduced_file(file_path, configuration=None):
                     conf.bck_position = float(toks[8])
                     conf.bck_width = float(toks[9])
                     conf.direct_pixel_overwrite = int(toks[11])
-                    conf.normalization = direct_beam_runs[int(toks[14])-1][0]
+                    if int(toks[14]) > 0 and len(direct_beam_runs) > int(toks[14])-1:
+                        conf.normalization = direct_beam_runs[int(toks[14])-1][0]
                     run_number = int(toks[13])
                     run_file = toks[-1]
                     if run_file.endswith('histo.nxs'):
