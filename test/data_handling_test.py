@@ -22,5 +22,18 @@ class DataManagerTest(unittest.TestCase):
         manager = DataManager(os.getcwd())
         manager.load("REF_M_29160", Configuration())
 
+        self.assertEqual(manager.current_file, "REF_M_29160")
+
+        manager.add_active_to_reduction()
+        self.assertEqual(manager.find_data_in_reduction_list(manager._nexus_data), 0)
+        self.assertEqual(manager.find_data_in_direct_beam_list(manager._nexus_data), None)
+
+        self.assertTrue(manager.add_active_to_normalization())
+        self.assertEqual(manager.remove_active_from_normalization(), 0)
+
+        manager.set_active_data_from_reduction_list(0)
+        manager.set_active_data_from_direct_beam_list(0)
+
+
 if __name__ == '__main__':
     unittest.main()
