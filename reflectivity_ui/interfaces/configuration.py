@@ -239,7 +239,10 @@ class Configuration(object):
         self.off_spec_x_axis = int(settings.value('off_spec_x_axis', self.off_spec_x_axis))
         self.off_spec_slice = _verify_true('off_spec_slice', self.off_spec_slice)
         default = ','.join([str(x) for x in self.off_spec_qz_list])
-        self.off_spec_qz_list = [float(x) for x in settings.value('off_spec_qz_list', default).split(',')]
+        try:
+            self.off_spec_qz_list = [float(x) for x in settings.value('off_spec_qz_list', default).split(',')]
+        except:
+            self.off_spec_qz_list = []
         self.off_spec_err_weight = _verify_true('off_spec_err_weight', self.off_spec_err_weight)
         self.off_spec_nxbins = int(settings.value('off_spec_nxbins', self.off_spec_nxbins))
         self.off_spec_nybins = int(settings.value('off_spec_nybins', self.off_spec_nybins))
