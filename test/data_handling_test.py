@@ -48,7 +48,6 @@ class DataLoaderTest(unittest.TestCase):
 
 class DataManagerTest(unittest.TestCase):
 
-    @unittest.skip("skipping")
     def test_manager(self):
         manager = DataManager(os.getcwd())
         manager.load("REF_M_29160", Configuration())
@@ -64,8 +63,8 @@ class DataManagerTest(unittest.TestCase):
 
         manager.set_active_data_from_reduction_list(0)
         manager.set_active_data_from_direct_beam_list(0)
+        manager.calculate_reflectivity()
 
-    @unittest.skip("skipping")
     def test_load_reduced(self):
         manager = DataManager(os.getcwd())
         manager.load_data_from_reduced_file('data/REF_M_29160_Specular_++.dat')
