@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 import os
 
+import reflectivity_ui.interfaces.data_handling.data_manipulation as dm
 from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
 from reflectivity_ui.interfaces.data_manager import DataManager
 from reflectivity_ui.interfaces.configuration import Configuration
@@ -58,12 +59,23 @@ class DataManagerTest(unittest.TestCase):
         self.assertEqual(manager.find_data_in_reduction_list(manager._nexus_data), 0)
         self.assertEqual(manager.find_data_in_direct_beam_list(manager._nexus_data), None)
 
+        q_range = manager._nexus_data.get_q_range()
+        self.assertAlmostEqual(q_range[0], 0.034, delta=0.05)
+        self.assertAlmostEqual(q_range[1], 0.068, delta=0.05)
+
         self.assertTrue(manager.add_active_to_normalization())
         self.assertEqual(manager.remove_active_from_normalization(), 0)
 
         manager.set_active_data_from_reduction_list(0)
         manager.set_active_data_from_direct_beam_list(0)
         manager.calculate_reflectivity()
+        manager.calculate_reflectivity(specular=False)
+
+        dm.generate_script(manager.reduction_list, manager.reduction_states[0])
+        dm.stitch_reflectivity(manager.reduction_list)
+        dm.merge_reflectivity(manager.reduction_list, manager.reduction_states[0])
+        dm.get_scaled_workspaces(manager.reduction_list, manager.reduction_states[0])
+        dm.stitch_reflectivity(manager.reduction_list)
 
     def test_load_reduced(self):
         manager = DataManager(os.getcwd())
