@@ -14,8 +14,6 @@ import matplotlib.cm
 import matplotlib.colors
 from reflectivity_ui.config import plotting
 
-# set the default backend to be compatible with Qt in case someone uses pylab from IPython console
-matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.cbook import Stack

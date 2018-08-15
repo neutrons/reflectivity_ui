@@ -4,6 +4,10 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 import sys
+# Avoid clash with user-installed packages
+for item in sys.path:
+    if '.local' in item and 'reflectivity_ui' not in item:
+        sys.path.remove(item)
 import os
 import logging
 import logging.handlers
@@ -29,6 +33,15 @@ def no_abort_excepthook(exc_type, value, tback):
     sys.__excepthook__(exc_type, value, tback)
 
 sys.excepthook = no_abort_excepthook
+
+# Set Qt5Agg now so matplotlib doesn't complain later
+import matplotlib
+matplotlib.use('Qt5Agg')
+
+import reflectivity_ui
+print("##################################################")
+print("# QuickNXS %s " % reflectivity_ui.__version__)
+print("##################################################")
 
 from PyQt5.QtWidgets import QApplication
 from reflectivity_ui.interfaces.main_window import MainWindow
