@@ -2,13 +2,11 @@
 """
     Start script for reduction application
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function
 import sys
-# Avoid clash with user-installed packages
-for item in sys.path:
-    if '.local' in item and 'reflectivity_ui' not in item:
-        sys.path.remove(item)
 import os
+import types
+
 import logging
 import logging.handlers
 
@@ -34,13 +32,33 @@ def no_abort_excepthook(exc_type, value, tback):
 
 sys.excepthook = no_abort_excepthook
 
+# Avoid clash with user-installed packages
+for item in sys.path:
+    if '.local' in item and 'reflectivity_ui' not in item:
+        sys.path.remove(item)
+    for item in sys.modules:
+        m = sys.modules.setdefault(item, types.ModuleType(item))
+        if m is not None:
+            mp = m.__dict__.setdefault('__path__',[])
+            for loc in mp:
+                if '.local' in loc and 'reflectivity_ui' not in loc:
+                    logging.warning("Removing local reference to %s" % loc)
+                    mp.remove(loc)
+
 # Set Qt5Agg now so matplotlib doesn't complain later
 import matplotlib
 matplotlib.use('Qt5Agg')
 
+# Import mantid according to the application configuration
+# Do it here to enforce the correct version
+from reflectivity_ui.interfaces.data_handling import ApplicationConfiguration
+application_conf = ApplicationConfiguration()
+sys.path.insert(0, application_conf.mantid_path)
+import mantid
 import reflectivity_ui
 print("##################################################")
 print("# QuickNXS %s " % reflectivity_ui.__version__)
+print("#    with Mantid: %s " % mantid.__version__)
 print("##################################################")
 
 from PyQt5.QtWidgets import QApplication
