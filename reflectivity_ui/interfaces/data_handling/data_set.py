@@ -341,6 +341,7 @@ class CrossSectionData(object):
     def __init__(self, name, configuration, entry_name='entry', workspace=None):
         self.name = name
         self.entry_name = entry_name
+        self.cross_section_label = entry_name
         self.measurement_type = 'polarized'
         self.configuration = copy.deepcopy(configuration)
         self.number = 0
@@ -387,6 +388,7 @@ class CrossSectionData(object):
         self.QzGrid = None
 
         if workspace:
+            self.get_cross_section_label(workspace)
             self.collect_info(workspace)
 
     ################## Properties for easy data access ##########################
@@ -466,6 +468,35 @@ class CrossSectionData(object):
 
     #pylint: enable=missing-docstring
     ################## Properties for easy data access ##########################
+    def get_cross_section_label(self, ws):
+        """
+            Return the proper cross-section label.
+        """
+        pol_is_on = self.entry_name.lower().startswith('on')
+        ana_is_on = self.entry_name.lower().endswith('on')
+
+        pol_label = ''
+        ana_label = ''
+
+        # Look for log that define whether OFF or ON is +
+        if 'PolarizerLabel' in ws.getRun():
+            pol_id = ws.getRun().getProperty("PolarizerLabel").value
+            if pol_id == 1:
+                pol_label = '+' if pol_is_on else '-'
+            elif pol_id == 0:
+                pol_label = '-' if pol_is_on else '+'
+
+        if 'AnalyzerLabel' in ws.getRun():
+            ana_id = ws.getRun().getProperty("AnalyzerLabel").value
+            if ana_id == 1:
+                ana_label = '+' if ana_is_on else '-'
+            elif ana_id == 0:
+                ana_label = '-' if ana_is_on else '-'
+
+        if ana_label == '' and pol_label == '':
+            self.cross_section_label = self.entry_name
+        else:
+            self.cross_section_label = '%s: %s%s' % (self.entry_name, pol_label, ana_label)
 
     def collect_info(self, workspace):
         """

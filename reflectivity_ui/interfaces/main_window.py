@@ -109,9 +109,6 @@ class MainWindow(QtWidgets.QMainWindow,
         self.ui.counts_roi_label.hide()
         self.ui.eventActive.hide()
 
-        # Hide quick reduce button
-        self.ui.load_live_data_button.hide()
-
     # Actions defined in Qt Designer
     def file_open_dialog(self):
         """
@@ -379,11 +376,13 @@ class MainWindow(QtWidgets.QMainWindow,
     def loadExtraction(self):
         self.file_handler.open_reduced_file_dialog()
 
+    def refresh_file_list(self):
+        self.file_handler.update_file_list()
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self): return NotImplemented
     def fileOpenSumDialog(self): return NotImplemented
-    def live_open(self): return NotImplemented
 
     # From the Advanced menu
     def open_advanced_background(self): return NotImplemented

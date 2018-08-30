@@ -320,7 +320,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="load_live_data_button">
+           <widget class="QPushButton" name="refresh_list">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -328,7 +328,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Load Live Data</string>
+             <string>Refresh</string>
             </property>
            </widget>
           </item>
@@ -363,7 +363,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
+             <width>367</width>
              <height>183</height>
             </rect>
            </property>
@@ -634,7 +634,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
+             <width>367</width>
              <height>183</height>
             </rect>
            </property>
@@ -830,7 +830,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
+             <width>367</width>
              <height>183</height>
             </rect>
            </property>
@@ -1815,7 +1815,10 @@
                   <item>
                    <widget class="QLabel" name="label_18">
                     <property name="text">
-                     <string>Cross sections:</string>
+                     <string>Cross sections:   </string>
+                    </property>
+                    <property name="margin">
+                     <number>10</number>
                     </property>
                    </widget>
                   </item>
@@ -3305,7 +3308,7 @@
      <x>0</x>
      <y>0</y>
      <width>1843</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuReduction">
@@ -4814,10 +4817,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>load_live_data_button</sender>
+   <sender>refresh_list</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>live_open()</slot>
+   <slot>refresh_file_list()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>205</x>
@@ -4930,7 +4933,7 @@
   <slot>open_rawdata_dialog()</slot>
   <slot>raiseError()</slot>
   <slot>set_debug()</slot>
-  <slot>live_open()</slot>
+  <slot>refresh_file_list()</slot>
   <slot>open_logfile_viewer()</slot>
   <slot>match_direct_beam_clicked()</slot>
   <slot>reduction_cell_activated(int,int)</slot>

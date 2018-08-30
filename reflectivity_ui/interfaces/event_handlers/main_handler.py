@@ -109,7 +109,8 @@ class MainHandler(object):
         channels = self._data_manager.data_sets.keys()
         for i, channel in enumerate(channels):
             getattr(self.ui, 'selectedChannel%i'%i).show()
-            getattr(self.ui, 'selectedChannel%i'%i).setText(channel)
+            getattr(self.ui, 'selectedChannel%i'%i).setText(self._data_manager.data_sets[channel].cross_section_label)
+            #getattr(self.ui, 'selectedChannel%i'%i).setText(channel)
         for i in range(len(channels), 12):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
         self.main_window.auto_change_active = False
