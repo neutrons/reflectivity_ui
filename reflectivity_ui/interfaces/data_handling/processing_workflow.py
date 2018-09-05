@@ -1,6 +1,5 @@
 """
     Data processing workflow, taking results and writing them to files.
-    #TODO: write mantid script
 """
 #pylint: disable=bare-except, too-many-locals
 from __future__ import absolute_import, division, print_function
@@ -11,16 +10,6 @@ import copy
 import logging
 import numpy as np
 from . import quicknxs_io, data_manipulation
-
-# Standard names for array outputs
-STD_CHANNELS = {'x': 'unpolarzip_templateed',
-                '+': 'up',
-                '-': 'down',
-                '++': 'upup',
-                '--': 'downdown',
-                '+-': 'updown',
-                '-+': 'downup',
-               }
 
 
 class ProcessingWorkflow(object):
@@ -101,14 +90,17 @@ class ProcessingWorkflow(object):
         five_cols = self.output_options['format_5cols']
         for pol_state in output_states:
             # The cross-sections might have different names
-            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
+            if pol_state in self.data_manager.reduction_list[0].cross_sections:
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
+            else:
+                _pol_state = pol_state
             # We might not have data for a given cross-section
-            if output_xs_name not in output_data:
+            if pol_state not in output_data:
                 continue
 
             state_output_path = output_file_base.replace('{state}', pol_state)
-            quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, pol_state)
-            quicknxs_io.write_reflectivity_data(state_output_path, output_data[output_xs_name],
+            quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list, state_output_path, _pol_state)
+            quicknxs_io.write_reflectivity_data(state_output_path, output_data[pol_state],
                                                 col_names, as_5col=five_cols)
 
     def write_genx(self, output_data, output_path):
@@ -141,15 +133,14 @@ class ProcessingWorkflow(object):
 
         model_data = cPickle.loads(zip_template.read('data'))
         for i, channel in enumerate(self.data_manager.reduction_states):
-            output_xs_name = STD_CHANNELS.get(channel, channel)
-            if output_xs_name not in output_data:
-                logging.error("Cross-section %s not in %s", output_xs_name, str(output_data.keys()))
+            if channel not in output_data:
+                logging.error("Cross-section %s not in %s", channel, str(output_data.keys()))
                 continue
-            model_data[i].x_raw = output_data[output_xs_name][:, 0]
-            model_data[i].y_raw = output_data[output_xs_name][:, 1]
-            model_data[i].error_raw = output_data[output_xs_name][:, 2]
-            model_data[i].xerror_raw = output_data[output_xs_name][:, 3]
-            model_data[i].name = output_data['cross_sections'][output_xs_name]
+            model_data[i].x_raw = output_data[channel][:, 0]
+            model_data[i].y_raw = output_data[channel][:, 1]
+            model_data[i].error_raw = output_data[channel][:, 2]
+            model_data[i].xerror_raw = output_data[channel][:, 3]
+            model_data[i].name = output_data['cross_sections'][channel]
             model_data[i].run_command()
         zip_output.writestr('data', cPickle.dumps(model_data, 0))
         zip_template.close()
@@ -270,9 +261,12 @@ class ProcessingWorkflow(object):
 
             rdata = np.array([x_tiled, y_tiled, r, dr]).transpose((1, 2, 0))
 
-            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
-            data_dict[output_xs_name] = [np.nan_to_num(rdata)]
-            data_dict["cross_sections"][output_xs_name] = pol_state
+            if pol_state in self.data_manager.reduction_list[0].cross_sections:
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
+            else:
+                _pol_state = pol_state
+            data_dict[pol_state] = [np.nan_to_num(rdata)]
+            data_dict["cross_sections"][pol_state] = _pol_state
 
             if q_data is not None and len(q_data) > 0:
                 for item in q_data:
@@ -290,7 +284,7 @@ class ProcessingWorkflow(object):
                          cross_sections={})
 
         # Extract common information
-        if len(self.data_manager.reduction_states) == 0:
+        if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
             logging.error("List of cross-sections is empty")
             return data_dict
 
@@ -320,9 +314,12 @@ class ProcessingWorkflow(object):
                 combined_data.append(rdata)
                 ki_max = max(ki_max, ki_z.max())
 
-            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
-            data_dict[output_xs_name] = combined_data
-            data_dict["cross_sections"][output_xs_name] = pol_state
+            if pol_state in self.data_manager.reduction_list[0].cross_sections:
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
+            else:
+                _pol_state = pol_state
+            data_dict[pol_state] = combined_data
+            data_dict["cross_sections"][pol_state] = _pol_state
         data_dict['ki_max'] = ki_max
         return data_dict
 
@@ -336,7 +333,7 @@ class ProcessingWorkflow(object):
                          cross_sections={})
 
         # Extract common information
-        if len(self.data_manager.reduction_states) == 0:
+        if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
             logging.error("List of cross-sections is empty")
             return data_dict
         first_state = self.data_manager.reduction_states[0]
@@ -369,34 +366,36 @@ class ProcessingWorkflow(object):
             ordered = np.argsort(_output_data, axis=0).transpose()[0]
             output_data = _output_data[ordered]
 
-            output_xs_name = STD_CHANNELS.get(pol_state, pol_state)
-            data_dict[output_xs_name] = output_data
-            data_dict["cross_sections"][output_xs_name] = pol_state
+            if pol_state in self.data_manager.reduction_list[0].cross_sections:
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
+            else:
+                _pol_state = pol_state
+            data_dict[pol_state] = output_data
+            data_dict["cross_sections"][pol_state] = _pol_state
 
         # Asymmetry
         if self.output_options['export_asym']:
             p_state, m_state = self.data_manager.determine_asymmetry_states()
-            p_state = STD_CHANNELS.get(p_state, p_state)
-            m_state = STD_CHANNELS.get(m_state, m_state)
+            if p_state and m_state:
+                # Get the list of workspaces
+                asym_data = []
+                if p_state in data_dict and m_state in data_dict:
+                    # Sometimes the number of points may be different if the last few points had no signal.
+                    for i in range(len(data_dict[p_state])):
+                        p_point = data_dict[p_state][i]
+                        for j in range(len(data_dict[m_state])):
+                            m_point = data_dict[m_state][j]
+                            if m_point[0] == p_point[0]:
+                                if p_point[1] > 0 and m_point[1] > 0:
+                                    ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
+                                    d_ratio = 2.0 / (p_point[1] + m_point[1])**2
+                                    d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
+                                    asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
+                                break
 
-            # Get the list of workspaces
-            asym_data = []
-            if p_state in data_dict and m_state in data_dict \
-                and len(data_dict[p_state]) == len(data_dict[m_state]):
-
-                for i in range(len(data_dict[p_state])):
-                    p_point = data_dict[p_state][i]
-                    m_point = data_dict[m_state][i]
-
-                    ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
-                    d_ratio = 2.0 / (p_point[1] + m_point[1])**2
-                    d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
-
-                    asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
-
-                data_dict['SA'] = np.asarray(asym_data)
-            else:
-                logging.error("Asym request but failed: %s %s %s %s", p_state, m_state,
-                              len(data_dict[p_state]), len(data_dict[m_state]))
+                    data_dict['SA'] = np.asarray(asym_data)
+                else:
+                    logging.error("Asym request but failed: %s %s %s %s", p_state, m_state,
+                                  len(data_dict[p_state]), len(data_dict[m_state]))
 
         return data_dict

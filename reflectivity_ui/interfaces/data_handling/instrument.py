@@ -24,6 +24,38 @@ h = 6.626e-34  # m^2 kg s^-1
 m = 1.675e-27  # kg
 
 
+def get_cross_section_label(ws, entry_name):
+    """
+        Return the proper cross-section label.
+    """
+    pol_is_on = entry_name.lower().startswith('on')
+    ana_is_on = entry_name.lower().endswith('on')
+
+    pol_label = ''
+    ana_label = ''
+
+    # Look for log that define whether OFF or ON is +
+    if 'PolarizerLabel' in ws.getRun():
+        pol_id = ws.getRun().getProperty("PolarizerLabel").value
+        if pol_id == 1:
+            pol_label = '+' if pol_is_on else '-'
+        elif pol_id == 0:
+            pol_label = '-' if pol_is_on else '+'
+
+    if 'AnalyzerLabel' in ws.getRun():
+        ana_id = ws.getRun().getProperty("AnalyzerLabel").value
+        if ana_id == 1:
+            ana_label = '+' if ana_is_on else '-'
+        elif ana_id == 0:
+            ana_label = '-' if ana_is_on else '-'
+
+    entry_name = entry_name.replace('_', '-')
+    if ana_label == '' and pol_label == '':
+        return entry_name
+    else:
+        return '%s%s' % (pol_label, ana_label)
+
+
 class Instrument(object):
     """
         Instrument class. Holds the data handling that is unique to a specific instrument.
@@ -207,6 +239,9 @@ class Instrument(object):
         # Convert to standard names
         data_object.direct_pixel = data_object.dpix
         data_object.angle_offset = data_object.dangle0
+
+        # Get proper cross-section label
+        data_object.cross_section_label = get_cross_section_label(workspace, data_object.entry_name)
 
     def integrate_detector(self, ws, specular=True):
         """

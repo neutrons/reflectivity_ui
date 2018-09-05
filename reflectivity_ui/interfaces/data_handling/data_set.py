@@ -194,7 +194,7 @@ class NexusData(object):
         #####################################################################
         _ws = ws if len(ws_list) > 1 else [ws]
         for xs in _ws:
-            xs_id = self.map_cross_section(xs)
+            xs_id = xs.getRun().getProperty("cross_section_id").value
             self.cross_sections[xs_id].q = xs.readX(0)[:].copy()
             self.cross_sections[xs_id]._r = xs.readY(0)[:].copy()
             self.cross_sections[xs_id]._dr = xs.readE(0)[:].copy()
@@ -253,16 +253,6 @@ class NexusData(object):
         for xs in self.cross_sections:
             self.cross_sections[xs].update_calculated_values()
 
-    def map_cross_section(self, ws):
-        """
-            Return the proper cross-section label for the provided workspace.
-            For legacy data, we just map Off to + and On to -.
-            #TODO: For new data, use the log entries to determine whether Off is + or -.
-            :param workspace ws: workspace to inspect
-        """
-        entry = ws.getRun().getProperty("cross_section_id").value
-        return XSECT_MAPPING.get('entry-%s' % entry, 'x')
-
     def load(self, update_parameters=True, progress=None):
         """
             Load cross-sections from a nexus file.
@@ -297,7 +287,7 @@ class NexusData(object):
                 logging.warn("Too few events for %s: %s", channel, ws.getNumberEvents())
                 continue
 
-            name = self.map_cross_section(ws)
+            name = ws.getRun().getProperty("cross_section_id").value
             cross_section = CrossSectionData(name, self.configuration, entry_name=channel, workspace=ws)
             self.cross_sections[name] = cross_section
             self.number = cross_section.number
@@ -388,7 +378,6 @@ class CrossSectionData(object):
         self.QzGrid = None
 
         if workspace:
-            self.get_cross_section_label(workspace)
             self.collect_info(workspace)
 
     ################## Properties for easy data access ##########################
@@ -468,36 +457,6 @@ class CrossSectionData(object):
 
     #pylint: enable=missing-docstring
     ################## Properties for easy data access ##########################
-    def get_cross_section_label(self, ws):
-        """
-            Return the proper cross-section label.
-        """
-        pol_is_on = self.entry_name.lower().startswith('on')
-        ana_is_on = self.entry_name.lower().endswith('on')
-
-        pol_label = ''
-        ana_label = ''
-
-        # Look for log that define whether OFF or ON is +
-        if 'PolarizerLabel' in ws.getRun():
-            pol_id = ws.getRun().getProperty("PolarizerLabel").value
-            if pol_id == 1:
-                pol_label = '+' if pol_is_on else '-'
-            elif pol_id == 0:
-                pol_label = '-' if pol_is_on else '+'
-
-        if 'AnalyzerLabel' in ws.getRun():
-            ana_id = ws.getRun().getProperty("AnalyzerLabel").value
-            if ana_id == 1:
-                ana_label = '+' if ana_is_on else '-'
-            elif ana_id == 0:
-                ana_label = '-' if ana_is_on else '-'
-
-        if ana_label == '' and pol_label == '':
-            self.cross_section_label = self.entry_name
-        else:
-            self.cross_section_label = '%s: %s%s' % (self.entry_name, pol_label, ana_label)
-
     def collect_info(self, workspace):
         """
             Extract meta data from DASLogs.

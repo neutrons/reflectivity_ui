@@ -485,10 +485,17 @@ class DataManager(object):
 
         # - For the traditional four states, pick the right ones by hand
         elif len(self.reduction_states) == 4:
-            if '++' in self.reduction_states \
-            and '--' in self.reduction_states:
-                p_state = '++'
-                m_state = '--'
+            _p_state_data = None
+            _m_state_data = None
+            for item in self.reduction_states:
+                if self.data_sets[item].cross_section_label == '++':
+                    _p_state_data = item
+                if self.data_sets[item].cross_section_label == '--':
+                    _m_state_data = item
+
+            if _p_state_data is None or _m_state_data is None:
+                _p_state_data = None
+                _m_state_data = None
 
         # - If we haven't made sense of it yet, take the first and last cross-sections 
         if p_state is None and m_state is None and len(self.reduction_states)>=2:
@@ -532,7 +539,7 @@ class DataManager(object):
         logging.info("Reduced file loaded: %s sec", time.time()-t_0)
 
         n_loaded = 0
-        n_total = 1.0+len(db_files)+len(data_files)
+        n_total = len(db_files)+len(data_files)
         if progress:
             progress.set_value(1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total)
         for r_id, run_file, conf in db_files:
@@ -562,5 +569,8 @@ class DataManager(object):
                 if progress:
                     progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
             n_loaded += 1
+
+        if progress:
+            progress.set_value(n_total, message="Done", out_of=n_total)
 
         logging.info("DONE: %s sec", time.time()-t_0)
