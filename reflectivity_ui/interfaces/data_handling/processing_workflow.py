@@ -12,14 +12,29 @@ import numpy as np
 from . import quicknxs_io, data_manipulation
 
 
+DEFAULT_OPTIONS = dict(export_specular=True,
+                       export_asym=False,
+                       export_gisans=False,
+                       export_offspec=False,
+                       export_offspec_smooth=False,
+                       format_genx=False,
+                       format_matlab=False,
+                       format_mantid=True,
+                       format_multi=True,
+                       format_numpy=False,
+                       format_5cols=False,
+                       output_sample_size=10,
+                       output_directory='',
+                       output_file_template='(instrument)_{numbers}_{item}_{state}.{type}')
+
+
 class ProcessingWorkflow(object):
     """
         Carry out the reduction process for a set of data runs and manages outputs
     """
-    def __init__(self, data_manager, output_options):
+    def __init__(self, data_manager, output_options=None):
         self.data_manager = data_manager
-        self.output_options = output_options
-        self.output_data_dict = {}
+        self.output_options = output_options if output_options else DEFAULT_OPTIONS
 
     def execute(self, progress=None):
         """

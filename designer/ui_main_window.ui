@@ -356,14 +356,14 @@
            <number>0</number>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>367</width>
+             <width>348</width>
              <height>183</height>
             </rect>
            </property>
@@ -634,7 +634,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>367</width>
+             <width>348</width>
              <height>183</height>
             </rect>
            </property>
@@ -830,7 +830,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>367</width>
+             <width>348</width>
              <height>183</height>
             </rect>
            </property>
@@ -1958,7 +1958,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
@@ -3123,7 +3123,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="CompareWidget" name="widget_5" native="true"/>
+          <widget class="CompareWidget" name="compare_widget" native="true"/>
          </item>
         </layout>
        </widget>

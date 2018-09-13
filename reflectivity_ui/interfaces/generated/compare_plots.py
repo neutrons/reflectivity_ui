@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from .ui_compare_widget import Ui_Form
+from ..data_handling.processing_workflow import ProcessingWorkflow
+
 
 class CompareWidget(QtWidgets.QWidget):
     changing_table=False
@@ -28,6 +30,27 @@ class CompareWidget(QtWidgets.QWidget):
         self.settings = QtCore.QSettings('.refredm')
         current_dir = self.settings.value('current_directory', os.path.expanduser('~'))
         self.active_folder = self.settings.value('compare_directory', current_dir)
+        self.data_manager = None
+        self.refl_data = None
+        self.show_preview = False
+
+    def refl_preview(self, checked=True):
+        """
+            Call-back method for when the user toggles the preview check box
+        """
+        self.show_preview = checked
+        if checked:
+            self.update_preview()
+        self.draw()
+
+    def update_preview(self):
+        """
+            Update the preview data
+        """
+        if self.data_manager:
+            workflow = ProcessingWorkflow(self.data_manager)
+            self.refl_data = workflow.get_output_data()
+            self.draw()
 
     def open_file(self):
         """
@@ -103,6 +126,12 @@ class CompareWidget(QtWidgets.QWidget):
             return
         try:
             self.ui.comparePlot.clear()
+            if self.show_preview and self.refl_data:
+                pol_states = self.refl_data['cross_sections'].keys()
+                for key in pol_states:
+                    _data = self.refl_data[key]
+                    data = _data.T
+                    self.ui.comparePlot.errorbar(data[0], data[1], data[2], label=key)
             header = self.ui.compareList.verticalHeader()
             for i in range(self.ui.compareList.rowCount()):
                 idx = header.logicalIndex(i)
@@ -114,7 +143,7 @@ class CompareWidget(QtWidgets.QWidget):
                     logging.error("No data for %s", name)
                     continue
                 self.ui.comparePlot.errorbar(data[0], data[1], data[2], label=label, color=color)
-            if self.ui.compareList.rowCount()>0:
+            if self.refl_data or self.ui.compareList.rowCount()>0:
                 self.ui.comparePlot.legend(frameon=False)
                 self.ui.comparePlot.canvas.ax.set_yscale('log')
                 self.ui.comparePlot.set_xlabel(u'Q$_z$ [Å$^{-1}$]')

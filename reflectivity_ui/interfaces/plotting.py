@@ -427,16 +427,19 @@ class PlotManager(object):
                 PN = nexus_data.configuration.cut_last_n_points
                 ki_z, kf_z = selected_data.off_spec.ki_z, selected_data.off_spec.kf_z
                 Qx, Qz, S =  selected_data.off_spec.Qx, selected_data.off_spec.Qz, selected_data.off_spec.S
-                qz_max = max(Qz[S>0].max(), qz_max)
-                qz_min = min(Qz[S>0].min(), qz_min)
-                qx_min = min(qx_min, Qx[S>0].min())
-                qx_max = max(qx_max, Qx[S>0].max())
-                ki_z_min = min(ki_z_min, ki_z[S>0].min())
-                ki_z_max = max(ki_z_max, ki_z[S>0].max())
-                kf_z_min = min(kf_z_min, kf_z[S>0].min())
-                kf_z_max = max(kf_z_max, kf_z[S>0].max())
-                k_diff_min = min(k_diff_min, (ki_z-kf_z)[S>0].min())
-                k_diff_max = max(k_diff_max, (ki_z-kf_z)[S>0].max())
+                try:
+                    qz_max = max(Qz[S>0].max(), qz_max)
+                    qz_min = min(Qz[S>0].min(), qz_min)
+                    qx_min = min(qx_min, Qx[S>0].min())
+                    qx_max = max(qx_max, Qx[S>0].max())
+                    ki_z_min = min(ki_z_min, ki_z[S>0].min())
+                    ki_z_max = max(ki_z_max, ki_z[S>0].max())
+                    kf_z_min = min(kf_z_min, kf_z[S>0].min())
+                    kf_z_max = max(kf_z_max, kf_z[S>0].max())
+                    k_diff_min = min(k_diff_min, (ki_z-kf_z)[S>0].min())
+                    k_diff_max = max(k_diff_max, (ki_z-kf_z)[S>0].max())
+                except:
+                    logging.error("Error computing ranges: %s", sys.exc_info()[1])
                 if self.main_window.ui.kizmkfzVSqz.isChecked():
                     plot.pcolormesh((ki_z-kf_z)[:, PN:P0],
                                     Qz[:, PN:P0], S[:, PN:P0], log=True,

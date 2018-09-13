@@ -105,6 +105,13 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
+           <widget class="QCheckBox" name="refl_preview_checkbox">
+            <property name="text">
+             <string>R(q) preview</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButton">
             <property name="text">
              <string>Clear</string>
@@ -206,11 +213,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>refl_preview_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Form</receiver>
+   <slot>refl_preview(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1067</x>
+     <y>523</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>573</x>
+     <y>350</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>open_file()</slot>
   <slot>clear_plot()</slot>
   <slot>draw()</slot>
   <slot>edit_cell(int,int)</slot>
+  <slot>refl_preview(bool)</slot>
  </slots>
 </ui>

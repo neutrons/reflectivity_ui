@@ -52,6 +52,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # Event handlers
         self.plot_handler = PlotHandler(self)
         self.file_handler = MainHandler(self)
+        self.ui.compare_widget.data_manager = self.data_manager
 
         # Initialization for specific instrument
         # Retrieve configuration from config and enable/disable features
@@ -180,14 +181,16 @@ class MainWindow(QtWidgets.QMainWindow,
             self._gisansThread=None
         if self.ui.plotTab.currentIndex()==0:
             self.plot_manager.plot_overview()
-        if self.ui.plotTab.currentIndex()==1:
+        elif self.ui.plotTab.currentIndex()==1:
             self.plot_manager.plot_xy()
-        if self.ui.plotTab.currentIndex()==2:
+        elif self.ui.plotTab.currentIndex()==2:
             self.plot_manager.plot_xtof()
-        if self.ui.plotTab.currentIndex()==3:
+        elif self.ui.plotTab.currentIndex()==3:
             self.plot_manager.plot_offspec()
-        if self.ui.plotTab.currentIndex()==4:
+        elif self.ui.plotTab.currentIndex()==4:
             self.plot_manager.plot_gisans()
+        elif self.ui.plotTab.currentIndex()==6:
+            self.ui.compare_widget.draw()
 
     def toggleColorbars(self):
         """ Refresh plots because of a color or scale change """
