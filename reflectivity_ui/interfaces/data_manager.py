@@ -540,7 +540,7 @@ class DataManager(object):
 
         n_loaded = 0
         n_total = len(db_files)+len(data_files)
-        if progress:
+        if progress and n_total > 0:
             progress.set_value(1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total)
         for r_id, run_file, conf in db_files:
             t_i = time.time()

@@ -579,6 +579,7 @@ class PlotManager(object):
         self.main_window.ui.refl.toolbar.set_history_buttons()
         self.main_window.ui.refl.draw()
 
+        self.main_window.ui.compare_widget.update_preview()
         #self.refl=Reflectivity(data, **options)
         #self.ui.datasetAi.setText(u"%.3f°"%(self.refl.ai*180./pi))
         #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))

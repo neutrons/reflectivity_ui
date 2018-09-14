@@ -258,7 +258,7 @@ def read_reduced_file(file_path, configuration=None):
                     conf.low_res_width = float(toks[7])
                     conf.bck_position = float(toks[8])
                     conf.bck_width = float(toks[9])
-                    conf.direct_pixel_overwrite = int(toks[10])
+                    conf.direct_pixel_overwrite = float(toks[10])
                     run_number = int(toks[12])
                     run_file = toks[-1]
                     # This application only deals with event data, to be able to load
@@ -296,7 +296,7 @@ def read_reduced_file(file_path, configuration=None):
                     conf.low_res_width = float(toks[7])
                     conf.bck_position = float(toks[8])
                     conf.bck_width = float(toks[9])
-                    conf.direct_pixel_overwrite = int(toks[11])
+                    conf.direct_pixel_overwrite = float(toks[11])
                     if int(toks[14]) > 0 and len(direct_beam_runs) > int(toks[14])-1:
                         conf.normalization = direct_beam_runs[int(toks[14])-1][0]
                     run_number = int(toks[13])
