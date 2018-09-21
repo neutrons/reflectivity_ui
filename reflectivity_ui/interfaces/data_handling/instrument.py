@@ -9,6 +9,7 @@ import sys
 import os
 import math
 import logging
+import numpy as np
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -28,6 +29,7 @@ def get_cross_section_label(ws, entry_name):
     """
         Return the proper cross-section label.
     """
+    entry_name = str(entry_name)
     pol_is_on = entry_name.lower().startswith('on')
     ana_is_on = entry_name.lower().endswith('on')
 
@@ -37,6 +39,8 @@ def get_cross_section_label(ws, entry_name):
     # Look for log that define whether OFF or ON is +
     if 'PolarizerLabel' in ws.getRun():
         pol_id = ws.getRun().getProperty("PolarizerLabel").value
+        if isinstance(pol_id, np.ndarray):
+            pol_id = int(pol_id[0])
         if pol_id == 1:
             pol_label = '+' if pol_is_on else '-'
         elif pol_id == 0:
@@ -44,6 +48,8 @@ def get_cross_section_label(ws, entry_name):
 
     if 'AnalyzerLabel' in ws.getRun():
         ana_id = ws.getRun().getProperty("AnalyzerLabel").value
+        if isinstance(ana_id, np.ndarray):
+            ana_id = int(ana_id[0])
         if ana_id == 1:
             ana_label = '+' if ana_is_on else '-'
         elif ana_id == 0:

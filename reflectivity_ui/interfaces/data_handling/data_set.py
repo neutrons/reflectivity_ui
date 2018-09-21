@@ -24,19 +24,6 @@ from .data_info import DataInfo
 from . import off_specular
 
 ### Parameters needed for some calculations.
-
-ANALYZER_IN = (0., 100.) # position and maximum deviation of analyzer in it's working position
-POLARIZER_IN = (-348., 50.) # position and maximum deviation of polarizer in it's working position
-SUPERMIRROR_IN = (19.125, 10.) # position and maximum deviation of the supermirror translation
-POLY_CORR_PARAMS = [-4.74152261e-05, -4.62469580e-05, 1.25995446e-02, 2.13654008e-02,
-                    1.02334517e+01] # parameters used in polynomial detector sensitivity correction
-
-XSECT_MAPPING = {u'entry-Off_Off': u'++',
-                 u'entry-On_On': u'--',
-                 u'entry-Off_On': u'+-',
-                 u'entry-On_Off': u'-+',
-                }
-
 H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
 
 # Number of events under which we throw away a workspace
