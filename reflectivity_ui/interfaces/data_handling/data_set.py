@@ -135,6 +135,10 @@ class NexusData(object):
         ws_list = [self.cross_sections[xs]._event_workspace for xs in self.cross_sections]
         conf = self.cross_sections[self.main_cross_section].configuration
         wsg = api.GroupWorkspaces(InputWorkspaces=ws_list)
+
+        _dirpix = conf.direct_pixel_overwrite if conf.set_direct_pixel else None
+        _dangle0 = conf.direct_angle_offset_overwrite if conf.set_direct_angle_offset else None
+
         ws = api.MagnetismReflectometryReduction(InputWorkspace=wsg,
                                                  NormalizationWorkspace=ws_norm,
                                                  SignalPeakPixelRange=_as_ints(conf.peak_roi),
@@ -158,6 +162,8 @@ class NexusData(object):
                                                  TimeAxisRange=conf.tof_range,
                                                  SpecularPixel=conf.peak_position,
                                                  ConstantQBinning=conf.use_constant_q,
+                                                 DAngle0Overwrite=_dangle0,
+                                                 DirectPixelOverwrite=_dirpix,
                                                  OutputWorkspace=output_ws)
 
         ################## FOR COMPATIBILITY WITH QUICKNXS ##################
@@ -350,8 +356,8 @@ class CrossSectionData(object):
 
         self.meta_data_roi_peak = None
         self.meta_data_roi_bck = None
-        self.direct_pixel = 0
-        self.angle_offset = 0
+        self._direct_pixel = 0
+        self._angle_offset = 0
         self.scattering_angle = 0
         self._reflectivity_workspace = None
 
@@ -371,10 +377,46 @@ class CrossSectionData(object):
     # return the size of the data stored in memory for this dataset
     #pylint: disable=missing-docstring
     @property
+    def event_workspace(self):
+        if str(self._event_workspace) in api.mtd:
+            return api.mtd[self._event_workspace]
+        return None
+
+    @property
     def reflectivity_workspace(self):
         if str(self._reflectivity_workspace) in api.mtd:
             return api.mtd[self._reflectivity_workspace]
         return None
+
+    @property
+    def dpix(self):
+        logging.error("CrossSectionData.dpix is deprecated")
+        return self.direct_pixel
+
+    @property
+    def dangle0(self):
+        logging.error("CrossSectionData.dangle0 is deprecated")
+        return self.angle_offset
+
+    @property
+    def direct_pixel(self):
+        if self.configuration.set_direct_pixel:
+            return self.configuration.direct_pixel_overwrite 
+        return self._direct_pixel
+
+    @direct_pixel.setter
+    def direct_pixel(self, value):
+        self._direct_pixel = value
+
+    @property
+    def angle_offset(self):
+        if self.configuration.set_direct_angle_offset:
+            return self.configuration.direct_angle_offset_overwrite 
+        return self._angle_offset
+
+    @angle_offset.setter
+    def angle_offset(self, value):
+        self._angle_offset = value
 
     @property
     def nbytes(self): return self.data.nbytes
@@ -492,13 +534,6 @@ class CrossSectionData(object):
             Process loaded data
             :param bool update_parameters: If true, we will determine reduction parameters
         """
-        # Store some useful information
-        if self.configuration.set_direct_pixel:
-            self.direct_pixel = self.configuration.direct_pixel_overwrite
-
-        if self.configuration.set_direct_angle_offset:
-            self.angle_offset = self.configuration.direct_angle_offset_overwrite
-
         self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
 
         # Determine binning
@@ -641,6 +676,10 @@ class CrossSectionData(object):
         logging.info("Calc: %s %s %s", str(_as_ints(self.configuration.peak_roi)),
                       str(_as_ints(self.configuration.bck_roi)),
                       str(_as_ints(self.configuration.low_res_roi)))
+
+        _dirpix = configuration.direct_pixel_overwrite if configuration.set_direct_pixel else None
+        _dangle0 = configuration.direct_angle_offset_overwrite if configuration.set_direct_angle_offset else None
+
         ws = api.MagnetismReflectometryReduction(InputWorkspace=self._event_workspace,
                                                  NormalizationWorkspace=ws_norm,
                                                  SignalPeakPixelRange=_as_ints(self.configuration.peak_roi),
@@ -665,6 +704,8 @@ class CrossSectionData(object):
                                                  SpecularPixel=self.configuration.peak_position,
                                                  ConstantQBinning=self.configuration.use_constant_q,
                                                  #EntryName=str(self.entry_name),
+                                                 DAngle0Overwrite=_dangle0,
+                                                 DirectPixelOverwrite=_dirpix,
                                                  OutputWorkspace=output_ws)
 
         ################## FOR COMPATIBILITY WITH QUICKNXS ##################
@@ -728,7 +769,7 @@ class CrossSectionData(object):
         xtth = self.direct_pixel - np.arange(self.data.shape[0])[self.active_area_x[0]:
                                                                  self.active_area_x[1]]
         pix_offset_spec = self.direct_pixel - x_pos
-        delta_dangle = self.dangle - self.dangle0
+        delta_dangle = self.dangle - self.angle_offset
         tth_spec = delta_dangle * np.pi/180. + pix_offset_spec * rad_per_pixel
         af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
         ai = np.ones_like(af) * tth_spec / 2.

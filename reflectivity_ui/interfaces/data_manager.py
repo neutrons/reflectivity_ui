@@ -406,7 +406,9 @@ class DataManager(object):
                         closest = item.number
                     elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
                         closest = item.number
-        return self._nexus_data.set_parameter("normalization", closest)
+        if closest is not None:
+            return self._nexus_data.set_parameter("normalization", closest)
+        return False
 
     def get_trim_values(self):
         """

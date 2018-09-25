@@ -51,7 +51,7 @@ class OffSpecular(object):
         xtth = self.data_set.direct_pixel - np.arange(self.data_set.data.shape[0])[self.data_set.active_area_x[0]:
                                                                                    self.data_set.active_area_x[1]]
         pix_offset_spec = self.data_set.direct_pixel - x_pos
-        delta_dangle = self.data_set.dangle - self.data_set.dangle0
+        delta_dangle = self.data_set.dangle - self.data_set.angle_offset
         tth_spec = delta_dangle * np.pi/180. + pix_offset_spec * rad_per_pixel
         af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
         ai = np.ones_like(af) * tth_spec / 2.

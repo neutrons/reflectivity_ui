@@ -84,7 +84,7 @@ class PlotManager(object):
             phi_range=xy.shape[0]*rad_per_pixel*180./np.pi
             tth_range=xy.shape[1]*rad_per_pixel*180./np.pi
             phi0=main_window.ui.refYPos.value()*rad_per_pixel*180./np.pi
-            tth0=(data.dangle-data.dangle0)-(xy.shape[1]-data.dpix)*rad_per_pixel*180./np.pi
+            tth0=(data.dangle-data.angle_offset)-(xy.shape[1]-data.dpix)*rad_per_pixel*180./np.pi
             main_window.ui.xy_overview.imshow(xy, log=main_window.ui.logarithmic_colorscale.isChecked(),
                                               aspect='auto', cmap=self.color, origin='lower',
                                               extent=[tth_range+tth0, tth0, phi0, phi0-phi_range])
@@ -190,7 +190,7 @@ class PlotManager(object):
                 phi_range=datai.shape[0]*rad_per_pixel*180./np.pi
                 tth_range=datai.shape[1]*rad_per_pixel*180./np.pi
                 phi0=main_window.ui.refYPos.value()*rad_per_pixel*180./np.pi
-                tth0=(dataset.dangle-dataset.dangle0)-(datai.shape[1]-dataset.dpix)*rad_per_pixel*180./np.pi
+                tth0=(dataset.dangle-dataset.angle_offset)-(datai.shape[1]-dataset.dpix)*rad_per_pixel*180./np.pi
                 plots[i].imshow(datai, log=main_window.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
                                 aspect='auto', cmap=self.color, origin='lower',
                                 extent=[tth_range+tth0, tth0, phi0, phi0-phi_range])

@@ -146,7 +146,19 @@ class MainHandler(object):
         """
         d = self._data_manager.active_channel
         self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
-        #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
+
+        # DIRPIX and DANGLE0 overwrite
+        if self.ui.set_dangle0_checkbox.isChecked():
+            dangle0 = u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d._angle_offset)
+        else:
+            dangle0 = u"%.3f°"%(d.angle_offset)
+        self.ui.datasetDangle0.setText(dangle0)
+
+        if self.ui.set_dirpix_checkbox.isChecked():
+            dpix = u"%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d._direct_pixel)
+        else:
+            dpix = u"%.1f"%d.direct_pixel
+        self.ui.datasetDirectPixel.setText(dpix)
 
         if d.configuration.normalization is not None:
             self.ui.matched_direct_beam_label.setText(u"%s" % d.configuration.normalization)
@@ -164,14 +176,14 @@ class MainHandler(object):
         QtWidgets.QApplication.instance().processEvents()
 
         if self.ui.set_dangle0_checkbox.isChecked():
-            dangle0 = u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d.dangle0)
+            dangle0 = u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d.angle_offset)
         else:
-            dangle0 = u"%.3f°"%(d.dangle0)
+            dangle0 = u"%.3f°"%(d.angle_offset)
 
         if self.ui.set_dirpix_checkbox.isChecked():
-            dpix = u"%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d.dpix)
+            dpix = u"%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d.direct_pixel)
         else:
-            dpix = u"%.1f"%d.dpix
+            dpix = u"%.1f"%d.direct_pixel
 
         self.ui.datasetLambda.setText(u"%.2f (%.2f-%.2f) Å"%(d.lambda_center,
                                                              d.lambda_center-1.5,
@@ -745,6 +757,20 @@ class MainHandler(object):
 
         valid_change = valid_change or \
             not configuration.use_dangle == self.ui.trustDANGLE.isChecked()
+
+        valid_change = valid_change or \
+            not configuration.set_direct_pixel == self.ui.set_dirpix_checkbox.isChecked()
+
+        valid_change = valid_change or \
+            not configuration.set_direct_angle_offset == self.ui.set_dangle0_checkbox.isChecked()
+
+        if configuration.set_direct_pixel:
+            valid_change = valid_change or \
+                not configuration.direct_pixel_overwrite == self.ui.directPixelOverwrite.value()
+
+        if configuration.set_direct_angle_offset:
+            valid_change = valid_change or \
+                not configuration.direct_angle_offset_overwrite == self.ui.dangle0Overwrite.value()
 
         if valid_change:
             return 1

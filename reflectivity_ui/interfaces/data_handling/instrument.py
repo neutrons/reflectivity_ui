@@ -144,61 +144,44 @@ class Instrument(object):
         return xs_list
 
     @classmethod
-    def scattering_angle(cls, ws, peak_position=None):
-        """
-            Determine the scattering angle in degrees
-        """
-        return api.MRGetTheta(ws, SpecularPixel=peak_position) * 180.0 / math.pi
-
-    @classmethod
     def mid_q_value(cls, ws):
         """
             Get the mid q value, at the requested wl mid-point.
+            This is used when sorting out data sets and doesn't need any overwrites.
             :param workspace ws: Mantid workspace
         """
         wl = ws.getRun().getProperty('LambdaRequest').value[0]
-        theta_d = Instrument.scattering_angle(ws) * math.pi / 180.0
+        theta_d = api.MRGetTheta(ws)
         return 4.0*math.pi*math.sin(theta_d) / wl
-
-    @classmethod
-    def mid_q_value_from_data(cls, data_object):
-        """
-            Get the mid q value, at the requested wl mid-point.
-            :param workspace ws: Mantid workspace
-        """
-        theta_d = (data_object.dangle - data_object.dangle0) / 2.0 * math.pi / 180.0
-        return 4.0*math.pi*math.sin(theta_d) / data_object.lambda_center
 
     @classmethod
     def scattering_angle_from_data(cls, data_object):
         """
             Compute the scattering angle from a CrossSectionData object, in degrees.
-            #TODO: this will go away once we keep the workspace
-
             @param data_object: CrossSectionData object
         """
-        theta_d = (data_object.dangle - data_object.dangle0) / 2.0
-        theta_d += ((data_object.dpix - data_object.configuration.peak_position) * cls.pixel_width) * 180.0 / math.pi / (2.0 * data_object.dist_sam_det)
-        return theta_d
+        _dirpix = data_object.configuration.direct_pixel_overwrite if data_object.configuration.set_direct_pixel else None
+        _dangle0 = data_object.configuration.direct_angle_offset_overwrite if data_object.configuration.set_direct_angle_offset else None
 
-    def check_direct_beam(self, ws, peak_position=None):
+        return api.MRGetTheta(data_object.event_workspace,
+                              SpecularPixel=data_object.configuration.peak_position,
+                              DAngle0Overwrite=_dangle0,
+                              DirectPixelOverwrite=_dirpix) * 180.0 / math.pi
+
+    @classmethod
+    def check_direct_beam(cls, ws):
         """
             Determine whether this data is a direct beam
         """
-        sangle = ws.getRun().getProperty("SANGLE").getStatistics().mean
-        theta = self.scattering_angle(ws, peak_position)
-        huber_x = ws.getRun().getProperty("HuberX").getStatistics().mean
-        return not ((theta > self.tolerance or sangle > self.tolerance) and huber_x < self.huber_x_cut)
+        try:
+            return ws.getRun().getProperty("data_type").value[0] == 1
+        except:
+            return False
 
     def direct_beam_match(self, scattering, direct_beam, skip_slits=False):
         """
             Verify whether two data sets are compatible.
         """
-        if scattering.number == direct_beam.number \
-            or ((direct_beam.scattering_angle > self.tolerance \
-                 or direct_beam.sangle > self.tolerance) and direct_beam.huber_x < self.huber_x_cut):
-            logging.error("Run %s may not be a direct beam", direct_beam.number)
-
         if math.fabs(scattering.lambda_center-direct_beam.lambda_center) < self.tolerance \
             and (skip_slits or \
             (math.fabs(scattering.slit1_width-direct_beam.slit1_width) < self.tolerance \
@@ -218,8 +201,6 @@ class Instrument(object):
         data = workspace.getRun()
         data_object.lambda_center = data['LambdaRequest'].value[0]
         data_object.dangle = data['DANGLE'].value[0]
-        data_object.dangle0 = data['DANGLE0'].value[0]
-        data_object.dpix = data['DIRPIX'].value[0]
         data_object.slit1_width = data['S1HWidth'].value[0]
         data_object.slit2_width = data['S2HWidth'].value[0]
         data_object.slit3_width = data['S3HWidth'].value[0]
@@ -243,11 +224,15 @@ class Instrument(object):
         data_object.active_area_y = (8, 246)
 
         # Convert to standard names
-        data_object.direct_pixel = data_object.dpix
-        data_object.angle_offset = data_object.dangle0
+        data_object.direct_pixel = data['DIRPIX'].value[0]
+        data_object.angle_offset = data['DANGLE0'].value[0]
 
         # Get proper cross-section label
         data_object.cross_section_label = get_cross_section_label(workspace, data_object.entry_name)
+        try:
+            data_object.is_direct_beam = data["data_type"].value[0] == 1
+        except:
+            data_object.is_direct_beam = False
 
     def integrate_detector(self, ws, specular=True):
         """

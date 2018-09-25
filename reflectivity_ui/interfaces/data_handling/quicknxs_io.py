@@ -134,9 +134,6 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         # It seems to be because that same offset is applied later in the QuickNXS calculation.
         # Correct tth here so that it can load properly in QuickNXS and produce the same result.
         tth = run_object.getProperty("two_theta").value
-
-        #TODO: get scattering angle by calling data_set.configuration.instrument.scattering_angle()
-
         det_distance = run_object['SampleDetDis'].getStatistics().mean / 1000.0
         direct_beam_pix = run_object['DIRPIX'].getStatistics().mean
 

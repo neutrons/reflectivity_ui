@@ -174,7 +174,7 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
     meta_data = NexusMetaData()
 
     if cross_section_data is not None:
-        meta_data.mid_q = cross_section_data.configuration.instrument.mid_q_value_from_data(cross_section_data)
+        meta_data.mid_q = Instrument.mid_q_value(cross_section_data.event_workspace)
         meta_data.is_direct_beam = cross_section_data.is_direct_beam
         return meta_data
     elif file_path is None:
@@ -194,8 +194,7 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
                                 MetaDataOnly=True,
                                 NXentryName=str(keys[0]))
         meta_data.mid_q = Instrument.mid_q_value(ws)
-        if configuration is not None:
-            meta_data.is_direct_beam = configuration.instrument.check_direct_beam(ws)
+        meta_data.is_direct_beam = Instrument.check_direct_beam(ws)
     except:
         logging.error(sys.exc_value)
         raise RuntimeError("Could not load file %s [%s]" % (file_path, keys[0]))
