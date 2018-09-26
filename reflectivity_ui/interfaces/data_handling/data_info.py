@@ -4,6 +4,7 @@
 #pylint: disable=too-few-public-methods, wrong-import-position, too-many-instance-attributes, wrong-import-order
 from __future__ import absolute_import, division, print_function
 import sys
+import time
 import logging
 
 import numpy as np
@@ -24,6 +25,7 @@ class DataInfo(object):
     #n_events_cutoff = 2000
 
     def __init__(self, ws, cross_section, configuration):
+        t_0 = time.time()
         api.MRInspectData(Workspace=ws, UseROI=configuration.use_roi,
                           UpdatePeakRange=configuration.update_peak_range,
                           UseROIBck=configuration.use_roi_bck, UseTightBck=configuration.use_tight_bck,
@@ -31,7 +33,7 @@ class DataInfo(object):
                           ForcePeakROI=configuration.force_peak_roi, PeakROI=configuration.peak_roi,
                           ForceLowResPeakROI=configuration.force_low_res_roi, LowResPeakROI=configuration.low_res_roi,
                           ForceBckROI=configuration.force_bck_roi, BckROI=configuration.bck_roi)
-
+        t_1 = time.time()
         self.cross_section = cross_section
         self.run_number = ws.getRunNumber()
 
@@ -62,14 +64,13 @@ class DataInfo(object):
         improved_peaks = True
         if improved_peaks:
             fitter = Fitter(ws, False)
-            [peak_min, peak_max], [low_res_min, low_res_max] = fitter.fit_2d_peak()
-            logging.warning("New peak: %s %s", peak_min, peak_max)
+            peak_min = run_object.getProperty("peak_min").value
+            peak_max = run_object.getProperty("peak_max").value
+            #[peak_min, peak_max], [low_res_min, low_res_max] = fitter.fit_2d_peak()
+            [low_res_min, low_res_max] = fitter.fit_beam_width()
             if np.abs(peak_max-peak_min)<=1:
                     peak_min = peak_min-2
                     peak_max = peak_max+2
-            if np.abs(low_res_min-low_res_max)<=50:
-                low_res_min = run_object.getProperty("low_res_min").value
-                low_res_max = run_object.getProperty("low_res_max").value
         else:
             peak_min = run_object.getProperty("peak_min").value
             peak_max = run_object.getProperty("peak_max").value
@@ -90,6 +91,7 @@ class DataInfo(object):
         roi_background_min = run_object.getProperty("roi_background_min").value
         roi_background_max = run_object.getProperty("roi_background_max").value
         self.roi_background = [roi_background_min, roi_background_max]
+        logging.info("DataInfo: %s sec [MRInspectData: %s sec]", (time.time() - t_0), (t_1 - t_0))
 
 
 def coord_to_code(x, y):
@@ -168,6 +170,42 @@ class Fitter(object):
         if self.prepare_plot_data:
             self.plot_list = [[self.x, self.x_vs_counts],]
             self.plot_labels = ['Data',]
+
+    def _perform_beam_fit(self, y_d, derivative, derivative_err, y_r=None, signal_r=None, gaussian_first=False):
+        if gaussian_first:
+            _running_err = np.sqrt(signal_r)
+            _gauss, _ = opt.curve_fit(self.gaussian_1d, y_r,
+                                      signal_r, p0=[np.max(signal_r), 140, 50, 0], sigma=_running_err)
+            p0 = [np.max(derivative), _gauss[1], 2.0*_gauss[2], 5, 0]
+        else:
+            p0 = [np.max(derivative), 140, 60, 5, 0]
+
+        #p = A, center_x, width_x, edge_width, background
+        _coef, _ = opt.curve_fit(self.peak_derivative, y_d, derivative, p0=p0, sigma=derivative_err)
+        return _coef
+
+    def fit_beam_width(self):
+        """
+            Fit the data distribution in y and get its range.
+        """
+        _y0 = np.arange(len(self.y_vs_counts))[self.DEAD_PIXELS:-self.DEAD_PIXELS]
+        _signal = self.y_vs_counts[self.DEAD_PIXELS:-self.DEAD_PIXELS]
+
+        _integral = [np.sum(_signal[:i]) for i in range(len(_signal))]
+        _running = 0.1*np.convolve(_signal, np.ones(10), mode='valid')
+        _deriv = np.asarray([_running[i+1]-_running[i] for i in range(len(_running)-1)])
+        _deriv_err = np.sqrt(_running)[:-1]
+        _y = _y0[5:-5]
+
+        _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
+        peak_min = _coef[1] - _coef[2]/2.0 - 2.0*_coef[3]
+        peak_max = _coef[1] + _coef[2]/2.0 + 2.0*_coef[3]
+        if peak_max - peak_min < 10:
+            logging.error("Low statisting: trying again")
+            _y_running = _y0[5:-4]
+            _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
+
+        return [peak_min, peak_max]
 
     def get_roi(self, region):
         """
@@ -534,3 +572,25 @@ class Fitter(object):
         values = self.lorentzian(value, *self.lorentz_coef)
         values += self.gaussian_and_poly_bck(value, *p)
         return self._crop_detector_edges(coord, values)
+
+    def gaussian_1d(self, value, *p):
+        """
+            1D Gaussian
+        """
+        A, center_x, width_x, background = p
+        A = np.abs(A)
+        values = A*np.exp(-(value-center_x)**2/(2.*width_x**2))
+        values += background
+        return values
+
+    def peak_derivative(self, value, *p):
+        """
+            Double Gaussian to fit the first derivative of a plateau/peak.
+        """
+        A, center_x, width_x, edge_width, background = p
+        mu_right = center_x + width_x / 2.0
+        mu_left = center_x - width_x / 2.0
+        A = np.abs(A)
+        values = A*np.exp(-(value-mu_left)**2/(2.*edge_width**2)) - A*np.exp(-(value-mu_right)**2/(2.*edge_width**2))
+        values += background
+        return values
