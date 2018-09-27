@@ -38,7 +38,7 @@ class DataInfo(object):
         self.peak_range = [0,0]
         self.low_res_range = [0,0]
         self.background = [0,0]
-        self.n_events_cutoff = 10000
+        self.n_events_cutoff = 100
 
         # ROI information
         self.roi_peak = [0,0]
@@ -538,7 +538,7 @@ class Fitter(object):
         # really need, so we're multiplying the width by two.
         if _chi2 < self.guess_chi2:
             self.guess_x = gauss_coef[1]
-            self.guess_wx = 2.0 * gauss_coef[2]
+            self.guess_wx = 2.0 * np.abs(gauss_coef[2])
             self.guess_chi2 = _chi2
 
         if self.prepare_plot_data:
@@ -585,9 +585,13 @@ class Fitter(object):
 
         # Fitting a Gaussian tends to give a narrower peak than we
         # really need, so we're multiplying the width by two.
-        if _chi2 < self.guess_chi2:
+        # Also check the width of the Gaussian, if it's more than 50 pixels, we
+        # are likely fitting the background and we should skip this result.
+        # This is more likely to happen with low statistics, so restrict this to cases
+        # where the chi2 is low (usually meaning big errors in our case).
+        if _chi2 < self.guess_chi2 or (self.guess_chi2 < 10 and self.guess_wx - 2.0 * coef[2] > 50):
             self.guess_x = coef[1]
-            self.guess_wx = 2.0 * coef[2]
+            self.guess_wx = 2.0 * np.abs(coef[2])
             self.guess_chi2 = _chi2
 
         if self.prepare_plot_data:
@@ -679,7 +683,7 @@ class Fitter(object):
             # Fitting a Gaussian tends to give a narrower peak than we
             # really need, so we're multiplying the width by two.
             self.guess_x = lorentz_coef[1]
-            self.guess_wx = 2.0 * lorentz_coef[2]
+            self.guess_wx = 2.0 * np.abs(lorentz_coef[2])
             self.guess_chi2 = _chi2
 
         if self.prepare_plot_data:
