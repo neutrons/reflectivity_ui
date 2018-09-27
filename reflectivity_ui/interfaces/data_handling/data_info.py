@@ -432,11 +432,12 @@ class Fitter(object):
         _running = 0.1*np.convolve(self.y_vs_counts, np.ones(10), mode='valid')
         _deriv = np.asarray([_running[i+1]-_running[i] for i in range(len(_running)-1)])
         _deriv_err = np.sqrt(_running)[:-1]
+        _deriv_err[_deriv_err<1] = 1
         _y = self.y[5:-5]
 
         _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
-        peak_min = _coef[1] - _coef[2]/2.0 - 2.0*_coef[3]
-        peak_max = _coef[1] + _coef[2]/2.0 + 2.0*_coef[3]
+        peak_min = _coef[1] - np.abs(_coef[2])/2.0 - 2.0 * np.abs(_coef[3])
+        peak_max = _coef[1] + np.abs(_coef[2])/2.0 + 2.0 * np.abs(_coef[3])
         if peak_max - peak_min < 10:
             logging.error("Low statisting: trying again")
             _y_running = self.y[5:-4]
