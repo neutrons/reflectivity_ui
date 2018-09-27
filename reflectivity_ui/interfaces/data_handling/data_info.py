@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 import sys
 import time
 import logging
+import math
+import copy
 
 import numpy as np
 import scipy.optimize as opt
@@ -16,7 +18,264 @@ sys.path.insert(0, ApplicationConfiguration().mantid_path)
 import mantid.simpleapi as api
 
 
+NX_PIXELS = 304
+NY_PIXELS = 256
+
+
 class DataInfo(object):
+    """
+        Class to hold the relevant information from a run (scattering or direct beam).
+    """
+    peak_range_offset = 0
+    tolerance = 0.02
+
+    def __init__(self, ws, cross_section, configuration):
+        self.cross_section = cross_section
+        self.run_number = ws.getRunNumber()
+        self.is_direct_beam = False
+        self.data_type = 1
+        self.peak_position = 0
+        self.peak_range = [0,0]
+        self.low_res_range = [0,0]
+        self.background = [0,0]
+        self.n_events_cutoff = 10000
+
+        # ROI information
+        self.roi_peak = [0,0]
+        self.roi_low_res = [0,0]
+        self.roi_background = [0,0]
+
+        # Options to override the ROI
+        self.force_peak_roi = configuration.force_peak_roi
+        self.forced_peak_roi = configuration.peak_roi
+        self.force_low_res_roi = configuration.force_low_res_roi
+        self.forced_low_res_roi = configuration.low_res_roi
+        self.force_bck_roi = configuration.force_bck_roi
+        self.forced_bck_roi = configuration.bck_roi
+
+        # Peak found before fitting for the central position
+        self.found_peak = [0,0]
+        self.found_low_res = [0,0]
+
+        # Processing options
+        # Use the ROI rather than finding the ranges
+        self.use_roi = configuration.use_roi
+        self.use_roi_actual = False
+
+        # Use the 2nd ROI as the background, if available
+        self.use_roi_bck = configuration.use_roi_bck
+
+        # Use background as a region on each side of the peak
+        self.use_tight_bck = configuration.use_tight_bck
+        # Width of the background on each side of the peak
+        self.bck_offset = configuration.bck_offset
+
+        # Update the specular peak range after finding the peak
+        # within the ROI
+        self.update_peak_range = configuration.update_peak_range
+
+        self.tof_range = self.get_tof_range(ws)
+        self.calculated_scattering_angle = 0.0
+        self.theta_d = 0.0
+        t_0 = time.time()
+        self.determine_data_type(ws)
+        logging.info("INSPECT: %s sec" % (time.time()-t_0))
+
+    def get_tof_range(self, ws):
+        """
+            Determine TOF range from the data
+            :param workspace ws: workspace to work with
+        """
+        run_object = ws.getRun()
+        sample_detector_distance = run_object['SampleDetDis'].getStatistics().mean
+        source_sample_distance = run_object['ModeratorSamDis'].getStatistics().mean
+        # Check units
+        if not run_object['SampleDetDis'].units in ['m', 'meter']:
+            sample_detector_distance /= 1000.0
+        if not run_object['ModeratorSamDis'].units in ['m', 'meter']:
+            source_sample_distance /= 1000.0
+
+        source_detector_distance = source_sample_distance + sample_detector_distance
+
+        h = 6.626e-34  # m^2 kg s^-1
+        m = 1.675e-27  # kg
+        wl = run_object.getProperty('LambdaRequest').value[0]
+        chopper_speed = run_object.getProperty('SpeedRequest1').value[0]
+        wl_offset = 0
+        cst = source_detector_distance / h * m
+        tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - 1.4 * 60.0 / chopper_speed) * 1e-4
+        tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + 1.4 * 60.0 / chopper_speed) * 1e-4
+
+        self.tof_range = [tof_min, tof_max]
+        return [tof_min, tof_max]
+
+    def process_roi(self, ws):
+        """
+            Process the ROI information and determine the peak
+            range, the low-resolution range, and the background range.
+
+            Starting in June 2018, with the DAS upgrade, the ROIs are
+            specified with a start/width rather than start/stop.
+
+            :param workspace ws: workspace to work with
+        """
+        roi_peak = [0,0]
+        roi_low_res = [0,0]
+        roi_background = [0,0]
+
+        # Read ROI 1
+        roi1_valid = True
+        if 'ROI1StartX' in ws.getRun():
+            roi1_x0 = ws.getRun()['ROI1StartX'].getStatistics().mean
+            roi1_y0 = ws.getRun()['ROI1StartY'].getStatistics().mean
+            if 'ROI1SizeX' in ws.getRun():
+                size_x = ws.getRun()['ROI1SizeX'].getStatistics().mean
+                size_y = ws.getRun()['ROI1SizeY'].getStatistics().mean
+                roi1_x1 = roi1_x0 + size_x
+                roi1_y1 = roi1_y0 + size_y
+            else:
+                roi1_x1 = ws.getRun()['ROI1EndX'].getStatistics().mean
+                roi1_y1 = ws.getRun()['ROI1EndY'].getStatistics().mean
+            if roi1_x1 > roi1_x0:
+                peak1 = [int(roi1_x0), int(roi1_x1)]
+            else:
+                peak1 = [int(roi1_x1), int(roi1_x0)]
+            if roi1_y1 > roi1_y0:
+                low_res1 = [int(roi1_y0), int(roi1_y1)]
+            else:
+                low_res1 = [int(roi1_y1), int(roi1_y0)]
+            if peak1 == [0,0] and low_res1 == [0,0]:
+                roi1_valid = False
+
+            # Read ROI 2
+            if 'ROI2StartX' in ws.getRun():
+                roi2_valid = True
+                roi2_x0 = ws.getRun()['ROI2StartX'].getStatistics().mean
+                roi2_y0 = ws.getRun()['ROI2StartY'].getStatistics().mean
+                if 'ROI2SizeX' in ws.getRun():
+                    size_x = ws.getRun()['ROI2SizeX'].getStatistics().mean
+                    size_y = ws.getRun()['ROI2SizeY'].getStatistics().mean
+                    roi2_x1 = roi2_x0 + size_x
+                    roi2_y1 = roi2_y0 + size_y
+                else:
+                    roi2_x1 = ws.getRun()['ROI2EndX'].getStatistics().mean
+                    roi2_y1 = ws.getRun()['ROI2EndY'].getStatistics().mean
+                if roi2_x1 > roi2_x0:
+                    peak2 = [int(roi2_x0), int(roi2_x1)]
+                else:
+                    peak2 = [int(roi2_x1), int(roi2_x0)]
+                if roi2_y1 > roi2_y0:
+                    low_res2 = [int(roi2_y0), int(roi2_y1)]
+                else:
+                    low_res2 = [int(roi2_y1), int(roi2_y0)]
+                if peak2 == [0,0] and low_res2 == [0,0]:
+                    roi2_valid = False
+            else:
+                roi2_valid = False
+        else:
+            roi1_valid = False
+            roi2_valid = False
+
+        # Pick the ROI that describes the reflectivity peak
+        if roi1_valid and not roi2_valid:
+            roi_peak = peak1
+            roi_low_res = low_res1
+            roi_background = [0,0]
+        elif roi2_valid and not roi1_valid:
+            roi_peak = peak2
+            roi_low_res = low_res2
+            roi_background = [0,0]
+        elif roi1_valid and roi2_valid:
+            # If ROI 2 is within ROI 1, treat it as the peak,
+            # otherwise, use ROI 1
+            if peak1[0] >= peak2[0] and peak1[1] <= peak2[1]:
+                roi_peak = peak1
+                roi_low_res = low_res1
+                roi_background = peak2
+            elif peak2[0] >= peak1[0] and peak2[1] <= peak1[1]:
+                roi_peak = peak2
+                roi_low_res = low_res2
+                roi_background = peak1
+            else:
+                roi_peak = peak1
+                roi_low_res = low_res1
+                roi_background = [0,0]
+
+        # After all this, update the ROI according to reduction options
+        self.roi_peak = roi_peak
+        self.roi_low_res = roi_low_res
+        self.roi_background = roi_background
+
+    def determine_data_type(self, ws):
+        """
+            Inspect the data and determine peak locations
+            and data type.
+            :param workspace ws: Workspace to inspect
+        """
+        # Skip empty data entries
+        if ws.getNumberEvents() < self.n_events_cutoff:
+            self.data_type = -1
+            logging.info("No data for %s %s" % (self.run_number, self.cross_section))
+            return
+
+        # Find reflectivity peak and low resolution ranges
+        fitter = Fitter(ws, True)
+        peak, low_res = fitter.fit_2d_peak()
+
+        if self.use_tight_bck:
+            bck_range = [int(max(0.0, peak[0]-self.bck_offset)), int(min(NX_PIXELS, peak[1]+self.bck_offset))]
+        else:
+            bck_range = [int(max(0.0, peak[0]-2*self.bck_offset)), int(max(0.0, peak[0]-self.bck_offset))]
+        self.found_peak = copy.copy(peak)
+        self.found_low_res = copy.copy(low_res)
+        logging.info("Run %s [%s]: Peak found %s" % (self.run_number, self.cross_section, peak))
+        logging.info("Run %s [%s]: Low-res found %s" %(self.run_number, self.cross_section, str(low_res)))
+
+        # Process the ROI information
+        try:
+            self.process_roi(ws)
+        except:
+            logging.info("Could not process ROI\n%s" % sys.exc_info()[1])
+
+        # Keep track of whether we actually used the ROI
+        self.use_roi_actual = False
+
+        # If we were asked to use the ROI but no peak is in it, use the peak we found
+        # If we were asked to use the ROI and there's a peak in it, use the ROI
+        if self.use_roi and not self.update_peak_range and not self.roi_peak == [0,0]:
+            logging.info("Using ROI peak range: [%s %s]" % (self.roi_peak[0], self.roi_peak[1]))
+            self.use_roi_actual = True
+            peak = copy.copy(self.roi_peak)
+            if not self.roi_low_res == [0,0]:
+                low_res = copy.copy(self.roi_low_res)
+            if not self.roi_background == [0,0]:
+                bck_range = copy.copy(self.roi_background)
+        elif self.use_roi and self.update_peak_range and not self.roi_peak == [0,0]:
+            logging.info("Using fit peak range: [%s %s]" % (peak[0], peak[1]))
+            if not self.roi_background == [0,0]:
+                bck_range = copy.copy(self.roi_background)
+
+        # Store the information we found
+        self.peak_position = (peak[1]+peak[0])/2.0
+        self.peak_range = [int(max(0, peak[0])), int(min(peak[1], NX_PIXELS))]
+        self.low_res_range = [int(max(0, low_res[0])), int(min(low_res[1], NY_PIXELS))]
+        self.background = [int(max(0, bck_range[0])), int(min(bck_range[1], NY_PIXELS))]
+
+        # Computed scattering angle
+        self.calculated_scattering_angle = api.MRGetTheta(ws, SpecularPixel=self.peak_position)
+        self.calculated_scattering_angle *= 180.0 / math.pi
+
+        # Determine whether we have a direct beam
+        run_object = ws.getRun()
+        try:
+            self.is_direct_beam = run_object.getProperty("data_type").value[0] == 1
+            self.data_type = 0 if self.is_direct_beam else 1
+        except:
+            self.is_direct_beam = False
+            self.data_type = 1
+
+
+class DataInfo_(object):
     """
         Class to provide a convenient interface to the meta-data extracted
         by MRInspectData.
@@ -94,23 +353,11 @@ class DataInfo(object):
         logging.info("DataInfo: %s sec [MRInspectData: %s sec]", (time.time() - t_0), (t_1 - t_0))
 
 
-def coord_to_code(x, y):
-    """ Utility function to encode pixel coordinates so we can unravel our distribution in a 1D array """
-    return 1000 * x + y
-
-
-def code_to_coord(c):
-    """ Utility function to decode encoded coordinates """
-    i_x = c / 1000
-    i_y = c % 1000
-    return i_x, i_y
-
-
 def chi2(data, model):
     """ Returns the chi^2 for a data set and model pair """
-    err = np.fabs(data.ravel())
+    err = np.fabs(data)
     err[err<=0] = 1
-    return np.sum((data.ravel() - model.ravel())**2 / err) / len(data.ravel())
+    return np.sum((data - model)**2 / err) / len(data)
 
 
 class Fitter(object):
@@ -124,7 +371,7 @@ class Fitter(object):
         self.workspace = workspace
         self.prepare_plot_data = prepare_plot_data
         self._prepare_data()
-        api.logger.notice("Numpy version: %s" % np.__version__)
+        logging.info("Numpy version: %s" % np.__version__)
 
     def _prepare_data(self):
         """
@@ -138,21 +385,14 @@ class Fitter(object):
         _integrated = api.Integration(InputWorkspace=self.workspace)
         signal = _integrated.extractY()
         self.z=np.reshape(signal, (self.n_x, self.n_y))
-        self.x = np.arange(0, self.n_x)
-        self.y = np.arange(0, self.n_y)
-        _x, _y = np.meshgrid(self.x, self.y)
-        _x = _x.T
-        _y = _y.T
-
-        # 2D data x vs y pixels
-        self.coded_pixels = coord_to_code(_x, _y).ravel()
-        self.data_to_fit = self.z.ravel()
-        self.data_to_fit_err = np.sqrt(np.fabs(self.data_to_fit))
-        self.data_to_fit_err[self.data_to_fit_err<1] = 1
+        self.x = np.arange(0, self.n_x)[self.DEAD_PIXELS:-self.DEAD_PIXELS]
+        self.y = np.arange(0, self.n_y)[self.DEAD_PIXELS:-self.DEAD_PIXELS]
 
         # 1D data x/y vs counts
-        self.x_vs_counts = np.sum(self.z, 1)
-        self.y_vs_counts = np.sum(self.z, 0)
+        self.x_vs_counts = np.sum(self.z, 1)[self.DEAD_PIXELS:-self.DEAD_PIXELS]
+        self.y_vs_counts = np.sum(self.z, 0)[self.DEAD_PIXELS:-self.DEAD_PIXELS]
+        self.x_err = np.sqrt(self.x_vs_counts)
+        self.x_err[self.x_err<1] = 1
 
         # Use the highest data point as a starting point for a simple Gaussian fit
         self.center_x = np.argmax(self.x_vs_counts)
@@ -188,23 +428,22 @@ class Fitter(object):
         """
             Fit the data distribution in y and get its range.
         """
-        _y0 = np.arange(len(self.y_vs_counts))[self.DEAD_PIXELS:-self.DEAD_PIXELS]
-        _signal = self.y_vs_counts[self.DEAD_PIXELS:-self.DEAD_PIXELS]
-
-        _integral = [np.sum(_signal[:i]) for i in range(len(_signal))]
-        _running = 0.1*np.convolve(_signal, np.ones(10), mode='valid')
+        _integral = [np.sum(self.y_vs_counts[:i]) for i in range(len(self.y_vs_counts))]
+        _running = 0.1*np.convolve(self.y_vs_counts, np.ones(10), mode='valid')
         _deriv = np.asarray([_running[i+1]-_running[i] for i in range(len(_running)-1)])
         _deriv_err = np.sqrt(_running)[:-1]
-        _y = _y0[5:-5]
+        _y = self.y[5:-5]
 
         _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
         peak_min = _coef[1] - _coef[2]/2.0 - 2.0*_coef[3]
         peak_max = _coef[1] + _coef[2]/2.0 + 2.0*_coef[3]
         if peak_max - peak_min < 10:
             logging.error("Low statisting: trying again")
-            _y_running = _y0[5:-4]
+            _y_running = self.y[5:-4]
             _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
 
+        self.guess_y = _coef[1]
+        self.guess_wy = (peak_max - peak_min) / 2.0
         return [peak_min, peak_max]
 
     def get_roi(self, region):
@@ -212,19 +451,13 @@ class Fitter(object):
             Select are region of interest and prepare the data for fitting.
             :param region: Length 2 list of min/max pixels defining the ROI
         """
-        _roi = np.asarray([x_i>region[0] and x_i<=region[1] for x_i in self.x])
+        _roi = [x_i>region[0] and x_i<=region[1] for x_i in self.x]
         x_roi = self.x[_roi]
-        z_roi = self.z[_roi]
-
-        _x_roi, _y_roi = np.meshgrid(x_roi, self.y)
-        _x_roi = _x_roi.T
-        _y_roi = _y_roi.T
-        code_roi = coord_to_code(_x_roi, _y_roi).ravel()
-        data_to_fit_roi = z_roi.ravel()
-        err_roi = np.sqrt(np.fabs(data_to_fit_roi))
+        counts_roi = self.x_vs_counts[_roi]
+        err_roi = np.sqrt(np.fabs(counts_roi))
         err_roi[err_roi<1] = 1
 
-        return code_roi, data_to_fit_roi, err_roi
+        return x_roi, counts_roi, err_roi
 
     def _scan_peaks(self):
         """
@@ -270,10 +503,11 @@ class Fitter(object):
             return []
 
         if found_peaks:
-            self.guess_x = found_peaks[0] - self.DEFAULT_PEAK_WIDTH
-            self.guess_wx = found_peaks[0] + self.DEFAULT_PEAK_WIDTH
+            self.guess_x = self.x[max(1, found_peaks[0] - self.DEFAULT_PEAK_WIDTH)]
+            self.guess_wx = self.x[min(self.n_x-2, found_peaks[0] + self.DEFAULT_PEAK_WIDTH)]
 
-        return found_peaks
+        peaks = [self.x[i] for i in found_peaks]
+        return peaks
 
     def _fit_gaussian(self):
         """
@@ -285,36 +519,32 @@ class Fitter(object):
             center_x = self.center_x
 
         # Scale, mu_x, sigma_x, mu_y, sigma_y, background
-        p0 = [np.max(self.z), center_x, 5, self.center_y, 50, 0]
+        p0 = [np.max(self.x_vs_counts), center_x, 5, 0]
         try:
-            gauss_coef, _ = opt.curve_fit(self.gaussian,
-                                          self.coded_pixels,
-                                          self.data_to_fit, p0=p0,
-                                          sigma=self.data_to_fit_err)
+            gauss_coef, _ = opt.curve_fit(self.gaussian_1d,
+                                          self.x,
+                                          self.x_vs_counts, p0=p0,
+                                          sigma=self.x_err)
         except:
-            api.logger.notice("Could not fit simple Gaussian")
+            logging.info("Could not fit simple Gaussian")
             gauss_coef = p0
 
         # Keep track of the result
-        theory = self.gaussian(self.coded_pixels, *gauss_coef)
-        theory = np.reshape(theory, (self.n_x, self.n_y))
-        _chi2 = chi2(theory, self.z)
+        theory = self.gaussian_1d(self.x, *gauss_coef)
+        _chi2 = chi2(theory, self.x_vs_counts)
 
         # Fitting a Gaussian tends to give a narrower peak than we
         # really need, so we're multiplying the width by two.
         if _chi2 < self.guess_chi2:
             self.guess_x = gauss_coef[1]
             self.guess_wx = 2.0 * gauss_coef[2]
-            self.guess_y = gauss_coef[3]
-            self.guess_wy = 2.0 * gauss_coef[4]
             self.guess_chi2 = _chi2
 
         if self.prepare_plot_data:
-            th_x = np.sum(theory, 1)
-            self.plot_list.append([self.x, th_x])
+            self.plot_list.append([self.x, theory])
             self.plot_labels.append('Gaussian')
-            api.logger.notice("Chi2[Gaussian] = %s" % _chi2)
-            api.logger.notice("    %g +- %g" % (gauss_coef[1], gauss_coef[2]))
+            logging.info("Chi2[Gaussian] = %s" % _chi2)
+            logging.info("    %g +- %g" % (gauss_coef[1], gauss_coef[2]))
 
     def _fit_gaussian_and_poly(self):
         """
@@ -327,49 +557,43 @@ class Fitter(object):
             center_x = self.center_x
 
         try:
-            poly_bck_coef, _ = opt.curve_fit(self.poly_bck, self.coded_pixels, self.data_to_fit,
-                                             p0=[np.max(self.z), 0, 0, center_x, 0], sigma=self.data_to_fit_err)
+            poly_bck_coef, _ = opt.curve_fit(self.poly_bck, self.x, self.x_vs_counts,
+                                             p0=[np.max(self.x_vs_counts), 0, 0, center_x, 0], sigma=self.x_err)
         except:
-            api.logger.notice("Could not fit polynomial background")
+            logging.info("Could not fit polynomial background")
             poly_bck_coef = [0, 0, 0, self.center_x, 0]
-        theory = self.poly_bck(self.coded_pixels, *poly_bck_coef)
-        theory = np.reshape(theory, (self.n_x, self.n_y))
+        theory = self.poly_bck(self.x, *poly_bck_coef)
 
         if self.prepare_plot_data:
-            _chi2 = chi2(theory, self.z)
-            th_x = np.sum(theory, 1)
-            self.plot_list.append([self.x, th_x])
+            _chi2 = chi2(theory, self.x_vs_counts)
+            self.plot_list.append([self.x, theory])
             self.plot_labels.append('Polynomial')
-            api.logger.notice("Chi2[Polynomial] = %g" % _chi2)
+            logging.info("Chi2[Polynomial] = %g" % _chi2)
 
         # Now fit a Gaussian + background
-        # A, mu_x, sigma_x, mu_y, sigma_y, background
+        # A, mu_x, sigma_x, background
         self.poly_bck_coef = poly_bck_coef
-        coef = [np.max(self.z), self.center_x, 5, self.center_y, 50, 0]
+        coef = [np.max(self.x_vs_counts), self.center_x, 5, 0]
         try:
-            coef, _ = opt.curve_fit(self.gaussian_and_fixed_poly_bck, self.coded_pixels, self.data_to_fit,
-                                    p0=coef, sigma=self.data_to_fit_err)
+            coef, _ = opt.curve_fit(self.gaussian_and_fixed_poly_bck, self.x, self.x_vs_counts,
+                                    p0=coef, sigma=self.x_err)
         except:
-            api.logger.notice("Could not fit Gaussian + polynomial")
-        theory = self.gaussian_and_fixed_poly_bck(self.coded_pixels, *coef)
-        theory = np.reshape(theory, (self.n_x, self.n_y))
-        _chi2 = chi2(theory, self.z)
+            logging.info("Could not fit Gaussian + polynomial")
+        theory = self.gaussian_and_fixed_poly_bck(self.x, *coef)
+        _chi2 = chi2(theory, self.x_vs_counts)
 
         # Fitting a Gaussian tends to give a narrower peak than we
         # really need, so we're multiplying the width by two.
         if _chi2 < self.guess_chi2:
             self.guess_x = coef[1]
             self.guess_wx = 2.0 * coef[2]
-            self.guess_y = coef[3]
-            self.guess_wy = 2.0 * coef[4]
             self.guess_chi2 = _chi2
 
         if self.prepare_plot_data:
-            th_x = np.sum(theory, 1)
-            self.plot_list.append([self.x, th_x])
+            self.plot_list.append([self.x, theory])
             self.plot_labels.append('Gaussian + polynomial')
-            api.logger.notice("Chi2[Gaussian + polynomial] = %g" % _chi2)
-            api.logger.notice("    %g +- %g" % (coef[1], coef[2]))
+            logging.info("Chi2[Gaussian + polynomial] = %g" % _chi2)
+            logging.info("    %g +- %g" % (coef[1], coef[2]))
 
     def _fit_lorentz_2d(self, peak=True):
         """
@@ -387,27 +611,25 @@ class Fitter(object):
                 dirpix = self.dirpix
 
         # Scale, mu_x, fwhm, mu_y, sigma_y, background
-        p0 = [np.max(self.z), dirpix, 10, 128, 100, 0]
+        p0 = [np.max(self.x_vs_counts), dirpix, 10, 0]
         try:
             lorentz_coef, _ = opt.curve_fit(self.lorentzian,
-                                            self.coded_pixels,
-                                            self.data_to_fit, p0=p0,
-                                            sigma=self.data_to_fit_err)
+                                            self.x,
+                                            self.x_vs_counts, p0=p0,
+                                            sigma=self.x_err)
         except:
-            api.logger.notice("Could not fit Lorentzian")
+            logging.info("Could not fit Lorentzian")
             lorentz_coef = p0
 
         # Keep track of the result
-        theory = self.lorentzian(self.coded_pixels, *lorentz_coef)
-        theory = np.reshape(theory, (self.n_x, self.n_y))
-        _chi2 = chi2(theory, self.z)
+        theory = self.lorentzian(self.x, *lorentz_coef)
+        _chi2 = chi2(theory, self.x_vs_counts)
 
         if self.prepare_plot_data:
-            th_x = np.sum(theory, 1)
-            self.plot_list.append([self.x, th_x])
+            self.plot_list.append([self.x, theory])
             self.plot_labels.append('Lorentz 2D')
-            api.logger.notice("Chi2[Lorentz 2D] = %s" % _chi2)
-            api.logger.notice("    %g +- %g" % (lorentz_coef[1], lorentz_coef[2]))
+            logging.info("Chi2[Lorentz 2D] = %s" % _chi2)
+            logging.info("    %g +- %g" % (lorentz_coef[1], lorentz_coef[2]))
         return lorentz_coef
 
     def _gaussian_and_lorentzian(self, region):
@@ -429,28 +651,27 @@ class Fitter(object):
         # Extract the region we want to fit over
         code_roi, data_to_fit_roi, err_roi = self.get_roi(region)
 
-        #A, mu_x, sigma_x, mu_y, sigma_y, poly_a, poly_b, poly_c, center, background
-        p0 = [np.max(data_to_fit_roi), center_x, 5, self.center_y, 50, 0, 0, 0, center_x, 0]
+        #A, mu_x, sigma_x, poly_a, poly_b, poly_c, center, background
+        p0 = [np.max(data_to_fit_roi), center_x, 5, 0, 0, 0, center_x, 0]
         try:
             lorentz_coef, _ = opt.curve_fit(self.gaussian_and_fixed_lorentzian,
                                             code_roi,
                                             data_to_fit_roi, p0=p0,
                                             sigma=err_roi)
         except:
-            api.logger.notice("Could not fit G+L")
+            logging.info("Could not fit G+L")
             lorentz_coef = p0
 
-        api.logger.notice("G+L params: %s" % str(lorentz_coef))
+        logging.info("G+L params: %s" % str(lorentz_coef))
         # Keep track of the result
-        theory = self.gaussian_and_fixed_lorentzian(self.coded_pixels, *lorentz_coef)
-        theory = np.reshape(theory, (self.n_x, self.n_y))
-        _chi2 = chi2(theory, self.z)
+        theory = self.gaussian_and_fixed_lorentzian(self.x, *lorentz_coef)
+        _chi2 = chi2(theory, self.x_vs_counts)
 
         # If we decided to fit two peaks, we should take the results regardless
         # of goodness of fit because the models are imprecise.
         # Nonetheless, log an entry if the chi^2 is larger
         if _chi2 > self.guess_chi2:
-            api.logger.notice("Fitting with two peaks resulted in a larger chi^2: %g > %g" % (_chi2, self.guess_chi2))
+            logging.info("Fitting with two peaks resulted in a larger chi^2: %g > %g" % (_chi2, self.guess_chi2))
 
         # Unless we have a crazy peak
         if lorentz_coef[1] > self.peaks[0]-10 and lorentz_coef[1] < self.peaks[0]+10:
@@ -458,16 +679,13 @@ class Fitter(object):
             # really need, so we're multiplying the width by two.
             self.guess_x = lorentz_coef[1]
             self.guess_wx = 2.0 * lorentz_coef[2]
-            self.guess_y = lorentz_coef[3]
-            self.guess_wy = 2.0 * lorentz_coef[4]
             self.guess_chi2 = _chi2
 
         if self.prepare_plot_data:
-            th_x = np.sum(theory, 1)
-            self.plot_list.append([self.x, th_x])
+            self.plot_list.append([self.x, theory])
             self.plot_labels.append('G + Lorentz 2D')
-            api.logger.notice("Chi2[G + Lorentz] = %s" % _chi2)
-            api.logger.notice("    %g +- %g" % (lorentz_coef[1], lorentz_coef[2]))
+            logging.info("Chi2[G + Lorentz] = %s" % _chi2)
+            logging.info("    %g +- %g" % (lorentz_coef[1], lorentz_coef[2]))
         return lorentz_coef
 
     def fit_2d_peak(self, region=None):
@@ -476,7 +694,7 @@ class Fitter(object):
             :param region: region of interest for the reflected peak
         """
         self.peaks = self._scan_peaks()
-        api.logger.notice("Peaks (rough scan): %s" % self.peaks)
+        logging.info("Peaks (rough scan): %s" % self.peaks)
 
         # Gaussian fit
         self._fit_gaussian()
@@ -489,6 +707,9 @@ class Fitter(object):
                 region = [self.peaks[0]-20, self.peaks[0]+20]
             self._gaussian_and_lorentzian(region)
 
+        # Fit the beam width (low-res direction)
+        self.fit_beam_width()
+
         # Package the best results
         x_min = max(0, int(self.guess_x-np.fabs(self.guess_wx)))
         x_max = min(self.n_x-1, int(self.guess_x+np.fabs(self.guess_wx)))
@@ -498,16 +719,6 @@ class Fitter(object):
         return [x_min, x_max], [y_min, y_max]
 
     # Fit function definitions #####################################################
-    def _crop_detector_edges(self, coord, values):
-        """
-            Crop the edges of the detector and fill them with zeros.
-        """
-        values[coord[0]<self.DEAD_PIXELS] = 0
-        values[coord[0]>self.n_x-self.DEAD_PIXELS] = 0
-        values[coord[1]<self.DEAD_PIXELS] = 0
-        values[coord[1]>self.n_y-self.DEAD_PIXELS] = 0
-        return values
-
     def poly_bck(self, value, *p):
         """
             Polynomial function for background fit
@@ -517,61 +728,44 @@ class Fitter(object):
             where bck is a minimum threshold that is zero when the polynomial
             has a value greater than it.
         """
-        coord = code_to_coord(value)
         poly_a, poly_b, poly_c, center, background = p
-        values = poly_a + poly_b*(coord[0]-center) + poly_c*(coord[0]-center)**2
-        values[values<background] = background
-        return self._crop_detector_edges(coord, values)
-
-    def gaussian(self, value, *p):
-        """
-            Gaussian function with constant background
-        """
-        coord = code_to_coord(value)
-        A, mu_x, sigma_x, mu_y, sigma_y, background = p
-        if sigma_x > 30:
-            return np.ones(len(coord)) * np.inf
-        values =  abs(A) * np.exp(-(coord[0] - mu_x)**2 / (2. * sigma_x**2) - (coord[1] - mu_y)**2 / (2. * sigma_y**2)) + abs(background)
-        return self._crop_detector_edges(coord, values)
+        values = poly_a + poly_b*(value-center) + poly_c*(value-center)**2 + background
+        return values
 
     def gaussian_and_poly_bck(self, value, *p):
         """
             Function for a polynomial + Gaussian signal
         """
-        coord = code_to_coord(value)
-        A, mu_x, sigma_x, mu_y, sigma_y, poly_a, poly_b, poly_c, center, background = p
+        A, mu_x, sigma_x, poly_a, poly_b, poly_c, center, background = p
         poly_coef = [poly_a, poly_b, poly_c, center, background]
         values = self.poly_bck(value, *poly_coef)
-        gauss_coef = [A, mu_x, sigma_x, mu_y, sigma_y, 0]
-        values += self.gaussian(value, *gauss_coef)
-        return self._crop_detector_edges(coord, values)
+        gauss_coef = [A, mu_x, sigma_x, 0]
+        values += self.gaussian_1d(value, *gauss_coef)
+        return values
 
     def gaussian_and_fixed_poly_bck(self, value, *p):
         """
             Use result of bck fit and add a Gaussian
         """
-        coord = code_to_coord(value)
         values = self.poly_bck(value, *self.poly_bck_coef)
-        values += self.gaussian(value, *p)
-        return self._crop_detector_edges(coord, values)
+        values += self.gaussian_1d(value, *p)
+        return values
 
     def lorentzian(self, value, *p):
         """
             Peak function in 2D. The main axis (x) is a Lorentzian and the other axis (y) is a Gaussian.
         """
-        coord = code_to_coord(value)
-        A, mu_x, sigma_x, mu_y, sigma_y, background = p
-        values =  abs(A)/(1+((coord[0]-mu_x)/sigma_x)**2) * np.exp(-(coord[1]-mu_y)**2/(2.*sigma_y**2)) + abs(background)
-        return self._crop_detector_edges(coord, values)
+        A, mu_x, sigma_x, background = p
+        values =  abs(A)/(1+((value-mu_x)/sigma_x)**2) + abs(background)
+        return values
 
     def gaussian_and_fixed_lorentzian(self, value, *p):
         """
             Gaussian and polynomial on top of a fixed Lorentzian.
         """
-        coord = code_to_coord(value)
         values = self.lorentzian(value, *self.lorentz_coef)
         values += self.gaussian_and_poly_bck(value, *p)
-        return self._crop_detector_edges(coord, values)
+        return values
 
     def gaussian_1d(self, value, *p):
         """

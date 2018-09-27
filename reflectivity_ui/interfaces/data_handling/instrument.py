@@ -77,14 +77,12 @@ class Instrument(object):
     file_search_template = "/SNS/REF_M/*/nexus/REF_M_%s"
     legacy_search_template = "/SNS/REF_M/*/data/REF_M_%s"
 
-    # Filtering
-    pol_state = 'SF1'
-    pol_veto = 'SF1_Veto'
-    ana_state = 'SF2'
-    ana_veto = 'SF2_Veto'
-
     def __init__(self):
-        logging.debug("Creating instrument")
+        # Filtering
+        self.pol_state = application_conf.POL_STATE
+        self.pol_veto = application_conf.POL_VETO
+        self.ana_state = application_conf.ANA_STATE
+        self.ana_veto = application_conf.ANA_VETO
 
     def dummy_filter_cross_sections(self, ws):
         """
