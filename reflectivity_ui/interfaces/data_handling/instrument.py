@@ -199,9 +199,14 @@ class Instrument(object):
         data = workspace.getRun()
         data_object.lambda_center = data['LambdaRequest'].value[0]
         data_object.dangle = data['DANGLE'].value[0]
-        data_object.slit1_width = data['S1HWidth'].value[0]
-        data_object.slit2_width = data['S2HWidth'].value[0]
-        data_object.slit3_width = data['S3HWidth'].value[0]
+        if 'BL4A:Mot:S1:X:Gap' in data:
+            data_object.slit1_width = data['BL4A:Mot:S1:X:Gap'].value[0]
+            data_object.slit2_width = data['BL4A:Mot:S2:X:Gap'].value[0]
+            data_object.slit3_width = data['BL4A:Mot:S3:X:Gap'].value[0]
+        else:
+            data_object.slit1_width = data['S1HWidth'].value[0]
+            data_object.slit2_width = data['S2HWidth'].value[0]
+            data_object.slit3_width = data['S3HWidth'].value[0]
         data_object.huber_x = data['HuberX'].getStatistics().mean
 
         data_object.sangle = data['SANGLE'].value[0]

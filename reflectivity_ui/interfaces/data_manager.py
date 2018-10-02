@@ -318,7 +318,11 @@ class DataManager(object):
 
         if data_xs.configuration is not None and data_xs.configuration.normalization is not None:
             for item in self.direct_beam_list:
-                if item.number == data_xs.configuration.normalization:
+                try:
+                    _run_number = int(data_xs.configuration.normalization)
+                except:
+                    _run_number = data_xs.configuration.normalization
+                if item.number == _run_number:
                     keys = item.cross_sections.keys()
                     if len(keys) >= 1:
                         if len(keys) > 1:
