@@ -238,6 +238,7 @@ class DataManager(object):
 
         # If we don't have the data, load it
         if nexus_data is None:
+            configuration.normalization = None
             nexus_data = NexusData(file_path, configuration)
             sub_task = progress.create_sub_task(max_value=70) if progress else None
             nexus_data.load(progress=sub_task, update_parameters=update_parameters)
