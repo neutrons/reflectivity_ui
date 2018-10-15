@@ -401,7 +401,7 @@ class Fitter(object):
         self.guess_x = self.center_x
         self.guess_wx = 6
         self.guess_y = self.center_y
-        self.guess_wy = 50
+        self.guess_wy = 100
         self.guess_chi2 = np.inf
 
         # Plots [optional]
@@ -713,7 +713,11 @@ class Fitter(object):
             self._gaussian_and_lorentzian(region)
 
         # Fit the beam width (low-res direction)
-        self.fit_beam_width()
+        try:
+            self.fit_beam_width()
+        except:
+            logging.error("Could not fit peak in the Y direction")
+            logging.error(sys.exc_info()[1])
 
         # Package the best results
         x_min = max(0, int(self.guess_x-np.fabs(self.guess_wx)))
