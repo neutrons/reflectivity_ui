@@ -35,11 +35,11 @@ def _find_h5_data(filename):
             return _new_filename
     return filename
 
-def write_reflectivity_header(reduction_list, output_path, pol_states):
+def write_reflectivity_header(reduction_list, output_path, pol_states, sample_size=10):
     """
         Write out reflectivity header in a format readable by QuickNXS
         :param str output_path: output file path
-        :param str pol_state: descriptor for the polarization state
+        :param str pol_states: descriptor for the polarization state
     """
     # Sanity check
     if not reduction_list:
@@ -177,7 +177,7 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
     fd.write("#\n")
     fd.write("# [Global Options]\n")
     fd.write("# name           value\n")
-    fd.write("# sample_length  10\n")
+    fd.write("# sample_length  %s\n" % str(sample_size))
     fd.write("#\n")
     fd.close()
 

@@ -160,11 +160,11 @@ class DataManager(object):
                 if len(self.reduction_list) == 0:
                     self.reduction_states = self.data_sets.keys()
                 # Append to the reduction list, but keep the run number ordering
-                run_no = self._nexus_data.number
+                q_min, _q_max = self._nexus_data.get_q_range()
                 is_inserted = False
                 for i in range(len(self.reduction_list)):
-                    _run_no = self.reduction_list[i].number
-                    if run_no < _run_no:
+                    _q_min, _ = self.reduction_list[i].get_q_range()
+                    if q_min <= _q_min:
                         self.reduction_list.insert(i, self._nexus_data)
                         is_inserted = True
                         break
