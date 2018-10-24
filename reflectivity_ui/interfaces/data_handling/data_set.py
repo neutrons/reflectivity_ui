@@ -163,6 +163,7 @@ class NexusData(object):
                                                  SpecularPixel=conf.peak_position,
                                                  ConstantQBinning=conf.use_constant_q,
                                                  ConstQTrim=0.1,
+                                                 SampleLength=conf.sample_size,
                                                  DAngle0Overwrite=_dangle0,
                                                  DirectPixelOverwrite=_dirpix,
                                                  OutputWorkspace=output_ws)
@@ -705,6 +706,8 @@ class CrossSectionData(object):
                                                  SpecularPixel=self.configuration.peak_position,
                                                  ConstantQBinning=self.configuration.use_constant_q,
                                                  #EntryName=str(self.entry_name),
+                                                 ConstQTrim=0.1,
+                                                 SampleLength=self.configuration.sample_size,
                                                  DAngle0Overwrite=_dangle0,
                                                  DirectPixelOverwrite=_dirpix,
                                                  OutputWorkspace=output_ws)

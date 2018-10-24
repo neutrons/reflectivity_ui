@@ -41,6 +41,7 @@ class Configuration(object):
         self.direct_angle_offset_overwrite = 0
         self.use_dangle = False
         self.use_constant_q = False
+        self.sample_size = 10
 
         # Update the specular peak range after finding the peak
         # within the ROI
@@ -176,6 +177,7 @@ class Configuration(object):
         settings.setValue('direct_pixel_overwrite', self.direct_pixel_overwrite)
         settings.setValue('set_direct_angle_offset', self.set_direct_angle_offset)
         settings.setValue('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite)
+        settings.setValue('sample_size', self.sample_size)
 
         # Off-specular options
         settings.setValue('off_spec_x_axis', self.off_spec_x_axis)
@@ -234,6 +236,7 @@ class Configuration(object):
         self.direct_pixel_overwrite = float(settings.value('direct_pixel_overwrite', self.direct_pixel_overwrite))
         self.set_direct_angle_offset = _verify_true('set_direct_angle_offset', self.set_direct_angle_offset)
         self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
+        self.sample_size = float(settings.value('sample_size', self.sample_size))
 
         # Off-specular options
         self.off_spec_x_axis = int(settings.value('off_spec_x_axis', self.off_spec_x_axis))

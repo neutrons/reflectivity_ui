@@ -35,7 +35,7 @@ def _find_h5_data(filename):
             return _new_filename
     return filename
 
-def write_reflectivity_header(reduction_list, output_path, pol_states, sample_size=10):
+def write_reflectivity_header(reduction_list, output_path, pol_states):
     """
         Write out reflectivity header in a format readable by QuickNXS
         :param str output_path: output file path
@@ -114,6 +114,7 @@ def write_reflectivity_header(reduction_list, output_path, pol_states, sample_si
     fd.write("# %s\n" % '  '.join(toks))
     i_direct_beam = 0
 
+    conf = None
     for data_set in reduction_list:
         conf = data_set.cross_sections[pol_list[0]].configuration
         ws = data_set.cross_sections[pol_list[0]].reflectivity_workspace
@@ -177,6 +178,7 @@ def write_reflectivity_header(reduction_list, output_path, pol_states, sample_si
     fd.write("#\n")
     fd.write("# [Global Options]\n")
     fd.write("# name           value\n")
+    sample_size = 10 if conf is None else conf.sample_size
     fd.write("# sample_length  %s\n" % str(sample_size))
     fd.write("#\n")
     fd.close()
@@ -224,6 +226,7 @@ def read_reduced_file(file_path, configuration=None):
         #   0: None
         #   1: direct beams
         #   2: data runs
+        #   3: global options
         _in_section = 0
         _file_start = True
         for line in file_content.readlines():
@@ -235,7 +238,7 @@ def read_reduced_file(file_path, configuration=None):
             elif "[Data Runs]" in line:
                 _in_section = 2
             elif "[Global Options]" in line:
-                _in_section = 0
+                _in_section = 3
 
             # Process direct beam runs
             if _in_section == 1:
@@ -308,5 +311,13 @@ def read_reduced_file(file_path, configuration=None):
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
                     logging.error(line)
+
+            # Options
+            if _in_section == 3:
+                if line.startswith("# sample_length"):
+                    try:
+                        conf.sample_size = float((line[len("# sample_length"):]).strip())
+                    except:
+                        logging.error("Could not extract sample size: %s" % line)
 
     return direct_beam_runs, data_runs

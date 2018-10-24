@@ -13,7 +13,6 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         Reduction dialog
     """
     default_template = u'(instrument)_{numbers}_{item}_{state}.{type}'
-    default_sample_size = 10.0 # mm
 
     def __init__(self, parent):
         super(ReductionDialog, self).__init__(parent)
@@ -26,12 +25,6 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                                                         os.path.expanduser('~')))
         self.fileNameEntry.setText(self.settings.value('output_file_template',
                                                        ReductionDialog.default_template))
-        try:
-            _value = float(self.settings.value('output_sample_size',
-                                               ReductionDialog.default_sample_size))
-        except:
-            _value = ReductionDialog.default_sample_size
-        self.sampleSize.setValue(_value)
 
         # Outputs
         self.exportSpecular.setChecked(self._verify_true('export_specular', True))
@@ -78,7 +71,6 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                     format_multi=self.multiAscii.isChecked(),
                     format_numpy=self.numpy.isChecked(),
                     format_5cols=self.five_cols_checkbox.isChecked(),
-                    output_sample_size=self.sampleSize.value(),
                     output_directory=self.directoryEntry.text(),
                     output_file_template=self.fileNameEntry.text())
 
@@ -99,7 +91,6 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         """
         self.settings.setValue('output_directory', self.directoryEntry.text())
         self.settings.setValue('output_file_template', self.fileNameEntry.text())
-        self.settings.setValue('output_sample_size', self.sampleSize.value())
 
         self.settings.setValue('export_specular', self.exportSpecular.isChecked())
         self.settings.setValue('export_asym', self.export_SA.isChecked())

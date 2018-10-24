@@ -833,6 +833,7 @@ class MainHandler(object):
         configuration.set_direct_angle_offset = self.ui.set_dangle0_checkbox.isChecked()
         configuration.direct_pixel_overwrite = self.ui.directPixelOverwrite.value()
         configuration.direct_angle_offset_overwrite = self.ui.dangle0Overwrite.value()
+        configuration.sample_size = self.ui.sample_size_spinbox.value()
 
         # UI elements
         configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
@@ -914,6 +915,7 @@ class MainHandler(object):
         self.ui.set_dangle0_checkbox.setChecked(configuration.set_direct_angle_offset)
         self.ui.directPixelOverwrite.setValue(configuration.direct_pixel_overwrite)
         self.ui.dangle0Overwrite.setValue(configuration.direct_angle_offset_overwrite)
+        self.ui.sample_size_spinbox.setValue(configuration.sample_size)
 
         # UI elements
         self.ui.normalizeXTof.setChecked(configuration.normalize_x_tof)

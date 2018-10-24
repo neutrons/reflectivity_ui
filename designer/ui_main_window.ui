@@ -802,6 +802,35 @@
               </property>
              </widget>
             </item>
+            <item row="9" column="1">
+             <widget class="QLabel" name="label_31">
+              <property name="minimumSize">
+               <size>
+                <width>130</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Sample size:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="2">
+             <widget class="QDoubleSpinBox" name="sample_size_spinbox">
+              <property name="suffix">
+               <string> mm</string>
+              </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <double>10000.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>10.000000000000000</double>
+              </property>
+             </widget>
+            </item>
            </layout>
            <zorder>trustSANGLE</zorder>
            <zorder>trustDANGLE</zorder>
@@ -814,6 +843,8 @@
            <zorder>normalize_to_unity_checkbox</zorder>
            <zorder>label_29</zorder>
            <zorder>normalization_q_cutoff_spinbox</zorder>
+           <zorder>label_31</zorder>
+           <zorder>sample_size_spinbox</zorder>
           </widget>
           <widget class="QWidget" name="page_3">
            <property name="geometry">
