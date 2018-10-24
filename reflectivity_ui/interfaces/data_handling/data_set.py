@@ -162,6 +162,7 @@ class NexusData(object):
                                                  TimeAxisRange=conf.tof_range,
                                                  SpecularPixel=conf.peak_position,
                                                  ConstantQBinning=conf.use_constant_q,
+                                                 ConstQTrim=0.1,
                                                  DAngle0Overwrite=_dangle0,
                                                  DirectPixelOverwrite=_dirpix,
                                                  OutputWorkspace=output_ws)
