@@ -39,9 +39,8 @@ class OffSpecular(object):
             :param CrossSectionData direct_beam: if given, this data will be used to normalize the output
         """
         #TODO: correct for detector sensitivity
-
         x_pos = self.data_set.configuration.peak_position
-        scale = 1./self.data_set.proton_charge * self.data_set.configuration.scaling_factor
+        scale = 1./self.data_set.proton_charge
 
         # Range in low-res direction
         y_min, y_max = self.data_set.configuration.low_res_roi
@@ -80,10 +79,12 @@ class OffSpecular(object):
         d_raw = np.sqrt(raw)
 
         # normalize data by width in y and multiply scaling factor
-        intensity = raw/(y_max-y_min) * scale
+        intensity = raw/float(y_max-y_min) * scale
         d_intensity = d_raw/(y_max-y_min) * scale
         self.S = intensity - bck[np.newaxis, :]
         self.dS = np.sqrt(d_intensity**2+(bck**2)[np.newaxis, :])
+        self.S *= self.data_set.configuration.scaling_factor
+        self.dS *= self.data_set.configuration.scaling_factor
 
         if direct_beam is not None:
             if not direct_beam.configuration.tof_bins == self.data_set.configuration.tof_bins:

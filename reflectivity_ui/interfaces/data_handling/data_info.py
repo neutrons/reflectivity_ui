@@ -10,7 +10,9 @@ import math
 import copy
 
 import numpy as np
+from scipy import ndimage
 import scipy.optimize as opt
+from .peak_finding import find_peaks, peak_prominences, peak_widths
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -219,13 +221,10 @@ class DataInfo(object):
             return
 
         # Find reflectivity peak and low resolution ranges
-        fitter = Fitter(ws, True)
+        #fitter = Fitter(ws, True)
+        fitter = Fitter2(ws)
         peak, low_res = fitter.fit_2d_peak()
 
-        if self.use_tight_bck:
-            bck_range = [int(max(0.0, peak[0]-self.bck_offset)), int(min(NX_PIXELS, peak[1]+self.bck_offset))]
-        else:
-            bck_range = [int(max(0.0, peak[0]-2*self.bck_offset)), int(max(0.0, peak[0]-self.bck_offset))]
         self.found_peak = copy.copy(peak)
         self.found_low_res = copy.copy(low_res)
         logging.info("Run %s [%s]: Peak found %s" % (self.run_number, self.cross_section, peak))
@@ -254,6 +253,12 @@ class DataInfo(object):
             logging.info("Using fit peak range: [%s %s]" % (peak[0], peak[1]))
             if not self.roi_background == [0,0]:
                 bck_range = copy.copy(self.roi_background)
+
+        # Background
+        if self.use_tight_bck:
+            bck_range = [int(max(0.0, peak[0]-self.bck_offset)), int(min(NX_PIXELS, peak[1]+self.bck_offset))]
+        else:
+            bck_range = [int(max(0.0, peak[0]-2*self.bck_offset)), int(max(0.0, peak[0]-self.bck_offset))]
 
         # Store the information we found
         self.peak_position = (peak[1]+peak[0])/2.0
@@ -797,3 +802,135 @@ class Fitter(object):
         values = A*np.exp(-(value-mu_left)**2/(2.*edge_width**2)) - A*np.exp(-(value-mu_right)**2/(2.*edge_width**2))
         values += background
         return values
+
+class Fitter2(object):
+    DEAD_PIXELS = 10
+
+    def __init__(self, workspace):
+        self.workspace = workspace
+        self._prepare_data()
+
+    def _prepare_data(self):
+        """
+            Read in the data and create arrays for fitting
+        """
+        # Prepare data to fit
+        self.n_x = int(self.workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0])
+        self.n_y = int(self.workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0])
+
+        _integrated = api.Integration(InputWorkspace=self.workspace)
+        signal = _integrated.extractY()
+        self.z=np.reshape(signal, (self.n_x, self.n_y))
+        self.y = np.arange(0, self.n_y)[self.DEAD_PIXELS:-self.DEAD_PIXELS]
+        # 1D data x/y vs counts
+        self.x_vs_counts = np.sum(self.z, 1)
+        self.y_vs_counts = np.sum(self.z, 0)
+
+        self.guess_x = np.argmax(self.x_vs_counts)
+        self.guess_wx = 6.
+
+    def _scan_peaks(self):
+        f1 = ndimage.gaussian_filter(self.x_vs_counts, 3)
+        peaks, _ = find_peaks(f1)
+        prom, _, _ = peak_prominences(f1, peaks)
+        peaks_w, _, _, _ = peak_widths(f1, peaks)
+
+        # The quality factor is the size of the peak (height*width) multiply by
+        # a factor that peaks in the middle of the detector, where the peak usually is.
+        nx = 304.
+        delta = 100.
+        mid_point = 100.
+        quality_pos = np.exp(-(mid_point-peaks)**2./2000.)
+        low_peaks = peaks<delta
+        high_peaks = peaks>nx-delta
+        quality_pos[low_peaks] = quality_pos[low_peaks]  * (1 - np.abs(delta-peaks[low_peaks])/delta)**3
+        quality_pos[high_peaks] = quality_pos[high_peaks] * (1 - np.abs(nx-delta-peaks[high_peaks])/delta)**3
+        quality = -peaks_w * prom * quality_pos
+
+        zipped = zip(peaks, peaks_w, quality, prom)
+        ordered = sorted(zipped, key=lambda a:a[2])
+        found_peaks = [p[0] for p in ordered]
+
+        if found_peaks:
+        #    self.guess_x = ordered[0][0]
+        #    self.guess_ws = ordered[0][1]
+            i_final = 0
+            if (ordered[0][2] - ordered[1][2])/ordered[0][2] < 0.75 and ordered[1][0] < ordered[0][0]:
+                i_final = 1
+            self.guess_x = ordered[i_final][0]
+            self.guess_ws = ordered[i_final][1]
+
+        return found_peaks
+
+    def fit_2d_peak(self):
+        """ Backward compatibility """
+        spec_peak = self.fit_peak()
+        beam_peak = self.fit_beam_width()
+        return spec_peak, beam_peak
+
+    def fit_peak(self):
+        self.peaks = self._scan_peaks()
+
+        # Package the best results
+        x_min = max(0, int(self.guess_x-np.fabs(self.guess_wx)))
+        x_max = min(self.n_x-1, int(self.guess_x+np.fabs(self.guess_wx)))
+
+        return [x_min, x_max]
+
+    def gaussian_1d(self, value, *p):
+        """
+            1D Gaussian
+        """
+        A, center_x, width_x, background = p
+        A = np.abs(A)
+        values = A*np.exp(-(value-center_x)**2/(2.*width_x**2))
+        values += background
+        return values
+
+    def peak_derivative(self, value, *p):
+        """
+            Double Gaussian to fit the first derivative of a plateau/peak.
+        """
+        A, center_x, width_x, edge_width, background = p
+        mu_right = center_x + width_x / 2.0
+        mu_left = center_x - width_x / 2.0
+        A = np.abs(A)
+        values = A*np.exp(-(value-mu_left)**2/(2.*edge_width**2)) - A*np.exp(-(value-mu_right)**2/(2.*edge_width**2))
+        values += background
+        return values
+
+    def _perform_beam_fit(self, y_d, derivative, derivative_err, y_r=None, signal_r=None, gaussian_first=False):
+        if gaussian_first:
+            _running_err = np.sqrt(signal_r)
+            _gauss, _ = opt.curve_fit(self.gaussian_1d, y_r,
+                                      signal_r, p0=[np.max(signal_r), 140, 50, 0], sigma=_running_err)
+            p0 = [np.max(derivative), _gauss[1], 2.0*_gauss[2], 5, 0]
+        else:
+            p0 = [np.max(derivative), 140, 60, 5, 0]
+
+        #p = A, center_x, width_x, edge_width, background
+        _coef, _ = opt.curve_fit(self.peak_derivative, y_d, derivative, p0=p0, sigma=derivative_err)
+        return _coef
+
+    def fit_beam_width(self):
+        """
+            Fit the data distribution in y and get its range.
+        """
+        _integral = [np.sum(self.y_vs_counts[:i]) for i in range(len(self.y_vs_counts))]
+        _running = 0.1*np.convolve(self.y_vs_counts, np.ones(10), mode='valid')
+        _deriv = np.asarray([_running[i+1]-_running[i] for i in range(len(_running)-1)])
+        _deriv_err = np.sqrt(_running)[:-1]
+        _deriv_err[_deriv_err<1] = 1
+        _y = np.arange(len(self.y_vs_counts))[5:-5]
+
+        _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
+        peak_min = _coef[1] - np.abs(_coef[2])/2.0 - 2.0 * np.abs(_coef[3])
+        peak_max = _coef[1] + np.abs(_coef[2])/2.0 + 2.0 * np.abs(_coef[3])
+        if peak_max - peak_min < 10:
+            logging.error("Low statisting: trying again")
+            _y_running = self.y[5:-4]
+            _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
+
+        self.guess_y = _coef[1]
+        self.guess_wy = (peak_max - peak_min) / 2.0
+        return [peak_min, peak_max]

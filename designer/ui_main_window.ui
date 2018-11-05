@@ -188,14 +188,14 @@
                 <string>The number of bins for the Time of Flight channels</string>
                </property>
                <property name="text">
-                <string>Bins </string>
+                <string>Bin width</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QSpinBox" name="eventTofBins">
                <property name="toolTip">
-                <string>The number of bins for the Time of Flight channels</string>
+                <string>TOF bin width</string>
                </property>
                <property name="minimum">
                 <number>5</number>
@@ -624,8 +624,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>348</width>
-             <height>183</height>
+             <width>336</width>
+             <height>163</height>
             </rect>
            </property>
            <attribute name="label">
@@ -851,8 +851,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>348</width>
-             <height>183</height>
+             <width>227</width>
+             <height>115</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1085,6 +1085,12 @@
             <widget class="QComboBox" name="color_selector">
              <property name="toolTip">
               <string>Select the color scale from a list of presets</string>
+             </property>
+             <property name="currentText">
+              <string>jet</string>
+             </property>
+             <property name="currentIndex">
+              <number>3</number>
              </property>
              <item>
               <property name="text">

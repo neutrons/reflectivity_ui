@@ -470,7 +470,7 @@ class CrossSectionData(object):
     @property
     def active_area_x(self):
         if self._active_area_x is None:
-            return (0, self.xydata.shape[1])
+            return (0, self.xydata.shape[0])
         return self._active_area_x
     @active_area_x.setter
     def active_area_x(self, value):
@@ -539,6 +539,7 @@ class CrossSectionData(object):
         self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
 
         # Determine binning
+        #TODO: only the TOF binning is implemented
         if self.configuration.tof_overwrite is not None:
             tof_edges = self.configuration.tof_overwrite
         else:
@@ -547,7 +548,7 @@ class CrossSectionData(object):
             elif self.configuration.tof_bin_type == 2: # constant 1/wavelength
                 tof_edges = self.configuration.tof_range[0]*(((self.configuration.tof_range[1]/self.configuration.tof_range[0])**(1./self.configuration.tof_bins))**np.arange(self.configuration.tof_bins+1))
             else:
-                tof_edges = np.linspace(self.configuration.tof_range[0], self.configuration.tof_range[1], self.configuration.tof_bins+1)
+                tof_edges = np.arange(self.configuration.tof_range[0], self.configuration.tof_range[1], self.configuration.tof_bins)
         self.tof_edges = tof_edges
 
     def prepare_plot_data(self):
@@ -560,7 +561,7 @@ class CrossSectionData(object):
             binning_ws = api.CreateWorkspace(DataX=self.tof_edges, DataY=np.zeros(len(self.tof_edges)-1))
             data_rebinned = api.RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
             Ixyt = getIxyt(data_rebinned)
-    
+
             # Create projections for the 2D datasets
             Ixy = Ixyt.sum(axis=2)
             Ixt = Ixyt.sum(axis=1)
@@ -576,12 +577,13 @@ class CrossSectionData(object):
             :param bool update_parameters: if True, we will find peak ranges
         """
         workspace = api.mtd[self._event_workspace]
-
+        data_info = DataInfo(workspace, self.name, self.configuration)
+        self.configuration.tof_range = data_info.tof_range
         if update_parameters:
-            data_info = DataInfo(workspace, self.name, self.configuration)
+            #data_info = DataInfo(workspace, self.name, self.configuration)
             self.use_roi_actual = data_info.use_roi_actual
             self.is_direct_beam = data_info.is_direct_beam
-            self.configuration.tof_range = data_info.tof_range
+            
 
             self.meta_data_roi_peak = data_info.roi_peak
             self.meta_data_roi_bck = data_info.roi_background
@@ -594,8 +596,6 @@ class CrossSectionData(object):
 
             if not self.configuration.force_bck_roi:
                 self.configuration.bck_roi = data_info.background
-        else:
-            self.configuration.tof_range = [workspace.getTofMin(), workspace.getTofMax()]
         self.process_configuration()
 
     def get_counts_vs_TOF(self):
