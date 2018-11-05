@@ -365,7 +365,7 @@ class DataManager(object):
         """
             Merge all the off-specular reflectivity data and rebin.
         """
-        return off_specular.rebin_extract(self.reduction_list, pol_state, axes=None,
+        return off_specular.rebin_extract(self.reduction_list, pol_state, axes=axes,
                                           y_list=y_list, use_weights=use_weights,
                                           n_bins_x=n_bins_x, n_bins_y=n_bins_y)
 

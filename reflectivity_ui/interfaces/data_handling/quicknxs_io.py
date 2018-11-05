@@ -193,7 +193,10 @@ def write_reflectivity_data(output_path, data, col_names, as_5col=True):
     """
     with open(output_path, 'a') as fd:
         # Determine how many columns to write
-        four_cols = not as_5col and data.shape[1] > 4
+        if isinstance(data, list):
+            four_cols = True
+        else:
+            four_cols = not as_5col and data.shape[1] > 4
 
         fd.write("# [Data]\n")
         if four_cols:
