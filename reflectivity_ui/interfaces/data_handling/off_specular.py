@@ -5,6 +5,8 @@
 import logging
 import numpy as np
 import scipy.stats
+from multiprocessing import Pool
+
 from reflectivity_ui.interfaces.configuration import Configuration
 
 H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
@@ -252,3 +254,98 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
         _q_data.append([_to_save, '%s_%s_%s' % (pol_state, y_label, q)])
 
     return result, error, x_middle, y_middle, _q_data, [x_label, y_label]
+
+
+def _smooth_data(x, y, I, sigmas=3., gridx=150, gridy=50,
+                sigmax=0.0005, sigmay=0.0005,
+                x1=-0.03, x2=0.03, y1=0.0, y2=0.1,
+                axis_sigma_scaling=None, xysigma0=0.06, indices=None):
+    """
+      Smooth a irregular spaced dataset onto a regular grid.
+      Takes each intensities with a distance < 3*sigma
+      to a given grid point and averages their intensities
+      weighted by the gaussian of the distance.
+
+      :param dict settings: Contains options for 'grid', 'sigma' and 'region' of the algorithm
+      :param numpy.ndarray x: x-values of the original data
+      :param numpy.ndarray y: y-values of the original data
+      :param numpy.ndarray I: Intensity values of the original data
+      :param float sigmas: Range in units of sigma to search around a grid point
+      :param int axis_sigma_scaling: Defines how the sigmas change with the x/y value
+      :param float xysigma0: x/y value where the given sigmas are used
+      :param list indices: list of indices to run over
+    """
+    xout=np.linspace(x1, x2, gridx)
+    yout=np.linspace(y1, y2, gridy)
+    Xout, Yout=np.meshgrid(xout, yout)
+    Iout=np.zeros_like(Xout)
+    ssigmax, ssigmay=sigmax**2, sigmay**2
+
+    imax=len(Xout)
+    for i in range(imax):
+        #for j in range(len(Xout[0])):
+        for j in range(indices[0], indices[1]):
+            xij=Xout[i, j]
+            yij=Yout[i, j]
+            if axis_sigma_scaling:
+                if axis_sigma_scaling==1: xyij=xij
+                elif axis_sigma_scaling==2: xyij=yij
+                elif axis_sigma_scaling==3: xyij=xij+yij
+                if xyij==0:
+                    continue
+                ssigmaxi=ssigmax/xysigma0*xyij
+                ssigmayi=ssigmay/xysigma0*xyij
+                rij=(x-xij)**2/ssigmaxi+(y-yij)**2/ssigmayi # normalized distance^2
+            else:
+                rij=(x-xij)**2/ssigmax+(y-yij)**2/ssigmay # normalized distance^2
+            take=np.where(rij<sigmas**2) # take points up to 3 sigma distance
+            if len(take[0])==0:
+                continue
+            Pij=np.exp(-0.5*rij[take])
+            Pij/=Pij.sum()
+            Iout[i, j]=(Pij*I[take]).sum()
+    return Xout, Yout, Iout
+
+def proc(data):
+    """
+        Serializable function to be called by each thread
+    """
+    return _smooth_data(x=data['x'], y=data['y'], I=data['I'], sigmas=data['sigmas'],
+                        gridx=data['gridx'], gridy=data['gridy'],
+                        sigmax=data['sigmax'], sigmay=data['sigmay'],
+                        x1=data['x1'], x2=data['x2'], y1=data['y1'], y2=data['y2'],
+                        axis_sigma_scaling=data['axis_sigma_scaling'],
+                        xysigma0=data['xysigma0'], indices=data['indices'])
+
+def smooth_data(x, y, I, sigmas=3., gridx=150, gridy=50,
+                sigmax=0.0005, sigmay=0.0005,
+                x1=-0.03, x2=0.03, y1=0.0, y2=0.1,
+                axis_sigma_scaling=None, xysigma0=0.06, pool=5):
+    """
+        Execute legacy smoothing process by spreading it to a pool
+        of processes.
+    """
+    xout=np.linspace(x1, x2, gridx)
+    p = Pool(pool)
+    n = len(xout)
+    step = int(n/5)
+    indices = [[step*i, step*(i+1)] for i in range(5)]
+    indices[-1][1]=n
+
+    inputs = []
+    for i in range(5):
+        _d = dict(x=x, y=y, I=I,
+                 sigmas=sigmas, gridx=gridx, gridy=gridy,
+                 sigmax=sigmax, sigmay=sigmay,
+                 x1=x1, x2=x2, y1=y1, y2=y2,
+                 axis_sigma_scaling=axis_sigma_scaling, xysigma0=xysigma0,
+                 indices=indices[i])
+        inputs.append(_d)
+
+    results = p.map(proc, inputs)
+    x_out = results[0][0]
+    y_out = results[0][1]
+    _data = [r[2] for r in results]
+    intensity_out = reduce((lambda x, y: x+y), _data)
+
+    return x_out, y_out, intensity_out

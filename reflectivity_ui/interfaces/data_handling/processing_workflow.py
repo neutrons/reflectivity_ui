@@ -9,7 +9,8 @@ import math
 import copy
 import logging
 import numpy as np
-from . import quicknxs_io, data_manipulation
+from ..configuration import Configuration
+from . import quicknxs_io, data_manipulation, off_specular
 
 
 DEFAULT_OPTIONS = dict(export_specular=True,
@@ -218,20 +219,29 @@ class ProcessingWorkflow(object):
         # Refresh the reflectivity calculation
         self.data_manager.reduce_offspec()
 
+        if raw or binned:
+            output_data = self.get_offspec_data()
         # Export raw result
         if raw:
-            output_data = self.get_offspec_data()
-
             # QuickNXS format
             output_file_base = self.get_file_name(run_list, process_type='OffSpec')
             self.write_quicknxs(output_data, output_file_base)
 
         # Export binned result
         if binned:
-            output_data, slice_data_dict = self.get_rebinned_offspec_data()
+            # "Smooth" version
+            try:
+                smooth_output = self.smooth_offspec(output_data)
+                output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
+                self.write_quicknxs(smooth_output, output_file_base)
+            except:
+                logging.error("Problem writing smooth off-spec output: %s", sys.exc_value)
+
+            # Binned version
+            binned_data, slice_data_dict = self.get_rebinned_offspec_data()
             # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
-            output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
-            self.write_quicknxs(output_data, output_file_base)
+            output_file_base = self.get_file_name(run_list, process_type='OffSpecBinned')
+            self.write_quicknxs(binned_data, output_file_base)
             if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
                 output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
                 self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
@@ -338,6 +348,68 @@ class ProcessingWorkflow(object):
             data_dict["cross_sections"][pol_state] = _pol_state
         data_dict['ki_max'] = ki_max
         return data_dict
+
+    def smooth_offspec(self, data_dict):
+        """
+            NOTE: 
+
+            Create a smoothed dataset from the off-specular scattering.
+            :param dict data_dict: the output of get_offspec_data()
+
+            Note for my own integrity (MD):
+               I don't think one should smooth data distributions and do any quantitative
+               work with it following this process. The way this was implemented in the
+               previouse QuickNXS, replicated here, is equivalent to adding an extra resolution,
+               which then would have to be properly taken into account when fitting.
+               In addition, the process doesn't produce errors in intensity.
+               It effectively only produces a pretty picture and should only be used as such.
+        """
+        axes = self.output_options['off_sm_axes'] if 'off_sm_axes' in self.output_options else None
+        sigmas = self.output_options['off_sm_sigmas'] if 'off_sm_sigmas' in self.output_options else 3.0
+        gridx = self.output_options['off_sm_gridx'] if 'off_sm_gridx' in self.output_options else 82
+        gridy = self.output_options['off_sm_gridy'] if 'off_sm_gridy' in self.output_options else 164
+        sigmax = self.output_options['off_sm_sigmax'] if 'off_sm_sigmax' in self.output_options else 0.0005
+        sigmay = self.output_options['off_sm_sigmay'] if 'off_sm_sigmay' in self.output_options else 0.0005
+        x1 = self.output_options['off_sm_x1'] if 'off_sm_x1' in self.output_options else -0.015
+        x2 = self.output_options['off_sm_x2'] if 'off_sm_x2' in self.output_options else 0.015
+        y1 = self.output_options['off_sm_y1'] if 'off_sm_y1' in self.output_options else 0.0
+        y2 = self.output_options['off_sm_y2'] if 'off_sm_y2' in self.output_options else 0.15
+
+        output_data={}
+        for channel in data_dict['cross_sections'].keys():
+            data = np.hstack(data_dict[channel])
+            I = data[:, :, 5].flatten()
+            Qzmax = data[:, :, 2].max() * 2.
+
+            if axes == Configuration.QX_VS_QZ:
+                x=data[:, :, 0].flatten()
+                y=data[:, :, 1].flatten()
+                output_data['units'] = ['1/A', '1/A', 'a.u.']
+                output_data['columns'] = ['Qx', 'Qz', 'I']
+                axis_sigma_scaling = 2
+                xysigma0 = Qzmax / 3.
+            elif axes == Configuration.KZI_VS_KZF:
+                x=data[:, :, 2].flatten()
+                y=data[:, :, 3].flatten()
+                output_data['units'] = ['1/A', '1/A', 'a.u.']
+                output_data['columns'] = ['ki_z', 'kf_z', 'I']
+                axis_sigma_scaling = 3
+                xysigma0 = Qzmax / 6.
+            else:
+                x=data[:, :, 4].flatten()
+                y=data[:, :, 1].flatten()
+                output_data['units'] = ['1/A', '1/A', 'a.u.']
+                output_data['columns'] = ['ki_z-kf_z', 'Qz', 'I']
+                axis_sigma_scaling = 2
+                xysigma0 = Qzmax / 3.
+
+            x, y, I = off_specular.smooth_data(x, y, I, sigmas=sigmas,
+                                               gridx=gridx, gridy=gridy, sigmax=sigmax, sigmay=sigmay,
+                                               x1=x1, x2=x2, y1=y1, y2=y2,
+                                               axis_sigma_scaling=axis_sigma_scaling, xysigma0=xysigma0)
+            output_data[channel] = [np.array([x, y, I]).transpose((1, 2, 0))]
+        output_data['ki_max'] = data_dict['ki_max']
+        return output_data
 
     def get_output_data(self):
         """

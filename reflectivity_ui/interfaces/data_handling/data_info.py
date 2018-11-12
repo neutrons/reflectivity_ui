@@ -39,7 +39,7 @@ class DataInfo(object):
         self.peak_position = 0
         self.peak_range = [0,0]
         self.low_res_range = [0,0]
-        self.background = [0,0]
+        self.background = [54,100]
         self.n_events_cutoff = 100
 
         # ROI information
@@ -257,8 +257,10 @@ class DataInfo(object):
         # Background
         if self.use_tight_bck:
             bck_range = [int(max(0.0, peak[0]-self.bck_offset)), int(min(NX_PIXELS, peak[1]+self.bck_offset))]
-        else:
+        elif self.use_roi_bck:
             bck_range = [int(max(0.0, peak[0]-2*self.bck_offset)), int(max(0.0, peak[0]-self.bck_offset))]
+        else:
+            bck_range = [5, 105]
 
         # Store the information we found
         self.peak_position = (peak[1]+peak[0])/2.0
@@ -400,23 +402,28 @@ class Fitter2(object):
         """
             Fit the data distribution in y and get its range.
         """
-        _integral = [np.sum(self.y_vs_counts[:i]) for i in range(len(self.y_vs_counts))]
-        _running = 0.1*np.convolve(self.y_vs_counts, np.ones(10), mode='valid')
-        _deriv = np.asarray([_running[i+1]-_running[i] for i in range(len(_running)-1)])
-        _deriv_err = np.sqrt(_running)[:-1]
-        _deriv_err[_deriv_err<1] = 1
-        _y = np.arange(len(self.y_vs_counts))[5:-5]
-
-        _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
-        peak_min = _coef[1] - np.abs(_coef[2])/2.0 - 2.0 * np.abs(_coef[3])
-        peak_max = _coef[1] + np.abs(_coef[2])/2.0 + 2.0 * np.abs(_coef[3])
-        if peak_max - peak_min < 10:
-            logging.error("Low statisting: trying again")
-            _y_running = self.y[5:-4]
-            _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
-
-        self.guess_y = _coef[1]
-        self.guess_wy = (peak_max - peak_min) / 2.0
-        peak_min = max(peak_min, self.DEAD_PIXELS)
-        peak_max = min(peak_max, self.n_x-self.DEAD_PIXELS)
+        peak_min = 0
+        peak_max = self.n_x
+        try:
+            _integral = [np.sum(self.y_vs_counts[:i]) for i in range(len(self.y_vs_counts))]
+            _running = 0.1*np.convolve(self.y_vs_counts, np.ones(10), mode='valid')
+            _deriv = np.asarray([_running[i+1]-_running[i] for i in range(len(_running)-1)])
+            _deriv_err = np.sqrt(_running)[:-1]
+            _deriv_err[_deriv_err<1] = 1
+            _y = np.arange(len(self.y_vs_counts))[5:-5]
+    
+            _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
+            peak_min = _coef[1] - np.abs(_coef[2])/2.0 - 2.0 * np.abs(_coef[3])
+            peak_max = _coef[1] + np.abs(_coef[2])/2.0 + 2.0 * np.abs(_coef[3])
+            if peak_max - peak_min < 10:
+                logging.error("Low statisting: trying again")
+                _y_running = self.y[5:-4]
+                _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
+    
+            self.guess_y = _coef[1]
+            self.guess_wy = (peak_max - peak_min) / 2.0
+            peak_min = max(peak_min, self.DEAD_PIXELS)
+            peak_max = min(peak_max, self.n_x-self.DEAD_PIXELS)
+        except:
+            logging.error("Could not fit the beam width: %s", sys.exc_value)
         return [peak_min, peak_max]
