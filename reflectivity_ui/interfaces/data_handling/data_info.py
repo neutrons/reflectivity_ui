@@ -341,7 +341,7 @@ class Fitter2(object):
         #    self.guess_x = ordered[0][0]
         #    self.guess_ws = ordered[0][1]
             i_final = 0
-            if (ordered[0][2] - ordered[1][2])/ordered[0][2] < 0.75 and ordered[1][0] < ordered[0][0]:
+            if len(ordered)>1 and (ordered[0][2] - ordered[1][2])/ordered[0][2] < 0.75 and ordered[1][0] < ordered[0][0]:
                 i_final = 1
             self.guess_x = ordered[i_final][0]
             self.guess_ws = ordered[i_final][1]

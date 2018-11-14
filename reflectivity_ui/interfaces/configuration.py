@@ -91,6 +91,15 @@ class Configuration(object):
         self.off_spec_err_weight = False
         self.off_spec_nxbins = 450
         self.off_spec_nybins = 200
+        # Off-specular smoothing
+        self.apply_smoothing = False
+        self.off_spec_sigmas = 3
+        self.off_spec_sigmax = 0.0005
+        self.off_spec_sigmay = 0.0005
+        self.off_spec_x_min = -0.015
+        self.off_spec_x_max = 0.015
+        self.off_spec_y_min = 0.0
+        self.off_spec_y_max = 0.15
 
         # Reduction options
         self.match_direct_beam = False
@@ -187,6 +196,16 @@ class Configuration(object):
         settings.setValue('off_spec_nxbins', self.off_spec_nxbins)
         settings.setValue('off_spec_nybins', self.off_spec_nybins)
 
+        # Off-specular smoothing
+        settings.setValue('apply_smoothing', self.apply_smoothing)
+        settings.setValue('off_spec_sigmas', self.off_spec_sigmas)
+        settings.setValue('off_spec_sigmax', self.off_spec_sigmax)
+        settings.setValue('off_spec_sigmay', self.off_spec_sigmay)
+        settings.setValue('off_spec_x_min', self.off_spec_x_min)
+        settings.setValue('off_spec_x_max', self.off_spec_x_max)
+        settings.setValue('off_spec_y_min', self.off_spec_y_min)
+        settings.setValue('off_spec_y_max', self.off_spec_y_max)
+
     def from_q_settings(self, settings):
         """ Retrieve configuration from QSettings """
 
@@ -249,3 +268,13 @@ class Configuration(object):
         self.off_spec_err_weight = _verify_true('off_spec_err_weight', self.off_spec_err_weight)
         self.off_spec_nxbins = int(settings.value('off_spec_nxbins', self.off_spec_nxbins))
         self.off_spec_nybins = int(settings.value('off_spec_nybins', self.off_spec_nybins))
+
+        # Off-specular smoothing
+        self.apply_smoothing = _verify_true('apply_smoothing', self.apply_smoothing)
+        self.off_spec_sigmas = int(settings.value('off_spec_sigmas', self.off_spec_sigmas))
+        self.off_spec_sigmax = float(settings.value('off_spec_sigmax', self.off_spec_sigmax))
+        self.off_spec_sigmay = float(settings.value('off_spec_sigmay', self.off_spec_sigmay))
+        self.off_spec_x_min = float(settings.value('off_spec_x_min', self.off_spec_x_min))
+        self.off_spec_x_max = float(settings.value('off_spec_x_max', self.off_spec_x_max))
+        self.off_spec_y_min = float(settings.value('off_spec_y_min', self.off_spec_y_min))
+        self.off_spec_y_max = float(settings.value('off_spec_y_max', self.off_spec_y_max))

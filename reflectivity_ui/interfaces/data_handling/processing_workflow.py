@@ -229,13 +229,14 @@ class ProcessingWorkflow(object):
 
         # Export binned result
         if binned:
-            # "Smooth" version
-            try:
-                smooth_output = self.smooth_offspec(output_data)
-                output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
-                self.write_quicknxs(smooth_output, output_file_base)
-            except:
-                logging.error("Problem writing smooth off-spec output: %s", sys.exc_value)
+            if self.data_manager.active_channel.configuration.apply_smoothing:
+                # "Smooth" version
+                try:
+                    smooth_output = self.smooth_offspec(output_data)
+                    output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
+                    self.write_quicknxs(smooth_output, output_file_base)
+                except:
+                    logging.error("Problem writing smooth off-spec output: %s", sys.exc_value)
 
             # Binned version
             binned_data, slice_data_dict = self.get_rebinned_offspec_data()
@@ -364,17 +365,7 @@ class ProcessingWorkflow(object):
                In addition, the process doesn't produce errors in intensity.
                It effectively only produces a pretty picture and should only be used as such.
         """
-        axes = self.output_options['off_sm_axes'] if 'off_sm_axes' in self.output_options else None
-        sigmas = self.output_options['off_sm_sigmas'] if 'off_sm_sigmas' in self.output_options else 3.0
-        gridx = self.output_options['off_sm_gridx'] if 'off_sm_gridx' in self.output_options else 82
-        gridy = self.output_options['off_sm_gridy'] if 'off_sm_gridy' in self.output_options else 164
-        sigmax = self.output_options['off_sm_sigmax'] if 'off_sm_sigmax' in self.output_options else 0.0005
-        sigmay = self.output_options['off_sm_sigmay'] if 'off_sm_sigmay' in self.output_options else 0.0005
-        x1 = self.output_options['off_sm_x1'] if 'off_sm_x1' in self.output_options else -0.015
-        x2 = self.output_options['off_sm_x2'] if 'off_sm_x2' in self.output_options else 0.015
-        y1 = self.output_options['off_sm_y1'] if 'off_sm_y1' in self.output_options else 0.0
-        y2 = self.output_options['off_sm_y2'] if 'off_sm_y2' in self.output_options else 0.15
-
+        axes = self.data_manager.active_channel.configuration.off_spec_x_axis
         output_data={}
         for channel in data_dict['cross_sections'].keys():
             data = np.hstack(data_dict[channel])
@@ -403,9 +394,16 @@ class ProcessingWorkflow(object):
                 axis_sigma_scaling = 2
                 xysigma0 = Qzmax / 3.
 
-            x, y, I = off_specular.smooth_data(x, y, I, sigmas=sigmas,
-                                               gridx=gridx, gridy=gridy, sigmax=sigmax, sigmay=sigmay,
-                                               x1=x1, x2=x2, y1=y1, y2=y2,
+            x, y, I = off_specular.smooth_data(x, y, I,
+                                               sigmas=self.data_manager.active_channel.configuration.off_spec_sigmas,
+                                               gridx=self.data_manager.active_channel.configuration.off_spec_nxbins,
+                                               gridy=self.data_manager.active_channel.configuration.off_spec_nybins,
+                                               sigmax=self.data_manager.active_channel.configuration.off_spec_sigmax,
+                                               sigmay=self.data_manager.active_channel.configuration.off_spec_sigmay,
+                                               x1=self.data_manager.active_channel.configuration.off_spec_x_min,
+                                               x2=self.data_manager.active_channel.configuration.off_spec_x_max,
+                                               y1=self.data_manager.active_channel.configuration.off_spec_y_min,
+                                               y2=self.data_manager.active_channel.configuration.off_spec_y_max,
                                                axis_sigma_scaling=axis_sigma_scaling, xysigma0=xysigma0)
             output_data[channel] = [np.array([x, y, I]).transpose((1, 2, 0))]
         output_data['ki_max'] = data_dict['ki_max']

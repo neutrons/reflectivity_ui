@@ -859,6 +859,15 @@ class MainHandler(object):
         configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
         configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
         configuration.off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()
+        # Off-spec smoothing options
+        configuration.apply_smoothing = self.ui.offspec_smooth_checkbox.isChecked()
+        configuration.off_spec_sigmas = self.ui.offspec_sigmas_spinbox.value()
+        configuration.off_spec_sigmax = self.ui.offspec_sigmax_spinbox.value()
+        configuration.off_spec_sigmay = self.ui.offspec_sigmay_spinbox.value()
+        configuration.off_spec_x_min = self.ui.offspec_x_min_spinbox.value()
+        configuration.off_spec_x_max = self.ui.offspec_x_max_spinbox.value()
+        configuration.off_spec_y_min = self.ui.offspec_y_min_spinbox.value()
+        configuration.off_spec_y_max = self.ui.offspec_y_max_spinbox.value()
 
         # Make the changes persistent
         configuration.to_q_settings(self.main_window.settings)
@@ -936,6 +945,15 @@ class MainHandler(object):
         self.ui.offspec_err_weight_checkbox.setChecked(configuration.off_spec_err_weight)
         self.ui.offspec_rebin_x_bins_spinbox.setValue(configuration.off_spec_nxbins)
         self.ui.offspec_rebin_y_bins_spinbox.setValue(configuration.off_spec_nybins)
+        # Off-spec smoothing options
+        self.ui.offspec_smooth_checkbox.setChecked(configuration.apply_smoothing)
+        self.ui.offspec_sigmas_spinbox.setValue(configuration.off_spec_sigmas)
+        self.ui.offspec_sigmax_spinbox.setValue(configuration.off_spec_sigmax)
+        self.ui.offspec_sigmay_spinbox.setValue(configuration.off_spec_sigmay)
+        self.ui.offspec_x_min_spinbox.setValue(configuration.off_spec_x_min)
+        self.ui.offspec_x_max_spinbox.setValue(configuration.off_spec_x_max)
+        self.ui.offspec_y_min_spinbox.setValue(configuration.off_spec_y_min)
+        self.ui.offspec_y_max_spinbox.setValue(configuration.off_spec_y_max)
 
     def stitch_reflectivity(self):
         """
