@@ -47,11 +47,15 @@ class PlotHandler(object):
         for plot in [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
                      self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
                      self.ui.xy_overview, self.ui.xtof_overview,
-                     self.ui.x_project, self.ui.y_project, self.ui.refl]:
+                     self.ui.x_project, self.ui.y_project, self.ui.refl,
+                     self.ui.offspec_pp, self.ui.offspec_mm,
+                     self.ui.offspec_pm, self.ui.offspec_mp]:
             plot.canvas.mpl_connect('motion_notify_event', self.plot_mouse_event)
         for plot in [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
                      self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
-                     self.ui.xy_overview, self.ui.xtof_overview]:
+                     self.ui.xy_overview, self.ui.xtof_overview,
+                     self.ui.offspec_pp, self.ui.offspec_mm,
+                     self.ui.offspec_pm, self.ui.offspec_mp]:
             plot.canvas.mpl_connect('scroll_event', self.change_color_scale)
         #self.ui.x_project.canvas.mpl_connect('motion_notify_event', self.plot_pick_x)
         self.ui.x_project.canvas.mpl_connect('button_press_event', self.plot_pick_x)

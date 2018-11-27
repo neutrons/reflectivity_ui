@@ -493,7 +493,7 @@ class PlotManager(object):
             or self.main_window.data_manager.active_channel.dr is None:
             self.main_window.ui.refl.clear()
             self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
-                                        u'No points to show\nin active dataset!',
+                                        u'No data',
                                         horizontalalignment='center',
                                         verticalalignment='center',
                                         fontsize=14,

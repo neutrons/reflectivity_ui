@@ -194,7 +194,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=3, height=3, dpi=100, sharex=None, sharey=None, adjust={}):
-        self.fig=Figure(figsize=(width, height), dpi=dpi, facecolor='#FFFFFF')
+        self.fig=Figure(figsize=(width, height), dpi=dpi, facecolor='None')
         self.ax=self.fig.add_subplot(111, sharex=sharex, sharey=sharey)
         self.fig.subplots_adjust(left=0.15, bottom=0.15, right=0.95, top=0.95)
         self.xtitle=""

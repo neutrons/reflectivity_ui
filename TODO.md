@@ -2,42 +2,41 @@
 To-do list:
 
 ## Interface
-- Make sure matplotlib widgets work.
 - Add log window
 - Add pop-up message boxes for errors?
 - Create a widget to change the mantid path
-- Add Huber X cut
-- Update affected reflectivity when a direct beam run is deleted or changed.
-- Do something with DIRPIX and DANGLE0 overwrite
-- Make sure all the config properties make it to QSettings
 - Refactor the configuration object of the NexusData class
-- Add mantid script as a possible output file
 - Jupyter notebook as output
 - Proper mantid script as output
-- Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names
-- Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
 - Plotting: allow for log(x)
-- Plot slices in 2D off-specular data
-- When loading a reduced file, the table of DB is not updated. (Rows are added but are blank)
 
 ## Data Manager Design
-- Figure out which cross-section to use for the direct beam if there are more than a single one.
-- Deal with peak position when it's not in the middle of the range
+- Add option to match direct beam cross-seciont to data cross-section, otherwise sum up all cross-section in the direct beam data file.
 - Emptying cache should also delete the mantid workspaces
 
 ## Reduction
-- q_range = [qMin, qStep, constant / tof_range[0] * 1.2]   If supplied q_min is larger than q_max, deal with it.
-- Add option not to rebin, perhaps when qMin is set to zero or not supplied
 - Add use-sangle option to output QuickNXS file.
 - Stitching  -> make Stitch1DMany take scaling factor for the first workspace
-- Trim workspaces when stitching
-- Add option for constant Q
 - Add an option to choose which cross-sections to use for asymmetry calculation
 - Add Q binning option for output
-- Background subtraction for offspec and GISANS
 - Mantid: add option not to rebin in Q at the end.
 - Write output algo that takes group workspace.
 - Automate selection of const-Q binning
+
+## Off-spec
+- Only recalculate off-spec when needed (need to add a need_recalc data member)
+- Check that the overall normalization is the same as with old QuickNXS when validating
+- Add off-spec coordinates to toolbar
+- Off-spec needs to use option to skip first and last points
+  (which only works on specular data, which uses a different binning)
+  We may want to harmonize the number of skipped points according to the difference between
+  the specular and off-specular binning.
+- Try using events directly when computing offspecular.
+- Plot slices in 2D off-specular data
+
+## GISANS
+- Add background subtraction
+- Option to skip first and last points
 
 ## Testing
 - Automated testing
@@ -46,6 +45,16 @@ To-do list:
 - Test Genx output
 
 ## DONE
+- Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names
+- Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
+- Update affected reflectivity when a direct beam run is deleted or changed.
+- Make sure all the config properties make it to QSettings
+- Add mantid script as a possible output file
+- Background subtraction for offspec
+- Trim workspaces when stitching
+- Add option for constant Q
+- Do something with DIRPIX and DANGLE0 overwrite
+- Make sure matplotlib widgets work.
 - Improve data manager design to handle direct beams more cleanly
 - SORT RUNS WHEN LOADING REDUCED FILE
 - Add progress bar
@@ -74,5 +83,5 @@ To-do list:
 - Add InputNormalizationWorkspace as input to MagnetismReflectometerReduction
 - Fixed saving/loading of peak ranges
 - Add option to cut the first N and last M points -> Needs to be saved properly to file
-
+- Deal with peak position when it's not in the middle of the range
 
