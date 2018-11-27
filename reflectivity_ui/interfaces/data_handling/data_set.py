@@ -18,7 +18,7 @@ application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 # Set Mantid logging level to warnings
-#api.ConfigService.setConsoleLogLevel(3)
+api.ConfigService.setLogLevel(3)
 
 from .data_info import DataInfo
 from . import off_specular
@@ -179,7 +179,7 @@ class NexusData(object):
         norm_x_max = run_object.getProperty("norm_peak_max").value
         norm_y_min = run_object.getProperty("norm_low_res_min").value
         norm_y_max = run_object.getProperty("norm_low_res_max").value
-        tth = run_object.getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
+        tth = run_object.getProperty("two_theta").value * math.pi / 360.0
         quicknxs_scale = (float(norm_x_max)-float(norm_x_min)) * (float(norm_y_max)-float(norm_y_min))
         quicknxs_scale /= (float(peak_max)-float(peak_min)) * (float(low_res_max)-float(low_res_min))
         quicknxs_scale *= 0.005 / math.sin(tth)
