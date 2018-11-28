@@ -68,6 +68,7 @@ class Ui_Form(object):
         self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.frame_8)
         self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.refl_preview_checkbox = QtWidgets.QCheckBox(self.frame_8)
+        self.refl_preview_checkbox.setChecked(False)
         self.refl_preview_checkbox.setObjectName("refl_preview_checkbox")
         self.verticalLayout_10.addWidget(self.refl_preview_checkbox)
         self.pushButton = QtWidgets.QPushButton(self.frame_8)
