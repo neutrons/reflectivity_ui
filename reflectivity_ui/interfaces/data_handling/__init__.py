@@ -12,5 +12,5 @@ class ApplicationConfiguration(object):
     ANA_VETO = "AnalyzerVeto"
 
     def __init__(self):
-        #self.mantid_path = '/opt/mantidnightly/bin'
-        self.mantid_path = '/SNS/users/m2d/mantid_build_area/master/bin'
+        self.mantid_path = '/opt/mantidnightly/bin'
+        #self.mantid_path = '/SNS/users/m2d/mantid_build_area/master/bin'

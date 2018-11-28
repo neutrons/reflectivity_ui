@@ -182,7 +182,10 @@ class NexusData(object):
         tth = run_object.getProperty("two_theta").value * math.pi / 360.0
         quicknxs_scale = (float(norm_x_max)-float(norm_x_min)) * (float(norm_y_max)-float(norm_y_min))
         quicknxs_scale /= (float(peak_max)-float(peak_min)) * (float(low_res_max)-float(low_res_min))
-        quicknxs_scale *= 0.005 / math.sin(tth)
+        logging.warning("Scale size = %s", str((float(peak_max)-float(peak_min)) * (float(low_res_max)-float(low_res_min))))
+        logging.warning("Alpha_i = %s", str(tth))
+        _scale = 0.005 / math.sin(tth) if tth > 0.0002 else 1.0
+        quicknxs_scale *= _scale
 
         ws = api.Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws,
                        factor=quicknxs_scale, Operation='Multiply')

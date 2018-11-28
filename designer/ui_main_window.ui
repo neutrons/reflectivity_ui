@@ -624,8 +624,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>336</width>
-             <height>163</height>
+             <width>348</width>
+             <height>183</height>
             </rect>
            </property>
            <attribute name="label">
@@ -851,8 +851,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>227</width>
-             <height>115</height>
+             <width>348</width>
+             <height>183</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1985,7 +1985,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>false</bool>
+                       <bool>true</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
