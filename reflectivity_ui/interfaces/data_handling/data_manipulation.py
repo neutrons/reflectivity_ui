@@ -83,6 +83,7 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
         ws = api.CreateWorkspace(DataX=reduction_list[i].cross_sections[xs].q[p_0:p_n],
                                  DataY=reduction_list[i].cross_sections[xs]._r[p_0:p_n],
                                  DataE=reduction_list[i].cross_sections[xs]._dr[p_0:p_n])
+        ws.setDistribution(True)
         ws = api.ConvertToHistogram(ws)
         if _previous_ws is not None:
             _, scale = api.Stitch1D(_previous_ws, ws)

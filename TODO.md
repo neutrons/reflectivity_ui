@@ -26,7 +26,6 @@ To-do list:
 ## Off-spec
 - Only recalculate off-spec when needed (need to add a need_recalc data member)
 - Check that the overall normalization is the same as with old QuickNXS when validating
-- Add off-spec coordinates to toolbar
 - Off-spec needs to use option to skip first and last points
   (which only works on specular data, which uses a different binning)
   We may want to harmonize the number of skipped points according to the difference between
@@ -37,6 +36,7 @@ To-do list:
 ## GISANS
 - Add background subtraction
 - Option to skip first and last points
+- Generate binned output
 
 ## Testing
 - Automated testing
@@ -45,6 +45,8 @@ To-do list:
 - Test Genx output
 
 ## DONE
+- Add off-spec coordinates to toolbar
+- Verify off-spec normalization vs peak ranges and two-theta
 - Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names
 - Use Analyzer log to decide if the analyzer was used and name cross-sections accordingly.
 - Update affected reflectivity when a direct beam run is deleted or changed.

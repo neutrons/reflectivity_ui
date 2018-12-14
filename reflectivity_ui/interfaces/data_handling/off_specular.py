@@ -165,7 +165,7 @@ def closest_bin(q, bin_edges):
     return None
 
 def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights=True,
-                  n_bins_x=350, n_bins_y=350):
+                  n_bins_x=350, n_bins_y=350, x_min=-0.015, x_max=0.015, y_min=0, y_max=0.1):
     """
         Rebin off-specular data and extract cut at given Qz values.
         Note: the analysis computers with RHEL7 have Scipy 0.12 installed, which makes
@@ -205,11 +205,13 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
                                                                        y_values[indices],
                                                                        _r[indices],
                                                                        statistic='sum',
+                                                                       range=[[x_min, x_max], [y_min, y_max]],
                                                                        bins=_bins)
         # - Sum of weights
         _w = 1/dS**2
         w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices], y_values[indices], _w[indices],
                                                                statistic='sum',
+                                                               range=[[x_min, x_max], [y_min, y_max]],
                                                                bins=[x_edge, y_edge])
 
         result = statistic / w_statistic

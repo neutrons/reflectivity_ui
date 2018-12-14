@@ -407,6 +407,9 @@ class PlotManager(object):
 
         progress = self.main_window.file_handler.new_progress_reporter()
         n_total = len(self.main_window.data_manager.reduction_list)
+        if n_total == 0:
+            progress(100, message="No data to reduce: add data to the reduction list", out_of=100)
+            return
         progress(0.1, message="Computing off-specular", out_of=n_total)
         final_msg = "Off-specular calculation complete"
         for i_run, nexus_data in enumerate(self.main_window.data_manager.reduction_list):

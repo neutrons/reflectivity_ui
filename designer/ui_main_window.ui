@@ -617,6 +617,51 @@
               </property>
              </widget>
             </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="final_rebin_checkbox">
+              <property name="toolTip">
+               <string>Check for apply a final Q rebinning</string>
+              </property>
+              <property name="text">
+               <string>Final rebin</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="2">
+             <widget class="QLabel" name="label_45">
+              <property name="text">
+               <string>Q steps</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="3">
+             <widget class="QDoubleSpinBox" name="q_rebin_spinbox">
+              <property name="toolTip">
+               <string>Step size in Q for rebinning. Negative number produce a logarithmic binning</string>
+              </property>
+              <property name="suffix">
+               <string> 1/A</string>
+              </property>
+              <property name="decimals">
+               <number>3</number>
+              </property>
+              <property name="minimum">
+               <double>-0.100000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.001000000000000</double>
+              </property>
+              <property name="value">
+               <double>-0.010000000000000</double>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="page_2">
@@ -624,8 +669,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>348</width>
-             <height>183</height>
+             <width>336</width>
+             <height>163</height>
             </rect>
            </property>
            <attribute name="label">
@@ -851,8 +896,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>348</width>
-             <height>183</height>
+             <width>227</width>
+             <height>115</height>
             </rect>
            </property>
            <attribute name="label">
@@ -5260,6 +5305,38 @@
     </hint>
     <hint type="destinationlabel">
      <x>921</x>
+     <y>503</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>final_rebin_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>changeRegionValues()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>795</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>934</x>
+     <y>503</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>q_rebin_spinbox</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>changeRegionValues()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>291</x>
+     <y>795</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>934</x>
      <y>503</y>
     </hint>
    </hints>

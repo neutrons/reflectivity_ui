@@ -77,6 +77,10 @@ class Configuration(object):
         self.cut_first_n_points = 1
         self.cut_last_n_points = 1
 
+        # Final Q rebin
+        self.do_final_rebin = True
+        self.final_rebin_step = -0.01
+
         # UI elements
         self.normalize_x_tof = False
         self.x_wl_map = False
@@ -187,6 +191,8 @@ class Configuration(object):
         settings.setValue('set_direct_angle_offset', self.set_direct_angle_offset)
         settings.setValue('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite)
         settings.setValue('sample_size', self.sample_size)
+        settings.setValue('do_final_rebin', self.do_final_rebin)
+        settings.setValue('final_rebin_step', self.final_rebin_step)
 
         # Off-specular options
         settings.setValue('off_spec_x_axis', self.off_spec_x_axis)
@@ -256,6 +262,8 @@ class Configuration(object):
         self.set_direct_angle_offset = _verify_true('set_direct_angle_offset', self.set_direct_angle_offset)
         self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
         self.sample_size = float(settings.value('sample_size', self.sample_size))
+        self.do_final_rebin = _verify_true('do_final_rebin', self.do_final_rebin)
+        self.final_rebin_step = float(settings.value('final_rebin_step', self.final_rebin_step))
 
         # Off-specular options
         self.off_spec_x_axis = int(settings.value('off_spec_x_axis', self.off_spec_x_axis))

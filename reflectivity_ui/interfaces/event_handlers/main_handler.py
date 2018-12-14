@@ -772,6 +772,13 @@ class MainHandler(object):
             valid_change = valid_change or \
                 not configuration.direct_angle_offset_overwrite == self.ui.dangle0Overwrite.value()
 
+        # Final rebin
+        valid_change = valid_change or \
+            not configuration.do_final_rebin == self.ui.final_rebin_checkbox.isChecked()
+
+        valid_change = valid_change or \
+            not configuration.final_rebin_step == self.ui.q_rebin_spinbox.value()
+
         if valid_change:
             return 1
         if replot_change:
@@ -834,6 +841,8 @@ class MainHandler(object):
         configuration.direct_pixel_overwrite = self.ui.directPixelOverwrite.value()
         configuration.direct_angle_offset_overwrite = self.ui.dangle0Overwrite.value()
         configuration.sample_size = self.ui.sample_size_spinbox.value()
+        configuration.do_final_rebin = self.ui.final_rebin_checkbox.isChecked()
+        configuration.final_rebin_step = self.ui.q_rebin_spinbox.value()
 
         # UI elements
         configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
@@ -925,6 +934,8 @@ class MainHandler(object):
         self.ui.directPixelOverwrite.setValue(configuration.direct_pixel_overwrite)
         self.ui.dangle0Overwrite.setValue(configuration.direct_angle_offset_overwrite)
         self.ui.sample_size_spinbox.setValue(configuration.sample_size)
+        self.ui.final_rebin_checkbox.setChecked(configuration.do_final_rebin)
+        self.ui.q_rebin_spinbox.setValue(configuration.final_rebin_step)
 
         # UI elements
         self.ui.normalizeXTof.setChecked(configuration.normalize_x_tof)
