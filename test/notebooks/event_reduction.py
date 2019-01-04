@@ -122,6 +122,8 @@ class EventReflectivity(object):
         self.tof_range = tof_range
         self.theta = theta
         self.sample_length = sample_length
+        self._offspec_x_bins = None
+        self._offspec_z_bins = None
 
         # Process workspaces
         if self.tof_range is not None:
@@ -187,14 +189,14 @@ class EventReflectivity(object):
                                           peak=self.norm_peak, low_res=self.norm_low_res,
                                           theta=self.theta, q_summing=False)
 
-        if self.norm_bck is not None:
+        if False and self.norm_bck is not None:
             norm_bck, d_norm_bck = self._norm_bck_in_pixel()
             norm -= norm_bck
             d_norm = np.sqrt(d_norm**2 + d_norm_bck**2)
 
         db_bins = norm>0
 
-        if self.signal_bck is not None:
+        if False and self.signal_bck is not None:
             refl_bck, d_refl_bck = self._signal_bck_in_pixel()
             refl -= refl_bck
             d_refl = np.sqrt(d_refl**2 + d_refl_bck**2)
@@ -208,77 +210,6 @@ class EventReflectivity(object):
         self.refl = refl
         self.d_refl = d_refl
         return self.q_bins, refl, d_refl
-
-    def _old_off_specular(self, x_axis=None, x_min=-0.015, x_max=0.015, x_npts=50,
-                     z_min=None, z_max=None, z_npts=-120, bck_in_q=None):
-        """
-            Compute off-specular
-            :param x_axis: Axis selection
-            :param x_min: Min value on x-axis
-            :param x_max: Max value on x-axis
-            :param x_npts: Number of points in x (negative will produce a log scale)
-            :param z_min: Min value on z-axis (if none, default Qz will be used)
-            :param z_max: Max value on z-axis (if none, default Qz will be used)
-            :param z_npts: Number of points in z (negative will produce a log scale)
-        """
-        # Z axis binning
-        qz_bins = self.q_bins
-        if z_min is not None and z_max is not None:
-            if z_npts < 0:
-                qz_bins = np.logspace(np.log10(z_min), np.log10(z_max), num=np.abs(z_npts))
-            else:
-                qz_bins = np.linspace(z_min, z_max, num=z_npts)
-
-        # X axis binning
-        if x_npts > 0:
-            qx_bins = np.linspace(x_min, x_max, num=x_npts)
-        else:
-            qx_bins = np.logspace(np.log10(x_min), np.log10(x_max), num=np.abs(x_npts))
-
-        # Unnormalized signal
-        refl_2d, d_refl_2d = self._slow_off_specular(self._ws_sc, x_bins=qx_bins, z_bins=qz_bins,
-                                        peak_position=self.specular_pixel,
-                                        theta=self.theta, x_axis=x_axis)
-
-        # Normalization
-        if True:
-            norm, d_norm = self._reflectivity(self._ws_db, peak_position=0, q_bins=qz_bins,
-                                              peak=self.norm_peak, low_res=self.norm_low_res,
-                                              theta=self.theta, q_summing=False)
-            if self.norm_bck is not None:
-                norm_bck, d_norm_bck = self._norm_bck_in_pixel(q_bins=qz_bins)
-                norm -= norm_bck
-                d_norm = np.sqrt(d_norm**2 + d_norm_bck**2)
-        else:
-            # New normalization
-            wl_list = self._get_events(self._ws_db, peak=self.norm_peak, low_res=self.norm_low_res)
-            norm, d_norm = self._off_specular_normalization(self._ws_sc, wl_list=wl_list,
-                                                            x_bins=qx_bins, z_bins=qz_bins,
-                                                            peak_position=self.specular_pixel,
-                                                            theta=self.theta, x_axis=x_axis)
-
-        # Background
-        if self.signal_bck:
-            if bck_in_q is None:
-                refl_bck, d_refl_bck = self._signal_bck_in_pixel(normalize_to_single_pixel=True, q_bins=qz_bins)
-            else:
-                _, refl_bck, d_refl_bck = self.slice(bck_in_q[0], bck_in_q[1],
-                                                     x_bins=qx_bins, z_bins=qz_bins,
-                                                     refl=refl_2d, d_refl=d_refl_2d,
-                                                     normalize=True)
-
-            refl_2d -= refl_bck
-            d_refl_2d = np.sqrt(d_refl_2d**2 + d_refl_bck**2)
-
-        _refl = refl_2d/norm
-        _d_refl = np.sqrt(d_refl_2d**2 / norm**2 + refl_2d**2 * d_norm**2 / norm**4)
-
-        self._offspec_x_bins = qx_bins
-        self._offspec_z_bins = qz_bins
-        self._offspec_refl = _refl
-        self._offspec_d_refl = _d_refl
-
-        return qx_bins, qz_bins, _refl, _d_refl
 
     def _signal_bck_in_pixel(self, normalize_to_single_pixel=False, q_bins=None):
         q_bins = self.q_bins if q_bins is None else q_bins
@@ -396,7 +327,7 @@ class EventReflectivity(object):
             qx_bins = np.logspace(np.log10(x_min), np.log10(x_max), num=np.abs(x_npts))
 
         wl_events = self._get_events(self._ws_db, self.norm_peak, self.norm_low_res)
-        wl_dist, wl_bins = np.histogram(wl_events, bins=100)
+        wl_dist, wl_bins = np.histogram(wl_events, bins=60)
         wl_middle = [(wl_bins[i+1]+wl_bins[i])/2.0 for i in range(len(wl_bins)-1)]
 
         _refl, _d_refl = self._off_specular(self._ws_sc, wl_dist, wl_middle, qx_bins, qz_bins,
@@ -431,95 +362,17 @@ class EventReflectivity(object):
         refl = np.zeros([len(x_bins)-1, len(z_bins)-1])
         counts = np.zeros([len(x_bins)-1, len(z_bins)-1])
 
-        for i in range(0, self.n_y):
-            for j in range(0, self.n_x):
-                pixel = j * self.n_y + i
-                evt_list = ws.getSpectrum(pixel)
-                if evt_list.getNumberEvents() == 0:
-                    continue
-
-                wl_list = evt_list.getTofs() / self.constant
-                k = 2.0 * np.pi / wl_list
-                wl_weights = 1.0/np.interp(wl_list, wl_bins, wl_dist, 0, 0)
-
-                x_distance = float(peak_position-j) * self.pixel_width
-                delta_theta_f = np.arctan(x_distance / self.det_distance)
-                theta_f = theta + delta_theta_f
-
-                qz = k * (np.sin(theta_f) + np.sin(theta))
-                qx = k * (np.cos(theta_f) - np.cos(theta))
-                ki_z = k * np.sin(theta)
-                kf_z = k * np.sin(theta_f)
-
-                _x = qx
-                _z = qz
-                if x_axis == EventReflectivity.DELTA_KZ_VS_QZ:
-                    _x = (ki_z - kf_z)
-                elif x_axis == EventReflectivity.KZI_VS_KZF:
-                    _x = ki_z
-                    _z = kf_z
-
-                #if np.max(_x) < x_bins[0] or np.min(_x) > x_bins[-1]:
-                #    continue
-            
-                _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins], weights=wl_weights)
-                refl += _counts
-                _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins])
-                counts += _counts
-
-        d_refl_sq =  refl / np.sqrt(counts) / charge
-        refl /= charge 
-
-        return refl, d_refl_sq
-
-    def _slow_off_specular(self, ws, x_bins, z_bins, peak_position, theta, x_axis=None):
-        charge = ws.getRun()['gd_prtn_chrg'].value
-        refl = np.zeros([len(x_bins)-1, len(z_bins)-1])
-
-        for i in range(0, self.n_y):
-            for j in range(0, self.n_x):
-                pixel = j * self.n_y + i
-                evt_list = ws.getSpectrum(pixel)
-                if evt_list.getNumberEvents() == 0:
-                    continue
-
-                wl_list = evt_list.getTofs() / self.constant
-                k = 2.0 * np.pi / wl_list
-
-                x_distance = float(peak_position-j) * self.pixel_width
-                delta_theta_f = np.arctan(x_distance / self.det_distance)
-                theta_f = theta + delta_theta_f
-
-                qz = k * (np.sin(theta_f) + np.sin(theta))
-                qx = k * (np.cos(theta_f) - np.cos(theta))
-                ki_z = k * np.sin(theta)
-                kf_z = k * np.sin(theta_f)
-
-                _x = qx
-                _z = qz
-                if x_axis == EventReflectivity.DELTA_KZ_VS_QZ:
-                    _x = (ki_z - kf_z)
-                elif x_axis == EventReflectivity.KZI_VS_KZF:
-                    _x = ki_z
-                    _z = kf_z
-                _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins])
-                refl += _counts
-
-        d_refl_sq = np.sqrt(refl) / charge
-        refl /= charge 
-
-        return refl, d_refl_sq
-
-    def _slow_off_specular_normalization(self, ws, wl_list, x_bins, z_bins,
-                                         peak_position, theta, x_axis=None):
-        """
-            :param wl_list: list of direct beam events
-        """
-        charge = ws.getRun()['gd_prtn_chrg'].value
-        refl = np.zeros([len(x_bins)-1, len(z_bins)-1])
-        k = 2.0 * np.pi / wl_list
-
         for j in range(0, self.n_x):
+            wl_list = np.asarray([])
+            for i in range(self.signal_low_res[0], int(self.signal_low_res[1]+1)):
+                pixel = j * self.n_y + i
+                evt_list = ws.getSpectrum(pixel)
+                wl_events = evt_list.getTofs() / self.constant
+                wl_list = np.concatenate((wl_events, wl_list))
+
+            k = 2.0 * np.pi / wl_list
+            wl_weights = 1.0/np.interp(wl_list, wl_bins, wl_dist, np.inf, np.inf)
+
             x_distance = float(peak_position-j) * self.pixel_width
             delta_theta_f = np.arctan(x_distance / self.det_distance)
             theta_f = theta + delta_theta_f
@@ -537,80 +390,14 @@ class EventReflectivity(object):
                 _x = ki_z
                 _z = kf_z
 
-            if np.max(_x) < x_bins[0] or np.min(_x) > x_bins[-1]:
-                continue
-            _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins])
+            histo_weigths = wl_weights * _z / wl_list
+            _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins], weights=histo_weigths)
             refl += _counts
+            _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins])
+            counts += _counts
 
-        d_refl_sq = np.sqrt(refl) / charge
-        refl /= charge 
-
-        return refl, d_refl_sq
-
-    def _off_specular_normalization(self, ws, wl_list, x_bins, z_bins,
-                                    peak_position, theta, x_axis=None, pool=5):
-        """
-            :param wl_list: list of direct beam events
-        """
-        x_axis = EventReflectivity.QX_VS_QZ if x_axis is None else x_axis
-        charge = ws.getRun()['gd_prtn_chrg'].value
-        k = 2.0 * np.pi / wl_list
-
-        pool = int(pool)
-        p = multiprocessing.Pool(pool)
-        step = int(self.n_x/pool)
-        indices = [[step*i, step*(i+1)] for i in range(pool)]
-        indices[-1][1]=self.n_x
-        inputs = []
-        for i in range(pool):
-            _d = dict(indices=indices[i], k=k, x_bins=x_bins, z_bins=z_bins, pixel_width=self.pixel_width,
-                      det_distance=self.det_distance, peak_position=peak_position,
-                      theta=theta, x_axis=int(x_axis))
-            inputs.append(_d)
-
-        results = p.map(proc, inputs)
-
-        refl = reduce((lambda x, y: x+y), results)
-        d_refl_sq = np.sqrt(refl) / charge
-        refl /= charge 
+        bin_size = z_bins[1] - z_bins[0]
+        d_refl_sq =  refl / np.sqrt(counts) / charge / bin_size
+        refl /= charge * bin_size
 
         return refl, d_refl_sq
-
-
-def proc(data):
-    return _process_off_specular(indices=data['indices'], k=data['k'], x_bins=data['x_bins'],
-                                 z_bins=data['z_bins'], pixel_width=data['pixel_width'],
-                                 det_distance=data['det_distance'], peak_position=data['peak_position'],
-                                 theta=data['theta'], x_axis=data['x_axis'])
-
-def _process_off_specular(indices, k, x_bins, z_bins, pixel_width, det_distance,
-                                peak_position, theta, x_axis=None):
-    refl = np.zeros([len(x_bins)-1, len(z_bins)-1])
-    #refl = np.zeros(len(z_bins)-1)
-    for j in range(indices[0], indices[1]):
-        x_distance = float(peak_position-j) * pixel_width
-        delta_theta_f = np.arctan(x_distance / det_distance)
-        theta_f = theta + delta_theta_f
-
-        qz = k * (np.sin(theta_f) + np.sin(theta))
-        qx = k * (np.cos(theta_f) - np.cos(theta))
-        ki_z = k * np.sin(theta)
-        kf_z = k * np.sin(theta_f)
-
-        _x = qx
-        _z = qz
-        if x_axis == 3: # EventReflectivity.DELTA_KZ_VS_QZ
-            _x = (ki_z - kf_z)
-        elif x_axis == 1: # EventReflectivity.KZI_VS_KZF
-            _x = ki_z
-            _z = kf_z
-
-        if np.max(_x) < np.min(x_bins) or np.min(_x) > x_bins[-1]:
-            continue
-
-        _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins])
-        #qz = k * 2.0 *np.sin(theta_f)
-        #_counts, _ = np.histogram(qz, bins=z_bins)
-        refl += _counts
-
-    return refl

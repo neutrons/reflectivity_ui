@@ -5,9 +5,9 @@
 options = {
     # Bare substrate
     '30889': dict(sc='REF_M_30889', db='30886', path='/SNS/REF_M/IPTS-21391/nexus/REF_M_30889.nxs.h5',
-                  ref='/SNS/users/m2d/MR/REF_M_30889+30890_Specular_Off_Off.dat',
+                  ref='/SNS/users/m2d/git/reflectivity_ui/test/notebooks/data/REF_M_30889+30890_Specular_Off_Off_v2_TOF_40.dat',
                   #refcst='/SNS/users/m2d/MR/reflectivity_30889.txt',
-                  refcst='/SNS/users/m2d/MR/REF_M_30889+30890_Specular_Off_Off_CSTQ.dat',
+                  refcst='/SNS/users/m2d/git/reflectivity_ui/test/notebooks/data/REF_M_30889+30890_Specular_Off_Off_CSTQ_v2_TOF_40.dat',
                   peak_pos=157.5, peak=[149,167], bck=[47,105], beam=[75,161], tof=[13537,43265.4], scale=2.8379),
 
     '30886': dict(sc='REF_M_30886', db='30886', path='/SNS/REF_M/IPTS-21391/nexus/REF_M_30886.nxs.h5',
