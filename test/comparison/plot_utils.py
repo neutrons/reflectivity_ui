@@ -108,7 +108,7 @@ def plot_heatmap(x, y, z, x_title='', y_title='', surface=False,
     [0.625, "rgb(255,255,0)"], [0.875, "rgb(250,0,0)"], [1, "rgb(128,0,0)"]
     ]
     plot_type = 'surface' if surface else 'heatmap'
-    trace = go.Heatmap(z=z, x=x, y=y, autocolorscale=False, type=plot_type,
+    trace = go.Heatmap(z=z, x=x, y=y, autocolorscale=False,# type=plot_type,
                      hoverinfo="x+y+z", colorscale=colorscale)
     fig = go.Figure(data=[trace], layout=layout)
     py.iplot(fig, show_link=False)

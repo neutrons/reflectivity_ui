@@ -1,4 +1,9 @@
-# Magnetic Reflectivity Reduction
+# Magnetism Reflectometry Reduction
+
+Latest release:
+- Added option not to apply a final rebin
+ 
+
 To-do list:
 
 ## Interface
@@ -9,27 +14,23 @@ To-do list:
 - Jupyter notebook as output
 - Proper mantid script as output
 - Plotting: allow for log(x)
+- Email results
 
 ## Data Manager Design
-- Add option to match direct beam cross-seciont to data cross-section, otherwise sum up all cross-section in the direct beam data file.
+- Add option to match direct beam cross-secion to data cross-section, otherwise sum up all cross-section in the direct beam data file.
 - Emptying cache should also delete the mantid workspaces
 
 ## Reduction
-- Add use-sangle option to output QuickNXS file.
+- Add / use-sangle option to output QuickNXS file.
 - Stitching  -> make Stitch1DMany take scaling factor for the first workspace
 - Add an option to choose which cross-sections to use for asymmetry calculation
-- Add Q binning option for output
 - Mantid: add option not to rebin in Q at the end.
 - Write output algo that takes group workspace.
 - Automate selection of const-Q binning
 
 ## Off-spec
 - Only recalculate off-spec when needed (need to add a need_recalc data member)
-- Check that the overall normalization is the same as with old QuickNXS when validating
-- Off-spec needs to use option to skip first and last points
-  (which only works on specular data, which uses a different binning)
-  We may want to harmonize the number of skipped points according to the difference between
-  the specular and off-specular binning.
+- Off-spec needs to use option to skip first and last points when displaying the preview
 - Try using events directly when computing offspecular.
 - Plot slices in 2D off-specular data
 
@@ -45,6 +46,8 @@ To-do list:
 - Test Genx output
 
 ## DONE
+- Add Q binning option for output
+- Check that the overall normalization is the same as with old QuickNXS when validating
 - Add off-spec coordinates to toolbar
 - Verify off-spec normalization vs peak ranges and two-theta
 - Use PolarizerLabel and AnalyzerLabel to better decide on cross-section names

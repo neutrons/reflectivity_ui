@@ -119,6 +119,9 @@ def merge(reduction_list, pol_state):
 
         The scaling factors should have been determined at this point. Just use them
         to merge the different runs in a set.
+
+        TODO: This doesn't deal with the overlap properly. It assumes that the user
+        cut the overlapping points by hand.
     """
     _qx = np.empty(0)
     _qz = np.empty(0)
@@ -327,15 +330,16 @@ def smooth_data(x, y, I, sigmas=3., gridx=150, gridy=50,
         Execute legacy smoothing process by spreading it to a pool
         of processes.
     """
+    pool = int(pool)
     xout=np.linspace(x1, x2, gridx)
     p = Pool(pool)
     n = len(xout)
-    step = int(n/5)
-    indices = [[step*i, step*(i+1)] for i in range(5)]
+    step = int(n/pool)
+    indices = [[step*i, step*(i+1)] for i in range(pool)]
     indices[-1][1]=n
 
     inputs = []
-    for i in range(5):
+    for i in range(pool):
         _d = dict(x=x, y=y, I=I,
                  sigmas=sigmas, gridx=gridx, gridy=gridy,
                  sigmax=sigmax, sigmay=sigmay,

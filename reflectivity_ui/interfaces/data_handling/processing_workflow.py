@@ -57,7 +57,8 @@ class ProcessingWorkflow(object):
                          binned=self.output_options['export_offspec_smooth'])
 
         if self.output_options['export_gisans']:
-            pass
+            self.gisans(progress=progress)
+
         progress(100, "Complete")
 
     def get_file_name(self, run_list=None, pol_state=None, data_type='dat', process_type='Specular'):
@@ -208,6 +209,21 @@ class ProcessingWorkflow(object):
             with open(output_file, 'w') as file_object:
                 file_object.write(script)
 
+    def gisans(self, progress=None):
+        """
+            Export GISANS.
+        """
+        run_list = [str(item.number) for item in self.data_manager.reduction_list]
+
+        # Refresh the reflectivity calculation
+        self.data_manager.reduce_gisans(progress=progress)
+
+        data_dict = self.get_gisans_data(progress=progress)
+
+        # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
+        output_file_base = self.get_file_name(run_list, process_type='GISANS')
+        self.write_quicknxs(data_dict, output_file_base, xs=data_dict['cross_sections'].keys())
+
     def offspec(self, raw=True, binned=False):
         """
             Export off-specular reflectivity.
@@ -301,6 +317,51 @@ class ProcessingWorkflow(object):
                     slice_data_dict[item[1]] = item[0]
 
         return data_dict, slice_data_dict
+
+    def get_gisans_data(self, progress=None):
+        wl_npts = 2
+        wl_min = 3
+        wl_max = 8
+        qy_npts = 50
+        qz_npts = 75
+
+        use_pf = False
+        data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'], cross_sections={})
+        if use_pf:
+            data_dict['columns'] = ['Qy', 'pf', 'I', 'dI']
+        else:
+            data_dict['columns'] = ['Qy', 'Qz', 'I', 'dI']
+
+        # Extract common information
+        if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
+            logging.error("List of cross-sections is empty")
+            return data_dict
+
+        for pol_state in self.data_manager.reduction_states:
+            for i in range(wl_npts):
+                wl_step = (wl_max - wl_min) / wl_npts
+                _wl_min = wl_min + i * wl_step
+                _wl_max = wl_min + (i + 1) * wl_step
+                _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(pol_state,
+                                                                                           wl_min=_wl_min,
+                                                                                           wl_max=_wl_max,
+                                                                                           qy_npts=qy_npts,
+                                                                                           qz_npts=qz_npts,
+                                                                                           use_pf=use_pf)
+
+                qz, qy = np.meshgrid(_qz_axis, _qy)
+                rdata = np.array([qy, qz, _intensity, _intensity_err]).transpose((1, 2, 0))
+
+                if pol_state in self.data_manager.reduction_list[0].cross_sections:
+                    _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
+                else:
+                    _pol_state = pol_state
+
+                _pol_state = '%.3f-%.3f_%s' % (_wl_min, _wl_max, _pol_state)
+                data_dict[_pol_state] = [np.nan_to_num(rdata)]
+                data_dict["cross_sections"][_pol_state] = _pol_state
+
+        return data_dict
 
     def get_offspec_data(self):
         """

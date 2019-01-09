@@ -13,6 +13,7 @@ from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from .data_handling import data_manipulation
 from .data_handling import quicknxs_io
 from .data_handling import off_specular
+from .data_handling import gisans
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -334,6 +335,21 @@ class DataManager(object):
 
         return direct_beam
 
+    def reduce_gisans(self, progress=None):
+        """
+            Since the specular reflectivity is prominently displayed, it is updated as
+            soon as parameters change. This is not the case for GISANS, which is
+            computed on-demand.
+            This method goes through the data sets in the reduction list and re-calculate
+            the GISANS.
+        """
+        for nexus_data in self.reduction_list:
+            try:
+                self.calculate_gisans(nexus_data=nexus_data, progress=progress)
+            except:
+                logging.error("Could not compute GISANS for %s\n  %s",
+                              nexus_data.number, sys.exc_info()[1])
+
     def calculate_gisans(self, nexus_data=None, progress=None):
         # Select the data to work on
         if nexus_data is None:
@@ -368,6 +384,13 @@ class DataManager(object):
         return off_specular.rebin_extract(self.reduction_list, pol_state, axes=axes,
                                           y_list=y_list, use_weights=use_weights,
                                           n_bins_x=n_bins_x, n_bins_y=n_bins_y)
+
+    def rebin_gisans(self, pol_state, wl_min=0, wl_max=100, qy_npts=50, qz_npts=50, use_pf=False):
+        """
+            Merge all the off-specular reflectivity data and rebin.
+        """
+        return gisans.rebin_extract(self.reduction_list, pol_state=pol_state, wl_min=wl_min, wl_max=wl_max,
+                                    qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf)
 
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """

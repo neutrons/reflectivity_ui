@@ -22,6 +22,7 @@ api.ConfigService.setLogLevel(3)
 
 from .data_info import DataInfo
 from . import off_specular
+from . import gisans
 
 ### Parameters needed for some calculations.
 H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
@@ -142,11 +143,11 @@ class NexusData(object):
         ws = api.MagnetismReflectometryReduction(InputWorkspace=wsg,
                                                  NormalizationWorkspace=ws_norm,
                                                  SignalPeakPixelRange=_as_ints(conf.peak_roi),
-                                                 SubtractSignalBackground=True,
+                                                 SubtractSignalBackground=conf.subtract_background,
                                                  SignalBackgroundPixelRange=_as_ints(conf.bck_roi),
                                                  ApplyNormalization=apply_norm,
                                                  NormPeakPixelRange=_as_ints(direct_beam.configuration.peak_roi),
-                                                 SubtractNormBackground=True,
+                                                 SubtractNormBackground=conf.subtract_background,
                                                  NormBackgroundPixelRange=_as_ints(direct_beam.configuration.bck_roi),
                                                  CutLowResDataAxis=True,
                                                  LowResDataAxisPixelRange=_as_ints(conf.low_res_roi),
@@ -370,6 +371,9 @@ class CrossSectionData(object):
 
         # Offset data
         self.off_spec = None
+
+        # GISANS data
+        self.gisans_data = None
 
         # GISANS
         #TODO: refactor this
@@ -768,81 +772,14 @@ class CrossSectionData(object):
         self.prepare_plot_data()
         if direct_beam:
             direct_beam.prepare_plot_data()
+        self.gisans_data = gisans.GISANS(self)
+        self.gisans_data(direct_beam)
 
-        #TODO: Perform sensitivity correction
-        x_pos = self.configuration.peak_position
-        y_pos = self.configuration.low_res_position
-        scale = 1./self.proton_charge * self.configuration.scaling_factor
+        self.SGrid = self.gisans_data.SGrid
+        self.QyGrid = self.gisans_data.QyGrid
+        self.QzGrid = self.gisans_data.QzGrid
 
-        rad_per_pixel = self.det_size_x / self.dist_sam_det / self.xydata.shape[1]
-        xtth = self.direct_pixel - np.arange(self.data.shape[0])[self.active_area_x[0]:
-                                                                 self.active_area_x[1]]
-        pix_offset_spec = self.direct_pixel - x_pos
-        delta_dangle = self.dangle - self.angle_offset
-        tth_spec = delta_dangle * np.pi/180. + pix_offset_spec * rad_per_pixel
-        af = delta_dangle * np.pi/180. + xtth * rad_per_pixel - tth_spec/2.
-        ai = np.ones_like(af) * tth_spec / 2.
-
-        phi = (np.arange(self.data.shape[1])[self.active_area_y[0]:
-                                             self.active_area_y[1]]-y_pos)*rad_per_pixel
-
-        v_edges = self.dist_mod_det/self.tof_edges*1e6 #m/s
-        lambda_edges = H_OVER_M_NEUTRON/v_edges*1e10 #A
-        wl = (lambda_edges[:-1] + lambda_edges[1:]) / 2.
-        k = 2. * np.pi / wl
-
-        # calculate ROI intensities and normalize by number of points
-        P0 = self.configuration.cut_first_n_points
-        PN = len(self.tof) - self.configuration.cut_last_n_points
-
-        # calculate reciprocal space, incident and outgoing perpendicular wave vectors
-        Qy = k[np.newaxis, np.newaxis, P0:PN]*(np.sin(phi)*np.cos(af)[:, np.newaxis])[:, :, np.newaxis]
-        p_i = k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(ai)[:, np.newaxis])[:, :, np.newaxis]
-        p_f = k[np.newaxis, np.newaxis, P0:PN]*((0*phi)+np.sin(af)[:, np.newaxis])[:, :, np.newaxis]
-        Qz = p_i + p_f
-
-        raw = self.data[self.active_area_x[0]:self.active_area_x[1],
-                        self.active_area_y[0]:self.active_area_y[1],
-                        P0:PN]
-
-        intensity = scale * np.array(raw)
-        d_intensity = scale * np.sqrt(raw)
-
-        if direct_beam is not None:
-            if not direct_beam.configuration.tof_bins == self.configuration.tof_bins:
-                logging.error("Trying to normalize with a direct beam data set with different binning")
-
-            norm_raw_multi_dim = direct_beam.data[self.active_area_x[0]:self.active_area_x[1],
-                                                  self.active_area_y[0]:self.active_area_y[1], P0:PN]
-            norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
-            norm_d_raw = np.sqrt(norm_raw)
-
-            surface = (self.active_area_x[1]-self.active_area_x[0]) * (self.active_area_y[1]-self.active_area_y[0])
-
-            norm_raw /= surface * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
-            norm_d_raw /= surface * direct_beam.proton_charge * direct_beam.configuration.scaling_factor
-
-            idxs = norm_raw > 0.
-            d_intensity[:, :, idxs] = np.sqrt((d_intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :])**2+
-                                              (intensity[:, :, idxs]/norm_raw[idxs][np.newaxis, np.newaxis, :]**2*norm_d_raw[idxs][np.newaxis, np.newaxis, :])**2
-                                             )
-            intensity[:, :, idxs] /= norm_raw[idxs][np.newaxis, np.newaxis, :]
-            intensity[:, :, np.logical_not(idxs)] = 0.
-            d_intensity[:, :, np.logical_not(idxs)] = 0.
-
-        # Create grid
-        # bins=(self.options['gisans_gridy'], self.options['gisans_gridz']),
-        #TODO: allow binning as application parameter
-        self.SGrid, qy, qz = np.histogram2d(Qy.flatten(), Qz.flatten(),
-                                            bins=(50, 50),
-                                            weights=intensity.flatten())
-        npoints, _, _ = np.histogram2d(Qy.flatten(), Qz.flatten(),
-                                       bins=(50, 50))
-        self.SGrid[npoints > 0] /= npoints[npoints > 0]
-        self.SGrid = self.SGrid.transpose()
-        qy = (qy[:-1]+qy[1:])/2.
-        qz = (qz[:-1]+qz[1:])/2.
-        self.QyGrid, self.QzGrid = np.meshgrid(qy, qz)
+        return self.gisans_data
 
 class NexusMetaData(object):
     """
