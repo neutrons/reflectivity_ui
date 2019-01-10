@@ -8,9 +8,10 @@ import os
 import math
 import copy
 import logging
+import time
 import numpy as np
 from ..configuration import Configuration
-from . import quicknxs_io, data_manipulation, off_specular
+from . import quicknxs_io, data_manipulation, off_specular, gisans
 
 
 DEFAULT_OPTIONS = dict(export_specular=True,
@@ -337,12 +338,21 @@ class ProcessingWorkflow(object):
             logging.error("List of cross-sections is empty")
             return data_dict
 
+        t_0 = time.time()
+        _parallel = True
         for pol_state in self.data_manager.reduction_states:
+            if _parallel:
+                binned_data = gisans.rebin_parallel(self.data_manager.reduction_list, pol_state,
+                                                    wl_min=wl_min, wl_max=wl_max, wl_npts=wl_npts,
+                                                    qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf)
             for i in range(wl_npts):
                 wl_step = (wl_max - wl_min) / wl_npts
                 _wl_min = wl_min + i * wl_step
                 _wl_max = wl_min + (i + 1) * wl_step
-                _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(pol_state,
+                if _parallel:
+                    _intensity, _qy, _qz_axis, _intensity_err = binned_data[i]
+                else:
+                    _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(pol_state,
                                                                                            wl_min=_wl_min,
                                                                                            wl_max=_wl_max,
                                                                                            qy_npts=qy_npts,
@@ -361,6 +371,7 @@ class ProcessingWorkflow(object):
                 data_dict[_pol_state] = [np.nan_to_num(rdata)]
                 data_dict["cross_sections"][_pol_state] = _pol_state
 
+        logging.info("GISANS processing time: %s sec", (time.time()-t_0))
         return data_dict
 
     def get_offspec_data(self):

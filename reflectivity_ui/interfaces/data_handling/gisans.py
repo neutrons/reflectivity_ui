@@ -3,6 +3,7 @@
 """
 from __future__ import absolute_import, division, print_function
 import logging
+from multiprocessing import Pool
 
 import numpy as np
 
@@ -135,6 +136,7 @@ def merge(reduction_list, pol_state, wl_min=0, wl_max=100):
     _pf = np.zeros(0)
     _s = np.zeros(0)
     _ds = np.zeros(0)
+    _wl = np.zeros(0)
 
     for item in reduction_list:
         gisans = item.cross_sections[pol_state].gisans_data
@@ -147,13 +149,14 @@ def merge(reduction_list, pol_state, wl_min=0, wl_max=100):
         _pf = np.concatenate((_pf, pf[:, :, filtered].flatten()))
         _s = np.concatenate((_s, S[:, :, filtered].flatten()))
         _ds = np.concatenate((_ds, dS[:, :, filtered].flatten()))
+        _wl = np.concatenate((_wl, gisans.wavelengths[filtered]))
 
-    return _qy, _qz, _pf, _s, _ds
+    return _qy, _qz, _pf, _s, _ds, _wl
 
 def rebin_extract(reduction_list, pol_state, wl_min, wl_max, qy_npts=50, qz_npts=50, use_pf=False):
 
     binning = (qy_npts+1, qz_npts+1)
-    qy, qz, pf, intensity, d_intensity = merge(reduction_list, pol_state, wl_min=wl_min, wl_max=wl_max)
+    qy, qz, pf, intensity, d_intensity, _ = merge(reduction_list, pol_state, wl_min=wl_min, wl_max=wl_max)
     if use_pf:
         _z_axis = pf
     else:
@@ -172,34 +175,51 @@ def rebin_extract(reduction_list, pol_state, wl_min, wl_max, qy_npts=50, qz_npts
 
     return _intensity_summed, _qy, _qz_axis, _intensity_err
 
-def _rebin_parallel(reduction_list, pol_state, wl_min, wl_max, qy_npts=50, qz_npts=50, use_pf=False):
+def _rebin_proc(data):
+    # Filter data
+    wl = data['wl']
+    filtered = np.where((wl >= data['wl_min']) & (wl <= data['wl_max']))
+    qy = data['qy'][filtered]
+    _z_axis = data['qz'][filtered]
+    intensity = data['intensity'][filtered]
+    d_intensity = data['d_intensity'][filtered]
+
+    # Perform binning
+    n_points, _qy, _qz_axis = np.histogram2d(qy, _z_axis, bins=data['binning'])
+    _intensity_summed, _, _ = np.histogram2d(qy, _z_axis, bins=(_qy, _qz_axis), weights=intensity)
+    _intensity_err, _, _ = np.histogram2d(qy, _z_axis, bins=(_qy, _qz_axis), weights=d_intensity**2)
+
+    _intensity_summed[n_points>0] /= n_points[n_points>0]
+    _intensity_err = np.sqrt(_intensity_err)
+    _intensity_err[n_points>0] /= n_points[n_points>0]
+
+    _qy = (_qy[:-1]+_qy[1:])/2.
+    _qz_axis = (_qz_axis[:-1]+_qz_axis[1:])/2.
+ 
+    return _intensity_summed, _qy, _qz_axis, _intensity_err
+
+def rebin_parallel(reduction_list, pol_state, wl_min, wl_max, wl_npts=2, qy_npts=50, qz_npts=50, use_pf=False):
     """
         Process the wavelength bands in parallel.
     """
     # First, merge all the data
     binning = (qy_npts+1, qz_npts+1)
-    qy, qz, pf, intensity, d_intensity = merge(reduction_list, pol_state, wl_min=0, wl_max=100.0)
+    qy, qz, pf, intensity, d_intensity, wl_array = merge(reduction_list, pol_state, wl_min=0, wl_max=100.0)
     if use_pf:
         _z_axis = pf
     else:
         _z_axis = qz
 
     # Create one job per wavelength band
-    
-    
-    
-    
-    
-    n_points, _qy, _qz_axis = np.histogram2d(qy, _z_axis, bins=binning)
-    _intensity_summed, _, _ = np.histogram2d(qy, _z_axis, bins=(_qy, _qz_axis), weights=intensity)
-    _intensity_err, _, _ = np.histogram2d(qy, _z_axis, bins=(_qy, _qz_axis), weights=d_intensity**2)
+    inputs = []
+    for i in range(wl_npts):
+        wl_step = (wl_max - wl_min) / wl_npts
+        _wl_min = wl_min + i * wl_step
+        _wl_max = wl_min + (i + 1) * wl_step
+        _d = dict(qy=qy, qz=_z_axis, intensity=intensity, d_intensity=d_intensity,
+                  wl=wl_array, wl_min=_wl_min, wl_max=_wl_max, binning=binning)
+        inputs.append(_d)
 
-    _intensity_summed[n_points>0] /= n_points[n_points>0]
-    _intensity_err = np.sqrt(_intensity_err)
-    _intensity_err[n_points>0] /= n_points[n_points>0]
-
-    _qy = (_qy[:-1]+_qy[1:])/2.
-    _qz_axis = (_qz_axis[:-1]+_qz_axis[1:])/2.
-
-    return _intensity_summed, _qy, _qz_axis, _intensity_err
-
+    pool = Pool(wl_npts)
+    results = pool.map(_rebin_proc, inputs)
+    return results
