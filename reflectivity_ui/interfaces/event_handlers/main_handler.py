@@ -833,6 +833,7 @@ class MainHandler(object):
         configuration.cut_last_n_points = self.ui.rangeEnd.value()
         configuration.normalize_to_unity = self.ui.normalize_to_unity_checkbox.isChecked()
         configuration.total_reflectivity_q_cutoff = self.ui.normalization_q_cutoff_spinbox.value()
+        configuration.wl_bandwidth = self.ui.bandwidth_spinbox.value()
 
         configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
         configuration.use_dangle = self.ui.trustDANGLE.isChecked()
@@ -877,6 +878,14 @@ class MainHandler(object):
         configuration.off_spec_x_max = self.ui.offspec_x_max_spinbox.value()
         configuration.off_spec_y_min = self.ui.offspec_y_min_spinbox.value()
         configuration.off_spec_y_max = self.ui.offspec_y_max_spinbox.value()
+
+        # GISANS options
+        configuration.gisans_wl_min = self.ui.gisans_wl_min_spinbox.value()
+        configuration.gisans_wl_max = self.ui.gisans_wl_max_spinbox.value()
+        configuration.gisans_wl_npts = self.ui.gisans_wl_npts_spinbox.value()
+        configuration.gisans_qz_npts = self.ui.gisans_qz_npts_spinbox.value()
+        configuration.gisans_qy_npts = self.ui.gisans_qy_npts_spinbox.value()
+        configuration.gisans_use_pf = self.ui.gisans_pf_radio.isChecked()
 
         # Make the changes persistent
         configuration.to_q_settings(self.main_window.settings)
@@ -926,6 +935,7 @@ class MainHandler(object):
         self.ui.rangeEnd.setValue(configuration.cut_last_n_points)
         self.ui.normalize_to_unity_checkbox.setChecked(configuration.normalize_to_unity)
         self.ui.normalization_q_cutoff_spinbox.setValue(configuration.total_reflectivity_q_cutoff)
+        self.ui.bandwidth_spinbox.setValue(configuration.wl_bandwidth)
 
         self.ui.fanReflectivity.setChecked(configuration.use_constant_q)
         self.ui.trustDANGLE.setChecked(configuration.use_dangle)
@@ -965,6 +975,14 @@ class MainHandler(object):
         self.ui.offspec_x_max_spinbox.setValue(configuration.off_spec_x_max)
         self.ui.offspec_y_min_spinbox.setValue(configuration.off_spec_y_min)
         self.ui.offspec_y_max_spinbox.setValue(configuration.off_spec_y_max)
+
+        # GISANS options
+        self.ui.gisans_wl_min_spinbox.setValue(configuration.gisans_wl_min)
+        self.ui.gisans_wl_max_spinbox.setValue(configuration.gisans_wl_max)
+        self.ui.gisans_wl_npts_spinbox.setValue(configuration.gisans_wl_npts)
+        self.ui.gisans_qz_npts_spinbox.setValue(configuration.gisans_qz_npts)
+        self.ui.gisans_qy_npts_spinbox.setValue(configuration.gisans_qy_npts)
+        self.ui.gisans_pf_radio.setChecked(configuration.gisans_use_pf)
 
     def stitch_reflectivity(self):
         """

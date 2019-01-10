@@ -215,6 +215,7 @@ class DataManager(object):
             :param str file_path: file path
             :param Configuration configuration: configuration to use to load the data
             :param bool force: it True, existing data will be replaced if it exists.
+            :param bool update_parameters: if True, we will find peak ranges
         """
         nexus_data = None
         is_from_cache = False
@@ -279,6 +280,7 @@ class DataManager(object):
 
         if progress is not None:
             progress(100)
+        return is_from_cache
 
     def update_configuration(self, configuration, active_only=False, nexus_data=None):
         """
@@ -575,7 +577,10 @@ class DataManager(object):
         for r_id, run_file, conf in db_files:
             t_i = time.time()
             if os.path.isfile(run_file):
-                self.load(run_file, conf, update_parameters=False)
+                is_from_cache = self.load(run_file, conf, update_parameters=False)
+                if is_from_cache:
+                    configuration.normalization = None
+                    self._nexus_data.update_configuration(conf)
                 self.add_active_to_normalization()
                 logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
                 if progress:
@@ -589,7 +594,11 @@ class DataManager(object):
         for r_id, run_file, conf in data_files:
             t_i = time.time()
             if os.path.isfile(run_file):
-                self.load(run_file, conf, update_parameters=False)
+                is_from_cache = self.load(run_file, conf, update_parameters=False)
+                if is_from_cache:
+                    configuration.normalization = None
+                    self._nexus_data.update_configuration(conf)
+                    self.calculate_reflectivity()
                 self.add_active_to_reduction()
                 logging.info("%s loaded: %s sec [%s]", r_id, time.time()-t_i, time.time()-t_0)
                 if progress:

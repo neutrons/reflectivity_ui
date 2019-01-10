@@ -27,6 +27,7 @@ class Configuration(object):
         #    1 = Constant Q bin width
         #    2 = Constant 1/wavelength bin width
         self.tof_bin_type = 0
+        self.wl_bandwidth = 3.2
 
         # Threshold under which we skip a cross-section, as fraction of the max count
         self.count_threshold = 0.01
@@ -105,6 +106,14 @@ class Configuration(object):
         self.off_spec_y_min = 0.0
         self.off_spec_y_max = 0.15
 
+        # GISANS options
+        self.gisans_wl_min = 2.0
+        self.gisans_wl_max = 8.0
+        self.gisans_wl_npts = 2
+        self.gisans_qy_npts = 50
+        self.gisans_qz_npts = 50
+        self.gisans_use_pf = False
+
         # Reduction options
         self.match_direct_beam = False
         self.normalization = None
@@ -161,6 +170,7 @@ class Configuration(object):
         settings.setValue('use_roi_bck', self.use_roi_bck)
         settings.setValue('use_tight_bck', self.use_tight_bck)
         settings.setValue('bck_offset', self.bck_offset)
+        settings.setValue('wl_bandwidth', self.wl_bandwidth)
 
         settings.setValue('force_peak_roi', self.force_peak_roi)
         settings.setValue('peak_roi', ','.join([str(x) for x in self.peak_roi]))
@@ -212,6 +222,14 @@ class Configuration(object):
         settings.setValue('off_spec_y_min', self.off_spec_y_min)
         settings.setValue('off_spec_y_max', self.off_spec_y_max)
 
+        # GISANS options
+        settings.setValue('gisans_wl_min', self.gisans_wl_min)
+        settings.setValue('gisans_wl_max', self.gisans_wl_max)
+        settings.setValue('gisans_wl_npts', self.gisans_wl_npts)
+        settings.setValue('gisans_qy_npts', self.gisans_qy_npts)
+        settings.setValue('gisans_qz_npts', self.gisans_qz_npts)
+        settings.setValue('gisans_use_pf', self.gisans_use_pf)
+
     def from_q_settings(self, settings):
         """ Retrieve configuration from QSettings """
 
@@ -228,6 +246,7 @@ class Configuration(object):
         self.use_roi_bck = _verify_true('use_roi_bck', self.use_roi_bck)
         self.use_tight_bck = _verify_true('use_tight_bck', self.use_tight_bck)
         self.bck_offset = int(settings.value('bck_offset', self.bck_offset))
+        self.wl_bandwidth = float(settings.value('wl_bandwidth', self.wl_bandwidth))
 
         self.force_peak_roi = _verify_true('force_peak_roi', self.force_peak_roi)
         self.force_low_res_roi = _verify_true('force_low_res_roi', self.force_low_res_roi)
@@ -286,3 +305,11 @@ class Configuration(object):
         self.off_spec_x_max = float(settings.value('off_spec_x_max', self.off_spec_x_max))
         self.off_spec_y_min = float(settings.value('off_spec_y_min', self.off_spec_y_min))
         self.off_spec_y_max = float(settings.value('off_spec_y_max', self.off_spec_y_max))
+
+        # GISANS options
+        self.gisans_wl_min = float(settings.value('gisans_wl_min', self.gisans_wl_min))
+        self.gisans_wl_max = float(settings.value('gisans_wl_max', self.gisans_wl_max))
+        self.gisans_wl_npts = int(settings.value('gisans_wl_npts', self.gisans_wl_npts))
+        self.gisans_qy_npts = int(settings.value('gisans_qy_npts', self.gisans_qy_npts))
+        self.gisans_qz_npts = int(settings.value('gisans_qz_npts', self.gisans_qz_npts))
+        self.gisans_use_pf = _verify_true('gisans_use_pf', self.gisans_use_pf)

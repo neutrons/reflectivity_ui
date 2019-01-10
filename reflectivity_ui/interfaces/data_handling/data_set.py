@@ -258,6 +258,7 @@ class NexusData(object):
         """
             Load cross-sections from a nexus file.
             :param function progress: call-back function to track progress
+            :param bool update_parameters: if True, we will find peak ranges
         """
         self.cross_sections = OrderedDict()
         if progress is not None:
@@ -374,12 +375,6 @@ class CrossSectionData(object):
 
         # GISANS data
         self.gisans_data = None
-
-        # GISANS
-        #TODO: refactor this
-        self.SGrid = None
-        self.QyGrid = None
-        self.QzGrid = None
 
         if workspace:
             self.collect_info(workspace)

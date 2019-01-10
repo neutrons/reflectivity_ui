@@ -27,6 +27,7 @@ To-do list:
 - Mantid: add option not to rebin in Q at the end.
 - Write output algo that takes group workspace.
 - Automate selection of const-Q binning
+- Add TOF range selector
 
 ## Off-spec
 - Only recalculate off-spec when needed (need to add a need_recalc data member)
@@ -36,8 +37,7 @@ To-do list:
 
 ## GISANS
 - Add background subtraction
-- Option to skip first and last points
-- Generate binned output
+- Use multi-threading
 
 ## Testing
 - Automated testing
@@ -46,6 +46,7 @@ To-do list:
 - Test Genx output
 
 ## DONE
+- Generate GISANS output
 - Add Q binning option for output
 - Check that the overall normalization is the same as with old QuickNXS when validating
 - Add off-spec coordinates to toolbar

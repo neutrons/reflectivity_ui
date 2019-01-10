@@ -76,6 +76,7 @@ class DataInfo(object):
         # within the ROI
         self.update_peak_range = configuration.update_peak_range
 
+        self.wl_bandwidth = configuration.wl_bandwidth
         self.tof_range = self.get_tof_range(ws)
         self.calculated_scattering_angle = 0.0
         self.theta_d = 0.0
@@ -105,8 +106,9 @@ class DataInfo(object):
         chopper_speed = run_object.getProperty('SpeedRequest1').value[0]
         wl_offset = 0
         cst = source_detector_distance / h * m
-        tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - 1.6 * 60.0 / chopper_speed) * 1e-4
-        tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + 1.6 * 60.0 / chopper_speed) * 1e-4
+        half_width = self.wl_bandwidth / 2.0
+        tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - half_width * 60.0 / chopper_speed) * 1e-4
+        tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + half_width * 60.0 / chopper_speed) * 1e-4
 
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]

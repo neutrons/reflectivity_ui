@@ -2,7 +2,6 @@
     Computations for GISANS
 """
 from __future__ import absolute_import, division, print_function
-import sys
 import logging
 
 import numpy as np
@@ -51,9 +50,9 @@ class GISANS(object):
                                                       active_area_y[1]]-y_pos) * rad_per_pixel
 
         # To be compatible with QuickNXS v1, take the whole TOF range rather than trimming the edges
-        ws = self.data_set.event_workspace
-        tof_edges = np.arange(ws.getTofMin(), ws.getTofMax(), self.data_set.configuration.tof_bins)
-        #tof_edges = self.data_set.tof_edges
+        #ws = self.data_set.event_workspace
+        #tof_edges = np.arange(ws.getTofMin(), ws.getTofMax(), self.data_set.configuration.tof_bins)
+        tof_edges = self.data_set.tof_edges
 
         v_edges = self.data_set.dist_mod_det / tof_edges * 1e6 #m/s
         lambda_edges = H_OVER_M_NEUTRON / v_edges * 1e10 #A
@@ -105,9 +104,9 @@ class GISANS(object):
 
         self.S = intensity
         self.dS = d_intensity
-        # Create grid
-        # bins=(self.options['gisans_gridy'], self.options['gisans_gridz']),
-        #TODO: allow binning as application parameter
+
+        # Create plotting data
+        #TODO: use options to plot the right data (for instance: qz or pf)
         self.SGrid, qy, qz = np.histogram2d(self.Qy.flatten(), self.Qz.flatten(),
                                             bins=(50, 50),
                                             weights=intensity.flatten())
@@ -172,3 +171,35 @@ def rebin_extract(reduction_list, pol_state, wl_min, wl_max, qy_npts=50, qz_npts
     _qz_axis = (_qz_axis[:-1]+_qz_axis[1:])/2.
 
     return _intensity_summed, _qy, _qz_axis, _intensity_err
+
+def _rebin_parallel(reduction_list, pol_state, wl_min, wl_max, qy_npts=50, qz_npts=50, use_pf=False):
+    """
+        Process the wavelength bands in parallel.
+    """
+    # First, merge all the data
+    binning = (qy_npts+1, qz_npts+1)
+    qy, qz, pf, intensity, d_intensity = merge(reduction_list, pol_state, wl_min=0, wl_max=100.0)
+    if use_pf:
+        _z_axis = pf
+    else:
+        _z_axis = qz
+
+    # Create one job per wavelength band
+    
+    
+    
+    
+    
+    n_points, _qy, _qz_axis = np.histogram2d(qy, _z_axis, bins=binning)
+    _intensity_summed, _, _ = np.histogram2d(qy, _z_axis, bins=(_qy, _qz_axis), weights=intensity)
+    _intensity_err, _, _ = np.histogram2d(qy, _z_axis, bins=(_qy, _qz_axis), weights=d_intensity**2)
+
+    _intensity_summed[n_points>0] /= n_points[n_points>0]
+    _intensity_err = np.sqrt(_intensity_err)
+    _intensity_err[n_points>0] /= n_points[n_points>0]
+
+    _qy = (_qy[:-1]+_qy[1:])/2.
+    _qz_axis = (_qz_axis[:-1]+_qz_axis[1:])/2.
+
+    return _intensity_summed, _qy, _qz_axis, _intensity_err
+

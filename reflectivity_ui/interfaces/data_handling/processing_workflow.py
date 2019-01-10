@@ -319,13 +319,13 @@ class ProcessingWorkflow(object):
         return data_dict, slice_data_dict
 
     def get_gisans_data(self, progress=None):
-        wl_npts = 2
-        wl_min = 3
-        wl_max = 8
-        qy_npts = 50
-        qz_npts = 75
+        wl_npts = self.data_manager.active_channel.configuration.gisans_wl_npts
+        wl_min = self.data_manager.active_channel.configuration.gisans_wl_min
+        wl_max = self.data_manager.active_channel.configuration.gisans_wl_max
+        qy_npts = self.data_manager.active_channel.configuration.gisans_qy_npts
+        qz_npts = self.data_manager.active_channel.configuration.gisans_qz_npts
+        use_pf = self.data_manager.active_channel.configuration.gisans_use_pf
 
-        use_pf = False
         data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'], cross_sections={})
         if use_pf:
             data_dict['columns'] = ['Qy', 'pf', 'I', 'dI']

@@ -626,20 +626,24 @@ class PlotManager(object):
         Imax=10**self.main_window.ui.gisansImax.value()
 
         if len(data_set_keys)>1:
-            self.main_window.ui.frame_gisans_mm.show()
+            self.main_window.ui.gisans_mm.show()
             if len(data_set_keys)==4:
-                self.main_window.ui.frame_gisans_sf.show()
+                self.main_window.ui.gisans_mp.show()
+                self.main_window.ui.gisans_pm.show()
             else:
-                self.main_window.ui.frame_gisans_sf.hide()
+                self.main_window.ui.gisans_mp.hide()
+                self.main_window.ui.gisans_pm.hide()
         else:
-            self.main_window.ui.frame_xy_mm.hide()
-            self.main_window.ui.frame_xy_sf.hide()
+            self.main_window.ui.gisans_mp.hide()
+            self.main_window.ui.gisans_pm.hide()
+            self.main_window.ui.gisans_mm.hide()
 
         for i, channel in enumerate(data_set_keys):
             plot = plots[i]
             selected_data=self.main_window.data_manager.data_sets[channel]
             plots[i].clear_fig()
-            plots[i].pcolormesh(selected_data.QyGrid, selected_data.QzGrid, selected_data.SGrid,
+            plots[i].pcolormesh(selected_data.gisans_data.QyGrid, selected_data.gisans_data.QzGrid,
+                                selected_data.gisans_data.SGrid,
                                 log=self.main_window.ui.logarithmic_colorscale.isChecked(), imin=Imin, imax=Imax,
                                 cmap=self.color)
             plots[i].set_xlabel(u'Q$_y$ [Å$^{-1}$]')
