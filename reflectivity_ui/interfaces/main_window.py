@@ -186,8 +186,10 @@ class MainWindow(QtWidgets.QMainWindow,
         elif self.ui.plotTab.currentIndex()==2:
             self.plot_manager.plot_xtof()
         elif self.ui.plotTab.currentIndex()==3:
+            self.file_handler.compute_offspec_on_change()
             self.plot_manager.plot_offspec()
         elif self.ui.plotTab.currentIndex()==4:
+            self.file_handler.compute_gisans_on_change(active_only=True)
             self.plot_manager.plot_gisans()
         elif self.ui.plotTab.currentIndex()==6:
             self.ui.compare_widget.draw()
@@ -318,6 +320,7 @@ class MainWindow(QtWidgets.QMainWindow,
         """
             Refresh / recalculate the off-specular plots
         """
+        self.file_handler.compute_offspec_on_change(force=True)
         self.plot_manager.plot_offspec()
 
     def change_offspec_colorscale(self):

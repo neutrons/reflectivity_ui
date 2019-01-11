@@ -345,14 +345,24 @@ class DataManager(object):
             This method goes through the data sets in the reduction list and re-calculate
             the GISANS.
         """
-        for nexus_data in self.reduction_list:
+        if progress is not None:
+            progress(1, "Reducing GISANS...")
+        for i, nexus_data in enumerate(self.reduction_list):
             try:
-                self.calculate_gisans(nexus_data=nexus_data, progress=progress)
+                self.calculate_gisans(nexus_data=nexus_data, progress=None)
+                if progress is not None:
+                    progress(100.0/len(self.reduction_list)*(i+1))
             except:
                 logging.error("Could not compute GISANS for %s\n  %s",
                               nexus_data.number, sys.exc_info()[1])
+        if progress is not None:
+            progress(100)
 
     def calculate_gisans(self, nexus_data=None, progress=None):
+        """
+            Compute GISANS for a single data set
+        """
+        t_0 = time.time()
         # Select the data to work on
         if nexus_data is None:
             nexus_data = self._nexus_data
@@ -363,8 +373,32 @@ class DataManager(object):
             raise RuntimeError("Please select a direct beam data set for your data.")
 
         nexus_data.calculate_gisans(direct_beam=direct_beam, progress=progress)
+        logging.info("Calculate GISANS: %s %s sec", nexus_data.number, (time.time()-t_0))
 
-    def reduce_offspec(self):
+    def is_offspec_available(self):
+        """
+            Verify that all data sets and all cross-sections have calculated
+            off-specular data available.
+        """
+        for nexus_data in self.reduction_list:
+            if not nexus_data.is_offspec_available():
+                return False
+        return True
+
+    def is_gisans_available(self, active_only=True):
+        """
+            Verify that all data sets and all cross-sections have calculated
+            GISANS data available.
+        """
+        if active_only:
+            return self._nexus_data.is_gisans_available()
+
+        for nexus_data in self.reduction_list:
+            if not nexus_data.is_gisans_available():
+                return False
+        return True
+
+    def reduce_offspec(self, progress=None):
         """
             Since the specular reflectivity is prominently displayed, it is updated as
             soon as parameters change. This is not the case for the off-specular, which is

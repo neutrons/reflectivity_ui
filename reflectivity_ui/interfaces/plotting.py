@@ -392,6 +392,19 @@ class PlotManager(object):
         else:
             self.main_window.ui.frame_offspec_sf.hide()
 
+        if len(data_set_keys)>1:
+            self.main_window.ui.offspec_mm.show()
+            if len(data_set_keys)==4:
+                self.main_window.ui.offspec_mp.show()
+                self.main_window.ui.offspec_pm.show()
+            else:
+                self.main_window.ui.offspec_mp.hide()
+                self.main_window.ui.offspec_pm.hide()
+        else:
+            self.main_window.ui.offspec_mp.hide()
+            self.main_window.ui.offspec_pm.hide()
+            self.main_window.ui.offspec_mm.hide()
+
         i_min=10**self.main_window.ui.offspecImin.value()
         i_max=10**self.main_window.ui.offspecImax.value()
         qz_min = 0.5
@@ -413,15 +426,6 @@ class PlotManager(object):
         progress(0.1, message="Computing off-specular", out_of=n_total)
         final_msg = "Off-specular calculation complete"
         for i_run, nexus_data in enumerate(self.main_window.data_manager.reduction_list):
-            # Recalculate the off-specular reflectivity
-            try:
-                if recalc:
-                    self.main_window.data_manager.calculate_reflectivity(nexus_data=nexus_data, specular=False)
-            except:
-                final_msg = "Off-specular calculation failed"
-                self.main_window.file_handler.report_message("Could not compute reflectivity for %s" % self.main_window.data_manager.current_file_name,
-                                                             detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
-
             for i, channel in enumerate(data_set_keys):
                 plot = plots[i]
                 selected_data=nexus_data.cross_sections[channel]
@@ -584,14 +588,6 @@ class PlotManager(object):
         self.main_window.ui.refl.draw()
 
         self.main_window.ui.compare_widget.update_preview()
-        #self.refl=Reflectivity(data, **options)
-        #self.ui.datasetAi.setText(u"%.3f°"%(self.refl.ai*180./pi))
-        #self.ui.datasetROI.setText(u"%.4g"%(self.refl.Iraw.sum()))
-        #if normalization is not None:
-        #    if self.ui.fanReflectivity.isChecked():
-        #        self.cut_areas['fan']=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
-        #    else:
-        #        self.cut_areas[normalization]=(self.ui.rangeStart.value(), self.ui.rangeEnd.value())
 
     def plot_gisans(self):
         """
@@ -609,18 +605,6 @@ class PlotManager(object):
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
-
-        progress = self.main_window.file_handler.new_progress_reporter()
-        n_total = len(data_set_keys)
-        progress(0.1, message="Computing GISANS", out_of=n_total)
-
-        # Compute GISANS
-        try:
-            self.main_window.data_manager.calculate_gisans(progress=progress)
-        except:
-            self.main_window.file_handler.report_message("Could not compute GISANS for %s" % self.main_window.data_manager.current_file_name,
-                                                         detailed_message=str(sys.exc_value),
-                                                         pop_up=True, is_error=True)
 
         Imin=10**self.main_window.ui.gisansImin.value()
         Imax=10**self.main_window.ui.gisansImax.value()
@@ -654,4 +638,3 @@ class PlotManager(object):
             if plots[i].cplot is not None and self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                 plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
-        progress(100, message="Ready", out_of=100)

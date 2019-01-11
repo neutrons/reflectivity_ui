@@ -690,6 +690,37 @@ class MainHandler(object):
                     item.setBackground(QtGui.QColor(255, 255, 255))
         self.main_window.auto_change_active = False
 
+    def compute_offspec_on_change(self, force=False):
+        """
+            Compute off-specular as needed
+        """
+        prog = self.new_progress_reporter()
+        has_changed_values = self.check_region_values_changed()
+        offspec_data_exists = self._data_manager.is_offspec_available()
+        logging.info("Exists %s %s", has_changed_values, offspec_data_exists)
+        if force or has_changed_values>=0 or not offspec_data_exists:
+            logging.info("Updating....")
+            config = self.get_configuration()
+            self._data_manager.update_configuration(configuration=config, active_only=False)
+            self._data_manager.reduce_offspec(progress=prog)
+
+    def compute_gisans_on_change(self, force=False, active_only=True):
+        """
+            Compute GISANS as needed
+        """
+        prog = self.new_progress_reporter()
+        has_changed_values = self.check_region_values_changed()
+        gisans_data_exists = self._data_manager.is_gisans_available(active_only=active_only)
+        logging.info("Exists %s %s %s", force, has_changed_values, gisans_data_exists)
+        if force or has_changed_values>=0 or not gisans_data_exists:
+            logging.info("Updating....")
+            config = self.get_configuration()
+            self._data_manager.update_configuration(configuration=config, active_only=False)
+            if active_only:
+                self._data_manager.calculate_gisans(progress=prog)
+            else:
+                self._data_manager.reduce_gisans(active_only=active_only, progress=prog)
+
     def check_region_values_changed(self):
         """
             Return true if any of the parameters tied to a particular slot

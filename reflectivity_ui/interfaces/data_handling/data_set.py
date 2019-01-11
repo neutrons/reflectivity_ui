@@ -207,6 +207,8 @@ class NexusData(object):
         """
         has_errors = False
         detailed_msg = ""
+        if progress is not None:
+            progress(1, "Computing GISANS", out_of=100.0)
         for i, xs in enumerate(self.cross_sections):
             try:
                 self.cross_sections[xs].gisans(direct_beam=direct_beam)
@@ -218,6 +220,26 @@ class NexusData(object):
                 progress(i, message="Computed GISANS %s" % xs, out_of=len(self.cross_sections))
         if has_errors:
             raise RuntimeError(detailed_msg)
+        if progress is not None:
+            progress(100, "Complete", out_of=100.0)
+
+    def is_offspec_available(self):
+        """
+            Verify whether we have off-specular data calculated for all cross-sections
+        """
+        for xs in self.cross_sections:
+            if self.cross_sections[xs].off_spec is None:
+                return False
+        return True
+
+    def is_gisans_available(self):
+        """
+            Verify whether we have GISANS data calculated for all cross-sections
+        """
+        for xs in self.cross_sections:
+            if self.cross_sections[xs].gisans_data is None:
+                return False
+        return True
 
     def calculate_offspec(self, direct_beam=None):
         """
@@ -649,6 +671,13 @@ class CrossSectionData(object):
             self.configuration = copy.deepcopy(configuration)
             self.update_calculated_values()
             self.process_configuration()
+
+            # We want to keep consistency between the specular calculations
+            # and the off-spec and GISANS ones. So clear the off-spec and GISANS
+            # to force a recalculation.
+            #TODO: This is a problem when switching beteewn the Off-spec and GISANS tabs
+            self.off_spec = None
+            self.gisans_data = None
 
     def reflectivity(self, direct_beam=None, configuration=None):
         """

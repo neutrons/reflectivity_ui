@@ -57,10 +57,13 @@ class ProcessingWorkflow(object):
             self.offspec(raw=self.output_options['export_offspec'],
                          binned=self.output_options['export_offspec_smooth'])
 
+        if progress is not None:
+                progress(60, "Computing off-specular reflectivity")
         if self.output_options['export_gisans']:
             self.gisans(progress=progress)
 
-        progress(100, "Complete")
+        if progress is not None:
+            progress(100, "Complete")
 
     def get_file_name(self, run_list=None, pol_state=None, data_type='dat', process_type='Specular'):
         """
@@ -217,13 +220,25 @@ class ProcessingWorkflow(object):
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
         # Refresh the reflectivity calculation
-        self.data_manager.reduce_gisans(progress=progress)
+        if progress is not None:
+            progress(1, "Reducing GISANS...")
 
-        data_dict = self.get_gisans_data(progress=progress)
+        self.data_manager.reduce_gisans(progress=None)
+
+        if progress is not None:
+            progress(50, "Binning GISANS...")
+
+        data_dict = self.get_gisans_data(progress=None)
+
+        if progress is not None:
+            progress(90, "Writing data")
 
         # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
         output_file_base = self.get_file_name(run_list, process_type='GISANS')
         self.write_quicknxs(data_dict, output_file_base, xs=data_dict['cross_sections'].keys())
+
+        if progress is not None:
+            progress(100, "GISANS complete")
 
     def offspec(self, raw=True, binned=False):
         """
