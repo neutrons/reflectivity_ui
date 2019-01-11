@@ -58,7 +58,7 @@ class ProcessingWorkflow(object):
                          binned=self.output_options['export_offspec_smooth'])
 
         if progress is not None:
-                progress(60, "Computing off-specular reflectivity")
+                progress(60, "Computing GISANS")
         if self.output_options['export_gisans']:
             self.gisans(progress=progress)
 
@@ -354,7 +354,7 @@ class ProcessingWorkflow(object):
             return data_dict
 
         t_0 = time.time()
-        _parallel = True
+        _parallel = False
         for pol_state in self.data_manager.reduction_states:
             if _parallel:
                 binned_data = gisans.rebin_parallel(self.data_manager.reduction_list, pol_state,
@@ -368,11 +368,11 @@ class ProcessingWorkflow(object):
                     _intensity, _qy, _qz_axis, _intensity_err = binned_data[i]
                 else:
                     _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(pol_state,
-                                                                                           wl_min=_wl_min,
-                                                                                           wl_max=_wl_max,
-                                                                                           qy_npts=qy_npts,
-                                                                                           qz_npts=qz_npts,
-                                                                                           use_pf=use_pf)
+                                                                                               wl_min=_wl_min,
+                                                                                               wl_max=_wl_max,
+                                                                                               qy_npts=qy_npts,
+                                                                                               qz_npts=qz_npts,
+                                                                                               use_pf=use_pf)
 
                 qz, qy = np.meshgrid(_qz_axis, _qy)
                 rdata = np.array([qy, qz, _intensity, _intensity_err]).transpose((1, 2, 0))
