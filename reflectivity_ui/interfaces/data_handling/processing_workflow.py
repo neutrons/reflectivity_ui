@@ -221,12 +221,12 @@ class ProcessingWorkflow(object):
 
         # Refresh the reflectivity calculation
         if progress is not None:
-            progress(1, "Reducing GISANS...")
+            progress(65, "Reducing GISANS...")
 
         self.data_manager.reduce_gisans(progress=None)
 
         if progress is not None:
-            progress(50, "Binning GISANS...")
+            progress(75, "Binning GISANS...")
 
         data_dict = self.get_gisans_data(progress=None)
 
