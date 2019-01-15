@@ -15,6 +15,9 @@ To-do list:
 - Proper mantid script as output
 - Plotting: allow for log(x)
 - Email results
+- Better reload mecanisms for previously reduced data
+- Switching between offspec and gisans causes a recalculation
+- Better progress bar reporting for off-specular and GISANS
 
 ## Data Manager Design
 - Add option to match direct beam cross-secion to data cross-section, otherwise sum up all cross-section in the direct beam data file.
@@ -28,6 +31,7 @@ To-do list:
 - Write output algo that takes group workspace.
 - Automate selection of const-Q binning
 - Add TOF range selector
+- Compute proper resolution for const-Q binning
 
 ## Off-spec
 - Only recalculate off-spec when needed (need to add a need_recalc data member)
@@ -37,7 +41,7 @@ To-do list:
 
 ## GISANS
 - Add background subtraction
-- Use multi-threading
+- Use multi-processes
 
 ## Testing
 - Automated testing
