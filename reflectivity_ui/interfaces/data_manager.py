@@ -454,22 +454,26 @@ class DataManager(object):
         """
         closest = None
         for item in self.direct_beam_list:
-            channel = item.cross_sections[item.cross_sections.keys()[0]]
-            if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel):
-                if closest is None:
-                    closest = item.number
-                elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
-                    closest = item.number
-
-        if closest is None:
-            # If we didn't find a direct beam, try with just the wavelength
-            for item in self.direct_beam_list:
+            xs_keys = item.cross_sections.keys()
+            if len(xs_keys) > 0:
                 channel = item.cross_sections[item.cross_sections.keys()[0]]
-                if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel, skip_slits=True):
+                if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel):
                     if closest is None:
                         closest = item.number
                     elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
                         closest = item.number
+
+        if closest is None:
+            # If we didn't find a direct beam, try with just the wavelength
+            for item in self.direct_beam_list:
+                xs_keys = item.cross_sections.keys()
+                if len(xs_keys) > 0:
+                    channel = item.cross_sections[item.cross_sections.keys()[0]]
+                    if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel, skip_slits=True):
+                        if closest is None:
+                            closest = item.number
+                        elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
+                            closest = item.number
         if closest is not None:
             return self._nexus_data.set_parameter("normalization", closest)
         return False
