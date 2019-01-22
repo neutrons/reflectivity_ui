@@ -35,7 +35,7 @@ def _find_h5_data(filename):
             return _new_filename
     return filename
 
-def write_reflectivity_header(reduction_list, output_path, pol_states):
+def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol_states):
     """
         Write out reflectivity header in a format readable by QuickNXS
         :param str output_path: output file path
@@ -76,23 +76,25 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         normalization_run = run_object.getProperty("normalization_run").value
         if normalization_run == "None":
             continue
+        direct_beam = None
+        for db_i in direct_beam_list:
+            if str(db_i.number) == str(normalization_run):
+                direct_beam = db_i
+        if direct_beam is None:
+            continue
+        db_pol = direct_beam.cross_sections.keys()[0]
+        conf = direct_beam.cross_sections[db_pol].configuration
         i_direct_beam += 1
-        peak_min = run_object.getProperty("norm_peak_min").value
-        peak_max = run_object.getProperty("norm_peak_max").value
-        bg_min = run_object.getProperty("norm_bg_min").value
-        bg_max = run_object.getProperty("norm_bg_max").value
-        low_res_min = run_object.getProperty("norm_low_res_min").value
-        low_res_max = run_object.getProperty("norm_low_res_max").value
         dpix = run_object.getProperty("normalization_dirpix").value
         filename = run_object.getProperty("normalization_file_path").value
 
         item = dict(DB_ID=i_direct_beam, tth=0, P0=0, PN=0,
-                    x_pos=(peak_min+peak_max)/2.0,
-                    x_width=peak_max-peak_min+1,
-                    y_pos=(low_res_max+low_res_min)/2.0,
-                    y_width=low_res_max-low_res_min+1,
-                    bg_pos=(bg_min+bg_max)/2.0,
-                    bg_width=bg_max-bg_min+1,
+                    x_pos=conf.peak_position,
+                    x_width=conf.peak_width,
+                    y_pos=conf.low_res_position,
+                    y_width=conf.low_res_width,
+                    bg_pos=conf.bck_position,
+                    bg_width=conf.bck_width,
                     dpix=dpix,
                     number=normalization_run,
                     File=filename)
@@ -119,12 +121,6 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         conf = data_set.cross_sections[pol_list[0]].configuration
         ws = data_set.cross_sections[pol_list[0]].reflectivity_workspace
         run_object = ws.getRun()
-        peak_min = run_object.getProperty("scatt_peak_min").value
-        peak_max = run_object.getProperty("scatt_peak_max").value
-        bg_min = run_object.getProperty("scatt_bg_min").value
-        bg_max = run_object.getProperty("scatt_bg_max").value
-        low_res_min = run_object.getProperty("scatt_low_res_min").value
-        low_res_max = run_object.getProperty("scatt_low_res_max").value
         dpix = run_object.getProperty("DIRPIX").getStatistics().mean
         filename = run_object.getProperty("Filename").value
         constant_q_binning = run_object.getProperty("constant_q_binning").value
@@ -155,12 +151,12 @@ def write_reflectivity_header(reduction_list, output_path, pol_states):
         item = dict(scale=scaling_factor, DB_ID=db_id,
                     P0=conf.cut_first_n_points, PN=conf.cut_last_n_points, tth=tth,
                     fan=constant_q_binning,
-                    x_pos=scatt_pos,
-                    x_width=peak_max-peak_min+1,
-                    y_pos=(low_res_max+low_res_min)/2.0,
-                    y_width=low_res_max-low_res_min+1,
-                    bg_pos=(bg_min+bg_max)/2.0,
-                    bg_width=bg_max-bg_min+1,
+                    x_pos=conf.peak_position,
+                    x_width=conf.peak_width,
+                    y_pos=conf.low_res_position,
+                    y_width=conf.low_res_width,
+                    bg_pos=conf.bck_position,
+                    bg_width=conf.bck_width,
                     dpix=dpix,
                     number=str(ws.getRunNumber()),
                     File=filename)

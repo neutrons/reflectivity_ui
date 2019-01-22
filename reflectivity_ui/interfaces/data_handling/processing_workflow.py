@@ -121,6 +121,7 @@ class ProcessingWorkflow(object):
 
             state_output_path = output_file_base.replace('{state}', pol_state)
             quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list,
+                                                  self.data_manager.direct_beam_list,
                                                   state_output_path, _pol_state)
             quicknxs_io.write_reflectivity_data(state_output_path, output_data[pol_state],
                                                 col_names, as_5col=five_cols)

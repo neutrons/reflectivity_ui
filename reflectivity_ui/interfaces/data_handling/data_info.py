@@ -39,7 +39,7 @@ class DataInfo(object):
         self.peak_position = 0
         self.peak_range = [0,0]
         self.low_res_range = [0,0]
-        self.background = [54,100]
+        self.background = configuration.bck_roi
         self.n_events_cutoff = 100
 
         # ROI information
@@ -110,6 +110,10 @@ class DataInfo(object):
         tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - half_width * 60.0 / chopper_speed) * 1e-4
         tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + half_width * 60.0 / chopper_speed) * 1e-4
 
+        _tof_min = ws.getTofMin()
+        _tof_max = ws.getTofMax()
+        tof_min = max(_tof_min, tof_min)
+        tof_max = min(_tof_max, tof_max)
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]
 
@@ -262,7 +266,7 @@ class DataInfo(object):
         elif self.use_roi_bck:
             bck_range = [int(max(0.0, peak[0]-2*self.bck_offset)), int(max(0.0, peak[0]-self.bck_offset))]
         else:
-            bck_range = [5, 105]
+            bck_range = self.background
 
         # Store the information we found
         self.peak_position = (peak[1]+peak[0])/2.0

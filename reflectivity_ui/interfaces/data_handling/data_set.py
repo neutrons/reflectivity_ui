@@ -487,6 +487,23 @@ class CrossSectionData(object):
         return self._dr * self.configuration.scaling_factor
 
     @property
+    def wavelength_range(self):
+        """
+            Returns the wavelength range
+        """
+        #TODO: use the skipped points to trim the wl band.
+        # The following would work, but not if we perform a final rebin.
+        # We should use the final Q binning to determine the wl range.
+        # That's because we cut points in Q, but it has to be consistent
+        # throughout the application even when wavelength is plotted.
+        #PN = len(self.tof)-self.configuration.cut_first_n_points-1
+        #P0 = self.configuration.cut_last_n_points
+
+        wl_min =  H_OVER_M_NEUTRON / self.dist_mod_det * self.tof[0] * 1.e4
+        wl_max =  H_OVER_M_NEUTRON / self.dist_mod_det * self.tof[-1] * 1.e4
+        return wl_min, wl_max
+
+    @property
     def wavelength(self):
         h = 6.626e-34  # m^2 kg s^-1
         m = 1.675e-27  # kg
@@ -620,7 +637,7 @@ class CrossSectionData(object):
             if not self.configuration.force_low_res_roi:
                 self.configuration.low_res_roi = data_info.low_res_range
 
-            if not self.configuration.force_bck_roi:
+            if self.configuration.force_bck_roi:
                 self.configuration.bck_roi = data_info.background
         self.process_configuration()
 

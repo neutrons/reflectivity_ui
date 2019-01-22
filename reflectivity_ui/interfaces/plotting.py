@@ -431,8 +431,8 @@ class PlotManager(object):
                 selected_data=nexus_data.cross_sections[channel]
                 progress(i_run+i/4.0, message="Processed run %s %s" % (selected_data.number, channel), out_of=n_total)
 
-                P0 = len(selected_data.tof)-nexus_data.configuration.cut_first_n_points
-                PN = nexus_data.configuration.cut_last_n_points
+                PN = len(selected_data.tof)-selected_data.configuration.cut_first_n_points
+                P0 = selected_data.configuration.cut_last_n_points
                 ki_z, kf_z = selected_data.off_spec.ki_z, selected_data.off_spec.kf_z
                 Qx, Qz, S =  selected_data.off_spec.Qx, selected_data.off_spec.Qz, selected_data.off_spec.S
                 try:
@@ -449,18 +449,18 @@ class PlotManager(object):
                 except:
                     logging.error("Error computing ranges: %s", sys.exc_info()[1])
                 if self.main_window.ui.kizmkfzVSqz.isChecked():
-                    plot.pcolormesh((ki_z-kf_z)[:, PN:P0],
-                                    Qz[:, PN:P0], S[:, PN:P0], log=True,
+                    plot.pcolormesh((ki_z-kf_z)[:, P0:PN],
+                                    Qz[:, P0:PN], S[:, P0:PN], log=True,
                                     imin=i_min, imax=i_max, cmap=self.color,
                                     shading='gouraud')
                 elif self.main_window.ui.qxVSqz.isChecked():
-                    plot.pcolormesh(Qx[:, PN:P0],
-                                    Qz[:, PN:P0], S[:, PN:P0], log=True,
+                    plot.pcolormesh(Qx[:, P0:PN],
+                                    Qz[:, P0:PN], S[:, P0:PN], log=True,
                                     imin=i_min, imax=i_max, cmap=self.color,
                                     shading='gouraud')
                 else:
-                    plot.pcolormesh(ki_z[:, PN:P0],
-                                    kf_z[:, PN:P0], S[:, PN:P0], log=True,
+                    plot.pcolormesh(ki_z[:, P0:PN],
+                                    kf_z[:, P0:PN], S[:, P0:PN], log=True,
                                     imin=i_min, imax=i_max, cmap=self.color,
                                     shading='gouraud')
         for i, channel in enumerate(data_set_keys):

@@ -147,6 +147,10 @@ class MainHandler(object):
         d = self._data_manager.active_channel
         self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
 
+        wl_min, wl_max = d.wavelength_range
+        self.ui.datasetLambda.setText(u"%.2f (%.2f-%.2f) Å"%(d.lambda_center,
+                                                             wl_min, wl_max))
+
         # DIRPIX and DANGLE0 overwrite
         if self.ui.set_dangle0_checkbox.isChecked():
             dangle0 = u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d._angle_offset)
@@ -185,9 +189,9 @@ class MainHandler(object):
         else:
             dpix = u"%.1f"%d.direct_pixel
 
+        wl_min, wl_max = d.wavelength_range
         self.ui.datasetLambda.setText(u"%.2f (%.2f-%.2f) Å"%(d.lambda_center,
-                                                             d.lambda_center-1.5,
-                                                             d.lambda_center+1.5))
+                                                             wl_min, wl_max))
         self.ui.datasetPCharge.setText(u"%.3e"%d.proton_charge)
         self.ui.datasetTime.setText(u"%i s"%d.total_time)
         self.ui.datasetTotCounts.setText(u"%.4e"%d.total_counts)

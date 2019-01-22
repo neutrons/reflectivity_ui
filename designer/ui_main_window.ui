@@ -4883,7 +4883,7 @@
   </connection>
   <connection>
    <sender>bgCenter</sender>
-   <signal>editingFinished()</signal>
+   <signal>valueChanged(double)</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>
@@ -4915,7 +4915,7 @@
   </connection>
   <connection>
    <sender>bgWidth</sender>
-   <signal>editingFinished()</signal>
+   <signal>valueChanged(double)</signal>
    <receiver>MainWindow</receiver>
    <slot>changeRegionValues()</slot>
    <hints>

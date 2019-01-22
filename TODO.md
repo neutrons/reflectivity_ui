@@ -18,6 +18,8 @@ To-do list:
 - Better reload mecanisms for previously reduced data
 - Switching between offspec and gisans causes a recalculation
 - Better progress bar reporting for off-specular and GISANS
+- Update wavelength range according to the number of points trimmed
+- Use TOF cut behind the scene so that the number of points trimmed works regardless of binning.
 
 ## Data Manager Design
 - Add option to match direct beam cross-secion to data cross-section, otherwise sum up all cross-section in the direct beam data file.
