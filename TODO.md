@@ -20,6 +20,7 @@ To-do list:
 - Better progress bar reporting for off-specular and GISANS
 - Update wavelength range according to the number of points trimmed
 - Use TOF cut behind the scene so that the number of points trimmed works regardless of binning.
+- Load trimmed points while loading reduced data.
 
 ## Data Manager Design
 - Add option to match direct beam cross-secion to data cross-section, otherwise sum up all cross-section in the direct beam data file.
