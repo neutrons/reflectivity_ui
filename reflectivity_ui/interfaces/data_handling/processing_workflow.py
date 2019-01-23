@@ -557,16 +557,13 @@ class ProcessingWorkflow(object):
                     # Sometimes the number of points may be different if the last few points had no signal.
                     for i in range(len(data_dict[p_state])):
                         p_point = data_dict[p_state][i]
-                        for j in range(len(data_dict[m_state])):
-                            m_point = data_dict[m_state][j]
-                            if m_point[0] == p_point[0]:
-                                if p_point[1] > 0 and m_point[1] > 0:
-                                    ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
-                                    d_ratio = 2.0 / (p_point[1] + m_point[1])**2
-                                    d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
-                                    asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
-                                break
-
+                        i_m = len(data_dict[m_state][data_dict[m_state].T[0] < p_point[0]])
+                        m_point = data_dict[m_state][i_m]
+                        if p_point[1] > 0 and m_point[1] > 0:
+                            ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
+                            d_ratio = 2.0 / (p_point[1] + m_point[1])**2
+                            d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
+                            asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
                     data_dict['SA'] = np.asarray(asym_data)
                 else:
                     logging.error("Asym request but failed: %s %s %s %s", p_state, m_state,

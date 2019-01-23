@@ -3920,6 +3920,8 @@
     <addaction name="actionStrip_Overlap"/>
     <addaction name="separator"/>
     <addaction name="action_use_common_ranges"/>
+    <addaction name="separator"/>
+    <addaction name="actionResult_Viewer"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -4357,6 +4359,11 @@
    </property>
    <property name="toolTip">
     <string>Remove the selected data set from normalization list</string>
+   </property>
+  </action>
+  <action name="actionResult_Viewer">
+   <property name="text">
+    <string>Result Viewer</string>
    </property>
   </action>
  </widget>
@@ -5569,6 +5576,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionResult_Viewer</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_results()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>948</x>
+     <y>535</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -5612,5 +5635,6 @@
   <slot>reduction_cell_activated(int,int)</slot>
   <slot>direct_beam_cell_activated(int,int)</slot>
   <slot>remove_normalization()</slot>
+  <slot>show_results()</slot>
  </slots>
 </ui>

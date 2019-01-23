@@ -385,6 +385,9 @@ class MainWindow(QtWidgets.QMainWindow,
     def refresh_file_list(self):
         self.file_handler.update_file_list()
 
+    def show_results(self):
+        self.file_handler.show_results()
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self): return NotImplemented

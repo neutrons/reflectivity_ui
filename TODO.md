@@ -1,8 +1,9 @@
 # Magnetism Reflectometry Reduction
 
-Latest release:
-- Added option not to apply a final rebin
- 
+## From feedback:
+
+- Separate preview window for spec, off-spec, and gisans.
+- The GISANS preview should show the different plots in wl as tiles.
 
 To-do list:
 

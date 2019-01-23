@@ -1627,6 +1627,8 @@ class Ui_MainWindow(object):
         icon18.addPixmap(QtGui.QPixmap(":/General/delNormalization.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionRemove_Normalization.setIcon(icon18)
         self.actionRemove_Normalization.setObjectName("actionRemove_Normalization")
+        self.actionResult_Viewer = QtWidgets.QAction(MainWindow)
+        self.actionResult_Viewer.setObjectName("actionResult_Viewer")
         self.menuReduction.addAction(self.actionNorm)
         self.menuReduction.addAction(self.actionRemove_Normalization)
         self.menuReduction.addAction(self.actionClear_Normalizations)
@@ -1648,6 +1650,8 @@ class Ui_MainWindow(object):
         self.menuAutomatics.addAction(self.actionStrip_Overlap)
         self.menuAutomatics.addSeparator()
         self.menuAutomatics.addAction(self.action_use_common_ranges)
+        self.menuAutomatics.addSeparator()
+        self.menuAutomatics.addAction(self.actionResult_Viewer)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionLoad_Extraction)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -1757,6 +1761,7 @@ class Ui_MainWindow(object):
         self.directPixelOverwrite.editingFinished.connect(MainWindow.changeRegionValues)
         self.final_rebin_checkbox.toggled['bool'].connect(MainWindow.changeRegionValues)
         self.q_rebin_spinbox.editingFinished.connect(MainWindow.changeRegionValues)
+        self.actionResult_Viewer.triggered.connect(MainWindow.show_results)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.numberSearchEntry, self.histogramActive)
         MainWindow.setTabOrder(self.histogramActive, self.eventActive)
@@ -2171,6 +2176,7 @@ class Ui_MainWindow(object):
         self.actionRemove_Normalization.setText(_translate("MainWindow", "Remove from normalizations"))
         self.actionRemove_Normalization.setIconText(_translate("MainWindow", "Remove from normalizations"))
         self.actionRemove_Normalization.setToolTip(_translate("MainWindow", "Remove the selected data set from normalization list"))
+        self.actionResult_Viewer.setText(_translate("MainWindow", "Result Viewer"))
 
 from .compare_plots import CompareWidget
 from .mplwidget import MPLWidget

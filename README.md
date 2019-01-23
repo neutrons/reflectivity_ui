@@ -4,7 +4,7 @@
 
 ## Latest version: v2.0.33
  - Hybrid spin boxes to test out synching to plots and responsiveness.
- - Background selection is now remembered from run to run upong loading.
+ - Background selection is now remembered from run to run upon loading.
  - Selecting a very wide wavelength band will pick the actual band in the data.
  - Made sure cutting TOF bins matches between specular (not rebinned) and off-specular
  - Updated wavelength band.

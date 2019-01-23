@@ -166,6 +166,7 @@ class NexusData(object):
                                                  SpecularPixel=conf.peak_position,
                                                  ConstantQBinning=conf.use_constant_q,
                                                  ConstQTrim=0.1,
+                                                 CropFirstAndLastPoints=False,
                                                  ErrorWeightedBackground=False,
                                                  SampleLength=conf.sample_size,
                                                  DAngle0Overwrite=_dangle0,

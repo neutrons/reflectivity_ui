@@ -110,10 +110,10 @@ class DataInfo(object):
         tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - half_width * 60.0 / chopper_speed) * 1e-4
         tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + half_width * 60.0 / chopper_speed) * 1e-4
 
-        _tof_min = ws.getTofMin()
-        _tof_max = ws.getTofMax()
-        tof_min = max(_tof_min, tof_min)
-        tof_max = min(_tof_max, tof_max)
+        #_tof_min = ws.getTofMin()
+        #_tof_max = ws.getTofMax()
+        #tof_min = max(_tof_min, tof_min)
+        #tof_max = min(_tof_max, tof_max)
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]
 

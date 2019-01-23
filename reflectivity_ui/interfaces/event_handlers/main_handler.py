@@ -1047,6 +1047,7 @@ class MainHandler(object):
             self.ui.rangeStart.setValue(trim_points[0])
             self.ui.rangeEnd.setValue(trim_points[1])
             self.update_tables()
+            self.main_window.initiate_reflectivity_plot.emit(False)
         else:
             self.report_message("No direct beam found to trim data", pop_up=False)
 
@@ -1097,3 +1098,13 @@ class MainHandler(object):
                 msg.setDetailedText(detailed_message)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
+
+    def show_results(self):
+        """
+            Pop up the result viewer
+        """
+        from ..result_viewer import ResultViewer
+        dialog=ResultViewer(self.main_window)
+        dialog.specular_compare_widget.data_manager = self._data_manager
+        #self.refl_preview_checkbox.setChecked(False)
+        dialog.show()
