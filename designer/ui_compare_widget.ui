@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1147</width>
-    <height>701</height>
+    <width>1277</width>
+    <height>1037</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -116,13 +116,29 @@
           </item>
           <item>
            <widget class="QPushButton" name="pushButton">
+            <property name="toolTip">
+             <string>Clear all items</string>
+            </property>
             <property name="text">
-             <string>Clear</string>
+             <string>Clear all</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="clear_item_button">
+            <property name="toolTip">
+             <string>Clear the selected item</string>
+            </property>
+            <property name="text">
+             <string>Clear item</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_2">
+            <property name="toolTip">
+             <string>Open a new file to plot</string>
+            </property>
             <property name="text">
              <string>Open</string>
             </property>
@@ -232,6 +248,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>clear_item_button</sender>
+   <signal>pressed()</signal>
+   <receiver>Form</receiver>
+   <slot>clear_item()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1064</x>
+     <y>606</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>573</x>
+     <y>350</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>open_file()</slot>
@@ -239,5 +271,6 @@
   <slot>draw()</slot>
   <slot>edit_cell(int,int)</slot>
   <slot>refl_preview(bool)</slot>
+  <slot>clear_item()</slot>
  </slots>
 </ui>

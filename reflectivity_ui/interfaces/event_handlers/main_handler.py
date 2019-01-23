@@ -1106,5 +1106,5 @@ class MainHandler(object):
         from ..result_viewer import ResultViewer
         dialog=ResultViewer(self.main_window)
         dialog.specular_compare_widget.data_manager = self._data_manager
-        #self.refl_preview_checkbox.setChecked(False)
+        dialog.specular_compare_widget.ui.refl_preview_checkbox.setChecked(True)
         dialog.show()

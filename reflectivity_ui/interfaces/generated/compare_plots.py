@@ -118,6 +118,16 @@ class CompareWidget(QtWidgets.QWidget):
         self.ui.compareList.setRowCount(0)
         self.draw()
 
+    def clear_item(self):
+        """
+            Remove all current plotted data
+        """
+        logging.error(self.ui.compareList.currentRow())
+        item_id = self.ui.compareList.currentRow()
+        if item_id >=0:
+            self.ui.compareList.removeRow(item_id)
+            self.draw()
+
     def draw(self):
         """
             Draw data

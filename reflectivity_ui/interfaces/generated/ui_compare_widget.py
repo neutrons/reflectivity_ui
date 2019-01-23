@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(1147, 701)
+        Form.resize(1277, 1037)
         self.verticalLayout = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout.setObjectName("verticalLayout")
         self.splitter = QtWidgets.QSplitter(Form)
@@ -74,6 +74,9 @@ class Ui_Form(object):
         self.pushButton = QtWidgets.QPushButton(self.frame_8)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout_10.addWidget(self.pushButton)
+        self.clear_item_button = QtWidgets.QPushButton(self.frame_8)
+        self.clear_item_button.setObjectName("clear_item_button")
+        self.verticalLayout_10.addWidget(self.clear_item_button)
         self.pushButton_2 = QtWidgets.QPushButton(self.frame_8)
         self.pushButton_2.setObjectName("pushButton_2")
         self.verticalLayout_10.addWidget(self.pushButton_2)
@@ -86,6 +89,7 @@ class Ui_Form(object):
         self.compareList.itemChanged['QTableWidgetItem*'].connect(Form.draw)
         self.compareList.cellDoubleClicked['int','int'].connect(Form.edit_cell)
         self.refl_preview_checkbox.toggled['bool'].connect(Form.refl_preview)
+        self.clear_item_button.pressed.connect(Form.clear_item)
         QtCore.QMetaObject.connectSlotsByName(Form)
         Form.setTabOrder(self.compareList, self.pushButton_2)
         Form.setTabOrder(self.pushButton_2, self.pushButton)
@@ -100,7 +104,11 @@ class Ui_Form(object):
         item = self.compareList.horizontalHeaderItem(2)
         item.setText(_translate("Form", "Label"))
         self.refl_preview_checkbox.setText(_translate("Form", "R(q) preview"))
-        self.pushButton.setText(_translate("Form", "Clear"))
+        self.pushButton.setToolTip(_translate("Form", "Clear all items"))
+        self.pushButton.setText(_translate("Form", "Clear all"))
+        self.clear_item_button.setToolTip(_translate("Form", "Clear the selected item"))
+        self.clear_item_button.setText(_translate("Form", "Clear item"))
+        self.pushButton_2.setToolTip(_translate("Form", "Open a new file to plot"))
         self.pushButton_2.setText(_translate("Form", "Open"))
 
 from .mplwidget import MPLWidget
