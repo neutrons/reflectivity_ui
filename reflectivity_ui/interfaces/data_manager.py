@@ -35,6 +35,9 @@ class DataManager(object):
         self.reduction_states = []
         self.final_merged_reflectivity = {}
 
+        # Cached outputs
+        self.cached_offspec = None
+
     @property
     def data_sets(self):
         if self._nexus_data is None:

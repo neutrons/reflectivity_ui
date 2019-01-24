@@ -26,6 +26,8 @@ class MainWindow(QtWidgets.QMainWindow,
     file_loaded_signal = QtCore.pyqtSignal()
     initiate_projection_plot = QtCore.pyqtSignal(bool)
     initiate_reflectivity_plot = QtCore.pyqtSignal(bool)
+    update_specular_viewer = QtCore.pyqtSignal()
+    update_off_specular_viewer = QtCore.pyqtSignal()
     _gisansThread = None
 
     def __init__(self):
@@ -235,6 +237,7 @@ class MainWindow(QtWidgets.QMainWindow,
                                                          pop_up=False)
                         logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
                 self.plot_manager.plot_refl()
+                self.update_specular_viewer.emit()
 
     def reductionTableChanged(self, item):
         '''
@@ -378,6 +381,9 @@ class MainWindow(QtWidgets.QMainWindow,
             from .data_handling.processing_workflow import ProcessingWorkflow
             wrk = ProcessingWorkflow(self.data_manager, output_options)
             wrk.execute(self.file_handler.new_progress_reporter())
+
+            # Show final results
+            self.update_off_specular_viewer.emit()
 
     def loadExtraction(self):
         self.file_handler.open_reduced_file_dialog()

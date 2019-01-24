@@ -1104,7 +1104,8 @@ class MainHandler(object):
             Pop up the result viewer
         """
         from ..result_viewer import ResultViewer
-        dialog=ResultViewer(self.main_window)
-        dialog.specular_compare_widget.data_manager = self._data_manager
+        dialog=ResultViewer(self.main_window, self._data_manager)
         dialog.specular_compare_widget.ui.refl_preview_checkbox.setChecked(True)
+        self.main_window.update_specular_viewer.connect(dialog.update_specular)
+        self.main_window.update_off_specular_viewer.connect(dialog.update_off_specular)
         dialog.show()

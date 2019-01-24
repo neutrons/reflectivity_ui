@@ -261,6 +261,7 @@ class ProcessingWorkflow(object):
             self.write_quicknxs(output_data, output_file_base)
 
         # Export binned result
+        self.data_manager.cached_offspec = None
         if binned:
             if self.data_manager.active_channel.configuration.apply_smoothing:
                 # "Smooth" version
@@ -268,6 +269,7 @@ class ProcessingWorkflow(object):
                     smooth_output = self.smooth_offspec(output_data)
                     output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
                     self.write_quicknxs(smooth_output, output_file_base)
+                    self.data_manager.cached_offspec = smooth_output
                 except:
                     logging.error("Problem writing smooth off-spec output: %s", sys.exc_value)
 
@@ -279,6 +281,8 @@ class ProcessingWorkflow(object):
             if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
                 output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
                 self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
+            if self.data_manager.cached_offspec is None:
+                self.data_manager.cached_offspec = binned_data
 
     def get_rebinned_offspec_data(self):
         """
@@ -454,7 +458,7 @@ class ProcessingWorkflow(object):
                It effectively only produces a pretty picture and should only be used as such.
         """
         axes = self.data_manager.active_channel.configuration.off_spec_x_axis
-        output_data={}
+        output_data=dict(cross_sections=dict())
         for channel in data_dict['cross_sections'].keys():
             data = np.hstack(data_dict[channel])
             I = data[:, :, 5].flatten()
@@ -494,6 +498,7 @@ class ProcessingWorkflow(object):
                                                y2=self.data_manager.active_channel.configuration.off_spec_y_max,
                                                axis_sigma_scaling=axis_sigma_scaling, xysigma0=xysigma0)
             output_data[channel] = [np.array([x, y, I]).transpose((1, 2, 0))]
+            output_data['cross_sections'][channel] = data_dict['cross_sections'][channel]
         output_data['ki_max'] = data_dict['ki_max']
         return output_data
 
