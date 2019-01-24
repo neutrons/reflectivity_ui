@@ -331,7 +331,7 @@ class Fitter2(object):
         # a factor that peaks in the middle of the detector, where the peak usually is.
         nx = 304.
         delta = 100.
-        mid_point = 100.
+        mid_point = 150.
         quality_pos = np.exp(-(mid_point-peaks)**2./2000.)
         low_peaks = peaks<delta
         high_peaks = peaks>nx-delta
