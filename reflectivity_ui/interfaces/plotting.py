@@ -369,7 +369,7 @@ class PlotManager(object):
         main_window.ui.x_project.draw()
         main_window.ui.y_project.draw()
 
-    def plot_offspec(self, recalc=True):
+    def plot_offspec(self, recalc=True, crop=False):
         """
             Create an offspecular plot for all channels of the datasets in the
             reduction list. The user can define upper and lower bounds for the 
@@ -378,6 +378,13 @@ class PlotManager(object):
         """ 
         if self.main_window.data_manager.active_channel is None:
             return
+
+        xlim = None
+        ylim = None
+        if crop and self.main_window.ui.offspec_pp.cplot is not None:
+            xlim = self.main_window.ui.offspec_pp.canvas.ax.get_xlim()
+            ylim = self.main_window.ui.offspec_pp.canvas.ax.get_ylim()
+
         plots=[self.main_window.ui.offspec_pp, self.main_window.ui.offspec_mm,
                self.main_window.ui.offspec_pm, self.main_window.ui.offspec_mp]
         for plot in plots:
@@ -485,6 +492,9 @@ class PlotManager(object):
                 plot.cplot.set_clim([i_min, i_max])
                 if self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
                     plots[i].cbar=plots[i].canvas.fig.colorbar(plots[i].cplot)
+                if xlim is not None and ylim is not None:
+                    plot.canvas.ax.set_xlim(*xlim)
+                    plot.canvas.ax.set_ylim(*ylim)
             plot.draw()
         progress(100, message=final_msg, out_of=100)
 

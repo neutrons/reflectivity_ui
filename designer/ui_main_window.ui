@@ -2058,7 +2058,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
@@ -2618,6 +2618,16 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="apply_offspec_crop_button">
+             <property name="toolTip">
+              <string>Use zooming region from the first cross-section and apply to all other plots.</string>
+             </property>
+             <property name="text">
+              <string>Apply cropping to all</string>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QPushButton" name="refresh_offspec_button">
@@ -3542,33 +3552,7 @@
            <layout class="QVBoxLayout" name="verticalLayout_21">
             <item>
              <layout class="QGridLayout" name="gridLayout_6">
-              <item row="0" column="1">
-               <widget class="MPLWidget" name="gisans_pp" native="true">
-                <property name="minimumSize">
-                 <size>
-                  <width>150</width>
-                  <height>150</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="MPLWidget" name="gisans_mm" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>1</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>150</width>
-                  <height>150</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
+              <item row="1" column="1">
                <widget class="MPLWidget" name="gisans_pm" native="true">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -3584,12 +3568,38 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
+              <item row="1" column="2">
                <widget class="MPLWidget" name="gisans_mp" native="true">
                 <property name="minimumSize">
                  <size>
                   <width>150</width>
                   <height>105</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="MPLWidget" name="gisans_mm" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>1</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>150</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="MPLWidget" name="gisans_pp" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>150</height>
                  </size>
                 </property>
                </widget>
@@ -5592,6 +5602,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>apply_offspec_crop_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>apply_offspec_crop()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1385</x>
+     <y>293</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>948</x>
+     <y>535</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -5636,5 +5662,6 @@
   <slot>direct_beam_cell_activated(int,int)</slot>
   <slot>remove_normalization()</slot>
   <slot>show_results()</slot>
+  <slot>apply_offspec_crop()</slot>
  </slots>
 </ui>

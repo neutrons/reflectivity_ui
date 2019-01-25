@@ -394,6 +394,9 @@ class MainWindow(QtWidgets.QMainWindow,
     def show_results(self):
         self.file_handler.show_results()
 
+    def apply_offspec_crop(self):
+        self.plot_manager.plot_offspec(crop=True)
+
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self): return NotImplemented

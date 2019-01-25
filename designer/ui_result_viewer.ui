@@ -34,17 +34,17 @@
        <string>Off-Specular</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="1">
-        <widget class="MPLWidget" name="offspec_pp_plot" native="true"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="MPLWidget" name="offspec_mm_plot" native="true"/>
-       </item>
        <item row="1" column="0">
         <widget class="MPLWidget" name="offspec_pm_plot" native="true"/>
        </item>
        <item row="1" column="1">
         <widget class="MPLWidget" name="offspec_mp_plot" native="true"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="MPLWidget" name="offspec_pp_plot" native="true"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="MPLWidget" name="offspec_mm_plot" native="true"/>
        </item>
       </layout>
      </widget>
