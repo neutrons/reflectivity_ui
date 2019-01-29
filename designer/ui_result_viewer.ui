@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1031</width>
-    <height>552</height>
+    <width>1375</width>
+    <height>710</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,16 +35,145 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
        <item row="1" column="0">
-        <widget class="MPLWidget" name="offspec_pm_plot" native="true"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="MPLWidget" name="offspec_mp_plot" native="true"/>
+        <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0">
+         <property name="verticalSpacing">
+          <number>6</number>
+         </property>
+         <item row="0" column="1">
+          <widget class="MPLWidget" name="offspec_mm_plot" native="true"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="MPLWidget" name="offspec_pp_plot" native="true"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="MPLWidget" name="offspec_pm_plot" native="true"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="MPLWidget" name="offspec_mp_plot" native="true"/>
+         </item>
+        </layout>
        </item>
        <item row="0" column="0">
-        <widget class="MPLWidget" name="offspec_pp_plot" native="true"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="MPLWidget" name="offspec_mm_plot" native="true"/>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Intensity range:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>I_min 10^</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="offspec_intensity_min">
+           <property name="minimum">
+            <double>-20.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>2.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.250000000000000</double>
+           </property>
+           <property name="value">
+            <double>-6.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>I_max 10^</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="offspec_intensity_max">
+           <property name="minimum">
+            <double>-10.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.250000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="offspec_apply_crop_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Apply cropping to all</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="offset_reset_crop_button">
+           <property name="text">
+            <string>Refresh</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -131,8 +260,42 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>offset_reset_crop_button</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reset_offspec_crop()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1300</x>
+     <y>198</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>687</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>offspec_apply_crop_button</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>apply_offspec_crop()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1169</x>
+     <y>198</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>687</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>update_active_tab()</slot>
+  <slot>apply_offspec_crop()</slot>
+  <slot>reset_offspec_crop()</slot>
  </slots>
 </ui>

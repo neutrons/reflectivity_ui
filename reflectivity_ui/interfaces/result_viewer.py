@@ -33,10 +33,16 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
     def update_specular(self):
         self.specular_compare_widget.refl_preview()
 
-    def update_off_specular(self):
+    def update_off_specular(self, crop=False):
         off_spec_data = self.data_manager.cached_offspec
         if off_spec_data is None:
             return
+
+        xlim = None
+        ylim = None
+        if crop and self.offspec_pp_plot.cplot is not None:
+            xlim = self.offspec_pp_plot.canvas.ax.get_xlim()
+            ylim = self.offspec_pp_plot.canvas.ax.get_ylim()
 
         data_set_keys = off_spec_data['cross_sections'].keys()
 
@@ -62,8 +68,8 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
             self.offspec_pm_plot.hide()
             self.offspec_mm_plot.hide()
 
-        i_min=10**self.main_window.ui.offspecImin.value()
-        i_max=10**self.main_window.ui.offspecImax.value()
+        i_min=10**self.offspec_intensity_min.value()
+        i_max=10**self.offspec_intensity_max.value()
 
         for i, channel in enumerate(data_set_keys):
             plot = plots[i]
@@ -75,4 +81,15 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
             plots[i].set_xlabel(u'%s [%s]' % (off_spec_data['columns'][0], off_spec_data['units'][0]))
             plots[i].set_ylabel(u'%s [%s]' % (off_spec_data['columns'][1], off_spec_data['units'][1]))
             plots[i].set_title(channel)
+            if plots[i].cplot is not None:
+                plots[i].cplot.set_clim([i_min, i_max])
+                if xlim is not None and ylim is not None:
+                    plots[i].canvas.ax.set_xlim(*xlim)
+                    plots[i].canvas.ax.set_ylim(*ylim)
             plots[i].draw()
+
+    def apply_offspec_crop(self):
+        self.update_off_specular(crop=True)
+
+    def reset_offspec_crop(self):
+        self.update_off_specular(crop=False)

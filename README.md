@@ -2,7 +2,12 @@
 [![TRAVISCI](https://travis-ci.org/mdoucet/reflectivity_ui.svg?branch=master)](https://travis-ci.org/mdoucet/reflectivity_ui)
 [![codecov](https://codecov.io/gh/mdoucet/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/mdoucet/reflectivity_ui)
 
-## Latest version: v2.0.35 [01/24/2019]
+## v2.0.36 [01/29/2019]
+ - Result preview improvements (sync zoom)
+ - Off-spec UI improvements: separate smoothing from the rest
+ - Add smoothing dialog for pick options interactively on a plot
+
+## v2.0.35 [01/24/2019]
  - Add result preview
 
 ## v2.0.34

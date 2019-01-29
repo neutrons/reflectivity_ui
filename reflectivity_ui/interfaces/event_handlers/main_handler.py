@@ -906,13 +906,6 @@ class MainHandler(object):
         configuration.off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()
         # Off-spec smoothing options
         configuration.apply_smoothing = self.ui.offspec_smooth_checkbox.isChecked()
-        configuration.off_spec_sigmas = self.ui.offspec_sigmas_spinbox.value()
-        configuration.off_spec_sigmax = self.ui.offspec_sigmax_spinbox.value()
-        configuration.off_spec_sigmay = self.ui.offspec_sigmay_spinbox.value()
-        configuration.off_spec_x_min = self.ui.offspec_x_min_spinbox.value()
-        configuration.off_spec_x_max = self.ui.offspec_x_max_spinbox.value()
-        configuration.off_spec_y_min = self.ui.offspec_y_min_spinbox.value()
-        configuration.off_spec_y_max = self.ui.offspec_y_max_spinbox.value()
 
         # GISANS options
         configuration.gisans_wl_min = self.ui.gisans_wl_min_spinbox.value()
@@ -1003,13 +996,6 @@ class MainHandler(object):
         self.ui.offspec_rebin_y_bins_spinbox.setValue(configuration.off_spec_nybins)
         # Off-spec smoothing options
         self.ui.offspec_smooth_checkbox.setChecked(configuration.apply_smoothing)
-        self.ui.offspec_sigmas_spinbox.setValue(configuration.off_spec_sigmas)
-        self.ui.offspec_sigmax_spinbox.setValue(configuration.off_spec_sigmax)
-        self.ui.offspec_sigmay_spinbox.setValue(configuration.off_spec_sigmay)
-        self.ui.offspec_x_min_spinbox.setValue(configuration.off_spec_x_min)
-        self.ui.offspec_x_max_spinbox.setValue(configuration.off_spec_x_max)
-        self.ui.offspec_y_min_spinbox.setValue(configuration.off_spec_y_min)
-        self.ui.offspec_y_max_spinbox.setValue(configuration.off_spec_y_max)
 
         # GISANS options
         self.ui.gisans_wl_min_spinbox.setValue(configuration.gisans_wl_min)

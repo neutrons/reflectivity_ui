@@ -16,6 +16,8 @@ from .data_manager import DataManager
 from .plotting import PlotManager
 from .reduction_dialog import ReductionDialog
 from .event_handlers.progress_reporter import ProgressReporter
+from .smooth_dialog import SmoothDialog
+
 
 class MainWindow(QtWidgets.QMainWindow,
                  reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow):
@@ -60,6 +62,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # Retrieve configuration from config and enable/disable features
         self.initialize_instrument()
         self.hide_unsupported()
+        self.toggle_smoothing()
 
         # UI events
         self.file_loaded_signal.connect(self.file_handler.update_info)
@@ -378,12 +381,31 @@ class MainWindow(QtWidgets.QMainWindow,
             output_options['off_spec_nxbins'] = configuration.off_spec_nxbins
             output_options['off_spec_nybins'] = configuration.off_spec_nybins
 
+            # Show smoothing dialog as needed
+            if self.ui.offspec_smooth_checkbox.isChecked():
+                # Make sure the off-specular has been calculated
+                self.file_handler.compute_offspec_on_change()
+                dia = SmoothDialog(self, self.data_manager)
+                if not dia.exec_():
+                    dia.destroy()
+                else:
+                    dia.update_configuration(configuration)
+                    dia.destroy()
+
+            # Show email dialog as needed
+
             from .data_handling.processing_workflow import ProcessingWorkflow
             wrk = ProcessingWorkflow(self.data_manager, output_options)
             wrk.execute(self.file_handler.new_progress_reporter())
 
             # Show final results
             self.update_off_specular_viewer.emit()
+
+    def toggle_smoothing(self):
+        if self.ui.offspec_smooth_checkbox.isChecked():
+            self.ui.binning_frame.hide()
+        else:
+            self.ui.binning_frame.show()
 
     def loadExtraction(self):
         self.file_handler.open_reduced_file_dialog()
