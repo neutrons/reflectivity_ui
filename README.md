@@ -6,6 +6,7 @@
  - Result preview improvements (sync zoom)
  - Off-spec UI improvements: separate smoothing from the rest
  - Add smoothing dialog for pick options interactively on a plot
+ - Email option
 
 ## v2.0.35 [01/24/2019]
  - Add result preview

@@ -41,6 +41,15 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.mantid_script_checkbox.setChecked(self._verify_true('format_mantid', False))
         self.five_cols_checkbox.setChecked(self._verify_true('format_5cols', True))
 
+        # Emails
+        self.emailSend.setChecked(self._verify_true('email_send', False))
+        self.emailZIPData.setChecked(self._verify_true('email_zip_data', True))
+        self.emailSendPlots.setChecked(self._verify_true('email_send_plots', False))
+        self.emailSendData.setChecked(self._verify_true('email_send_data', True))
+        self.emailTo.setText(self.settings.value('email_to', ''))
+        self.emailCc.setText(self.settings.value('email_cc', ''))
+        self.emailSubject.setText(self.settings.value('email_subject', ''))
+
         self.is_accepted = False
 
     def _verify_true(self, parameter, default):
@@ -72,7 +81,16 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
                     format_numpy=self.numpy.isChecked(),
                     format_5cols=self.five_cols_checkbox.isChecked(),
                     output_directory=self.directoryEntry.text(),
-                    output_file_template=self.fileNameEntry.text())
+                    output_file_template=self.fileNameEntry.text(),
+                    email_send=self.emailSend.isChecked(),
+                    email_zip_data=self.emailZIPData.isChecked(),
+                    email_send_plots=self.emailSendPlots.isChecked(),
+                    email_send_data=self.emailSendData.isChecked(),
+                    email_to=self.emailTo.text(),
+                    email_cc=self.emailCc.text(),
+                    email_subject=self.emailSubject.text(),
+                    email_text=self.emailText.toPlainText(),
+                    )
 
     def change_directory(self):
         """
@@ -104,3 +122,11 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         self.settings.setValue('format_numpy', self.numpy.isChecked())
         self.settings.setValue('format_mantid', self.mantid_script_checkbox.isChecked())
         self.settings.setValue('format_5cols', self.five_cols_checkbox.isChecked())
+
+        self.settings.setValue('email_send', self.emailSend.isChecked())
+        self.settings.setValue('email_zip_data', self.emailZIPData.isChecked())
+        self.settings.setValue('email_send_plots', self.emailSendPlots.isChecked())
+        self.settings.setValue('email_send_data', self.emailSendData.isChecked())
+        self.settings.setValue('email_to', self.emailTo.text())
+        self.settings.setValue('email_cc', self.emailCc.text())
+        self.settings.setValue('email_subject', self.emailSubject.text())

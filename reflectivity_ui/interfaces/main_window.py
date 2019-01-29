@@ -382,7 +382,7 @@ class MainWindow(QtWidgets.QMainWindow,
             output_options['off_spec_nybins'] = configuration.off_spec_nybins
 
             # Show smoothing dialog as needed
-            if self.ui.offspec_smooth_checkbox.isChecked():
+            if output_options['export_offspec'] and self.ui.offspec_smooth_checkbox.isChecked():
                 # Make sure the off-specular has been calculated
                 self.file_handler.compute_offspec_on_change()
                 dia = SmoothDialog(self, self.data_manager)
@@ -391,8 +391,6 @@ class MainWindow(QtWidgets.QMainWindow,
                 else:
                     dia.update_configuration(configuration)
                     dia.destroy()
-
-            # Show email dialog as needed
 
             from .data_handling.processing_workflow import ProcessingWorkflow
             wrk = ProcessingWorkflow(self.data_manager, output_options)

@@ -10,6 +10,16 @@ import copy
 import logging
 import time
 import numpy as np
+
+import smtplib
+from email import encoders
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+import zipfile
+import cStringIO
+
 from ..configuration import Configuration
 from . import quicknxs_io, data_manipulation, off_specular, gisans
 
@@ -27,7 +37,16 @@ DEFAULT_OPTIONS = dict(export_specular=True,
                        format_5cols=False,
                        output_sample_size=10,
                        output_directory='',
-                       output_file_template='(instrument)_{numbers}_{item}_{state}.{type}')
+                       output_file_template='(instrument)_{numbers}_{item}_{state}.{type}',
+                       email_send=False,
+                       email_zip_data=False,
+                       email_send_plots=False,
+                       email_send_data=False,
+                       email_to='',
+                       email_cc='',
+                       email_subject='',
+                       email_test='',
+                       )
 
 
 class ProcessingWorkflow(object):
@@ -37,6 +56,8 @@ class ProcessingWorkflow(object):
     def __init__(self, data_manager, output_options=None):
         self.data_manager = data_manager
         self.output_options = output_options if output_options else DEFAULT_OPTIONS
+        self.exported_data_files = []
+        self.exported_data_plots = []
 
     def execute(self, progress=None):
         """
@@ -61,6 +82,9 @@ class ProcessingWorkflow(object):
                 progress(60, "Computing GISANS")
         if self.output_options['export_gisans']:
             self.gisans(progress=progress)
+
+        if self.output_options['email_send']:
+            self.send_email()
 
         if progress is not None:
             progress(100, "Complete")
@@ -125,6 +149,7 @@ class ProcessingWorkflow(object):
                                                   state_output_path, _pol_state)
             quicknxs_io.write_reflectivity_data(state_output_path, output_data[pol_state],
                                                 col_names, as_5col=five_cols)
+            self.exported_data_files.append(state_output_path)
 
     def write_genx(self, output_data, output_path):
         '''
@@ -192,6 +217,7 @@ class ProcessingWorkflow(object):
         if self.output_options['format_numpy']:
             output_file = self.get_file_name(run_list, data_type='npz', pol_state='all')
             np.savez(output_file, **output_data)
+            self.exported_data_files.append(output_file)
 
         # Matlab output
         if self.output_options['format_matlab']:
@@ -199,12 +225,14 @@ class ProcessingWorkflow(object):
                 from scipy.io import savemat
                 output_file = self.get_file_name(run_list, data_type='mat', pol_state='all')
                 savemat(output_file, output_data, oned_as='column')
+                self.exported_data_files.append(output_file)
             except:
                 logging.error("Could not save in matlab format: %s", sys.exc_info([1]))
 
         if self.output_options['format_genx']:
             output_path = self.get_file_name(run_list, data_type='gx', pol_state='all')
             self.write_genx(output_data, output_path)
+            self.exported_data_files.append(output_path)
 
         if self.output_options['format_mantid']:
             output_file = self.get_file_name(run_list, data_type='py', pol_state='all')
@@ -213,6 +241,7 @@ class ProcessingWorkflow(object):
                 script += data_manipulation.generate_script(self.data_manager.reduction_list, pol_state)
             with open(output_file, 'w') as file_object:
                 file_object.write(script)
+            self.exported_data_files.append(output_file)
 
     def gisans(self, progress=None):
         """
@@ -576,3 +605,76 @@ class ProcessingWorkflow(object):
                                   len(data_dict[p_state]), len(data_dict[m_state]))
 
         return data_dict
+
+    def _email_replace(self, text):
+        """
+            Replace token templates in text
+        """
+        run_list = [str(item.number) for item in self.data_manager.reduction_list]
+        return text.replace('{ipts}', '')\
+                   .replace('{numbers}', '+'.join(run_list))\
+                   .replace('{instrument}', self.data_manager.active_channel.configuration.instrument.instrument_name)
+
+    def send_email(self):
+        """
+            Collect all files and send them to the user via smtp mail.
+            #TODO: Put smtp server info in config file.
+        """
+        SMTP_SERVER='160.91.4.26'
+        msg = MIMEMultipart()
+        msg['Subject'] = self._email_replace(self.output_options['email_subject'])
+        msg['From'] = 'BL4A@ornl.gov'
+        msg['To'] = self.output_options['email_to'].replace(';', ', ')
+        msg['CC'] = self.output_options['email_cc'].replace(';', ', ')
+        text = self._email_replace(self.output_options['email_text'])
+        msg.preamble = text
+        msg.attach(MIMEText(text))
+
+        if self.output_options['email_send_data']:
+            exported_files = self.exported_data_files
+        elif self.output_options['email_send_plots']:
+            exported_files = self.exported_data_plots
+        else:
+            exported_files = self.exported_data_files
+            exported_files.extend(self.exported_data_plots)
+        if self.output_options['email_zip_data']:
+            # Create an in-memory zip file which gets attached to the mail
+            fobj = cStringIO.StringIO()
+            zipfile = zipfile.ZipFile(fobj, 'w', zipfile.ZIP_DEFLATED)
+            for item in exported_files:
+                zipfile.write(item, arcname=os.path.basename(item))
+            zipfile.close()
+            fobj.seek(0)
+            mitem = MIMEBase('application', 'zip')
+            mitem.set_payload(fobj.read())
+            encoders.encode_base64(mitem)
+            mitem.add_header('Content-Disposition', 'attachment',
+                             filename=self._email_replace('results_{numbers}.zip'))
+            msg.attach(mitem)
+        else:
+            # read each file, which was exported and attach it to the mail
+            for item in exported_files:
+                try:
+                    if item.endswith('.png'):
+                        mitem=MIMEImage(open(item, 'rb').read(), 'png')
+                    elif item.endswith('.pdf'):
+                        mitem=MIMEText(open(item, 'rb').read(), 'pdf')
+                    elif item.endswith('.dat') or item.endswith('.gp'):
+                        mitem=MIMEText(open(item, 'rb').read())
+                    else:
+                        mitem=MIMEBase('application', item[-3:])
+                        mitem.set_payload(open(item, 'rb').read())
+                        encoders.encode_base64(mitem)
+                except:
+                    logging.error("Could not package files for email: %s", sys.exc_info()[1])
+                mitem.add_header('Content-Disposition', 'attachment', filename=os.path.basename(item))
+                msg.attach(mitem)
+
+        try:
+            smtp = smtplib.SMTP(SMTP_SERVER, timeout=10)
+            smtp.sendmail(msg['From'],
+                          map(unicode.strip, msg['To'].split(',')+msg['CC'].split(',')),
+                          msg.as_string())
+            smtp.quit()
+        except:
+            logging.error("Could not send email: %s", sys.exc_info()[1])
