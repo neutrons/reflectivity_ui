@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from PyQt5 import QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_result_viewer
+import reflectivity_ui.interfaces.generated.mplwidget as mpl
 
 class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_result_viewer.Ui_Dialog):
     """
@@ -34,6 +35,10 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
         self.specular_compare_widget.refl_preview()
 
     def update_off_specular(self, crop=False):
+        """
+            Update the result viewer with the latest off-specular calculations.
+            :param bool crop: if True, all the plots will be cropped to the ++ cross-section
+        """
         off_spec_data = self.data_manager.cached_offspec
         if off_spec_data is None:
             return
@@ -93,3 +98,27 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
 
     def reset_offspec_crop(self):
         self.update_off_specular(crop=False)
+
+    def update_gisans(self, crop=False):
+        """
+            Update the results viewer with the latest GISANS calculations
+            :param bool crop: if True, all the plots will be cropped to the ++ cross-section
+        """
+        gisans_data = self.data_manager.cached_gisans
+        if gisans_data is None:
+            return
+
+        # Clear everything
+        clear_layout(self.gisans_pp_layout)
+        gisans_pp_plot = mpl.MPLWidget(self.gisans_pp_layout)
+        self.gisans_pp_layout.addWidget(gisans_pp_plot, 1, 1, 1, 1)
+        gisans_pp_plot.draw()
+
+def clear_layout(layout):
+    while layout.count() > 0:
+        item = layout.takeAt(0)
+        if not item:
+            continue
+        w = item.widget()
+        if w:
+            w.deleteLater()

@@ -253,17 +253,18 @@ class ProcessingWorkflow(object):
         if progress is not None:
             progress(65, "Reducing GISANS...")
 
+        self.data_manager.cached_gisans = None
         self.data_manager.reduce_gisans(progress=None)
 
         if progress is not None:
             progress(75, "Binning GISANS...")
 
         data_dict = self.get_gisans_data(progress=None)
+        self.data_manager.cached_gisans = data_dict
 
         if progress is not None:
             progress(90, "Writing data")
 
-        # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
         output_file_base = self.get_file_name(run_list, process_type='GISANS')
         self.write_quicknxs(data_dict, output_file_base, xs=data_dict['cross_sections'].keys())
 
@@ -279,6 +280,7 @@ class ProcessingWorkflow(object):
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
         # Refresh the reflectivity calculation
+        self.data_manager.cached_offspec = None
         self.data_manager.reduce_offspec()
 
         if raw or binned:
@@ -290,7 +292,6 @@ class ProcessingWorkflow(object):
             self.write_quicknxs(output_data, output_file_base)
 
         # Export binned result
-        self.data_manager.cached_offspec = None
         if binned:
             if self.data_manager.active_channel.configuration.apply_smoothing:
                 # "Smooth" version

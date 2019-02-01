@@ -1094,4 +1094,5 @@ class MainHandler(object):
         dialog.specular_compare_widget.ui.refl_preview_checkbox.setChecked(True)
         self.main_window.update_specular_viewer.connect(dialog.update_specular)
         self.main_window.update_off_specular_viewer.connect(dialog.update_off_specular)
+        self.main_window.update_gisans_viewer.connect(dialog.update_gisans)
         dialog.show()

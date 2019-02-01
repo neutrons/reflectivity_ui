@@ -30,7 +30,7 @@ class MainWindow(QtWidgets.QMainWindow,
     initiate_reflectivity_plot = QtCore.pyqtSignal(bool)
     update_specular_viewer = QtCore.pyqtSignal()
     update_off_specular_viewer = QtCore.pyqtSignal()
-    _gisansThread = None
+    update_gisans_viewer = QtCore.pyqtSignal()
 
     def __init__(self):
         """
@@ -179,11 +179,6 @@ class MainWindow(QtWidgets.QMainWindow,
                 plot.clear_fig()
         elif self.plot_manager.color is None:
             self.plot_manager.color = color
-        if self.ui.plotTab.currentIndex()!=4 and self._gisansThread:
-            self._gisansThread.finished.disconnect()
-            self._gisansThread.terminate()
-            self._gisansThread.wait(100)
-            self._gisansThread=None
         if self.ui.plotTab.currentIndex()==0:
             self.plot_manager.plot_overview()
         elif self.ui.plotTab.currentIndex()==1:
@@ -402,7 +397,10 @@ class MainWindow(QtWidgets.QMainWindow,
             wrk.execute(self.file_handler.new_progress_reporter())
 
             # Show final results
-            self.update_off_specular_viewer.emit()
+            if output_options['export_offspec']:
+                self.update_off_specular_viewer.emit()
+            if output_options['export_gisans']:
+                self.update_gisans_viewer.emit()
 
     def toggle_smoothing(self):
         if self.ui.offspec_smooth_checkbox.isChecked():
