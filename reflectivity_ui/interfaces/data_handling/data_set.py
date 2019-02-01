@@ -74,6 +74,25 @@ class NexusData(object):
             total_size += self.cross_sections[d].nbytes
         return total_size
 
+    def get_highest_cross_section(self, n_points=10):
+        """
+            Get the cross-section with the largest signal at the
+            lower end of its Q range.
+            :param int n_points: number of points to average over
+        """
+        n_events = 0
+        large_xs = None
+        for xs in self.cross_sections:
+            if self.cross_sections[xs].raw_r is not None:
+                _r = self.cross_sections[xs].raw_r
+                _dr = self.cross_sections[xs].raw_dr
+                npts = min(len(_r), n_points)
+                _n_events = np.sum(_r[:npts] / _dr[:npts]**2) / np.sum(1 / _dr[:npts]**2)
+                if _n_events > n_events:
+                    n_events = _n_events
+                    large_xs = xs
+        return large_xs
+
     def get_q_range(self):
         """
             Return the Q range for the cross-sections
@@ -167,7 +186,7 @@ class NexusData(object):
                                                  ConstantQBinning=conf.use_constant_q,
                                                  ConstQTrim=0.1,
                                                  CropFirstAndLastPoints=False,
-                                                 ####CleanupBadData=False,
+                                                 CleanupBadData=False,
                                                  ErrorWeightedBackground=False,
                                                  SampleLength=conf.sample_size,
                                                  DAngle0Overwrite=_dangle0,
@@ -482,6 +501,14 @@ class CrossSectionData(object):
         if self._r is None:
             return None
         return self._r * self.configuration.scaling_factor
+
+    @property
+    def raw_r(self):
+        return self._r
+
+    @property
+    def raw_dr(self):
+        return self._dr
 
     @property
     def dr(self):

@@ -640,10 +640,10 @@ class ProcessingWorkflow(object):
         if self.output_options['email_zip_data']:
             # Create an in-memory zip file which gets attached to the mail
             fobj = cStringIO.StringIO()
-            zipfile = zipfile.ZipFile(fobj, 'w', zipfile.ZIP_DEFLATED)
+            _file = zipfile.ZipFile(fobj, 'w', zipfile.ZIP_DEFLATED)
             for item in exported_files:
-                zipfile.write(item, arcname=os.path.basename(item))
-            zipfile.close()
+                _file.write(item, arcname=os.path.basename(item))
+            _file.close()
             fobj.seek(0)
             mitem = MIMEBase('application', 'zip')
             mitem.set_payload(fobj.read())

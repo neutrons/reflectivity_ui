@@ -94,6 +94,76 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
 
     return scaling_factors
 
+def _prepare_workspace_for_stitching(cross_section, ws_name):
+    """
+        Create a workspace from a CrossSectionData object that we
+        can call Stitch1D on.
+        :param CrossSectionData cross_section: cross section data object
+    """
+    n_total = len(cross_section.q)
+    p_0 = cross_section.configuration.cut_first_n_points
+    p_n = n_total - cross_section.configuration.cut_last_n_points
+    ws = api.CreateWorkspace(DataX=cross_section.q[p_0:p_n],
+                             DataY=cross_section._r[p_0:p_n],
+                             DataE=cross_section._dr[p_0:p_n],
+                             OutputWorkspace=ws_name)
+    ws.setDistribution(True)
+    ws = api.ConvertToHistogram(ws, OutputWorkspace=ws_name)
+    return ws
+
+def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01):
+    """
+        Stitch and normalize data sets
+
+        :param string xs: name of the cross-section to use for the first data set
+        :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
+    """
+    if not reduction_list:
+        return []
+
+    # Select the cross-section we will use to determine the scaling factors
+    if xs is None:
+        xs = reduction_list[0].cross_sections.keys()[0]
+
+    # First, determine the overall scaling factor as needed
+    scaling_factor = 1.0
+    if normalize_to_unity:
+        idx_list = reduction_list[0].cross_sections[xs].q < q_cutoff
+        total = 0
+        weights = 0
+        for i in range(len(reduction_list[0].cross_sections[xs]._r)):
+            if idx_list[i]:
+                w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i])**2
+                total += w * float(reduction_list[0].cross_sections[xs]._r[i])
+                weights += w
+        if weights > 0:
+            scaling_factor = weights / total
+        reduction_list[0].set_parameter("scaling_factor", scaling_factor)
+    else:
+        scaling_factor = reduction_list[0].cross_sections[xs].configuration.scaling_factor
+
+    # Stitch the data sets together
+    running_scale = scaling_factor
+    scaling_factors = [running_scale]
+
+    for i in range(len(reduction_list)-1):
+        # Pick the cross-section with the highest signal
+        xs = reduction_list[i+1].get_highest_cross_section()
+
+        # Low-Q data set
+        _previous_ws = _prepare_workspace_for_stitching(reduction_list[i].cross_sections[xs],
+                                                        "low_q_workspace")
+        # High-Q data set
+        ws = _prepare_workspace_for_stitching(reduction_list[i+1].cross_sections[xs],
+                                              "high_q_workspace")
+
+        _, scale = api.Stitch1D(_previous_ws, ws)
+        running_scale *= scale
+        scaling_factors.append(running_scale)
+        reduction_list[i+1].set_parameter("scaling_factor", running_scale)
+
+    return scaling_factors
+
 def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
     """
         Combine the workspaces for a given cross-section into a single workspace.

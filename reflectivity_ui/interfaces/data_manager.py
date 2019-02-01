@@ -528,8 +528,8 @@ class DataManager(object):
             :param bool normalize_to_unity: If True, the reflectivity plateau will be normalized to 1.
             :param float q_cutoff: critical q-value below which we expect R=1
         """
-        data_manipulation.stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity,
-                                              q_cutoff=q_cutoff)
+        data_manipulation.smart_stitch_reflectivity(self.reduction_list, self.active_channel.name, normalize_to_unity,
+                                                    q_cutoff=q_cutoff)
 
     def merge_data_sets(self, asymmetry=True):
         self.final_merged_reflectivity = {}

@@ -341,6 +341,7 @@ class MainWindow(QtWidgets.QMainWindow,
             maximum intensity.
         """
         self.file_handler.trim_data_to_normalization()
+        self.update_specular_viewer.emit()
 
     def stripOverlap(self):
         """
@@ -348,12 +349,14 @@ class MainWindow(QtWidgets.QMainWindow,
             measurements.
         """
         self.file_handler.strip_overlap()
+        self.update_specular_viewer.emit()
 
     def normalizeTotalReflection(self):
         """
             Stitch the reflectivity parts and normalize to 1.
         """
         self.file_handler.stitch_reflectivity()
+        self.update_specular_viewer.emit()
 
     def autoRef(self):
         self.file_handler.automated_file_selection()
@@ -392,6 +395,8 @@ class MainWindow(QtWidgets.QMainWindow,
                     dia.update_configuration(configuration)
                     dia.destroy()
 
+            # If we want to save images, we just need to cycle through
+            # and call: self.canvas.print_figure(unicode(fname[0]))
             from .data_handling.processing_workflow import ProcessingWorkflow
             wrk = ProcessingWorkflow(self.data_manager, output_options)
             wrk.execute(self.file_handler.new_progress_reporter())
