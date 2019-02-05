@@ -37,6 +37,7 @@ class DataManager(object):
 
         # Cached outputs
         self.cached_offspec = None
+        self.cached_gisans = None
 
     @property
     def data_sets(self):

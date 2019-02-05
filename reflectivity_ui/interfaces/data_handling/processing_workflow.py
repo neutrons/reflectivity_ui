@@ -377,7 +377,8 @@ class ProcessingWorkflow(object):
         qz_npts = self.data_manager.active_channel.configuration.gisans_qz_npts
         use_pf = self.data_manager.active_channel.configuration.gisans_use_pf
 
-        data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'], cross_sections={})
+        data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'], cross_sections={},
+                         cross_section_bins={})
         if use_pf:
             data_dict['columns'] = ['Qy', 'pf', 'I', 'dI']
         else:
@@ -395,6 +396,7 @@ class ProcessingWorkflow(object):
                 binned_data = gisans.rebin_parallel(self.data_manager.reduction_list, pol_state,
                                                     wl_min=wl_min, wl_max=wl_max, wl_npts=wl_npts,
                                                     qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf)
+            data_dict["cross_section_bins"][pol_state] = []
             for i in range(wl_npts):
                 wl_step = (wl_max - wl_min) / wl_npts
                 _wl_min = wl_min + i * wl_step
@@ -417,9 +419,11 @@ class ProcessingWorkflow(object):
                 else:
                     _pol_state = pol_state
 
-                _pol_state = '%.3f-%.3f_%s' % (_wl_min, _wl_max, _pol_state)
+                _pol_state = '%.3f-%.3f_%s' % (_wl_min, _wl_max, pol_state)
+                _pol_state_clean = '%.3f-%.3f_%s' % (_wl_min, _wl_max, _pol_state)
                 data_dict[_pol_state] = [np.nan_to_num(rdata)]
-                data_dict["cross_sections"][_pol_state] = _pol_state
+                data_dict["cross_sections"][_pol_state] = _pol_state_clean
+                data_dict["cross_section_bins"][pol_state].append(_pol_state)
 
         logging.info("GISANS processing time: %s sec", (time.time()-t_0))
         return data_dict
