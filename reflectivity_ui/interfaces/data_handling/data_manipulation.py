@@ -65,7 +65,7 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
                 w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i])**2
                 total += w * float(reduction_list[0].cross_sections[xs]._r[i])
                 weights += w
-        if weights > 0:
+        if weights > 0 and total > 0:
             scaling_factor = weights / total
         reduction_list[0].set_parameter("scaling_factor", scaling_factor)
     else:
@@ -136,7 +136,7 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
                 w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i])**2
                 total += w * float(reduction_list[0].cross_sections[xs]._r[i])
                 weights += w
-        if weights > 0:
+        if weights > 0 and total > 0:
             scaling_factor = weights / total
         reduction_list[0].set_parameter("scaling_factor", scaling_factor)
     else:
