@@ -226,6 +226,7 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
                                                                        y_values[indices],
                                                                        S[indices],
                                                                        statistic='mean',
+                                                                       range=[[x_min, x_max], [y_min, y_max]],
                                                                        bins=_bins)
         # Compute the errors
         _w = dS**2
@@ -233,6 +234,7 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
                                                                y_values[indices],
                                                                _w[indices],
                                                                statistic='sum',
+                                                               range=[[x_min, x_max], [y_min, y_max]],
                                                                bins=[x_edge, y_edge])
 
         _c = np.ones(len(x_values))
@@ -240,6 +242,7 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
                                                           y_values[indices],
                                                           _c[indices],
                                                           statistic='sum',
+                                                          range=[[x_min, x_max], [y_min, y_max]],
                                                           bins=[x_edge, y_edge])
 
         result = statistic.T
@@ -252,11 +255,13 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
 
     for q in y_list:
         i_q = closest_bin(q, y_edge)
+        q_min = y_edge[i_q]
+        q_max = y_edge[i_q+1]
         if error is not None:
             _to_save = np.asarray([x_middle, result[i_q], error[i_q]]).T
         else:
             _to_save = np.asarray([x_middle, result[i_q]]).T
-        _q_data.append([_to_save, '%s_%s_%s' % (pol_state, y_label, q)])
+        _q_data.append([_to_save, '%s_%s_%s-%s' % (pol_state, y_label, q_min, q_max)])
 
     return result, error, x_middle, y_middle, _q_data, [x_label, y_label]
 

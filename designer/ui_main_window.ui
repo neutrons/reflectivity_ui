@@ -2808,7 +2808,7 @@
                       <string> 1/A</string>
                      </property>
                      <property name="decimals">
-                      <number>4</number>
+                      <number>5</number>
                      </property>
                      <property name="minimum">
                       <double>-10.000000000000000</double>
@@ -3057,10 +3057,40 @@
                       <string>Error weighting</string>
                      </property>
                      <property name="checkable">
-                      <bool>false</bool>
+                      <bool>true</bool>
                      </property>
                      <property name="checked">
                       <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_12">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_23">
+                     <property name="text">
+                      <string>Qz bin width:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="offspec_qz_bin_width_label">
+                     <property name="text">
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -3144,7 +3174,7 @@
        </widget>
        <widget class="QWidget" name="gisansTab">
         <attribute name="title">
-         <string>GISANS Preview</string>
+         <string>GISANS</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_13">
          <property name="leftMargin">
@@ -5554,6 +5584,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>offspec_rebin_y_bins_spinbox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>update_offspec_qz_bin_width()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1505</x>
+     <y>217</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>842</x>
+     <y>377</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>offspec_y_max_spinbox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>update_offspec_qz_bin_width()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1102</x>
+     <y>217</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>842</x>
+     <y>377</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>offspec_y_min_spinbox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>update_offspec_qz_bin_width()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>962</x>
+     <y>217</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>842</x>
+     <y>377</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -5600,5 +5678,6 @@
   <slot>show_results()</slot>
   <slot>apply_offspec_crop()</slot>
   <slot>toggle_smoothing()</slot>
+  <slot>update_offspec_qz_bin_width()</slot>
  </slots>
 </ui>

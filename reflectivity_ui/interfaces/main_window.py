@@ -378,9 +378,13 @@ class MainWindow(QtWidgets.QMainWindow,
             output_options['off_spec_err_weight'] = configuration.off_spec_err_weight
             output_options['off_spec_nxbins'] = configuration.off_spec_nxbins
             output_options['off_spec_nybins'] = configuration.off_spec_nybins
+            output_options['off_spec_x_min'] = configuration.off_spec_x_min
+            output_options['off_spec_x_max'] = configuration.off_spec_x_max
+            output_options['off_spec_y_min'] = configuration.off_spec_y_min
+            output_options['off_spec_y_max'] = configuration.off_spec_y_max
 
             # Show smoothing dialog as needed
-            if output_options['export_offspec'] and self.ui.offspec_smooth_checkbox.isChecked():
+            if output_options['export_offspec_smooth'] and self.ui.offspec_smooth_checkbox.isChecked():
                 # Make sure the off-specular has been calculated
                 self.file_handler.compute_offspec_on_change()
                 dia = SmoothDialog(self, self.data_manager)
@@ -419,6 +423,13 @@ class MainWindow(QtWidgets.QMainWindow,
 
     def apply_offspec_crop(self):
         self.plot_manager.plot_offspec(crop=True)
+
+    def update_offspec_qz_bin_width(self, value=None):
+        off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()
+        off_spec_y_min = self.ui.offspec_y_min_spinbox.value()
+        off_spec_y_max = self.ui.offspec_y_max_spinbox.value()
+        width = (off_spec_y_max-off_spec_y_min) / off_spec_nybins
+        self.ui.offspec_qz_bin_width_label.setText("%8.6f 1/A" % width)
 
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use

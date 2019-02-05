@@ -335,7 +335,11 @@ class ProcessingWorkflow(object):
                                                                           y_list=y_list,
                                                                           use_weights=self.output_options['off_spec_err_weight'],
                                                                           n_bins_x=self.output_options['off_spec_nxbins'],
-                                                                          n_bins_y=self.output_options['off_spec_nybins'])
+                                                                          n_bins_y=self.output_options['off_spec_nybins'],
+                                                                          x_min=self.output_options['off_spec_x_min'],
+                                                                          x_max=self.output_options['off_spec_x_max'],
+                                                                          y_min=self.output_options['off_spec_y_min'],
+                                                                          y_max=self.output_options['off_spec_y_max'])
             if data_dict is None:
                 data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'],
                                  columns=[labels[0], labels[1], 'I', 'dI'],
