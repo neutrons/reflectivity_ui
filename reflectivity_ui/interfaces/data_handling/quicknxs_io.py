@@ -205,12 +205,13 @@ def write_reflectivity_data(output_path, data, col_names, as_5col=True):
             # [TOF][pixel][parameter]
             for tof_item in data:
                 for pixel_item in tof_item:
-                    np.savetxt(fd, pixel_item, delimiter='\t', fmt='%12.6g')
+                    np.savetxt(fd, pixel_item, delimiter='\t', fmt='%-18e')
+                    fd.write(u'\n'.encode('utf8'))
         else:
             if four_cols:
-                np.savetxt(fd, data[:, :4], delimiter=' ', fmt='%12.6g')
+                np.savetxt(fd, data[:, :4], delimiter=' ', fmt='%-18e')
             else:
-                np.savetxt(fd, data, delimiter='\t', fmt='%12.6g')
+                np.savetxt(fd, data, delimiter='\t', fmt='%-18e')
 
 def read_reduced_file(file_path, configuration=None):
     """
