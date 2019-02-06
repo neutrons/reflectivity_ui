@@ -85,8 +85,7 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
             plots[i].clear_fig()
             _data = off_spec_data[channel][0].T
             plots[i].pcolormesh(_data[0], _data[1], _data[2], log=True,
-                                imin=i_min, imax=i_max,
-                                shading='gouraud')
+                                imin=i_min, imax=i_max)
             plots[i].set_xlabel(u'%s [%s]' % (off_spec_data['columns'][0], off_spec_data['units'][0]))
             plots[i].set_ylabel(u'%s [%s]' % (off_spec_data['columns'][1], off_spec_data['units'][1]))
             plots[i].set_title(channel)
@@ -118,8 +117,7 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
         layout.addWidget(gisans_plot)#, i_row, i_col)
         
         gisans_plot.pcolormesh(_data[0], _data[1], _data[2], log=True,
-                            imin=i_min, imax=i_max,
-                            shading='gouraud')
+                            imin=i_min, imax=i_max)
         gisans_plot.set_xlabel(u'%s [%s]' % (gisans_data['columns'][0], gisans_data['units'][0]))
         gisans_plot.set_ylabel(u'%s [%s]' % (gisans_data['columns'][1], gisans_data['units'][1]))
         gisans_plot.set_title(channel)

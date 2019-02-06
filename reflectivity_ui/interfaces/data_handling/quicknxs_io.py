@@ -268,8 +268,8 @@ def read_reduced_file(file_path, configuration=None):
                     # doesn't make sense, so reset those options.
                     if run_file.endswith('histo.nxs'):
                         run_file = run_file.replace('histo.', 'event.')
-                        conf.cut_first_n_points = 0
-                        conf.cut_last_n_points = 0
+                        #conf.cut_first_n_points = 0
+                        #conf.cut_last_n_points = 0
                     # Catch data files meant for QuickNXS and use the raw file instead
                     run_file = _find_h5_data(run_file)
                     direct_beam_runs.append([run_number, run_file, conf])
@@ -304,8 +304,8 @@ def read_reduced_file(file_path, configuration=None):
                     run_file = toks[-1]
                     if run_file.endswith('histo.nxs'):
                         run_file = run_file.replace('histo.', 'event.')
-                        conf.cut_first_n_points = 0
-                        conf.cut_last_n_points = 0
+                        #conf.cut_first_n_points = 0
+                        #conf.cut_last_n_points = 0
                     run_file = _find_h5_data(run_file)
                     data_runs.append([run_number, run_file, conf])
                 except:

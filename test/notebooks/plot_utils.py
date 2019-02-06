@@ -4,7 +4,7 @@ import plotly.graph_objs as go
 py.init_notebook_mode(connected=True)
 
 def plot1d(data_list, data_names=None, x_title='', y_title='',
-           x_log=False, y_log=False, show_dx=True):
+           x_log=False, y_log=False, show_dx=True, width=600, height=400):
     """
         Produce a 1D plot
         @param data_list: list of traces [ [x1, y1], [x2, y2], ...]
@@ -56,8 +56,8 @@ def plot1d(data_list, data_names=None, x_title='', y_title='',
     layout = go.Layout(
         showlegend=show_legend,
         autosize=True,
-        width=600,
-        height=400,
+        width=width,
+        height=height,
         margin=dict(t=40, b=40, l=80, r=40),
         hovermode='closest',
         bargap=0,
@@ -69,7 +69,7 @@ def plot1d(data_list, data_names=None, x_title='', y_title='',
     py.iplot(fig, show_link=False)
 
 def plot_heatmap(x, y, z, x_title='', y_title='', surface=False,
-                 x_log=False, y_log=False):
+                 x_log=False, y_log=False, z_min=None, z_max=None):
     """
         Produce a 2D plot
     """
@@ -107,7 +107,8 @@ def plot_heatmap(x, y, z, x_title='', y_title='', surface=False,
     ]
     plot_type = 'surface' if surface else 'heatmap'
     trace = go.Heatmap(z=z, x=x, y=y, autocolorscale=False,# type=plot_type,
-                     hoverinfo="x+y+z", colorscale=colorscale)
+                     hoverinfo="x+y+z", colorscale=colorscale,
+                     zauto=z_min is None, zmin=z_min, zmax=z_max)
     fig = go.Figure(data=[trace], layout=layout)
     py.iplot(fig, show_link=False)
 
