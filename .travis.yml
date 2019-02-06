@@ -30,8 +30,7 @@ install:
   - source activate test-environment
   - conda config --add channels conda-forge
   - conda config --add channels mantid
-  #- conda install --yes -c mantid/label/nightly mantid-framework
-  - conda install --yes -c mantid/label/nightly mantid-framework boost=1.66 muparser=2.2.5=0
+  - conda install --yes -c mantid/label/nightly mantid-framework
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
