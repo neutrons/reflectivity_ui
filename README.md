@@ -12,6 +12,7 @@
  - Add smart stitch that picks the cross-section with highest stats at the overlap
  - Tweak size for smaller screens
  - Display Qz bin width when binning off-spec
+ - Improve output python script
 
 ## v2.0.35 [01/24/2019]
  - Add result preview

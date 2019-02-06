@@ -7,16 +7,61 @@ import sys
 import logging
 import h5py
 import math
+import time
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
+import mantid
 
 from .instrument import Instrument
 from .data_set import NexusMetaData
 
+
+def generate_short_script(reduction_list):
+    """
+        Generate a simple reduction script for Mantid
+    """
+    if len(reduction_list) == 0:
+        return '# No data in reduction list\n'
+
+    xs = reduction_list[0].cross_sections.keys()[0]
+    script = "# Mantid version %s\n" % mantid.__version__
+    script += "# Date: %s\n\n" % time.strftime(u"%Y-%m-%d %H:%M:%S")
+    script += "from mantid.simpleapi import *\n"
+
+    logging.info("Cross section for script %s", xs)
+    for i in range(len(reduction_list)):
+        # If we couldn't calculate the reflectivity, we won't have a workspace available
+        if reduction_list[i].cross_sections[xs].reflectivity_workspace is None:
+            logging.info("  No workspace: %s", i)
+            continue
+
+        ws_name = "r%s" % reduction_list[i].cross_sections[xs].number
+        if len(api.mtd[ws_name]) == 0:
+            logging.info("  No entry in %s workspace group", ws_name)
+
+        script += "# Run:%s\n" % reduction_list[i].cross_sections[xs].number
+        script_text = api.GeneratePythonScript(api.mtd[ws_name][0])
+        script += script_text.replace(', ', ',\n                                ')
+        script += '\n\n'
+        script += '# Crop points on each end\n'
+        q = api.mtd[ws_name][0].readX(0)
+        p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
+        p_f = len(q) - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points -1
+        q0 = q[p_0]
+        qf = q[p_f]
+        logging.info("%s %s %s %s", q0, qf, p_0, p_f)
+        for item in api.mtd[ws_name]:
+            script += "CropWorkspace(InputWorkspace='%s', XMin=%s, XMax=%s, " % (str(item), q0, qf)
+            script += "OutputWorkspace='%s')\n" % str(item)
+            script += "Scale(InputWorkspace='%s', Operation='Multiply', " %str(item)
+            script += "Factor=%s, " % reduction_list[i].cross_sections[xs].configuration.scaling_factor
+            script += "OutputWorkspace='%s')\n\n" % str(item)
+
+    return script
 
 def generate_script(reduction_list, pol_state):
     """

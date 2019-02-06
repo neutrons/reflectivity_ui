@@ -186,7 +186,7 @@ class NexusData(object):
                                                  ConstantQBinning=conf.use_constant_q,
                                                  ConstQTrim=0.1,
                                                  CropFirstAndLastPoints=False,
-                                                 CleanupBadData=False,
+                                                 CleanupBadData=conf.do_final_rebin,
                                                  ErrorWeightedBackground=False,
                                                  SampleLength=conf.sample_size,
                                                  DAngle0Overwrite=_dangle0,

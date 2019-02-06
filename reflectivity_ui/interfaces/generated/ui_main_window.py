@@ -1046,7 +1046,7 @@ class Ui_MainWindow(object):
         self.label_41.setObjectName("label_41")
         self.offspec_binning_layout.addWidget(self.label_41)
         self.offspec_x_max_spinbox = QtWidgets.QDoubleSpinBox(self.binning_frame)
-        self.offspec_x_max_spinbox.setDecimals(4)
+        self.offspec_x_max_spinbox.setDecimals(5)
         self.offspec_x_max_spinbox.setMinimum(-10.0)
         self.offspec_x_max_spinbox.setMaximum(10.0)
         self.offspec_x_max_spinbox.setSingleStep(0.005)

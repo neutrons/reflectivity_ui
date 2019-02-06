@@ -236,9 +236,7 @@ class ProcessingWorkflow(object):
 
         if self.output_options['format_mantid']:
             output_file = self.get_file_name(run_list, data_type='py', pol_state='all')
-            script = ''
-            for pol_state in self.data_manager.reduction_states:
-                script += data_manipulation.generate_script(self.data_manager.reduction_list, pol_state)
+            script = data_manipulation.generate_short_script(self.data_manager.reduction_list)
             with open(output_file, 'w') as file_object:
                 file_object.write(script)
             self.exported_data_files.append(output_file)
