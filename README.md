@@ -2,7 +2,10 @@
 [![TRAVISCI](https://travis-ci.org/mdoucet/reflectivity_ui.svg?branch=master)](https://travis-ci.org/mdoucet/reflectivity_ui)
 [![codecov](https://codecov.io/gh/mdoucet/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/mdoucet/reflectivity_ui)
 
-## v2.0.36 [?/2019]
+## v2.0.37 [02/11/2019]
+ - Improve off-specular slices
+
+## v2.0.36 [02/07/2019]
  - Result preview improvements (sync zoom)
  - Off-spec UI improvements: separate smoothing from the rest
  - Add smoothing dialog for pick options interactively on a plot

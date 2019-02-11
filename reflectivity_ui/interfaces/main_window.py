@@ -371,17 +371,7 @@ class MainWindow(QtWidgets.QMainWindow,
         dialog.destroy()
 
         if output_options is not None:
-            configuration = self.file_handler.get_configuration()
-            output_options['off_spec_x_axis'] = configuration.off_spec_x_axis
-            output_options['off_spec_slice'] = configuration.off_spec_slice
-            output_options['off_spec_qz_list'] = configuration.off_spec_qz_list
-            output_options['off_spec_err_weight'] = configuration.off_spec_err_weight
-            output_options['off_spec_nxbins'] = configuration.off_spec_nxbins
-            output_options['off_spec_nybins'] = configuration.off_spec_nybins
-            output_options['off_spec_x_min'] = configuration.off_spec_x_min
-            output_options['off_spec_x_max'] = configuration.off_spec_x_max
-            output_options['off_spec_y_min'] = configuration.off_spec_y_min
-            output_options['off_spec_y_max'] = configuration.off_spec_y_max
+            self.file_handler.get_configuration()
 
             # Show smoothing dialog as needed
             if output_options['export_offspec_smooth'] and self.ui.offspec_smooth_checkbox.isChecked():
@@ -389,9 +379,10 @@ class MainWindow(QtWidgets.QMainWindow,
                 self.file_handler.compute_offspec_on_change()
                 dia = SmoothDialog(self, self.data_manager)
                 if not dia.exec_():
+                    logging.info("Skipping smoothing options")
                     dia.destroy()
                 else:
-                    dia.update_configuration(configuration)
+                    output_options = dia.update_output_options(output_options)
                     dia.destroy()
 
             # If we want to save images, we just need to cycle through
@@ -409,8 +400,10 @@ class MainWindow(QtWidgets.QMainWindow,
     def toggle_smoothing(self):
         if self.ui.offspec_smooth_checkbox.isChecked():
             self.ui.binning_frame.hide()
+            self.ui.offspec_err_weight_checkbox.hide()
         else:
             self.ui.binning_frame.show()
+            self.ui.offspec_err_weight_checkbox.show()
 
     def loadExtraction(self):
         self.file_handler.open_reduced_file_dialog()

@@ -294,22 +294,25 @@ class ProcessingWorkflow(object):
             if self.data_manager.active_channel.configuration.apply_smoothing:
                 # "Smooth" version
                 try:
-                    smooth_output = self.smooth_offspec(output_data)
+                    smooth_output, slice_data_dict = self.smooth_offspec(output_data)
                     output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
                     self.write_quicknxs(smooth_output, output_file_base)
+                    if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
+                        output_file_base = self.get_file_name(run_list, process_type='OffSpecSmoothSlice')
+                        self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
                     self.data_manager.cached_offspec = smooth_output
                 except:
+                    raise
                     logging.error("Problem writing smooth off-spec output: %s", sys.exc_value)
-
-            # Binned version
-            binned_data, slice_data_dict = self.get_rebinned_offspec_data()
-            # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
-            output_file_base = self.get_file_name(run_list, process_type='OffSpecBinned')
-            self.write_quicknxs(binned_data, output_file_base)
-            if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
-                output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
-                self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
-            if self.data_manager.cached_offspec is None:
+            else:
+                # Binned version
+                binned_data, slice_data_dict = self.get_rebinned_offspec_data()
+                # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
+                output_file_base = self.get_file_name(run_list, process_type='OffSpecBinned')
+                self.write_quicknxs(binned_data, output_file_base)
+                if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
+                    output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
+                    self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
                 self.data_manager.cached_offspec = binned_data
 
     def get_rebinned_offspec_data(self):
@@ -317,7 +320,7 @@ class ProcessingWorkflow(object):
             Get a data dictionary ready for saving
         """
         data_dict = None
-        slice_data_dict = None
+        slice_data_dict = {}
 
         # Extract common information
         if len(self.data_manager.reduction_states) == 0:
@@ -325,26 +328,20 @@ class ProcessingWorkflow(object):
             return {}
 
         for pol_state in self.data_manager.reduction_states:
-            y_list = []
-            if self.output_options['off_spec_slice']:
-                y_list = self.output_options['off_spec_qz_list']
-            r, dr, x, y, q_data, labels = self.data_manager.rebin_offspec(pol_state,
-                                                                          axes=self.output_options['off_spec_x_axis'],
-                                                                          y_list=y_list,
-                                                                          use_weights=self.output_options['off_spec_err_weight'],
-                                                                          n_bins_x=self.output_options['off_spec_nxbins'],
-                                                                          n_bins_y=self.output_options['off_spec_nybins'],
-                                                                          x_min=self.output_options['off_spec_x_min'],
-                                                                          x_max=self.output_options['off_spec_x_max'],
-                                                                          y_min=self.output_options['off_spec_y_min'],
-                                                                          y_max=self.output_options['off_spec_y_max'])
+            r, dr, x, y, labels = off_specular.rebin_extract(self.data_manager.reduction_list,
+                                                             pol_state,
+                                                             axes=self.data_manager.active_channel.configuration.off_spec_x_axis,
+                                                             use_weights=self.data_manager.active_channel.configuration.off_spec_err_weight,
+                                                             n_bins_x=self.data_manager.active_channel.configuration.off_spec_nxbins,
+                                                             n_bins_y=self.data_manager.active_channel.configuration.off_spec_nybins,
+                                                             x_min=self.data_manager.active_channel.configuration.off_spec_x_min,
+                                                             x_max=self.data_manager.active_channel.configuration.off_spec_x_max,
+                                                             y_min=self.data_manager.active_channel.configuration.off_spec_y_min,
+                                                             y_max=self.data_manager.active_channel.configuration.off_spec_y_max)
             if data_dict is None:
                 data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'],
                                  columns=[labels[0], labels[1], 'I', 'dI'],
                                  cross_sections={})
-                slice_data_dict = dict(units=['1/A', 'a.u.', 'a.u.'],
-                                       columns=[labels[0], 'I', 'dI'],
-                                       cross_sections={})
 
             # Create array of x-values
             x_tiled = np.tile(x, len(y))
@@ -364,10 +361,9 @@ class ProcessingWorkflow(object):
             data_dict[pol_state] = [np.nan_to_num(rdata)]
             data_dict["cross_sections"][pol_state] = _pol_state
 
-            if q_data is not None and len(q_data) > 0:
-                for item in q_data:
-                    slice_data_dict["cross_sections"][item[1]] = item[1]
-                    slice_data_dict[item[1]] = item[0]
+            # Slices
+            slice_data_dict = self.get_slice_output_data(x, y, r, dr, pol_state, labels[1],
+                                                         **slice_data_dict)
 
         return data_dict, slice_data_dict
 
@@ -495,11 +491,13 @@ class ProcessingWorkflow(object):
         """
         axes = self.data_manager.active_channel.configuration.off_spec_x_axis
         output_data=dict(cross_sections=dict())
+        slice_data_dict = {}
+
         for channel in data_dict['cross_sections'].keys():
             data = np.hstack(data_dict[channel])
             I = data[:, :, 5].flatten()
             Qzmax = data[:, :, 2].max() * 2.
-
+            y_label = 'Qz'
             if axes == Configuration.QX_VS_QZ:
                 x=data[:, :, 0].flatten()
                 y=data[:, :, 1].flatten()
@@ -508,6 +506,7 @@ class ProcessingWorkflow(object):
                 axis_sigma_scaling = 2
                 xysigma0 = Qzmax / 3.
             elif axes == Configuration.KZI_VS_KZF:
+                y_label = 'kf_z'
                 x=data[:, :, 2].flatten()
                 y=data[:, :, 3].flatten()
                 output_data['units'] = ['1/A', '1/A', 'a.u.']
@@ -523,20 +522,47 @@ class ProcessingWorkflow(object):
                 xysigma0 = Qzmax / 3.
 
             x, y, I = off_specular.smooth_data(x, y, I,
-                                               sigmas=self.data_manager.active_channel.configuration.off_spec_sigmas,
-                                               gridx=self.data_manager.active_channel.configuration.off_spec_nxbins,
-                                               gridy=self.data_manager.active_channel.configuration.off_spec_nybins,
-                                               sigmax=self.data_manager.active_channel.configuration.off_spec_sigmax,
-                                               sigmay=self.data_manager.active_channel.configuration.off_spec_sigmay,
-                                               x1=self.data_manager.active_channel.configuration.off_spec_x_min,
-                                               x2=self.data_manager.active_channel.configuration.off_spec_x_max,
-                                               y1=self.data_manager.active_channel.configuration.off_spec_y_min,
-                                               y2=self.data_manager.active_channel.configuration.off_spec_y_max,
+                                               sigmas=self.output_options['off_spec_sigmas'],
+                                               gridx=self.output_options['off_spec_nxbins'],
+                                               gridy=self.output_options['off_spec_nybins'],
+                                               sigmax=self.output_options['off_spec_sigmax'],
+                                               sigmay=self.output_options['off_spec_sigmay'],
+                                               x1=self.output_options['off_spec_x_min'],
+                                               x2=self.output_options['off_spec_x_max'],
+                                               y1=self.output_options['off_spec_y_min'],
+                                               y2=self.output_options['off_spec_y_max'],
                                                axis_sigma_scaling=axis_sigma_scaling, xysigma0=xysigma0)
             output_data[channel] = [np.array([x, y, I]).transpose((1, 2, 0))]
             output_data['cross_sections'][channel] = data_dict['cross_sections'][channel]
+
+            # Slices
+            slice_data_dict = self.get_slice_output_data(x[0], y.T[0], I, None, channel, y_label,
+                                                         **slice_data_dict)
+
         output_data['ki_max'] = data_dict['ki_max']
-        return output_data
+        return output_data, slice_data_dict
+
+    def get_slice_output_data(self, qx, qz, r, dr, pol_state, label, **slice_data_dict):
+        """
+            Produce a data dictionary with a slice of the data.
+        """
+        if slice_data_dict == {}:
+            slice_data_dict = dict(units=['1/A', 'a.u.', 'a.u.'],
+                                   columns=[label, 'I', 'dI'],
+                                   cross_sections={})
+
+        q_min = self.data_manager.active_channel.configuration.off_spec_slice_qz_min
+        q_max = self.data_manager.active_channel.configuration.off_spec_slice_qz_max
+        result, error = off_specular.get_slice(qz, r, dr, q_min, q_max)
+        if error is not None:
+        # Is x what we need here, or the middle of the bin
+            _to_save = np.asarray([qx, result, error]).T
+        else:
+            _to_save = np.asarray([qx, result]).T
+        slice_label = '%s_%s_%s-%s' % (pol_state, label, q_min, q_max)
+        slice_data_dict["cross_sections"][slice_label] = slice_label
+        slice_data_dict[slice_label] = _to_save
+        return slice_data_dict
 
     def get_output_data(self):
         """

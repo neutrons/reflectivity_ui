@@ -163,20 +163,17 @@ def closest_bin(q, bin_edges):
         :param list bin_edges: list of bin edges
     """
     for i in range(len(bin_edges)):
-        if q > bin_edges[i] and q < bin_edges[i+1]:
+        if q > bin_edges[i] and q <= bin_edges[i+1]:
             return i
     return None
 
-def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights=True,
+def rebin_extract(reduction_list, pol_state, axes=None, use_weights=True,
                   n_bins_x=350, n_bins_y=350, x_min=-0.015, x_max=0.015, y_min=0, y_max=0.1):
     """
         Rebin off-specular data and extract cut at given Qz values.
         Note: the analysis computers with RHEL7 have Scipy 0.12 installed, which makes
         this code uglier. Refactor once we get a more recent version.
     """
-    if not isinstance(y_list, list):
-        y_list = []
-
     Qx, Qz, ki_z, kf_z, delta_k, S, dS = merge(reduction_list, pol_state)
 
     # Specify how many bins we want in each direction.
@@ -199,20 +196,17 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
         y_values = kf_z
 
     # Find the indices of S[TOF][main_axis_pixel] where we have non-zero data.
-    indices = S > 0
     if use_weights:
         # Compute the weighted average
         # - Weighted sum
         _r = S/dS**2
-        statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values[indices],
-                                                                       y_values[indices],
-                                                                       _r[indices],
+        statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values, y_values, _r,
                                                                        statistic='sum',
                                                                        range=[[x_min, x_max], [y_min, y_max]],
                                                                        bins=_bins)
         # - Sum of weights
         _w = 1/dS**2
-        w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices], y_values[indices], _w[indices],
+        w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values, y_values, _w,
                                                                statistic='sum',
                                                                range=[[x_min, x_max], [y_min, y_max]],
                                                                bins=[x_edge, y_edge])
@@ -222,25 +216,19 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
         error = np.sqrt(1.0/w_statistic).T
     else:
         # Compute the simple average, with errors
-        statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values[indices],
-                                                                       y_values[indices],
-                                                                       S[indices],
+        statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values, y_values, S,
                                                                        statistic='mean',
                                                                        range=[[x_min, x_max], [y_min, y_max]],
                                                                        bins=_bins)
         # Compute the errors
         _w = dS**2
-        w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices],
-                                                               y_values[indices],
-                                                               _w[indices],
+        w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(x_values, y_values, _w,
                                                                statistic='sum',
                                                                range=[[x_min, x_max], [y_min, y_max]],
                                                                bins=[x_edge, y_edge])
 
         _c = np.ones(len(x_values))
-        counts, _, _, _ = scipy.stats.binned_statistic_2d(x_values[indices],
-                                                          y_values[indices],
-                                                          _c[indices],
+        counts, _, _, _ = scipy.stats.binned_statistic_2d(x_values, y_values, _c,
                                                           statistic='sum',
                                                           range=[[x_min, x_max], [y_min, y_max]],
                                                           bins=[x_edge, y_edge])
@@ -251,20 +239,26 @@ def rebin_extract(reduction_list, pol_state, axes=None, y_list=None, use_weights
     x_middle = x_edge[:-1] + (x_edge[1] - x_edge[0]) / 2.0
     y_middle = y_edge[:-1] + (y_edge[1] - y_edge[0]) / 2.0
 
-    _q_data = []
+    return result, error, x_middle, y_middle, [x_label, y_label]
 
-    for q in y_list:
-        i_q = closest_bin(q, y_edge)
-        q_min = y_edge[i_q]
-        q_max = y_edge[i_q+1]
-        if error is not None:
-            _to_save = np.asarray([x_middle, result[i_q], error[i_q]]).T
-        else:
-            _to_save = np.asarray([x_middle, result[i_q]]).T
-        _q_data.append([_to_save, '%s_%s_%s-%s' % (pol_state, y_label, q_min, q_max)])
-
-    return result, error, x_middle, y_middle, _q_data, [x_label, y_label]
-
+def get_slice(qz, data, error, q_min, q_max):
+    """
+        Get a slice for a Qz band
+        :param qz: Qz array
+        :param data: 2D data array
+        :param error: uncertainty on the data array
+        :param q_min: lower Qz bound
+        :param q_max: upper Qz bound
+    """
+    i_min = len(qz[qz<q_min])
+    i_max = len(qz[qz<q_max])
+    _data = np.sum(data[i_min:i_max+1], axis=0)/(i_max-i_min+1)
+    if error is not None:
+        _err = np.sum(error[i_min:i_max+1]**2, axis=0)
+        _err = np.sqrt(_err)/(i_max-i_min+1)
+    else:
+        _err = np.zeros_like(_data)
+    return _data, _err
 
 def _smooth_data(x, y, I, sigmas=3., gridx=150, gridy=50,
                 sigmax=0.0005, sigmay=0.0005,

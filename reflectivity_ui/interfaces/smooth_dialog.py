@@ -195,43 +195,28 @@ class SmoothDialog(QtWidgets.QDialog):
             self.drawing=False
             self.updateSettings()
 
-    def getOptions(self):
-        output={}
-        x1=self.ui.gridXmin.value()
-        x2=self.ui.gridXmax.value()
-        y1=self.ui.gridYmin.value()
-        y2=self.ui.gridYmax.value()
-        output['region']=[x1, x2, y1, y2]
-        width=self.ui.sigmaX.value()
-        height=self.ui.sigmaY.value()
-        output['sigma']=(width, height)
-        output['sigmas']=self.ui.rSigmas.value()
-        gx=self.ui.gridSizeX.value()
-        gy=self.ui.gridSizeY.value()
-        output['grid']=(gx, gy)
-        output['xy_column']=1*self.ui.qxVSqz.isChecked()+2*self.ui.kizVSkfz.isChecked()
-
-    def update_configuration(self, configuration):
+    def update_output_options(self, output_options):
         """
-            Update a configuration with smoothing options
-            :param Configuration: configuration object
+            Update a dict with smoothing options
+            :param dict: dictionary object
         """
         if self.ui.kizVSkfz.isChecked():
-            configuration.off_spec_x_axis = Configuration.KZI_VS_KZF
+            output_options['off_spec_x_axis'] = Configuration.KZI_VS_KZF
         elif self.ui.qxVSqz.isChecked():
-            configuration.off_spec_x_axis = Configuration.QX_VS_QZ
+            output_options['off_spec_x_axis'] = Configuration.QX_VS_QZ
         else:
-            configuration.off_spec_x_axis = Configuration.DELTA_KZ_VS_QZ
+            output_options['off_spec_x_axis'] = Configuration.DELTA_KZ_VS_QZ
 
-        configuration.off_spec_nxbins = self.ui.gridSizeX.value()
-        configuration.off_spec_nybins = self.ui.gridSizeY.value()
+        output_options['off_spec_nxbins'] = self.ui.gridSizeX.value()
+        output_options['off_spec_nybins'] = self.ui.gridSizeY.value()
 
-        configuration.off_spec_sigmas = self.ui.rSigmas.value()
-        configuration.off_spec_sigmax = self.ui.sigmaX.value()
-        configuration.off_spec_sigmay = self.ui.sigmaY.value()
-        configuration.off_spec_x_min = self.ui.gridXmin.value()
-        configuration.off_spec_x_max = self.ui.gridXmax.value()
-        configuration.off_spec_y_min = self.ui.gridYmin.value()
-        configuration.off_spec_y_max = self.ui.gridYmax.value()
+        output_options['off_spec_sigmas'] = self.ui.rSigmas.value()
+        output_options['off_spec_sigmax'] = self.ui.sigmaX.value()
+        output_options['off_spec_sigmay'] = self.ui.sigmaY.value()
+        output_options['off_spec_x_min'] = self.ui.gridXmin.value()
+        output_options['off_spec_x_max'] = self.ui.gridXmax.value()
+        output_options['off_spec_y_min'] = self.ui.gridYmin.value()
+        output_options['off_spec_y_max'] = self.ui.gridYmax.value()
 
-        return configuration
+        return output_options
+

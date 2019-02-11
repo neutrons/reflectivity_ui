@@ -37,6 +37,20 @@ options = {
     '30796': dict(sc='REF_M_30796', db='30796', path='/SNS/REF_M/IPTS-21391/nexus/REF_M_30796.nxs.h5',
                   peak=[202,218], bck=[94,104], beam=[82,177]),
 
+    '31082': dict(sc='REF_M_31082', db='31079', path='/SNS/REF_M/IPTS-22123/nexus/REF_M_31082.nxs.h5',
+                  ref='/SNS/users/m2d/MR/2019A/IPTS-22123/REF_M_31081+31082+31083_Specular_Off_Off_v2_test.dat',
+                  refcst='/SNS/users/m2d/MR/2019A/IPTS-22123/REF_M_31081+31082+31083_Specular_Off_Off_v2_test.dat',
+                  peak_pos=180., peak=[175,185], bck=[45,95], beam=[60,116], tof=[13537,43265.4], scale=1.0),
+    '31079': dict(sc='REF_M_31079', db='31079', path='/SNS/REF_M/IPTS-22123/nexus/REF_M_31079.nxs.h5',
+                  peak=[202,218], bck=[94,104], beam=[82,177]),
+
+    '31083': dict(sc='REF_M_31083', db='31080', path='/SNS/REF_M/IPTS-22123/nexus/REF_M_31083.nxs.h5',
+                  ref='/SNS/users/m2d/MR/2019A/IPTS-22123/REF_M_31081+31082+31083_Specular_Off_Off_v2_test.dat',
+                  refcst='/SNS/users/m2d/MR/2019A/IPTS-22123/REF_M_31081+31082+31083_Specular_Off_Off_v2_test.dat',
+                  peak_pos=183.2, peak=[179,188], bck=[45,95], beam=[88,144], tof=[11413.6,45388.8], scale=0.2350),
+    '31080': dict(sc='REF_M_31080', db='31080', path='/SNS/REF_M/IPTS-22123/nexus/REF_M_31080.nxs.h5',
+                  peak=[200,216], bck=[25,75], beam=[82,148]),
+
 }
 
 def retrieve(run):

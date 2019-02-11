@@ -9,7 +9,10 @@ import numpy as np
 from reflectivity_ui.interfaces.data_handling import instrument
 
 def load_data(run="REF_M_30769"):
-    filepath = '/SNS/REF_M/IPTS-21391/nexus/' + run + '.nxs.h5'
+    if run.startswith("/SNS"):
+        filepath = run
+    else:
+        filepath = '/SNS/REF_M/IPTS-21391/nexus/' + run + '.nxs.h5'
     _instrument = instrument.Instrument()
 
     ws_list = _instrument.load_data(filepath)

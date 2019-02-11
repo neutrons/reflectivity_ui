@@ -895,12 +895,14 @@ class MainHandler(object):
         else:
             configuration.off_spec_x_axis = Configuration.KZI_VS_KZF
         configuration.off_spec_slice = self.ui.offspec_slice_checkbox.isChecked()
-        try:
-            qz_list = self.ui.offspec_qz_list_edit.text()
-            if len(qz_list) > 0:
-                configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
-        except:
-            logging.error("Could not parse off_spec_qz_list: %s", configuration.off_spec_qz_list)
+        configuration.off_spec_slice_qz_min = self.ui.slice_qz_min_spinbox.value()
+        configuration.off_spec_slice_qz_max = self.ui.slice_qz_max_spinbox.value()
+        #try:
+        #    qz_list = self.ui.offspec_qz_list_edit.text()
+        #    if len(qz_list) > 0:
+        #        configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
+        #except:
+        #    logging.error("Could not parse off_spec_qz_list: %s", configuration.off_spec_qz_list)
         configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
         configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
         configuration.off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()
@@ -995,7 +997,9 @@ class MainHandler(object):
         else:
             self.ui.kizVSkfz.setChecked(True)
         self.ui.offspec_slice_checkbox.setChecked(configuration.off_spec_slice)
-        self.ui.offspec_qz_list_edit.setText(','.join([str(x) for x in configuration.off_spec_qz_list]))
+        #self.ui.offspec_qz_list_edit.setText(','.join([str(x) for x in configuration.off_spec_qz_list]))
+        self.ui.slice_qz_min_spinbox.setValue(configuration.off_spec_slice_qz_min)
+        self.ui.slice_qz_max_spinbox.setValue(configuration.off_spec_slice_qz_max)
         self.ui.offspec_err_weight_checkbox.setChecked(configuration.off_spec_err_weight)
         self.ui.offspec_rebin_x_bins_spinbox.setValue(configuration.off_spec_nxbins)
         self.ui.offspec_rebin_y_bins_spinbox.setValue(configuration.off_spec_nybins)

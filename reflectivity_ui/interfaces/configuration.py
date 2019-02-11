@@ -93,6 +93,8 @@ class Configuration(object):
         self.off_spec_x_axis = Configuration.DELTA_KZ_VS_QZ
         self.off_spec_slice = False
         self.off_spec_qz_list = []
+        self.off_spec_slice_qz_min = 0.05
+        self.off_spec_slice_qz_max = 0.07
         self.off_spec_err_weight = False
         self.off_spec_nxbins = 450
         self.off_spec_nybins = 200
@@ -211,6 +213,8 @@ class Configuration(object):
         settings.setValue('off_spec_err_weight', self.off_spec_err_weight)
         settings.setValue('off_spec_nxbins', self.off_spec_nxbins)
         settings.setValue('off_spec_nybins', self.off_spec_nybins)
+        settings.setValue('off_spec_slice_qz_min', self.off_spec_slice_qz_min)
+        settings.setValue('off_spec_slice_qz_max', self.off_spec_slice_qz_max)
 
         # Off-specular smoothing
         settings.setValue('apply_smoothing', self.apply_smoothing)
@@ -295,6 +299,8 @@ class Configuration(object):
         self.off_spec_err_weight = _verify_true('off_spec_err_weight', self.off_spec_err_weight)
         self.off_spec_nxbins = int(settings.value('off_spec_nxbins', self.off_spec_nxbins))
         self.off_spec_nybins = int(settings.value('off_spec_nybins', self.off_spec_nybins))
+        self.off_spec_slice_qz_min = float(settings.value('off_spec_slice_qz_min', self.off_spec_slice_qz_min))
+        self.off_spec_slice_qz_max = float(settings.value('off_spec_slice_qz_max', self.off_spec_slice_qz_max))
 
         # Off-specular smoothing
         self.apply_smoothing = _verify_true('apply_smoothing', self.apply_smoothing)

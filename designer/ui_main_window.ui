@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1686</width>
+    <width>1803</width>
     <height>756</height>
    </rect>
   </property>
@@ -359,7 +359,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>348</width>
+             <width>352</width>
              <height>207</height>
             </rect>
            </property>
@@ -2763,7 +2763,7 @@
                    <item>
                     <widget class="QLabel" name="label_36">
                      <property name="text">
-                      <string>X-axis range:</string>
+                      <string>X-axis:</string>
                      </property>
                     </widget>
                    </item>
@@ -2843,7 +2843,7 @@
                    <item>
                     <widget class="QLabel" name="label_42">
                      <property name="text">
-                      <string>Y-axis range:</string>
+                      <string>Y-axis:</string>
                      </property>
                     </widget>
                    </item>
@@ -2911,7 +2911,7 @@
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
-                       <width>60</width>
+                       <width>40</width>
                        <height>20</height>
                       </size>
                      </property>
@@ -2953,7 +2953,7 @@
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
-                       <width>40</width>
+                       <width>10</width>
                        <height>20</height>
                       </size>
                      </property>
@@ -2988,27 +2988,10 @@
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="offspec_slices_layout">
                    <item>
-                    <widget class="QCheckBox" name="offspec_slice_checkbox">
-                     <property name="toolTip">
-                      <string>Check to extract slices at the specified Y-values (Qz or kf_z)</string>
-                     </property>
-                     <property name="text">
-                      <string>Extract Qz slices</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_7">
+                    <spacer name="horizontalSpacer_19">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -3017,87 +3000,174 @@
                       </size>
                      </property>
                     </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_24">
-                     <property name="text">
-                      <string>Qz slices:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="offspec_qz_list_edit">
-                     <property name="toolTip">
-                      <string>Enter of list of Y-values (Qz or kf_z) for your slices</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_6">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="offspec_err_weight_checkbox">
-                     <property name="toolTip">
-                      <string>Check to use an error weighted average when binning the data, otherwise a simple average will be used</string>
-                     </property>
-                     <property name="text">
-                      <string>Error weighting</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                     <property name="checked">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_12">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_23">
-                     <property name="text">
-                      <string>Qz bin width:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="offspec_qz_bin_width_label">
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
                    </item>
                   </layout>
                  </item>
                 </layout>
                </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="offspec_slices_layout">
+                <item>
+                 <widget class="QCheckBox" name="offspec_slice_checkbox">
+                  <property name="toolTip">
+                   <string>Check to extract slices at the specified Y-values (Qz or kf_z)</string>
+                  </property>
+                  <property name="text">
+                   <string>Extract Qz slices</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_24">
+                  <property name="text">
+                   <string>Slice Qz range:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="slice_qz_min_spinbox">
+                  <property name="suffix">
+                   <string> 1/A</string>
+                  </property>
+                  <property name="decimals">
+                   <number>5</number>
+                  </property>
+                  <property name="minimum">
+                   <double>-1.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.005000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.050000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_40">
+                  <property name="text">
+                   <string>to</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="slice_qz_max_spinbox">
+                  <property name="suffix">
+                   <string> 1/A</string>
+                  </property>
+                  <property name="decimals">
+                   <number>5</number>
+                  </property>
+                  <property name="minimum">
+                   <double>-1.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.005000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.070000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="offspec_err_weight_checkbox">
+                  <property name="toolTip">
+                   <string>Check to use an error weighted average when binning the data, otherwise a simple average will be used</string>
+                  </property>
+                  <property name="text">
+                   <string>Error weighting</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_12">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_23">
+                  <property name="text">
+                   <string>Qz bin width:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="offspec_qz_bin_width_label">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_13">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -3734,14 +3804,14 @@
             <item>
              <widget class="MPLWidget" name="x_project" native="true">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimumSize">
                <size>
-                <width>100</width>
+                <width>150</width>
                 <height>100</height>
                </size>
               </property>
@@ -3776,14 +3846,14 @@
             <item>
              <widget class="MPLWidget" name="y_project" native="true">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimumSize">
                <size>
-                <width>100</width>
+                <width>150</width>
                 <height>100</height>
                </size>
               </property>
@@ -3818,7 +3888,7 @@
             <item>
              <widget class="MPLWidget" name="refl" native="true">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -3846,7 +3916,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1686</width>
+     <width>1803</width>
      <height>22</height>
     </rect>
    </property>
