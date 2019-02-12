@@ -214,6 +214,8 @@ def rebin_extract(reduction_list, pol_state, axes=None, use_weights=True,
         result = statistic / w_statistic
         result = result.T
         error = np.sqrt(1.0/w_statistic).T
+        result = np.nan_to_num(result)
+        error = np.nan_to_num(error)
     else:
         # Compute the simple average, with errors
         statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(x_values, y_values, S,
@@ -235,6 +237,8 @@ def rebin_extract(reduction_list, pol_state, axes=None, use_weights=True,
 
         result = statistic.T
         error = (np.sqrt(w_statistic) / counts).T
+        result = np.nan_to_num(result)
+        error = np.nan_to_num(error)
 
     x_middle = x_edge[:-1] + (x_edge[1] - x_edge[0]) / 2.0
     y_middle = y_edge[:-1] + (y_edge[1] - y_edge[0]) / 2.0

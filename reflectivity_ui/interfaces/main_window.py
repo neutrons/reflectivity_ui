@@ -381,6 +381,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 if not dia.exec_():
                     logging.info("Skipping smoothing options")
                     dia.destroy()
+                    return
                 else:
                     output_options = dia.update_output_options(output_options)
                     dia.destroy()
