@@ -471,6 +471,7 @@ class MainHandler(object):
         self.update_tables()
 
         self.main_window.initiate_reflectivity_plot.emit(True)
+        self.main_window.update_specular_viewer.emit()
         self.main_window.auto_change_active = False
         return True
 
@@ -612,6 +613,7 @@ class MainHandler(object):
                                     detailed_message=str(sys.exc_value), pop_up=False, is_error=False)
 
         self.main_window.initiate_reflectivity_plot.emit(True)
+        self.main_window.update_specular_viewer.emit()
 
     def add_direct_beam(self, silent=False):
         """

@@ -2,6 +2,13 @@
 [![TRAVISCI](https://travis-ci.org/mdoucet/reflectivity_ui.svg?branch=master)](https://travis-ci.org/mdoucet/reflectivity_ui)
 [![codecov](https://codecov.io/gh/mdoucet/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/mdoucet/reflectivity_ui)
 
+## v2.0.39 [02/14/2019]
+ - Order cross-sections starting with off-off
+ - Fix issue with 3rd cross-section not displaying when only three are measured.
+
+## v2.0.38 [02/12/2019]
+ - Fix issue with nan's appearing with fine binning of off-specular
+
 ## v2.0.37 [02/11/2019]
  - Improve off-specular slices
 

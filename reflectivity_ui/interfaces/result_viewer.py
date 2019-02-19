@@ -51,7 +51,8 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
             xlim = self.offspec_pp_plot.canvas.ax.get_xlim()
             ylim = self.offspec_pp_plot.canvas.ax.get_ylim()
 
-        data_set_keys = off_spec_data['cross_sections'].keys()
+        data_set_keys = self.data_manager.data_sets.keys()
+
         if len(data_set_keys) > 4:
             logging.error("Too many cross-sections for plotting: %s", str(len(data_set_keys)))
 
@@ -63,25 +64,14 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
-
-        if len(data_set_keys)>1:
-            self.main_window.ui.offspec_mm.show()
-            if len(data_set_keys)==4:
-                self.offspec_mp_plot.show()
-                self.offspec_pm_plot.show()
-            else:
-                self.offspec_mp_plot.hide()
-                self.offspec_pm_plot.hide()
-        else:
-            self.offspec_mp_plot.hide()
-            self.offspec_pm_plot.hide()
-            self.offspec_mm_plot.hide()
+            plots[i].hide()
 
         i_min=10**self.offspec_intensity_min.value()
         i_max=10**self.offspec_intensity_max.value()
 
         for i, channel in enumerate(data_set_keys):
             plot = plots[i]
+            plot.show()
             plots[i].clear_fig()
             _data = off_spec_data[channel][0].T
             plots[i].pcolormesh(_data[0], _data[1], _data[2], log=True,
@@ -148,7 +138,7 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
 
         self._gisans_reference = None
 
-        data_set_keys = gisans_data['cross_sections'].keys()
+        data_set_keys = self.data_manager.data_sets.keys()
         if len(data_set_keys) > 4:
             logging.error("Too many cross-sections for plotting: %s", str(len(data_set_keys)))
 
@@ -158,7 +148,7 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
         i_min=10**self.gisans_intensity_min.value()
         i_max=10**self.gisans_intensity_max.value()
 
-        for i, pol_state in enumerate(gisans_data["cross_section_bins"]):
+        for i, pol_state in enumerate(data_set_keys):
             clear_layout(layouts[i])
             logging.info("State: %s" % pol_state)
             for j, channel in enumerate(gisans_data["cross_section_bins"][pol_state]):

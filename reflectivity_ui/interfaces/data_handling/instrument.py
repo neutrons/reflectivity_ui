@@ -103,7 +103,7 @@ class Instrument(object):
                   'On_On': 63}
         cross_sections = []
 
-        for pol_state in states:
+        for pol_state in ['Off_Off', 'On_On', 'Off_On', 'On_Off']:
             try:
                 _ws = api.FilterByLogValue(InputWorkspace=ws, LogName=state_log, TimeTolerance=0.1,
                                            MinimumValue=states[pol_state],
@@ -198,7 +198,7 @@ class Instrument(object):
         """
         data = workspace.getRun()
         data_object.lambda_center = data['LambdaRequest'].value[0]
-        data_object.dangle = data['DANGLE'].value[0]
+        data_object.dangle = data['DANGLE'].getStatistics().mean
         if 'BL4A:Mot:S1:X:Gap' in data:
             data_object.slit1_width = data['BL4A:Mot:S1:X:Gap'].value[0]
             data_object.slit2_width = data['BL4A:Mot:S2:X:Gap'].value[0]
@@ -209,7 +209,7 @@ class Instrument(object):
             data_object.slit3_width = data['S3HWidth'].value[0]
         data_object.huber_x = data['HuberX'].getStatistics().mean
 
-        data_object.sangle = data['SANGLE'].value[0]
+        data_object.sangle = data['SANGLE'].getStatistics().mean
 
         data_object.dist_sam_det = data['SampleDetDis'].value[0]*1e-3
         data_object.dist_mod_det = data['ModeratorSamDis'].value[0]*1e-3+data_object.dist_sam_det
@@ -227,8 +227,8 @@ class Instrument(object):
         data_object.active_area_y = (8, 246)
 
         # Convert to standard names
-        data_object.direct_pixel = data['DIRPIX'].value[0]
-        data_object.angle_offset = data['DANGLE0'].value[0]
+        data_object.direct_pixel = data['DIRPIX'].getStatistics().mean
+        data_object.angle_offset = data['DANGLE0'].getStatistics().mean
 
         # Get proper cross-section label
         data_object.cross_section_label = get_cross_section_label(workspace, data_object.entry_name)

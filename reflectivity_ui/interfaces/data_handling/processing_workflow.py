@@ -599,7 +599,9 @@ class ProcessingWorkflow(object):
                 y = ws.readY(0)[p_0[i]:n_total-p_n[i]]
                 dy = ws.readE(0)[p_0[i]:n_total-p_n[i]]
                 dx = ws.readDx(0)[p_0[i]:n_total-p_n[i]]
-                tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
+                # This should be actual theta calculated
+                tth_value = ws.getRun().getProperty("two_theta").value / 2.0 * np.pi / 180.0
+                #tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
                 tth = np.ones(len(x)) * tth_value
                 combined_data.append(np.vstack((x, y, dy, dx, tth)).transpose())
 

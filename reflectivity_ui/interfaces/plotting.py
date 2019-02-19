@@ -393,24 +393,7 @@ class PlotManager(object):
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
-
-        if len(data_set_keys)==4:
-            self.main_window.ui.frame_offspec_sf.show()
-        else:
-            self.main_window.ui.frame_offspec_sf.hide()
-
-        if len(data_set_keys)>1:
-            self.main_window.ui.offspec_mm.show()
-            if len(data_set_keys)==4:
-                self.main_window.ui.offspec_mp.show()
-                self.main_window.ui.offspec_pm.show()
-            else:
-                self.main_window.ui.offspec_mp.hide()
-                self.main_window.ui.offspec_pm.hide()
-        else:
-            self.main_window.ui.offspec_mp.hide()
-            self.main_window.ui.offspec_pm.hide()
-            self.main_window.ui.offspec_mm.hide()
+            plots[i].hide()
 
         i_min=10**self.main_window.ui.offspecImin.value()
         i_max=10**self.main_window.ui.offspecImax.value()
@@ -435,6 +418,7 @@ class PlotManager(object):
         for i_run, nexus_data in enumerate(self.main_window.data_manager.reduction_list):
             for i, channel in enumerate(data_set_keys):
                 plot = plots[i]
+                plot.show()
                 selected_data=nexus_data.cross_sections[channel]
                 progress(i_run+i/4.0, message="Processed run %s %s" % (selected_data.number, channel), out_of=n_total)
 
@@ -615,25 +599,14 @@ class PlotManager(object):
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
+            plots[i].hide()
 
         Imin=10**self.main_window.ui.gisansImin.value()
         Imax=10**self.main_window.ui.gisansImax.value()
 
-        if len(data_set_keys)>1:
-            self.main_window.ui.gisans_mm.show()
-            if len(data_set_keys)==4:
-                self.main_window.ui.gisans_mp.show()
-                self.main_window.ui.gisans_pm.show()
-            else:
-                self.main_window.ui.gisans_mp.hide()
-                self.main_window.ui.gisans_pm.hide()
-        else:
-            self.main_window.ui.gisans_mp.hide()
-            self.main_window.ui.gisans_pm.hide()
-            self.main_window.ui.gisans_mm.hide()
-
         for i, channel in enumerate(data_set_keys):
             plot = plots[i]
+            plot.show()
             selected_data=self.main_window.data_manager.data_sets[channel]
             plots[i].clear_fig()
             plots[i].pcolormesh(selected_data.gisans_data.QyGrid, selected_data.gisans_data.QzGrid,

@@ -546,22 +546,33 @@ class DataManager(object):
         p_state = None
         m_state = None
         if len(self.reduction_states) == 2:
-            p_state = self.reduction_states[0]
-            m_state = self.reduction_states[1]
-
-        # - For the traditional four states, pick the right ones by hand
-        elif len(self.reduction_states) == 4:
+            if self.reduction_states[0].lower() in ['off_off', 'off-off']:
+                p_state = self.reduction_states[0]
+                m_state = self.reduction_states[1]
+            else:
+                p_state = self.reduction_states[1]
+                m_state = self.reduction_states[0]
+        else:
             _p_state_data = None
             _m_state_data = None
             for item in self.reduction_states:
-                if self.data_sets[item].cross_section_label == '++':
+                if item.lower() in ['off_off', 'off-off']:
                     _p_state_data = item
-                if self.data_sets[item].cross_section_label == '--':
+                if item.lower() in ['on_on', 'on-on']:
                     _m_state_data = item
 
             if _p_state_data is None or _m_state_data is None:
                 _p_state_data = None
                 _m_state_data = None
+                for item in self.reduction_states:
+                    if self.data_sets[item].cross_section_label == '++':
+                        _p_state_data = item
+                    if self.data_sets[item].cross_section_label == '--':
+                        _m_state_data = item
+
+            if _p_state_data is None or _m_state_data is None:
+                p_state = None
+                m_state = None
 
         # - If we haven't made sense of it yet, take the first and last cross-sections 
         if p_state is None and m_state is None and len(self.reduction_states)>=2:
