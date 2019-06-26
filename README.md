@@ -2,6 +2,9 @@
 [![TRAVISCI](https://travis-ci.org/mdoucet/reflectivity_ui.svg?branch=master)](https://travis-ci.org/mdoucet/reflectivity_ui)
 [![codecov](https://codecov.io/gh/mdoucet/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/mdoucet/reflectivity_ui)
 
+## v2.0.40 [02/19/2019]
+ - Write calculated angle to data file
+
 ## v2.0.39 [02/14/2019]
  - Order cross-sections starting with off-off
  - Fix issue with 3rd cross-section not displaying when only three are measured.

@@ -86,12 +86,15 @@ class EventReflectivity(object):
     QX_VS_QZ = 0
     KZI_VS_KZF = 1
     DELTA_KZ_VS_QZ = 3
+    INSTRUMENT_4A = 0
+    INSTRUMENT_4B = 1
 
     def __init__(self, scattering_workspace, direct_workspace,
                  signal_peak, signal_bck, norm_peak, norm_bck,
                  specular_pixel, signal_low_res, norm_low_res,
                  q_min=None, q_step=-0.02, q_max=None,
-                 tof_range=None, theta=1.0, sample_length=10):
+                 tof_range=None, theta=1.0, sample_length=10,
+                 instrument=None):
         """
             Pixel ranges include the min and max pixels.
 
@@ -112,6 +115,10 @@ class EventReflectivity(object):
             :param sample_length: sample size, for resolution calculation
         
         """
+        if instrument in [self.INSTRUMENT_4A, self.INSTRUMENT_4B]:
+            self.instrument = instrument
+        else:
+            self.instrument = self.INSTRUMENT_4A
         self.signal_peak = signal_peak
         self.signal_bck = signal_bck
         self.norm_peak = norm_peak
@@ -149,14 +156,11 @@ class EventReflectivity(object):
         self.n_y = int(self._ws_sc.getInstrument().getNumberParameter("number-of-y-pixels")[0])
 
         self.pixel_width = float(self._ws_sc.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
-        run_object = self._ws_sc.getRun()
-        self.det_distance = run_object['SampleDetDis'].getStatistics().mean
-        source_sample_distance = run_object['ModeratorSamDis'].getStatistics().mean
-        if not run_object['SampleDetDis'].units in ['m', 'meter']:
-            self.det_distance /= 1000.0
-        if not run_object['ModeratorSamDis'].units in ['m', 'meter']:
-            source_sample_distance /= 1000.0
-        self.source_detector_distance = source_sample_distance + self.det_distance
+
+        if self.instrument == self.INSTRUMENT_4B:
+            self.extract_meta_data_4B()
+        else:
+            self.extract_meta_data_4A()
 
         h = 6.626e-34  # m^2 kg s^-1
         m = 1.675e-27  # kg
@@ -174,6 +178,21 @@ class EventReflectivity(object):
 
         # Q binning to use
         self.q_bins = get_q_binning(self.q_min, self.q_max, self.q_step)
+
+    def extract_meta_data_4A(self):
+        run_object = self._ws_sc.getRun()
+        self.det_distance = run_object['SampleDetDis'].getStatistics().mean
+        source_sample_distance = run_object['ModeratorSamDis'].getStatistics().mean
+        if not run_object['SampleDetDis'].units in ['m', 'meter']:
+            self.det_distance /= 1000.0
+        if not run_object['ModeratorSamDis'].units in ['m', 'meter']:
+            source_sample_distance /= 1000.0
+        self.source_detector_distance = source_sample_distance + self.det_distance
+
+    def extract_meta_data_4B(self):
+        self.det_distance = 1.83
+        source_sample_distance = 13.63
+        self.source_detector_distance = source_sample_distance + self.det_distance
 
     def __repr__(self):
         output = "sample-det: %s\n" % self.det_distance
@@ -270,7 +289,10 @@ class EventReflectivity(object):
 
         for i in range(low_res[0], int(low_res[1]+1)):
             for j in range(peak[0], int(peak[1]+1)):
-                pixel = j * self.n_y + i
+                if self.instrument == self.INSTRUMENT_4A:
+                    pixel = j * self.n_y + i
+                else:
+                    pixel = i * self.n_y + j
                 evt_list = ws.getSpectrum(pixel)
                 if evt_list.getNumberEvents() == 0:
                     continue
@@ -296,7 +318,10 @@ class EventReflectivity(object):
 
         for i in range(low_res[0], int(low_res[1]+1)):
             for j in range(peak[0], int(peak[1]+1)):
-                pixel = j * self.n_y + i
+                if self.instrument == self.INSTRUMENT_4A:
+                    pixel = j * self.n_y + i
+                else:
+                    pixel = i * self.n_y + j
                 evt_list = ws.getSpectrum(pixel)
                 wl_list = evt_list.getTofs() / self.constant
                 wl_events = np.concatenate((wl_events, wl_list))
@@ -368,7 +393,10 @@ class EventReflectivity(object):
         for j in range(0, self.n_x):
             wl_list = np.asarray([])
             for i in range(self.signal_low_res[0], int(self.signal_low_res[1]+1)):
-                pixel = j * self.n_y + i
+                if self.instrument == self.INSTRUMENT_4A:
+                    pixel = j * self.n_y + i
+                else:
+                    pixel = i * self.n_y + j
                 evt_list = ws.getSpectrum(pixel)
                 wl_events = evt_list.getTofs() / self.constant
                 wl_list = np.concatenate((wl_events, wl_list))
