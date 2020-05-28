@@ -20,22 +20,21 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
-  - conda config --append channels conda-forge
+  - conda config --add channels conda-forge
+  - conda config --add channels mantid
+  - conda config --add channels mantid/label/nightly
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5;
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5 mantid-framework=4.2
   - source activate test-environment
-  - conda config --add channels conda-forge
-  - conda config --add channels mantid
-  - conda install --yes -c mantid/label/nightly mantid-framework
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
   - wget http://198.74.56.37/ftp/external-data/MD5/58d6698e1d6bf98e0315687cb980d333 -O REF_M_29160
-  
+
 script:
   #- python setup.py install
   - cd test; coverage run data_handling_test.py
