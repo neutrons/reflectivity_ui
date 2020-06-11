@@ -2,8 +2,11 @@
 [![TRAVISCI](https://travis-ci.org/mdoucet/reflectivity_ui.svg?branch=master)](https://travis-ci.org/mdoucet/reflectivity_ui)
 [![codecov](https://codecov.io/gh/mdoucet/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/mdoucet/reflectivity_ui)
 
-## v2.0.41 [05/28/2020]
+## v2.0.42 [05/28/2020]
  - Pinned to use mantid42 and python2
+
+## v2.0.41 [06/29/2019]
+ - Minor fixes
 
 ## v2.0.40 [02/19/2019]
  - Write calculated angle to data file
