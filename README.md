@@ -2,6 +2,9 @@
 [![TRAVISCI](https://travis-ci.org/neutrons/reflectivity_ui.svg?branch=master)](https://travis-ci.org/neutrons/reflectivity_ui)
 [![codecov](https://codecov.io/gh/neutrons/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/neutrons/reflectivity_ui)
 
+## v2.0.43 [06/11/2020]
+ - Pinned to use mantid42 and python2 fixed
+ 
 ## v2.0.42 [05/28/2020]
  - Pinned to use mantid42 and python2
 
