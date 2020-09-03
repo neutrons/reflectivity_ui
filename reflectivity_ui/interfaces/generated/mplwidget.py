@@ -97,6 +97,11 @@ class NavigationToolbar(NavigationToolbar2QT):
         a=self.addAction(icon, 'Log', self.toggle_log)
         a.setToolTip('Toggle logarithmic scale')
 
+        icon=QtGui.QIcon()
+        self.addSeparator()
+        a=self.addAction(icon, 'Lines', self.toggle_lines)
+        a.setToolTip('Toggle lines between values')
+
         self.buttons={}
 
         # Add the x,y location widget at the right side of the toolbar
@@ -171,6 +176,17 @@ class NavigationToolbar(NavigationToolbar2QT):
                 QtWidgets.QMessageBox.critical(
                     self, "Error saving file", str(e),
                     QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton)
+
+    def toggle_lines(self, *args):
+        ax=self.canvas.ax
+        linestyle = ax.lines[2].get_linestyle()
+        if linestyle == '-':
+            ax.lines[2].set_linestyle('')
+            ax.lines[5].set_linestyle('')
+        else:
+            ax.lines[2].set_linestyle('-')
+            ax.lines[5].set_linestyle('-')
+        self.canvas.draw()
 
     def toggle_log(self, *args):
         ax=self.canvas.ax
