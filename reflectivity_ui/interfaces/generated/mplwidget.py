@@ -101,7 +101,10 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.addSeparator()
         a=self.addAction(icon, 'Lines', self.toggle_lines)
         a.setToolTip('Toggle lines between values')
-
+        for action in self.findChildren(QtWidgets.QAction):
+            if action.text() == 'Lines':
+                action.setVisible(False)
+                break
         self.buttons={}
 
         # Add the x,y location widget at the right side of the toolbar
@@ -179,13 +182,15 @@ class NavigationToolbar(NavigationToolbar2QT):
 
     def toggle_lines(self, *args):
         ax=self.canvas.ax
+        if len(ax.lines) < 3:
+            return
         linestyle = ax.lines[2].get_linestyle()
         if linestyle == '-':
-            ax.lines[2].set_linestyle('')
-            ax.lines[5].set_linestyle('')
+            for i in range(2,len(ax.lines),3):
+                ax.lines[i].set_linestyle('')
         else:
-            ax.lines[2].set_linestyle('-')
-            ax.lines[5].set_linestyle('-')
+            for i in range(2,len(ax.lines),3):
+                ax.lines[i].set_linestyle('-')
         self.canvas.draw()
 
     def toggle_log(self, *args):
@@ -304,6 +309,10 @@ class MPLWidget(QtWidgets.QWidget):
         '''
           Convenience wrapper for self.canvas.ax.semilogy
         '''
+        for action in self.toolbar.findChildren(QtWidgets.QAction):
+            if action.text() == 'Lines':
+                action.setVisible(True)
+                break 
         return self.canvas.ax.errorbar(*args, **opts)
 
     def pcolormesh(self, datax, datay, dataz, log=False, imin=None, imax=None, update=False, **opts):
