@@ -45,7 +45,8 @@ class NavigationToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, parent, coordinates=False):
         NavigationToolbar2QT.__init__(self, canvas, parent, coordinates)
         self.setIconSize(QtCore.QSize(20, 20))
-
+        self.calling_function = None
+ 
     def _init_toolbar(self):
         if not hasattr(self, '_actions'):
             self._actions={}
@@ -187,11 +188,13 @@ class NavigationToolbar(NavigationToolbar2QT):
             return
         linestyle = ax.lines[2].get_linestyle()
         if linestyle == '-':
-            for i in range(2,len(ax.lines),3):
-                ax.lines[i].set_linestyle('')
+            new_linestyle = ''
         else:
-            for i in range(2,len(ax.lines),3):
-                ax.lines[i].set_linestyle('-')
+            new_linestyle = '-'
+        for i in range(2,len(ax.lines),3):
+            ax.lines[i].set_linestyle(new_linestyle)
+        settings = QtCore.QSettings('.refredm')
+        settings.setValue(self.calling_function+'/linestyle',new_linestyle)
         self.canvas.draw()
 
     def toggle_log(self, *args):
@@ -265,8 +268,6 @@ class MPLWidget(QtWidgets.QWidget):
         else:
             self.toolbar=None
         self.setLayout(self.vbox)
-        self.calling_function = None
-        self.cid = None
 
     def leaveEvent(self, event):
         '''
@@ -308,14 +309,6 @@ class MPLWidget(QtWidgets.QWidget):
         '''
         return self.canvas.ax.semilogy(*args, **opts)
 
-    def save_linestyle(self, evt):
-        ax=self.canvas.ax
-        if len(ax.lines) < 3:
-            return
-        linestyle = ax.lines[2].get_linestyle()
-        settings = QtCore.QSettings('.refredm')
-        settings.setValue(self.calling_function+'/linestyle',linestyle)
-
     def errorbar(self, *args, **opts):
         '''
           Convenience wrapper for self.canvas.ax.semilogy
@@ -335,15 +328,12 @@ class MPLWidget(QtWidgets.QWidget):
             set_linestyle=True
 
         if set_linestyle:
-            self.calling_function = str(inspect.stack()[1][3])
+            self.toolbar.calling_function = str(inspect.stack()[1][3])
             setting = QtCore.QSettings('.refredm')
-            ls = setting.value(self.calling_function+'/linestyle','-')
+            ls = setting.value(self.toolbar.calling_function+'/linestyle','-')
             opts['ls']=str(ls)
 
-        output = self.canvas.ax.errorbar(*args, **opts)
-        if not self.cid:
-            self.cid = self.canvas.mpl_connect('draw_event', self.save_linestyle)
-        return output
+        return self.canvas.ax.errorbar(*args, **opts)
 
     def pcolormesh(self, datax, datay, dataz, log=False, imin=None, imax=None, update=False, **opts):
         '''
