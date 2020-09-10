@@ -251,7 +251,7 @@ class MplCanvas(FigureCanvas):
 class MPLWidget(QtWidgets.QWidget):
     cplot=None
     cbar=None
-    
+
     def __init__(self, parent=None, with_toolbar=True, coordinates=False):
         QtWidgets.QWidget.__init__(self, parent)
         self.canvas=MplCanvas()
