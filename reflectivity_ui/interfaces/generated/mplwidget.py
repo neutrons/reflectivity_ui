@@ -8,6 +8,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import inspect
 import tempfile
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 import matplotlib.cm
@@ -250,7 +251,7 @@ class MplCanvas(FigureCanvas):
 class MPLWidget(QtWidgets.QWidget):
     cplot=None
     cbar=None
-
+    
     def __init__(self, parent=None, with_toolbar=True, coordinates=False):
         QtWidgets.QWidget.__init__(self, parent)
         self.canvas=MplCanvas()
@@ -264,6 +265,8 @@ class MPLWidget(QtWidgets.QWidget):
         else:
             self.toolbar=None
         self.setLayout(self.vbox)
+        self.calling_function = None
+        self.cid = None
 
     def leaveEvent(self, event):
         '''
@@ -305,6 +308,14 @@ class MPLWidget(QtWidgets.QWidget):
         '''
         return self.canvas.ax.semilogy(*args, **opts)
 
+    def save_linestyle(self, evt):
+        ax=self.canvas.ax
+        if len(ax.lines) < 3:
+            return
+        linestyle = ax.lines[2].get_linestyle()
+        settings = QtCore.QSettings('.refredm')
+        settings.setValue(self.calling_function+'/linestyle',linestyle)
+
     def errorbar(self, *args, **opts):
         '''
           Convenience wrapper for self.canvas.ax.semilogy
@@ -312,8 +323,27 @@ class MPLWidget(QtWidgets.QWidget):
         for action in self.toolbar.findChildren(QtWidgets.QAction):
             if action.text() == 'Lines':
                 action.setVisible(True)
-                break 
-        return self.canvas.ax.errorbar(*args, **opts)
+                break
+
+        if 'fmt' in opts:
+            set_linestyle=False
+        elif 'linestyle' in opts:
+            set_linestyle=False
+        elif 'ls' in opts:
+            set_linestyle=False
+        else:
+            set_linestyle=True
+
+        if set_linestyle:
+            self.calling_function = str(inspect.stack()[1][3])
+            setting = QtCore.QSettings('.refredm')
+            ls = setting.value(self.calling_function+'/linestyle','-')
+            opts['ls']=str(ls)
+
+        output = self.canvas.ax.errorbar(*args, **opts)
+        if not self.cid:
+            self.cid = self.canvas.mpl_connect('draw_event', self.save_linestyle)
+        return output
 
     def pcolormesh(self, datax, datay, dataz, log=False, imin=None, imax=None, update=False, **opts):
         '''
