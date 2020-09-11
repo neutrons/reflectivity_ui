@@ -8,6 +8,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import inspect
 import tempfile
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 import matplotlib.cm
@@ -44,7 +45,8 @@ class NavigationToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, parent, coordinates=False):
         NavigationToolbar2QT.__init__(self, canvas, parent, coordinates)
         self.setIconSize(QtCore.QSize(20, 20))
-
+        self.calling_function = None
+ 
     def _init_toolbar(self):
         if not hasattr(self, '_actions'):
             self._actions={}
@@ -186,11 +188,13 @@ class NavigationToolbar(NavigationToolbar2QT):
             return
         linestyle = ax.lines[2].get_linestyle()
         if linestyle == '-':
-            for i in range(2,len(ax.lines),3):
-                ax.lines[i].set_linestyle('')
+            new_linestyle = ''
         else:
-            for i in range(2,len(ax.lines),3):
-                ax.lines[i].set_linestyle('-')
+            new_linestyle = '-'
+        for i in range(2,len(ax.lines),3):
+            ax.lines[i].set_linestyle(new_linestyle)
+        settings = QtCore.QSettings('.refredm')
+        settings.setValue(self.calling_function+'/linestyle',new_linestyle)
         self.canvas.draw()
 
     def toggle_log(self, *args):
@@ -312,7 +316,23 @@ class MPLWidget(QtWidgets.QWidget):
         for action in self.toolbar.findChildren(QtWidgets.QAction):
             if action.text() == 'Lines':
                 action.setVisible(True)
-                break 
+                break
+
+        if 'fmt' in opts:
+            set_linestyle=False
+        elif 'linestyle' in opts:
+            set_linestyle=False
+        elif 'ls' in opts:
+            set_linestyle=False
+        else:
+            set_linestyle=True
+
+        if set_linestyle:
+            self.toolbar.calling_function = str(inspect.stack()[1][3])
+            setting = QtCore.QSettings('.refredm')
+            ls = setting.value(self.toolbar.calling_function+'/linestyle','-')
+            opts['ls']=str(ls)
+
         return self.canvas.ax.errorbar(*args, **opts)
 
     def pcolormesh(self, datax, datay, dataz, log=False, imin=None, imax=None, update=False, **opts):
