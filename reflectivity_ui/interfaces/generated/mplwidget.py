@@ -102,7 +102,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         icon=QtGui.QIcon()
         self.addSeparator()
         a=self.addAction(icon, 'Lines', self.toggle_lines)
-        a.setToolTip('Toggle lines between values')
+        a.setToolTip('Toggle lines between points')
         for action in self.findChildren(QtWidgets.QAction):
             if action.text() == 'Lines':
                 action.setVisible(False)
