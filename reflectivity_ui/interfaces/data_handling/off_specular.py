@@ -83,7 +83,13 @@ class OffSpecular(object):
         # normalize data by width in y and multiply scaling factor
         intensity = raw/float(y_max-y_min) * scale
         d_intensity = d_raw/(y_max-y_min) * scale
-        self.S = intensity - bck[np.newaxis, :]
+
+        # to subtract or not to subtract, that is the question
+        if self.data_set.configuration.subtract_background:
+            self.S = intensity - bck[np.newaxis, :]
+        else:
+            self.S = intensity
+
         self.dS = np.sqrt(d_intensity**2+(bck**2)[np.newaxis, :])
         self.S *= self.data_set.configuration.scaling_factor
         self.dS *= self.data_set.configuration.scaling_factor
