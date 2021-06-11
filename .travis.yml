@@ -28,7 +28,7 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5 mantid-framework=4.2
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5 mantid-framework=4.0.0
   - source activate test-environment
   - pip install --upgrade codecov
   - cd test
