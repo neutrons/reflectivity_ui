@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'designer/ui_main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -160,7 +162,7 @@ class Ui_MainWindow(object):
         self.toolBox.setLineWidth(0)
         self.toolBox.setObjectName("toolBox")
         self.page = QtWidgets.QWidget()
-        self.page.setGeometry(QtCore.QRect(0, 0, 352, 207))
+        self.page.setGeometry(QtCore.QRect(0, 0, 361, 207))
         self.page.setObjectName("page")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.page)
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
@@ -269,7 +271,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.q_rebin_spinbox, 7, 3, 1, 1)
         self.toolBox.addItem(self.page, "")
         self.page_2 = QtWidgets.QWidget()
-        self.page_2.setGeometry(QtCore.QRect(0, 0, 352, 207))
+        self.page_2.setGeometry(QtCore.QRect(0, 0, 361, 207))
         self.page_2.setObjectName("page_2")
         self.gridLayout_15 = QtWidgets.QGridLayout(self.page_2)
         self.gridLayout_15.setContentsMargins(2, 2, 2, 2)
@@ -281,7 +283,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.directPixelOverwrite.sizePolicy().hasHeightForWidth())
         self.directPixelOverwrite.setSizePolicy(sizePolicy)
-        self.directPixelOverwrite.setDecimals(1)
+        self.directPixelOverwrite.setDecimals(2)
         self.directPixelOverwrite.setMinimum(-1.0)
         self.directPixelOverwrite.setMaximum(304.0)
         self.directPixelOverwrite.setSingleStep(1.0)
@@ -317,7 +319,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dangle0Overwrite.sizePolicy().hasHeightForWidth())
         self.dangle0Overwrite.setSizePolicy(sizePolicy)
-        self.dangle0Overwrite.setDecimals(1)
+        self.dangle0Overwrite.setDecimals(4)
         self.dangle0Overwrite.setMinimum(-1.0)
         self.dangle0Overwrite.setMaximum(360.0)
         self.dangle0Overwrite.setObjectName("dangle0Overwrite")
@@ -372,7 +374,7 @@ class Ui_MainWindow(object):
         self.bandwidth_spinbox.raise_()
         self.toolBox.addItem(self.page_2, "")
         self.page_3 = QtWidgets.QWidget()
-        self.page_3.setGeometry(QtCore.QRect(0, 0, 352, 207))
+        self.page_3.setGeometry(QtCore.QRect(0, 0, 361, 207))
         self.page_3.setObjectName("page_3")
         self.gridLayout_17 = QtWidgets.QGridLayout(self.page_3)
         self.gridLayout_17.setContentsMargins(2, 2, 2, 2)
@@ -804,7 +806,7 @@ class Ui_MainWindow(object):
         self.reductionTable.horizontalHeader().setMinimumSectionSize(20)
         self.reductionTable.horizontalHeader().setStretchLastSection(True)
         self.reductionTable.verticalHeader().setVisible(False)
-        self.reductionTable.verticalHeader().setDefaultSectionSize(20)
+        self.reductionTable.verticalHeader().setDefaultSectionSize(21)
         self.verticalLayout_16.addWidget(self.reductionTable)
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
@@ -837,7 +839,7 @@ class Ui_MainWindow(object):
         self.normalizeTable.horizontalHeader().setMinimumSectionSize(30)
         self.normalizeTable.horizontalHeader().setStretchLastSection(True)
         self.normalizeTable.verticalHeader().setVisible(False)
-        self.normalizeTable.verticalHeader().setDefaultSectionSize(20)
+        self.normalizeTable.verticalHeader().setDefaultSectionSize(21)
         self.verticalLayout_17.addWidget(self.normalizeTable)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout_12.addWidget(self.tabWidget)
@@ -1624,6 +1626,8 @@ class Ui_MainWindow(object):
         self.actionRemove_Normalization.setObjectName("actionRemove_Normalization")
         self.actionResult_Viewer = QtWidgets.QAction(MainWindow)
         self.actionResult_Viewer.setObjectName("actionResult_Viewer")
+        self.actionOpenSum = QtWidgets.QAction(MainWindow)
+        self.actionOpenSum.setObjectName("actionOpenSum")
         self.menuReduction.addAction(self.actionNorm)
         self.menuReduction.addAction(self.actionRemove_Normalization)
         self.menuReduction.addAction(self.actionClear_Normalizations)
@@ -1648,6 +1652,7 @@ class Ui_MainWindow(object):
         self.menuAutomatics.addSeparator()
         self.menuAutomatics.addAction(self.actionResult_Viewer)
         self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionOpenSum)
         self.menuFile.addAction(self.actionLoad_Extraction)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuReduction.menuAction())
@@ -2174,7 +2179,8 @@ class Ui_MainWindow(object):
         self.actionRemove_Normalization.setIconText(_translate("MainWindow", "Remove from normalizations"))
         self.actionRemove_Normalization.setToolTip(_translate("MainWindow", "Remove the selected data set from normalization list"))
         self.actionResult_Viewer.setText(_translate("MainWindow", "Result Viewer"))
-
+        self.actionOpenSum.setText(_translate("MainWindow", "Open Sum"))
+        self.actionOpenSum.setToolTip(_translate("MainWindow", "Open and merge multiple runs"))
 from .compare_plots import CompareWidget
 from .mplwidget import MPLWidget
 import icons_rc

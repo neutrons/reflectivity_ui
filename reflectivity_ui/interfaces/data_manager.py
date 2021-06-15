@@ -221,6 +221,7 @@ class DataManager(object):
             :param bool force: it True, existing data will be replaced if it exists.
             :param bool update_parameters: if True, we will find peak ranges
         """
+        print('[DEBUG Back] File path: {}, configuration: {}'.format(file_path, configuration))
         nexus_data = None
         is_from_cache = False
         reduction_list_id = None
@@ -258,6 +259,8 @@ class DataManager(object):
             self.current_directory = directory
             self.current_file_name = file_name
             self.set_channel(0)
+
+            print('[DEBUG Back] Process {}'.format(file_name))
 
             # If we didn't get this data set from our cache,
             # then add it and compute its reflectivity.

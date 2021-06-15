@@ -232,6 +232,7 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         if file_path is not None and not file_path==self._data_manager.current_directory:
+            print('[DEBUG] File path is not None and data manager current directory = {}'.format(file_path))
             if os.path.isdir(file_path):
                 file_dir = file_path
             else:
@@ -241,6 +242,9 @@ class MainHandler(object):
             self._path_watcher.removePath(self._data_manager.current_directory)
             self._data_manager.current_directory = file_dir
             self._path_watcher.addPath(self._data_manager.current_directory)
+        else:
+            # do nothing
+            print('[DEBUG] {} is either None or not equal to data manager current directory "{}"'.format(self._data_manager.current_directory))
 
         # Update the list of files
         event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*event.nxs'))
@@ -248,15 +252,19 @@ class MainHandler(object):
         event_file_list.extend(h5_file_list)
         event_file_list.sort()
         event_file_list = [os.path.basename(name) for name in event_file_list]
+        print('[DEBUG UI] Event files list : {}'.format(event_file_list))
 
         current_list = [self.ui.file_list.item(i).text() for i in range(self.ui.file_list.count())]
         if event_file_list != current_list:
+            # Reset ui.file_list
+            print('[DEBUG UI] current list = {} Not equal to event lsit'.format(current_list))
             self.ui.file_list.clear()
             for item in event_file_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
                 if item == self._data_manager.current_file_name:
                     self.ui.file_list.setCurrentItem(listitem)
         else:
+            # Focus ui.file_list to current file name
             try:
                 self.ui.file_list.setCurrentRow(event_file_list.index(self._data_manager.current_file_name))
             except ValueError:
@@ -388,6 +396,25 @@ class MainHandler(object):
             self.update_file_list(file_path)
             self.open_file(file_path)
 
+    # Actions defined in Qt Designer
+    def file_open_dialog(self):
+        """
+            Show a dialog to open a new file.
+            TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
+        """
+        if self.ui.histogramActive.isChecked():
+            filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
+        else:
+            filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
+        # FIXME TODO - Replace by multiple files selector
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
+                                                             directory=self._data_manager.current_directory,
+                                                             filter=filter_)
+
+        if file_path:
+            self.update_file_list(file_path)
+            self.open_file(file_path)
+
     def open_run_number(self, number=None):
         """
             Open a data file by typing a run number
@@ -395,6 +422,7 @@ class MainHandler(object):
         self.main_window.auto_change_active = True
         if number is None:
             number = self.ui.numberSearchEntry.text()
+            # TODO FIXME number can be numbers
         QtWidgets.QApplication.instance().processEvents()
 
         # Look for new-style nexus file name
