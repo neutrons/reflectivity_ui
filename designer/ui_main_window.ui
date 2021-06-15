@@ -359,7 +359,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>352</width>
+             <width>361</width>
              <height>207</height>
             </rect>
            </property>
@@ -675,7 +675,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>352</width>
+             <width>361</width>
              <height>207</height>
             </rect>
            </property>
@@ -930,8 +930,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>233</width>
-             <height>127</height>
+             <width>361</width>
+             <height>207</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2069,11 +2069,11 @@
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
                       </attribute>
-                      <attribute name="horizontalHeaderDefaultSectionSize">
-                       <number>70</number>
-                      </attribute>
                       <attribute name="horizontalHeaderMinimumSectionSize">
                        <number>20</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>70</number>
                       </attribute>
                       <attribute name="horizontalHeaderStretchLastSection">
                        <bool>true</bool>
@@ -2082,7 +2082,7 @@
                        <bool>false</bool>
                       </attribute>
                       <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>20</number>
+                       <number>21</number>
                       </attribute>
                       <column>
                        <property name="text">
@@ -2217,11 +2217,11 @@
                       <property name="editTriggers">
                        <set>QAbstractItemView::NoEditTriggers</set>
                       </property>
-                      <attribute name="horizontalHeaderDefaultSectionSize">
-                       <number>70</number>
-                      </attribute>
                       <attribute name="horizontalHeaderMinimumSectionSize">
                        <number>30</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>70</number>
                       </attribute>
                       <attribute name="horizontalHeaderStretchLastSection">
                        <bool>true</bool>
@@ -2230,7 +2230,7 @@
                        <bool>false</bool>
                       </attribute>
                       <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>20</number>
+                       <number>21</number>
                       </attribute>
                       <column>
                        <property name="text">
@@ -3922,6 +3922,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenSum"/>
     <addaction name="actionLoad_Extraction"/>
    </widget>
    <addaction name="menuFile"/>
@@ -4358,6 +4359,14 @@
   <action name="actionResult_Viewer">
    <property name="text">
     <string>Result Viewer</string>
+   </property>
+  </action>
+  <action name="actionOpenSum">
+   <property name="text">
+    <string>Open Sum</string>
+   </property>
+   <property name="toolTip">
+    <string>Open and merge multiple runs</string>
    </property>
   </action>
  </widget>
