@@ -312,6 +312,70 @@ class NexusData(object):
         try:
             xs_list = self.configuration.instrument.load_data(self.file_path)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
+	    print('[DEBUG Back] Load {} to {}'.format(self.file_path, xs_list))
+        except:
+            logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
+            return self.cross_sections
+
+        progress_value = 0
+        # Keep track of cross-section with max counts so we can use it to
+        # select peak regions
+        _max_counts = 0
+        _max_xs = None
+        for ws in xs_list:
+            # Get the unique name for the cross-section, determined by the filtering
+	    print('[DEBUG Back SingleLoad] Process workspace {} from xs_list'.format(str(ws)))
+            channel = ws.getRun().getProperty("cross_section_id").value
+            if progress is not None:
+                progress_value += int(100.0/len(xs_list))
+                progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
+
+            # Get rid of emty workspaces
+            logging.info("Loading %s: %s events", str(channel), ws.getNumberEvents())
+            if ws.getNumberEvents() < N_EVENTS_CUTOFF:
+                logging.warn("Too few events for %s: %s", channel, ws.getNumberEvents())
+                continue
+
+            name = ws.getRun().getProperty("cross_section_id").value
+            cross_section = CrossSectionData(name, self.configuration, entry_name=channel, workspace=ws)
+            self.cross_sections[name] = cross_section
+            self.number = cross_section.number
+            if cross_section.total_counts > _max_counts:
+                _max_counts = cross_section.total_counts
+                _max_xs = name
+
+        # Now that we know which cross section has the most data,
+        # use that one to get the reduction parameters
+        self.main_cross_section = _max_xs
+        self.cross_sections[_max_xs].get_reduction_parameters(update_parameters=update_parameters)
+
+        # Push the configuration (reduction options and peak regions) from the
+        # cross-section with the most data to all other cross-sections.
+        for xs in self.cross_sections:
+            if xs == _max_xs:
+                continue
+            self.cross_sections[xs].update_configuration(self.cross_sections[_max_xs].configuration)
+
+        if progress is not None:
+            progress(100, "Complete", out_of=100.0)
+
+        return self.cross_sections
+
+    def load_merge(self, file_paths, configuration, force=force, progress=prog):
+        """Load and merge nexus runs
+
+	:return: dict
+	"""
+	# TODO #64 - Implement
+	# TODO FIXME #64 - Consider the possbility to combine load() and load_merge()
+        self.cross_sections = OrderedDict()
+        if progress is not None:
+            progress(5, "Filtering data...", out_of=100.0)
+
+        try:
+            xs_list = self.configuration.instrument.load_data(self.file_paths, merge=True)
+            logging.info("{} loaded: {} xs".format(self.file_paths, len(xs_list)))
+	    print('[DEBUG Back] Load {} to {}'.format(self.file_paths, xs_list))
         except:
             logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
             return self.cross_sections
@@ -357,7 +421,7 @@ class NexusData(object):
         if progress is not None:
             progress(100, "Complete", out_of=100.0)
 
-        return self.cross_sections
+        return
 
 
 class CrossSectionData(object):
