@@ -142,6 +142,32 @@ class Instrument(object):
 
         return xs_list
 
+    def load_merge_data(self, file_paths):
+        """
+            Load a data set according to the needs ot the instrument.
+            Returns a WorkspaceGroup with any number of cross-sections.
+
+            :param str file_path: path to the data file
+        """
+	# TODO #64 - Implement
+        # Be careful with legacy data
+        is_legacy = file_path.endswith(".nxs")
+        if is_legacy or not USE_SLOW_FLIPPER_LOG:
+            base_name = os.path.basename(file_path)
+            _xs_list = api.MRFilterCrossSections(Filename=file_path,
+                                                 PolState=self.pol_state,
+                                                 AnaState=self.ana_state,
+                                                 PolVeto=self.pol_veto,
+                                                 AnaVeto=self.ana_veto,
+                                                 CrossSectionWorkspaces="%s_entry" % base_name)
+            # Only keep good workspaced and get rid of the rejected events
+            xs_list = [ws for ws in _xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
+        else:
+            ws = api.LoadEventNexus(Filename=file_path, OutputWorkspace="raw_events")
+            xs_list = self.dummy_filter_cross_sections(ws)
+
+        return xs_list
+
     @classmethod
     def mid_q_value(cls, ws):
         """

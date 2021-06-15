@@ -71,6 +71,7 @@ class MainHandler(object):
             :param bool force: if true, the file will be reloaded
             :param bool silent: if true, the UI will not be updated
         """
+	print('[DEBUG] open_file is called for {}'.format(file_path))
         if not os.path.isfile(file_path):
             self.report_message("File does not exist",
                                 detailed_message="The following file does not exist:\n  %s" % file_path,
@@ -87,8 +88,41 @@ class MainHandler(object):
         except:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+       
+        print('[DEBUG] silent = {}'.format(silent))
         if not silent:
             self.file_loaded()
+        print('[DEBUG] pass flag1')
+        self.main_window.auto_change_active = False
+        logging.info("DONE: %s sec", time.time()-t_0)
+
+    def load_merge_files(self, file_paths, force=False, silent=False):
+        # TODO #63 - Implement refernce to method 'open_file)
+
+        # Verify that all files selected shall exist
+	for file_path in file_paths:
+            if not os.path.isfile(file_path):
+                self.report_message("File does not exist",
+                                    detailed_message="The following file does not exist:\n  %s" % file_path,
+                                pop_up=True, is_error=True)
+                return
+
+        t_0 = time.time()
+        self.main_window.auto_change_active = True
+        try:
+            self.report_message("Loading files {}".format(file_paths))
+            prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
+            configuration = self.get_configuration()
+            self._data_manager.load_merge(file_paths, configuration, force=force, progress=prog)
+            self.report_message("Loaded file %s" % self._data_manager.current_file_name)
+        except:
+            self.report_message("Error loading file %s" % self._data_manager.current_file_name,
+                                detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+       
+        print('[DEBUG] silent = {}'.format(silent))
+        if not silent:
+            self.file_loaded()
+        print('[DEBUG] pass flag1')
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
 
@@ -98,14 +132,18 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         current_channel = 0
+	# TODO FIXME Is 12 a magic number?
         for i in range(12):
             if getattr(self.ui, 'selectedChannel%i'%i).isChecked():
                 current_channel = i
+		print('[DEBUG] select channle {}'.format(i))
 
         success = self._data_manager.set_channel(current_channel)
         if not success:
             self.ui.selectedChannel0.setChecked(True)
 
+        print('[DEBUG] data manager type: {}'.format(type(self._data_manager)))
+	print('[DEBUG] data manager data set keys: {}'.format(list(self._data_manager.data_sets.keys())))
         channels = self._data_manager.data_sets.keys()
         for i, channel in enumerate(channels):
             getattr(self.ui, 'selectedChannel%i'%i).show()
@@ -397,23 +435,44 @@ class MainHandler(object):
             self.open_file(file_path)
 
     # Actions defined in Qt Designer
-    def file_open_dialog(self):
+    def files_open_dialog(self):
         """
             Show a dialog to open a new file.
             TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
+	# TODO #63 - Implement ...
+
+	# Set file filters
         if self.ui.histogramActive.isChecked():
             filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
         else:
             filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
         # FIXME TODO - Replace by multiple files selector
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
-                                                             directory=self._data_manager.current_directory,
-                                                             filter=filter_)
+	file_paths = select_files()
 
-        if file_path:
-            self.update_file_list(file_path)
-            self.open_file(file_path)
+	def select_files():
+            # file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
+            #                                                      directory=self._data_manager.current_directory,
+            #                                                      filter=filter_)
+	    return []
+
+        # user cancel operation
+        if len(file_paths) == 0:
+	    return
+
+        # Process files that are selected
+        # check whether files can be merged without further notice
+        message = self.check_files_to_merge(file_paths)
+	# need user's permission
+	if message or len(message) > 0:
+	    # TODO # 65 - Implement
+	    user_say_go = self.ask_user_permission(message)
+	    if nto user_say_go:
+	        return
+	# udpate file list
+        self.update_file_list(file_paths, merge_mode=True)
+        # merge and load file
+        self.load_merge_files(file_paths)
 
     def open_run_number(self, number=None):
         """
