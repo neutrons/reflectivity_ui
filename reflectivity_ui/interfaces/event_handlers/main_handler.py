@@ -115,9 +115,12 @@ class MainHandler(object):
             configuration = self.get_configuration()
             self._data_manager.load_merge(file_paths, configuration, force=force, progress=prog)
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
-        except:
+        except Exception as e:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+            print(e)
+            raise e
+            # TODO #64 The error mssage shall be silenced with specific error type
        
         print('[DEBUG] silent = {}'.format(silent))
         if not silent:
@@ -143,7 +146,7 @@ class MainHandler(object):
             self.ui.selectedChannel0.setChecked(True)
 
         print('[DEBUG] data manager type: {}'.format(type(self._data_manager)))
-	print('[DEBUG] data manager data set keys: {}'.format(list(self._data_manager.data_sets.keys())))
+        print('[DEBUG] data manager data set keys: {}'.format(list(self._data_manager.data_sets.keys())))
         channels = self._data_manager.data_sets.keys()
         for i, channel in enumerate(channels):
             getattr(self.ui, 'selectedChannel%i'%i).show()
@@ -160,6 +163,13 @@ class MainHandler(object):
         self.main_window.initiate_projection_plot.emit(False)
 
         self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
+
+    def check_files_to_merge(self, file_paths):
+        """check wehther these files can be merged
+        """
+        message = self._data_manager.check_files_for_merging(file_paths)
+
+        return message
 
     def update_tables(self):
         """
@@ -264,11 +274,18 @@ class MainHandler(object):
 
         self.main_window.auto_change_active = False
 
-    def update_file_list(self, file_path=None):
+    def update_file_list(self, file_path=None, merge_mode=False):
         """
             Update the list of data files
         """
+	# TODO #63 - Implement if merge_mode is True
         self.main_window.auto_change_active = True
+
+        # FIXME this is a temp solution but need to properly handled in #63
+	if merge_mode and isinstance(file_path, list):
+            file_paths = file_path
+            file_path = file_path[0]
+
         if file_path is not None and not file_path==self._data_manager.current_directory:
             print('[DEBUG] File path is not None and data manager current directory = {}'.format(file_path))
             if os.path.isdir(file_path):
@@ -297,6 +314,16 @@ class MainHandler(object):
             # Reset ui.file_list
             print('[DEBUG UI] current list = {} Not equal to event lsit'.format(current_list))
             self.ui.file_list.clear()
+
+            # 63: combined item
+	    if merge_mode:
+   	        merged_item = ''
+	        for fi, item in enumerate(file_paths):
+		    if fi > 0:
+                        merged_item += '+'
+		    merged_item += item
+                QtWidgets.QListWidgetItem(merged_item, self.ui.file_list)
+
             for item in event_file_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
                 if item == self._data_manager.current_file_name:
@@ -440,7 +467,17 @@ class MainHandler(object):
             Show a dialog to open a new file.
             TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
-	# TODO #63 - Implement ...
+        # TODO #63 - Implement ...
+        def select_files():
+            # TODO #63 - Implement
+            # file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
+            #                                                      directory=self._data_manager.current_directory,
+            #                                                      filter=filter_)
+	    # FIXME - this is fake!
+	    file_paths = ['/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5',
+			  '/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
+            return file_paths
+
 
 	# Set file filters
         if self.ui.histogramActive.isChecked():
@@ -450,12 +487,6 @@ class MainHandler(object):
         # FIXME TODO - Replace by multiple files selector
 	file_paths = select_files()
 
-	def select_files():
-            # file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
-            #                                                      directory=self._data_manager.current_directory,
-            #                                                      filter=filter_)
-	    return []
-
         # user cancel operation
         if len(file_paths) == 0:
 	    return
@@ -463,16 +494,24 @@ class MainHandler(object):
         # Process files that are selected
         # check whether files can be merged without further notice
         message = self.check_files_to_merge(file_paths)
-	# need user's permission
-	if message or len(message) > 0:
-	    # TODO # 65 - Implement
-	    user_say_go = self.ask_user_permission(message)
-	    if nto user_say_go:
-	        return
-	# udpate file list
+        # need user's permission
+        if message or len(message) > 0:
+            # TODO # 65 - Implement
+            user_say_go = self.ask_user_permission(message)
+            if not user_say_go:
+                return
+        # udpate file list
         self.update_file_list(file_paths, merge_mode=True)
         # merge and load file
         self.load_merge_files(file_paths)
+
+    def ask_user_permission(self, message):
+        """Ask user's permission to proceed or return
+	"""
+	# TODO #65 - Implement
+	print('[DEBUG] Show message: "{}" and ask user to proceed or not.'.format(message))
+
+	return True
 
     def open_run_number(self, number=None):
         """
