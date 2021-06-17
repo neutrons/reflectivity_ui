@@ -299,6 +299,15 @@ class NexusData(object):
         for xs in self.cross_sections:
             self.cross_sections[xs].update_calculated_values()
 
+    @staticmethod
+    def check_files_for_merging(file_paths):
+	# TODO # 64 - Implement
+	"""Check whether the Nexus files can be merged without user permission
+
+	:return: str or None (None for good to merge)
+	"""
+	return 'Not Implemented Yet'
+
     def load(self, update_parameters=True, progress=None):
         """
             Load cross-sections from a nexus file.
@@ -361,7 +370,7 @@ class NexusData(object):
 
         return self.cross_sections
 
-    def load_merge(self, file_paths, configuration, force=force, progress=prog):
+    def load_merge(self, file_paths, configuration, force, progress):
         """Load and merge nexus runs
 
 	:return: dict

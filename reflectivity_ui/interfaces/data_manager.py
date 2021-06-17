@@ -289,6 +289,79 @@ class DataManager(object):
             progress(100)
         return is_from_cache
 
+    def load_merge(self, file_paths, configuration, force, progress):
+        # TODO #64 - Iplement by mimic method load()
+        nexus_data = None
+        is_from_cache = False
+        reduction_list_id = None
+        direct_beam_list_id = None
+
+        # Check whether the file is in cache
+        if progress is not None:
+            progress(10, "Loading data and merge...")
+        for i in range(len(self._cache)):
+            if self._cache[i].file_path == file_path:
+                if force:
+                    # Check whether the data is in the reduction list before
+                    # removing it.
+                    reduction_list_id = self.find_data_in_reduction_list(self._cache[i])
+                    direct_beam_list_id = self.find_data_in_direct_beam_list(self._cache[i])
+                    self._cache.pop(i)
+                else:
+                    nexus_data = self._cache[i]
+                    is_from_cache = True
+                break
+
+        # If we don't have the data, load it
+        if nexus_data is None:
+            configuration.normalization = None
+            nexus_data = NexusData(file_path, configuration)
+            sub_task = progress.create_sub_task(max_value=70) if progress else None
+            nexus_data.load(progress=sub_task, update_parameters=update_parameters)
+
+        if progress is not None:
+            progress(80, "Calculating...")
+
+        if nexus_data is not None:
+            self._nexus_data = nexus_data
+            directory, file_name = os.path.split(file_path)
+            self.current_directory = directory
+            self.current_file_name = file_name
+            self.set_channel(0)
+
+            print('[DEBUG Back] Process {}'.format(file_name))
+
+            # If we didn't get this data set from our cache,
+            # then add it and compute its reflectivity.
+            if not is_from_cache:
+                # Find suitable direct beam
+                logging.info("Direct beam from loader: %s", configuration.normalization)
+                if configuration.normalization is None and configuration.match_direct_beam:
+                    self.find_best_direct_beam()
+
+                # Replace reduction and normalization entries as needed
+                if reduction_list_id is not None:
+                    self.reduction_list[reduction_list_id] = nexus_data
+                if direct_beam_list_id is not None:
+                    self.direct_beam_list[direct_beam_list_id] = nexus_data
+                # Compute reflectivity
+                try:
+                    self.calculate_reflectivity()
+                except:
+                    logging.error("Reflectivity calculation failed for %s", file_name)
+
+                while len(self._cache)>=self.MAX_CACHE:
+                    self._cache.pop(0)
+                self._cache.append(nexus_data)
+
+        if progress is not None:
+            progress(100)
+        return is_from_cache
+
+    def check_files_for_merging(self, file_paths):
+        # TODO #64 - Implement
+        return NexusData.check_files_for_merging(file_paths)
+
     def update_configuration(self, configuration, active_only=False, nexus_data=None):
         """
             Update configuration
