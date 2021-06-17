@@ -19,7 +19,7 @@ if application_conf.mantid_path is not None:
     sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 # Set Mantid logging level to warnings
-api.ConfigService.setLogLevel(3)
+# FIXME MR8 api.ConfigService.setLogLevel(3)
 
 from .data_info import DataInfo
 from . import off_specular
@@ -31,6 +31,7 @@ H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
 # Number of events under which we throw away a workspace
 #TODO: This should be a parameter
 N_EVENTS_CUTOFF = 100
+
 
 def getIxyt(nxs_data):
     """
@@ -54,12 +55,28 @@ def getIxyt(nxs_data):
 
     return _y_axis
 
+
 class NexusData(object):
     """
         Read a nexus file with multiple cross-section data.
     """
     def __init__(self, file_path, configuration):
-        self.file_path = file_path
+        """
+
+        Parameters
+        ----------
+        file_path: str, list
+            single file (path) or a list of file paths in merging mode
+        configuration
+        """
+        self.file_path = None
+        self.file_path_list = None
+
+        if isinstance(file_path, str):
+            self.file_path = file_path
+        elif isinstance(file_path, list):
+            self.file_path_list = file_path[:]
+
         self.number = 0
         self.configuration = configuration
         self.cross_sections = {}
@@ -301,12 +318,20 @@ class NexusData(object):
 
     @staticmethod
     def check_files_for_merging(file_paths):
-	# TODO # 64 - Implement
-	"""Check whether the Nexus files can be merged without user permission
+        """Check whether the Nexus files can be merged without user permission
 
-	:return: str or None (None for good to merge)
-	"""
-	return 'Not Implemented Yet'
+        Parameters
+        ----------
+        file_paths
+
+        Returns
+        -------
+        str, None
+            reason for not merging, None for fine to merge
+
+        """
+        # TODO # 64 - Implement
+        return 'Not Implemented Yet'
 
     def load(self, update_parameters=True, progress=None):
         """
@@ -321,7 +346,7 @@ class NexusData(object):
         try:
             xs_list = self.configuration.instrument.load_data(self.file_path)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
-	    print('[DEBUG Back] Load {} to {}'.format(self.file_path, xs_list))
+            print('[DEBUG Back] Load {} to {}'.format(self.file_path, xs_list))
         except:
             logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
             return self.cross_sections
@@ -333,13 +358,13 @@ class NexusData(object):
         _max_xs = None
         for ws in xs_list:
             # Get the unique name for the cross-section, determined by the filtering
-	    print('[DEBUG Back SingleLoad] Process workspace {} from xs_list'.format(str(ws)))
+            print('[DEBUG Back SingleLoad] Process workspace {} from xs_list'.format(str(ws)))
             channel = ws.getRun().getProperty("cross_section_id").value
             if progress is not None:
                 progress_value += int(100.0/len(xs_list))
                 progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
 
-            # Get rid of emty workspaces
+            # Get rid of empty workspaces
             logging.info("Loading %s: %s events", str(channel), ws.getNumberEvents())
             if ws.getNumberEvents() < N_EVENTS_CUTOFF:
                 logging.warn("Too few events for %s: %s", channel, ws.getNumberEvents())
@@ -370,21 +395,31 @@ class NexusData(object):
 
         return self.cross_sections
 
-    def load_merge(self, file_paths, configuration, force, progress):
-        """Load and merge nexus runs
+    def load_merge(self, update_parameters=True, progress=None):
+        """
 
-	:return: dict
-	"""
-	# TODO #64 - Implement
-	# TODO FIXME #64 - Consider the possbility to combine load() and load_merge()
+        Parameters
+        ----------
+        update_parameters
+        progress
+
+        Returns
+        -------
+        dict
+            cross sectons
+
+        """
+        # TODO #64 - Implement
+        # TODO FIXME #64 - Consider the possbility to combine load() and load_merge()
+
         self.cross_sections = OrderedDict()
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)
 
         try:
-            xs_list = self.configuration.instrument.load_data(self.file_paths, merge=True)
+            xs_list = self.configuration.instrument.load_merge_data (self.file_path_list)
             logging.info("{} loaded: {} xs".format(self.file_paths, len(xs_list)))
-	    print('[DEBUG Back] Load {} to {}'.format(self.file_paths, xs_list))
+            print('[DEBUG Back] Load {} to {}'.format(self.file_paths, xs_list))
         except:
             logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
             return self.cross_sections

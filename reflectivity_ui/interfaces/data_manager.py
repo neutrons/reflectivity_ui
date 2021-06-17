@@ -12,8 +12,9 @@ import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from .data_handling import data_manipulation
 from .data_handling import quicknxs_io
-from .data_handling import off_specular
+# from .data_handling import off_specular
 from .data_handling import gisans
+
 
 class DataManager(object):
     MAX_CACHE = 50
@@ -289,8 +290,24 @@ class DataManager(object):
             progress(100)
         return is_from_cache
 
-    def load_merge(self, file_paths, configuration, force, progress):
-        # TODO #64 - Iplement by mimic method load()
+    def load_merge(self, file_paths, configuration, force=True, update_parameters=True, progress=None):
+        """Load and merge Nexus files
+
+        Parameters
+        ----------
+        file_paths
+        configuration
+        force
+        update_parameters
+        progress
+
+        Returns
+        -------
+        bool
+            True if the files have been loaded, processed and stored in cache
+
+        """
+        # TODO #64 - Implement by mimic method load()
         nexus_data = None
         is_from_cache = False
         reduction_list_id = None
@@ -299,11 +316,19 @@ class DataManager(object):
         # Check whether the file is in cache
         if progress is not None:
             progress(10, "Loading data and merge...")
+
+        # convert file path to a special key
+        file_paths_key = ''
+        for fp in file_paths_key:
+            file_paths_key += fp + "+"
+
         for i in range(len(self._cache)):
-            if self._cache[i].file_path == file_path:
+            if self._cache[i].file_path == file_paths_key:
+                # find a cached file path
                 if force:
                     # Check whether the data is in the reduction list before
                     # removing it.
+                    # force to re-reduce
                     reduction_list_id = self.find_data_in_reduction_list(self._cache[i])
                     direct_beam_list_id = self.find_data_in_direct_beam_list(self._cache[i])
                     self._cache.pop(i)
@@ -312,22 +337,28 @@ class DataManager(object):
                     is_from_cache = True
                 break
 
-        # If we don't have the data, load it
+        # If we don't have the data, load them and reduce
         if nexus_data is None:
             configuration.normalization = None
-            nexus_data = NexusData(file_path, configuration)
+            # Nexus data will handle a list of files to merge
+            nexus_data = NexusData(file_paths, configuration)
             sub_task = progress.create_sub_task(max_value=70) if progress else None
-            nexus_data.load(progress=sub_task, update_parameters=update_parameters)
+            nexus_data.load_merge(progress=sub_task, update_parameters=update_parameters)
 
         if progress is not None:
             progress(80, "Calculating...")
 
+        if nexus_data is None:
+            # TODO #64 It is not likely to happen!
+            raise RuntimeError('It is not like to have nexus_data as None here')
+
         if nexus_data is not None:
             self._nexus_data = nexus_data
-            directory, file_name = os.path.split(file_path)
+            # use the first Nexus file as current directory and file name
+            directory, file_name = os.path.split(file_paths[0])
             self.current_directory = directory
             self.current_file_name = file_name
-            self.set_channel(0)
+            self.set_channel(0)  # FIXME #64 What is channel?
 
             print('[DEBUG Back] Process {}'.format(file_name))
 
@@ -350,7 +381,7 @@ class DataManager(object):
                 except:
                     logging.error("Reflectivity calculation failed for %s", file_name)
 
-                while len(self._cache)>=self.MAX_CACHE:
+                while len(self._cache) >= self.MAX_CACHE:
                     self._cache.pop(0)
                 self._cache.append(nexus_data)
 

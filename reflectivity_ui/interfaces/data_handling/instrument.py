@@ -143,13 +143,21 @@ class Instrument(object):
         return xs_list
 
     def load_merge_data(self, file_paths):
-        """
-            Load a data set according to the needs ot the instrument.
-            Returns a WorkspaceGroup with any number of cross-sections.
+        """Load a data set according to the needs ot the instrument.
+        Returns a WorkspaceGroup with any number of cross-sections.
 
-            :param str file_path: path to the data file
+        Parameters
+        ----------
+        file_paths: ~list
+            list of file path
+
+        Returns
+        -------
+        WorkspaceGroup
+            with any number of cross-secitons
+
         """
-	# TODO #64 - Implement
+        # TODO #64 - Implement
         # Be careful with legacy data
         is_legacy = file_path.endswith(".nxs")
         if is_legacy or not USE_SLOW_FLIPPER_LOG:
