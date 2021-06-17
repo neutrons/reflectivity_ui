@@ -16,7 +16,6 @@ if application_conf.mantid_path is not None:
     sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 import mantid
-
 from .instrument import Instrument
 from .data_set import NexusMetaData
 
