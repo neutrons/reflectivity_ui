@@ -392,6 +392,10 @@ class DataManager(object):
         return is_from_cache
 
     def check_files_for_merging(self, file_paths):
+        """Check files whether they can be merged or not
+
+        :return: bool
+        """
         # TODO #64 - Implement
         return NexusData.check_files_for_merging(file_paths)
 
