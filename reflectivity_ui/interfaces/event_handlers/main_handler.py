@@ -97,7 +97,19 @@ class MainHandler(object):
         logging.info("DONE: %s sec", time.time()-t_0)
 
     def load_merge_files(self, file_paths, force=False, silent=False):
+	# TODO 63: TASK 1: clean, document and set fake
+	# document: trace of calling
+
+        """Trace
+          File "/SNS/users/wzz/Projects/Reflectometry/reflectivity_ui/reflectivity_ui/interfaces/main_window.py", line 136, in files_open_dialog
+              self.file_handler.files_open_dialog()
+                File "/SNS/users/wzz/Projects/Reflectometry/reflectivity_ui/reflectivity_ui/interfaces/event_handlers/main_handler.py", line 515, in files_open_dialog
+        	    self.load_merge_files(file_paths)
+        	      File "/SNS/users/wzz/Projects/Reflectometry/reflectivity_ui/reflectivity_ui/interfaces/event_handlers/main_handler.py", line 100, in load_merge_files
+        
+        """
         # TODO #63 - Implement refernce to method 'open_file)
+	# Example input [u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5', u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
 
         # Verify that all files selected shall exist
 	for file_path in file_paths:
@@ -113,14 +125,17 @@ class MainHandler(object):
             self.report_message("Loading files {}".format(file_paths))
             prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
             configuration = self.get_configuration()
+	    # FIXME  63 (clean and doc) data manage of of type <class 'reflectivity_ui.interfaces.data_manager.DataManager'>
             self._data_manager.load_merge(file_paths, configuration, force=force, progress=prog)
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
         except Exception as e:
+	    # TODO 63 More precise exception:
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
             print(e)
             raise e
             # TODO #64 The error mssage shall be silenced with specific error type
+	raise RuntimeError('#63 ASAP files: {}'.format(file_paths))
        
         print('[DEBUG] silent = {}'.format(silent))
         if not silent:
@@ -133,6 +148,7 @@ class MainHandler(object):
         """
             Update UI after a file is loaded
         """
+	# TODO 66 How to make it work with merged data???
         self.main_window.auto_change_active = True
         current_channel = 0
 	# TODO FIXME Is 12 a magic number?
