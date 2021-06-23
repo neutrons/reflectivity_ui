@@ -158,6 +158,8 @@ class MainHandler(object):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
         self.main_window.auto_change_active = False
 
+        # TODO #64
+        #    --->  reflectivity_ui/interfaces/event_handlers/main_handler.py:: update_info(self):
         self.main_window.file_loaded_signal.emit()
         self.main_window.initiate_reflectivity_plot.emit(False)
         self.main_window.initiate_projection_plot.emit(False)
@@ -223,6 +225,12 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         d = self._data_manager.active_channel
+
+        if d is None:
+            raise RuntimeError('active channel d is None')
+        else:
+            print('active channel d is of type {}'.format(type(d)))
+
         self.populate_from_configuration(d.configuration)
         self.main_window.initiate_projection_plot.emit(False)
         QtWidgets.QApplication.instance().processEvents()
