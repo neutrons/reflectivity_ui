@@ -307,6 +307,8 @@ class DataManager(object):
             True if the files have been loaded, processed and stored in cache
 
         """
+        # TODO 64 -
+        raise RuntimeError('#64 Most important part!  Need to make it work with #63.')
         # TODO #64 - Implement by mimic method load()
         nexus_data = None
         is_from_cache = False
