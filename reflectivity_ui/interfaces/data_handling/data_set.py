@@ -281,6 +281,7 @@ class NexusData(object):
                 return False
         return True
 
+    # TODO 67 Find out whether it can work with merged data
     def calculate_offspec(self, direct_beam=None):
         """
             Loop through the cross-section data sets and update
@@ -330,7 +331,7 @@ class NexusData(object):
             reason for not merging, None for fine to merge
 
         """
-        # TODO # 64 - Implement
+        # TODO 64 - Implement
         return 'Not Implemented Yet'
 
     def load(self, update_parameters=True, progress=None):
@@ -395,7 +396,7 @@ class NexusData(object):
 
         return self.cross_sections
 
-    def load_merge(self, update_parameters=True, progress=None):
+    def load_merge(self, update_parameters=True, progress=None, fake_for_ui=True):
         """
 
         Parameters
@@ -406,11 +407,20 @@ class NexusData(object):
         Returns
         -------
         dict
-            cross sectons
+            cross sections
 
         """
-        # TODO #64 - Implement
-        # TODO FIXME #64 - Consider the possbility to combine load() and load_merge()
+        # TODO 64 - Implement
+        # TODO FIXME 64 - Consider the possbility to combine load() and load_merge()
+        # TODO FIXME 64 Remove fake_for_ui after development
+        if fake_for_ui:
+            print('[FIXME 64] self.file_path = {}'.format(self.file_path))
+            cache = self.file_path
+            self.file_path = self.file_path_list[0]
+            r = self.load(update_parameters=True, progress=None)
+            self.file_path = cache
+            return r
+        # END-OF-FAKE
 
         self.cross_sections = OrderedDict()
         if progress is not None:

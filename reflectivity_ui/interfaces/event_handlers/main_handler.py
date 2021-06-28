@@ -71,7 +71,7 @@ class MainHandler(object):
             :param bool force: if true, the file will be reloaded
             :param bool silent: if true, the UI will not be updated
         """
-	print('[DEBUG] open_file is called for {}'.format(file_path))
+        print('[DEBUG] open_file is called for {}'.format(file_path))
         if not os.path.isfile(file_path):
             self.report_message("File does not exist",
                                 detailed_message="The following file does not exist:\n  %s" % file_path,
@@ -85,78 +85,105 @@ class MainHandler(object):
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force, progress=prog)
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
-        except:
-            self.report_message("Error loading file %s" % self._data_manager.current_file_name,
+        except RuntimeError as run_err:
+            # FIXME - need to find out what kind of error it could have
+            self.report_message("Error loading file {} due to {}".format(self._data_manager.current_file_name, run_err),
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+        except Exception as e:
+            print('Unhandled general exception {}'.format(e))
+            raise e
        
-        print('[DEBUG] silent = {}'.format(silent))
         if not silent:
             self.file_loaded()
-        print('[DEBUG] pass flag1')
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
 
     def load_merge_files(self, file_paths, force=False, silent=False):
-	# TODO 63: TASK 1: clean, document and set fake
-	# document: trace of calling
+        """Load and merge multiple Nexus file
 
-        """Trace
-          File "/SNS/users/wzz/Projects/Reflectometry/reflectivity_ui/reflectivity_ui/interfaces/main_window.py", line 136, in files_open_dialog
-              self.file_handler.files_open_dialog()
-                File "/SNS/users/wzz/Projects/Reflectometry/reflectivity_ui/reflectivity_ui/interfaces/event_handlers/main_handler.py", line 515, in files_open_dialog
-        	    self.load_merge_files(file_paths)
-        	      File "/SNS/users/wzz/Projects/Reflectometry/reflectivity_ui/reflectivity_ui/interfaces/event_handlers/main_handler.py", line 100, in load_merge_files
-        
+        Event handling workflow
+        - reflectivity_ui/interfaces/main_window.py", line 136, in files_open_dialog
+          self.file_handler.files_open_dialog()
+        - reflectivity_ui/interfaces/event_handlers/main_handler.py", line 515, in files_open_dialog
+          self.load_merge_files(file_paths)
+
+        Examples:
+        - file_path: [u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5',
+                      u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
+        -
+
+        Parameters
+        ----------
+        file_paths: ~list
+            list of Nexus file path with full path
+        force: bool
+            flag to force
+        silent: bool
+            flag to be silent.  If not explicitly call method file_loaded()
+
+        Returns
+        -------
+        None
+
         """
-        # TODO #63 - Implement refernce to method 'open_file)
-	# Example input [u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5', u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
-
+        # TODO 63: TASK 1 (in progress): clean, document and set fake
         # Verify that all files selected shall exist
-	for file_path in file_paths:
+        for file_path in file_paths:
             if not os.path.isfile(file_path):
                 self.report_message("File does not exist",
                                     detailed_message="The following file does not exist:\n  %s" % file_path,
-                                pop_up=True, is_error=True)
+                                    pop_up=True, is_error=True)
                 return
 
+        # Start timing
         t_0 = time.time()
         self.main_window.auto_change_active = True
         try:
             self.report_message("Loading files {}".format(file_paths))
             prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
             configuration = self.get_configuration()
-	    # FIXME  63 (clean and doc) data manage of of type <class 'reflectivity_ui.interfaces.data_manager.DataManager'>
+            # FIXME 63 (clean and doc) data manage of of type
+            #  <class 'reflectivity_ui.interfaces.data_manager.DataManager'>
             self._data_manager.load_merge(file_paths, configuration, force=force, progress=prog)
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
-        except Exception as e:
-	    # TODO 63 More precise exception:
+        except RuntimeError as e:
+            # Loading error: report and return
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
-            print(e)
+            return
+        except Exception as e:
+            print('General exception {} is not handled well'.format(e))
             raise e
-            # TODO #64 The error mssage shall be silenced with specific error type
-	raise RuntimeError('#63 ASAP files: {}'.format(file_paths))
-       
-        print('[DEBUG] silent = {}'.format(silent))
+
+        # TODO 66: Task 66/67 takes over from here --------------------------
+        # response for file loaded
         if not silent:
-            self.file_loaded()
-        print('[DEBUG] pass flag1')
+            self.merged_files_loaded()
+
+        # set flag
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
 
-    def file_loaded(self):
+    def merged_files_loaded(self):
         """
             Update UI after a file is loaded
+
+            communication is via self._data_manager
         """
-	# TODO 66 How to make it work with merged data???
+        # TODO 66 - Implement ASAP by referring to method 'file_loaded()'
+        #  66 How to make it work with merged data???
         self.main_window.auto_change_active = True
         current_channel = 0
-	# TODO FIXME Is 12 a magic number?
-        for i in range(12):
-            if getattr(self.ui, 'selectedChannel%i'%i).isChecked():
-                current_channel = i
-		print('[DEBUG] select channle {}'.format(i))
 
+        # TODO FIXME Is 12 a magic number?
+        # Get selected channel from UI
+        # FIXME - observe the UI!
+        for i in range(12):
+            if getattr(self.ui, 'selectedChannel%i' % i).isChecked():
+                current_channel = i
+        print('[DEBUG 66] select channel {}'.format(current_channel))
+
+        # Set channel to data manager
         success = self._data_manager.set_channel(current_channel)
         if not success:
             self.ui.selectedChannel0.setChecked(True)
@@ -174,7 +201,7 @@ class MainHandler(object):
             getattr(self.ui, 'selectedChannel%i'%i).hide()
         self.main_window.auto_change_active = False
 
-        # TODO #64
+        # TODO #66
         #    --->  reflectivity_ui/interfaces/event_handlers/main_handler.py:: update_info(self):
         self.main_window.file_loaded_signal.emit()
         self.main_window.initiate_reflectivity_plot.emit(False)
@@ -182,8 +209,50 @@ class MainHandler(object):
 
         self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
 
+    def file_loaded(self):
+        """
+            Update UI after a file is loaded
+        """
+        self.main_window.auto_change_active = True
+        current_channel = 0
+        for i in range(12):
+            if getattr(self.ui, 'selectedChannel%i'%i).isChecked():
+                current_channel = i
+
+        success = self._data_manager.set_channel(current_channel)
+        if not success:
+            self.ui.selectedChannel0.setChecked(True)
+
+        channels = self._data_manager.data_sets.keys()
+        for i, channel in enumerate(channels):
+            getattr(self.ui, 'selectedChannel%i'%i).show()
+            good_label = channel.replace('_', '-')
+            if not good_label == self._data_manager.data_sets[channel].cross_section_label:
+                good_label = "%s: %s" % (good_label, self._data_manager.data_sets[channel].cross_section_label)
+            getattr(self.ui, 'selectedChannel%i'%i).setText(good_label)
+        for i in range(len(channels), 12):
+            getattr(self.ui, 'selectedChannel%i'%i).hide()
+        self.main_window.auto_change_active = False
+
+        self.main_window.file_loaded_signal.emit()
+        self.main_window.initiate_reflectivity_plot.emit(False)
+        self.main_window.initiate_projection_plot.emit(False)
+
+        self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
+
     def check_files_to_merge(self, file_paths):
-        """check wehther these files can be merged
+        """Check whether these files can be merged
+
+        Parameters
+        ----------
+        file_paths: ~list
+            List of Nexus files (full path)
+
+        Returns
+        -------
+        str, None
+           Error message
+
         """
         message = self._data_manager.check_files_for_merging(file_paths)
 
@@ -275,8 +344,8 @@ class MainHandler(object):
         self.ui.datasetDangle0.setText(dangle0)
         self.ui.datasetSangle.setText(u"%.3f°"%d.sangle)
         self.ui.datasetDirectPixel.setText(dpix)
-        self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: <b>%s</b>'%(d.number, d.experiment,
-                                                                                                                             d.measurement_type, d.name))
+        self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: '
+                                       '<b>%s</b>'%(d.number, d.experiment, d.measurement_type, d.name))
 
         # Update direct beam indicator
         if d.is_direct_beam:
@@ -299,18 +368,38 @@ class MainHandler(object):
         self.main_window.auto_change_active = False
 
     def update_file_list(self, file_path=None, merge_mode=False):
+        """Update the list of data files
+
+        Parameters
+        ----------
+        file_path: str, ~list
+            Full nexus file path or a list of nexut file path
+        merge_mode: bool
+            Flag if it is in merge mode
+
+        Returns
+        -------
+        None
+
         """
-            Update the list of data files
-        """
-	# TODO #63 - Implement if merge_mode is True
+        # TODO 63 [in progress] #63 - Implement if merge_mode is True
+
+        # set the UI mode
         self.main_window.auto_change_active = True
 
-        # FIXME this is a temp solution but need to properly handled in #63
-	if merge_mode and isinstance(file_path, list):
-            file_paths = file_path
-            file_path = file_path[0]
+        # TODO 63 (new): merge mode
+        if merge_mode:
+            # check file
+            if isinstance(file_path, list) is False:
+                raise RuntimeError('Must be list')
 
-        if file_path is not None and not file_path==self._data_manager.current_directory:
+            # set path
+            file_paths = file_path
+            file_path = file_paths[0]
+        else:
+            file_paths = None
+
+        if file_path is not None and not file_path == self._data_manager.current_directory:
             print('[DEBUG] File path is not None and data manager current directory = {}'.format(file_path))
             if os.path.isdir(file_path):
                 file_dir = file_path
@@ -323,7 +412,8 @@ class MainHandler(object):
             self._path_watcher.addPath(self._data_manager.current_directory)
         else:
             # do nothing
-            print('[DEBUG] {} is either None or not equal to data manager current directory "{}"'.format(self._data_manager.current_directory))
+            print('[DEBUG] {} is either None or not equal to data manager current directory "{}"'
+                  ''.format(file_path, self._data_manager.current_directory))
 
         # Update the list of files
         event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*event.nxs'))
@@ -331,7 +421,6 @@ class MainHandler(object):
         event_file_list.extend(h5_file_list)
         event_file_list.sort()
         event_file_list = [os.path.basename(name) for name in event_file_list]
-        print('[DEBUG UI] Event files list : {}'.format(event_file_list))
 
         current_list = [self.ui.file_list.item(i).text() for i in range(self.ui.file_list.count())]
         if event_file_list != current_list:
@@ -339,17 +428,25 @@ class MainHandler(object):
             print('[DEBUG UI] current list = {} Not equal to event lsit'.format(current_list))
             self.ui.file_list.clear()
 
-            # 63: combined item
-	    if merge_mode:
-   	        merged_item = ''
-	        for fi, item in enumerate(file_paths):
-		    if fi > 0:
+            # TODO 63: combined item (in progress)
+            if merge_mode:
+                # combine file names for a new entry: as f1+f2+
+                merged_item = ''
+                for fi, item in enumerate(file_paths):
+                    if fi > 0:
                         merged_item += '+'
-		    merged_item += item
+                    merged_item += item.split('.')[0]
+                # add to UI file list
                 QtWidgets.QListWidgetItem(merged_item, self.ui.file_list)
+                # FIXME 63: does this work?
+                self.ui.file_list.setCurrentItem(merged_item)
 
+            # add rest of the files
+            print('[DEBUG 63-64] data manager current file name: {}'.format(self._data_manager.current_file_name))
             for item in event_file_list:
+                # create and add QListWidgetItem from self.ui.file_list by 
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
+                # current_file_name: focus the file list table
                 if item == self._data_manager.current_file_name:
                     self.ui.file_list.setCurrentItem(listitem)
         else:
@@ -359,6 +456,8 @@ class MainHandler(object):
             except ValueError:
                 self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
                                     detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+
+        # reset the flag
         self.main_window.auto_change_active = False
 
     def automated_file_selection(self):
@@ -491,36 +590,44 @@ class MainHandler(object):
             Show a dialog to open a new file.
             TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
-        # TODO #63 - Implement ...
         def select_files():
-            # TODO #63 - Implement
+            """launch a dialog to select multiple files
+
+            Returns
+            -------
+            ~list
+                list of full path to Nexus files selected
+
+            """
+            # TODO 63 - Implement the dialog to select multiple files
             # file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
             #                                                      directory=self._data_manager.current_directory,
             #                                                      filter=filter_)
-	    # FIXME - this is fake!
-	    file_paths = ['/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5',
-			  '/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
-            return file_paths
+
+            # FIXME 63 - using fake data now
+            selected_file_paths = ['/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5',
+                                   '/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
+            return selected_file_paths
 
 
-	# Set file filters
+        # Set file filters
         if self.ui.histogramActive.isChecked():
             filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
         else:
             filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
         # FIXME TODO - Replace by multiple files selector
-	file_paths = select_files()
+        file_paths = select_files()
 
         # user cancel operation
         if len(file_paths) == 0:
-	    return
+            return
 
         # Process files that are selected
         # check whether files can be merged without further notice
         message = self.check_files_to_merge(file_paths)
         # need user's permission
         if message or len(message) > 0:
-            # TODO # 65 - Implement
+            # TODO # 65 - Implement method 'ask_user_permission'
             user_say_go = self.ask_user_permission(message)
             if not user_say_go:
                 return
@@ -531,11 +638,11 @@ class MainHandler(object):
 
     def ask_user_permission(self, message):
         """Ask user's permission to proceed or return
-	"""
-	# TODO #65 - Implement
-	print('[DEBUG] Show message: "{}" and ask user to proceed or not.'.format(message))
+        """
+        # TODO 65 - Implement
+        print('[DEBUG] Show message: "{}" and ask user to proceed or not.'.format(message))
 
-	return True
+        return True
 
     def open_run_number(self, number=None):
         """

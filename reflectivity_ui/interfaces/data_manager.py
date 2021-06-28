@@ -21,6 +21,7 @@ class DataManager(object):
 
     def __init__(self, current_directory):
         self.current_directory = current_directory
+        # current file name is used for file list table to set the current item
         self.current_file_name = None
         # Current data set
         self._nexus_data = None
@@ -42,6 +43,13 @@ class DataManager(object):
 
     @property
     def data_sets(self):
+        """Reduced cross sections
+
+        Returns
+        -------
+        dict
+            dictionary of cross sections
+        """
         if self._nexus_data is None:
             return None
         return self._nexus_data.cross_sections
@@ -79,19 +87,31 @@ class DataManager(object):
             self.set_channel(0)
 
     def set_channel(self, index):
-        """
-            Set the current channel to the specified index, or zero
-            if it doesn't exist.
+        """Set the current channel to the specified index, or zero
+        if it doesn't exist.
+
+        Parameters
+        ----------
+        index: int
+            channel index
+
+        Returns
+        -------
+        bool
+
         """
         if self.data_sets is None:
             return False
         channels = self.data_sets.keys()
         if index < len(channels):
+            # channel index is allowed
             self.active_channel = self.data_sets[channels[index]]
             return True
         elif len(channels) == 0:
+            # no channel
             logging.error("Could not set active channel: no data available")
         else:
+            # default
             self.active_channel = self.data_sets[channels[0]]
         return False
 
@@ -295,11 +315,15 @@ class DataManager(object):
 
         Parameters
         ----------
-        file_paths
-        configuration
-        force
-        update_parameters
-        progress
+        file_paths: ~list
+            list of Nexus file paths
+        configuration:
+        force: bool
+            Force to re-reduce even if it is reduced
+        update_parameters: bool
+
+        progress: ~ProgressReporter, None
+            progress reporter
 
         Returns
         -------
@@ -307,9 +331,8 @@ class DataManager(object):
             True if the files have been loaded, processed and stored in cache
 
         """
-        # TODO 64 -
-        raise RuntimeError('#64 Most important part!  Need to make it work with #63.')
-        # TODO #64 - Implement by mimic method load()
+        # TODO 64 - Implement by mimic method load()
+        # TODO 63.5 - This is a method as a bridge between Task 63 and Task 64
         nexus_data = None
         is_from_cache = False
         reduction_list_id = None
@@ -324,6 +347,7 @@ class DataManager(object):
         for fp in file_paths_key:
             file_paths_key += fp + "+"
 
+        # check reduction cache for previous reduced result
         for i in range(len(self._cache)):
             if self._cache[i].file_path == file_paths_key:
                 # find a cached file path
@@ -350,53 +374,56 @@ class DataManager(object):
         if progress is not None:
             progress(80, "Calculating...")
 
+        # Sanity check
         if nexus_data is None:
-            # TODO #64 It is not likely to happen!
             raise RuntimeError('It is not like to have nexus_data as None here')
 
-        if nexus_data is not None:
-            self._nexus_data = nexus_data
-            # use the first Nexus file as current directory and file name
-            directory, file_name = os.path.split(file_paths[0])
-            self.current_directory = directory
-            self.current_file_name = file_name
-            self.set_channel(0)  # FIXME #64 What is channel?
+        # Set the reduced data to DataManager instance
+        self._nexus_data = nexus_data
+        # use the first Nexus file as current directory and file name
+        # TODO 63 - Implement a new method to convert a list of Nexus file to a specific 'file name' for table
+        directory, file_name = os.path.split(file_paths[0])
+        self.current_directory = directory
+        self.current_file_name = file_name
+        self.set_channel(0)
 
-            print('[DEBUG Back] Process {}'.format(file_name))
+        print('[DEBUG Back] Process {}'.format(file_name))
 
-            # If we didn't get this data set from our cache,
-            # then add it and compute its reflectivity.
-            if not is_from_cache:
-                # Find suitable direct beam
-                logging.info("Direct beam from loader: %s", configuration.normalization)
-                if configuration.normalization is None and configuration.match_direct_beam:
-                    self.find_best_direct_beam()
+        # If we didn't get this data set from our cache,
+        # then add it and compute its reflectivity.
+        if not is_from_cache:
+            # Find suitable direct beam
+            logging.info("Direct beam from loader: %s", configuration.normalization)
+            if configuration.normalization is None and configuration.match_direct_beam:
+                self.find_best_direct_beam()
 
-                # Replace reduction and normalization entries as needed
-                if reduction_list_id is not None:
-                    self.reduction_list[reduction_list_id] = nexus_data
-                if direct_beam_list_id is not None:
-                    self.direct_beam_list[direct_beam_list_id] = nexus_data
-                # Compute reflectivity
-                try:
-                    self.calculate_reflectivity()
-                except:
-                    logging.error("Reflectivity calculation failed for %s", file_name)
+            # Replace reduction and normalization entries as needed
+            if reduction_list_id is not None:
+                self.reduction_list[reduction_list_id] = nexus_data
+            if direct_beam_list_id is not None:
+                self.direct_beam_list[direct_beam_list_id] = nexus_data
+            # Compute reflectivity
+            try:
+                self.calculate_reflectivity()
+            except RuntimeError as run_err:
+                logging.error("Reflectivity calculation failed for {} due to {}".format(file_name, run_err))
 
-                while len(self._cache) >= self.MAX_CACHE:
-                    self._cache.pop(0)
-                self._cache.append(nexus_data)
+            while len(self._cache) >= self.MAX_CACHE:
+                self._cache.pop(0)
+            self._cache.append(nexus_data)
 
         if progress is not None:
             progress(100)
+
         return is_from_cache
 
-    def check_files_for_merging(self, file_paths):
+    @staticmethod
+    def check_files_for_merging(file_paths):
         """Check files whether they can be merged or not
 
         :return: bool
         """
-        # TODO #64 - Implement
+        # TODO 65 (new method and finished)
         return NexusData.check_files_for_merging(file_paths)
 
     def update_configuration(self, configuration, active_only=False, nexus_data=None):
@@ -537,9 +564,10 @@ class DataManager(object):
         return gisans.rebin_extract(self.reduction_list, pol_state=pol_state, wl_min=wl_min, wl_max=wl_max,
                                     qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf)
 
+    # TODO 67 FInd out whether it can work with merged data
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """
-            Calculater reflectivity using the current configuration
+            Calculate reflectivity using the current configuration
         """
         # Select the data to work on
         if nexus_data is None:
@@ -561,6 +589,7 @@ class DataManager(object):
             Returns a run number.
             Returns True if we have updated the data with a new normalization run.
         """
+        # TODO 65+ Can it work with merged data?
         closest = None
         for item in self.direct_beam_list:
             xs_keys = item.cross_sections.keys()
