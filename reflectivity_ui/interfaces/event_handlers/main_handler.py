@@ -89,9 +89,10 @@ class MainHandler(object):
             # FIXME - need to find out what kind of error it could have
             self.report_message("Error loading file {} due to {}".format(self._data_manager.current_file_name, run_err),
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
-        except Exception as e:
-            print('Unhandled general exception {}'.format(e))
-            raise e
+        # FIXME 63 - Disable general exception for future
+	# except Exception as e:
+        #     print('Unhandled general exception {}'.format(e))
+        #     raise e
        
         if not silent:
             self.file_loaded()
@@ -312,7 +313,9 @@ class MainHandler(object):
         d = self._data_manager.active_channel
 
         if d is None:
-            raise RuntimeError('active channel d is None')
+            # TODO 66 - find out what if d is None
+            return
+            # raise RuntimeError('active channel d is None')
         else:
             print('active channel d is of type {}'.format(type(d)))
 
