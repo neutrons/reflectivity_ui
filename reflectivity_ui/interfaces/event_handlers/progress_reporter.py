@@ -4,6 +4,7 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+
 class ProgressReporter(object):
     """
         Progress reporter class that allows for sub-tasks.
@@ -11,7 +12,16 @@ class ProgressReporter(object):
     def __init__(self, max_value=100, call_back=None,
                  status_bar=None, progress_bar=None):
         """
-            :param str message: message to be displayed
+
+        Parameters
+        ----------
+        max_value: int
+            max value
+        call_back:
+        status_bar:
+            status bar
+        progress_bar:
+            progress bar
         """
         self.max_value = max_value
         self.message = ''
@@ -22,9 +32,20 @@ class ProgressReporter(object):
         self.progress_bar = progress_bar
 
     def __call__(self, value, message='', out_of=None):
-        """
-            Shortcut to set_value() so that the object can be used
-            as a function to be compatible with QProgressDialog.setValue().
+        """ Shortcut to set_value() so that the object can be used
+        as a function to be compatible with QProgressDialog.setValue().
+
+        Parameters
+        ----------
+        value
+        message: str
+            message to be displayed
+        out_of
+
+        Returns
+        -------
+        None
+
         """
         return self.set_value(value, message, out_of)
 
