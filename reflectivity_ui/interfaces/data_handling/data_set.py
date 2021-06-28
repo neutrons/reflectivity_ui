@@ -19,7 +19,7 @@ if application_conf.mantid_path is not None:
     sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 # Set Mantid logging level to warnings
-# FIXME MR8 api.ConfigService.setLogLevel(3)
+api.ConfigService.setLogLevel(3)
 
 from .data_info import DataInfo
 from . import off_specular
@@ -65,14 +65,14 @@ class NexusData(object):
 
         Parameters
         ----------
-        file_path: str, list
+        file_path: str, unicode, list
             single file (path) or a list of file paths in merging mode
         configuration
         """
         self.file_path = None
         self.file_path_list = None
 
-        if isinstance(file_path, str):
+        if isinstance(file_path, str) or isinstance(file_path, unicode):
             self.file_path = file_path
         elif isinstance(file_path, list):
             self.file_path_list = file_path[:]
@@ -340,6 +340,10 @@ class NexusData(object):
             :param function progress: call-back function to track progress
             :param bool update_parameters: if True, we will find peak ranges
         """
+	# sanity check
+        if self.file_path is None:
+            raise RuntimeError('self.file_path is None')
+
         self.cross_sections = OrderedDict()
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)

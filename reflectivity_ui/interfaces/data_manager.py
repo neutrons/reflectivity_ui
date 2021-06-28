@@ -12,7 +12,7 @@ import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from .data_handling import data_manipulation
 from .data_handling import quicknxs_io
-# from .data_handling import off_specular
+from .data_handling import off_specular
 from .data_handling import gisans
 
 
@@ -265,6 +265,7 @@ class DataManager(object):
                 break
 
         # If we don't have the data, load it
+	print('[DEBUG Back] Nexus data is {}; file path = {}'.format(nexus_data, file_path))
         if nexus_data is None:
             configuration.normalization = None
             nexus_data = NexusData(file_path, configuration)
