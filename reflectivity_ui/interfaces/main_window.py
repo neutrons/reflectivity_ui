@@ -144,17 +144,25 @@ class MainWindow(QtWidgets.QMainWindow,
     def file_open_from_list(self):
         """
             Called when a new file is selected from the file list.
-	    This is an event call
+        This is an event call
         """
         if self.auto_change_active:
             return
         QtWidgets.QApplication.instance().processEvents()
-        item=self.ui.file_list.currentItem()
-        name=unicode(item.text())
+        item = self.ui.file_list.currentItem()
+        name = unicode(item.text())
         QtWidgets.QApplication.instance().processEvents()
-	# FIXME 63 - main_handler.open_file only work for SINGLE file but not a list of files
-	# TODO 63 - file_handler shall be able to tell the selected is a file or files
-        self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
+        # FIXME 63 - main_handler.open_file only work for SINGLE file but not a list of files
+        # TODO 63 - file_handler shall be able to tell the selected is a file or files
+        if str(name).count('+') == 0:
+            # regular single NeXus file (base) name
+            self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
+        else:
+            # a list of file as a+b+c
+            file_list = str(name).split('+')
+            print('[DEBUG 63] data manager dir = {}'.format(self.data_manager.current_directory))
+            file_list = [os.path.join(self.data_manager.current_directory, file_path) for file_path in file_list]
+            self.file_handler.open_files_merge(file_list)
 
     def reload_file(self):
         """

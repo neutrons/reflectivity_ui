@@ -98,8 +98,8 @@ class MainHandler(object):
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
 
-    # TODO 63 - rename the method to open_files_merge
-    def load_merge_files(self, file_paths, force=False, silent=False):
+    # TODO 63 - NEW method
+    def open_files_merge(self, file_paths, force=False, silent=False):
         """Load and merge multiple Nexus file
 
         Event handling workflow
@@ -268,6 +268,9 @@ class MainHandler(object):
         # Update the reduction table if this data set is in it
         idx = self._data_manager.find_active_data_id()
         if idx is not None:
+            print('[DEBUG 66] Update reduction table row {} with {}'.format(idx, self._data_manager.active_channel))
+            # Example: [DEBUG 66] Update reduction table row 0
+            #     with <reflectivity_ui.interfaces.data_handling.data_set.CrossSectionData object at 0x7f8df0385350>
             self.update_reduction_table(idx, self._data_manager.active_channel)
 
         # Update the direct beam table if this data set is in it
@@ -437,9 +440,10 @@ class MainHandler(object):
                 # combine file names for a new entry: as f1+f2+
                 merged_item = ''
                 for fi, item in enumerate(file_paths):
+                    item = os.path.basename(item)
                     if fi > 0:
                         merged_item += '+'
-                    merged_item += item.split('.')[0]
+                    merged_item += item
                 # add to UI file list
                 QtWidgets.QListWidgetItem(merged_item, self.ui.file_list)
                 # FIXME 63: this does not work: ui.file_list.setCurrentItem does not accept str or unicode
@@ -615,7 +619,6 @@ class MainHandler(object):
                                    '/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
             return selected_file_paths
 
-
         # Set file filters
         if self.ui.histogramActive.isChecked():
             filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
@@ -627,6 +630,9 @@ class MainHandler(object):
         # user cancel operation
         if len(file_paths) == 0:
             return
+        elif len(file_paths) == 1:
+            self.report_message('Merge mode must have more than 1 file selected')
+            return
 
         # Process files that are selected
         # check whether files can be merged without further notice
@@ -637,13 +643,14 @@ class MainHandler(object):
             user_say_go = self.ask_user_permission(message)
             if not user_say_go:
                 return
-        # udpate file list
+
+        # update file list
         self.update_file_list(file_paths, merge_mode=True)
         # merge and load file
-        self.load_merge_files(file_paths)
+        self.open_files_merge(file_paths)
 
     def ask_user_permission(self, message):
-        """Ask user's permission to proceed or return
+        """Ask user's permission to proceed or quit if the select runs do not have same sample logs
         """
         # TODO 65 - Implement
         print('[DEBUG] Show message: "{}" and ask user to proceed or not.'.format(message))
@@ -654,6 +661,8 @@ class MainHandler(object):
         """
             Open a data file by typing a run number
         """
+        # TODO 63 - if multiple runs are provided as 'a, b, c' or 'a, b:c' or 'a, b-c', then
+        #  the reduction shall be in the 'open sum' mode
         self.main_window.auto_change_active = True
         if number is None:
             number = self.ui.numberSearchEntry.text()
@@ -729,8 +738,15 @@ class MainHandler(object):
         self.main_window.auto_change_active = True
 
         # Update the reduction and direct beam tables
+        curr_nexus_data = self._data_manager._nexus_data
+        print('[DEBUG 66] Current NeXus data key = {}'.format(curr_nexus_data.file_path))
+
         idx = self._data_manager.find_data_in_reduction_list(self._data_manager._nexus_data)
+        if idx is None:
+            raise RuntimeError('It could be None but not likely')
+        print('[DEBUG 66] Insert row {}'.format(idx))
         self.ui.reductionTable.insertRow(idx)
+        # update table!
         self.update_tables()
 
         self.main_window.initiate_reflectivity_plot.emit(True)
@@ -743,6 +759,7 @@ class MainHandler(object):
             Update the reduction tale
         """
         self.main_window.auto_change_active = True
+        print('[DEBUG 67] CrossSectionData.number = {}'.format(d.number))
         item = QtWidgets.QTableWidgetItem(str(d.number))
         if d == self._data_manager.active_channel:
             item.setBackground(QtGui.QColor(246, 213, 16))

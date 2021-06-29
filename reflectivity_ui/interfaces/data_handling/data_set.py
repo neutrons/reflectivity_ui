@@ -11,6 +11,7 @@ import copy
 import math
 import time
 import numpy as np
+import os
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -26,10 +27,10 @@ from . import off_specular
 from . import gisans
 
 ### Parameters needed for some calculations.
-H_OVER_M_NEUTRON = 3.956034e-7 # h/m_n [m^2/s]
+H_OVER_M_NEUTRON = 3.956034e-7  # h/m_n [m^2/s]
 
 # Number of events under which we throw away a workspace
-#TODO: This should be a parameter
+# TODO: This should be a parameter
 N_EVENTS_CUTOFF = 100
 
 
@@ -76,6 +77,12 @@ class NexusData(object):
             self.file_path = file_path
         elif isinstance(file_path, list):
             self.file_path_list = file_path[:]
+            # construct a file_path same as in the file_list
+            # FIXME 66 TODO 66 - consider to use a single method to generate unique 'file_path' from list of runs
+            self.file_path = ''
+            for file_path in self.file_path_list:
+                self.file_path += os.path.basename(file_path) + '+'
+            self.file_path = self.file_path[:-1]
 
         self.number = 0
         self.configuration = configuration
@@ -340,7 +347,7 @@ class NexusData(object):
             :param function progress: call-back function to track progress
             :param bool update_parameters: if True, we will find peak ranges
         """
-	# sanity check
+        # sanity check
         if self.file_path is None:
             raise RuntimeError('self.file_path is None')
 
@@ -352,9 +359,12 @@ class NexusData(object):
             xs_list = self.configuration.instrument.load_data(self.file_path)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
             print('[DEBUG Back] Load {} to {}'.format(self.file_path, xs_list))
-        except:
-            logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
+        except RuntimeError as run_err:
+            logging.error("Could not load file {}\n   {}\n   {}".format(str(self.file_path), sys.exc_value, run_err))
             return self.cross_sections
+        # except Exception as ge:
+        #     # FIXME 63 FIXME 64 - do not cache exception blindly
+        #     raise ge
 
         progress_value = 0
         # Keep track of cross-section with max counts so we can use it to
@@ -400,7 +410,7 @@ class NexusData(object):
 
         return self.cross_sections
 
-    def load_merge(self, update_parameters=True, progress=None, fake_for_ui=True):
+    def load_merge(self, update_parameters=True, progress=None):
         """
 
         Parameters
@@ -415,7 +425,7 @@ class NexusData(object):
 
         """
         # TODO 64 - Implement
-        # TODO FIXME 64 - Consider the possbility to combine load() and load_merge()
+        # TODO FIXME 64 - Consider the possibility to combine load() and load_merge()
         self.cross_sections = OrderedDict()
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)
@@ -423,7 +433,12 @@ class NexusData(object):
         try:
             xs_list = self.configuration.instrument.load_merge_data(self.file_path_list)
             logging.info("{} loaded: {} xs".format(self.file_path_list, len(xs_list)))
-            print('[DEBUG Back] Load {} to {}'.format(self.file_path_list, xs_list))
+
+            # FIXME 66 - Remove after testing
+            ws_names = ''
+            for xs in xs_list:
+                ws_names += '{} (type: {}), '.format(str(xs), type(xs))
+            print('[DEBUG Back] Load {} to {}'.format(self.file_path_list, ws_names))
         except RuntimeError as run_err:
             logging.error("Could not load file {}\n  {}\nError: {}".format(self.file_path_list, sys.exc_value, run_err))
             return self.cross_sections
@@ -711,6 +726,7 @@ class CrossSectionData(object):
         self.total_time = data['duration'].value
 
         self.experiment = str(data['experiment_identifier'].value)
+        # TODO 67 FIXME 67 - this won't work for merged runs
         self.number = int(workspace.getRunNumber())
         self.merge_warnings = ''
 
