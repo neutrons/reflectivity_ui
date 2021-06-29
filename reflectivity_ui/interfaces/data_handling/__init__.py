@@ -12,4 +12,4 @@ class ApplicationConfiguration(object):
     ANA_VETO = "AnalyzerVeto"
 
     def __init__(self):
-        self.mantid_path = '/opt/mantid42'
+        self.mantid_path = '/opt/mantid40'

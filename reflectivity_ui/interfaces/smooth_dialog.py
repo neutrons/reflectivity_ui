@@ -1,3 +1,4 @@
+# coding: utf-8
 """
    Dialog to let the user select smoothing options
    This code was taken as-is from QuickNXS v1
