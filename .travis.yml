@@ -12,11 +12,9 @@ install:
   - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
   - export MAMBA_ROOT_PREFIX=$HOME/micromamba
   - eval "$(./bin/micromamba shell hook -s posix)"
-  - micromamba info
-  - micromamba config set always_yes yes
-  - micromamba create -n test-environment python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
+  - micromamba create -y -n test-environment python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
   - micromamba activate test-environment
-  - micromamba install pylint matplotlib numpy pyqt=5 mantid-framework=4.0
+  - micromamba install -y pylint matplotlib numpy pyqt=5 mantid-framework=4.0
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
