@@ -12,6 +12,7 @@ install:
   - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
   - export MAMBA_ROOT_PREFIX=$HOME/micromamba
   - eval "$(./bin/micromamba shell hook -s posix)"
+  - micromamba info
   - micromamba config set always_yes yes
   - micromamba create -n test-environment python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
   - micromamba activate test-environment
