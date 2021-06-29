@@ -14,6 +14,9 @@ install:
   - eval "$(./bin/micromamba shell hook -s posix)"
   - micromamba config set always_yes yes
   - micromamba create -n test-environment python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
+  - micromamba activate test-environment
+  - micromamba install pylint matplotlib numpy pyqt=5 mantid-framework=4.0
+  - pip install --upgrade codecov
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
