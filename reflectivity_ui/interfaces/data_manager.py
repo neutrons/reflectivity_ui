@@ -26,8 +26,8 @@ class DataManager(object):
         # Current data set
         self._nexus_data = None
         self.active_channel = None
-        # Cache of loaded data
-        self._cache = []
+	# Cache of loaded data: list of NexusData instances
+        self._cache = list()
 
         # The following is information about the data to be combined together
         # List of data sets
@@ -181,9 +181,9 @@ class DataManager(object):
         """
             Add active data set to reduction list
         """
-	# TODO 66 - Document how this mehod is called in the reduction workflow (UI)
-	# TODO 66 - This method does not work with merged data
-	print('[DEBUG 66] self._nexus_data: {}'.format(self._nexus_data))
+        # TODO 66 - Document how this mehod is called in the reduction workflow (UI)
+        # TODO 66 - This method does not work with merged data
+        print('[DEBUG 66] self._nexus_data: {}'.format(self._nexus_data))
         if not self._nexus_data in self.reduction_list:
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
@@ -268,7 +268,7 @@ class DataManager(object):
                 break
 
         # If we don't have the data, load it
-	print('[DEBUG Back] Nexus data is {}; file path = {}'.format(nexus_data, file_path))
+        print('[DEBUG Back] Nexus data is {}; file path = {}'.format(nexus_data, file_path))
         if nexus_data is None:
             configuration.normalization = None
             nexus_data = NexusData(file_path, configuration)
@@ -306,6 +306,7 @@ class DataManager(object):
                 except:
                     logging.error("Reflectivity calculation failed for %s", file_name)
 
+                # if cached reduced data exceeds maximum cache size, remove the oldest reduced data
                 while len(self._cache)>=self.MAX_CACHE:
                     self._cache.pop(0)
                 self._cache.append(nexus_data)
@@ -373,6 +374,7 @@ class DataManager(object):
             # Nexus data will handle a list of files to merge
             nexus_data = NexusData(file_paths, configuration)
             sub_task = progress.create_sub_task(max_value=70) if progress else None
+	    print('[DEBUG 63-64] load and merge with update parameters {}'.format(update_parameters))
             nexus_data.load_merge(progress=sub_task, update_parameters=update_parameters)
 
         if progress is not None:

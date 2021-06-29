@@ -75,7 +75,6 @@ class MainHandler(object):
             self.report_message("File does not exist",
                                 detailed_message="The following file does not exist:\n  %s" % file_path,
                                 pop_up=True, is_error=True)
-	    raise NotImplementedError('Trace...')
             return
         t_0 = time.time()
         self.main_window.auto_change_active = True
@@ -90,7 +89,7 @@ class MainHandler(object):
             self.report_message("Error loading file {} due to {}".format(self._data_manager.current_file_name, run_err),
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
         # FIXME 63 - Disable general exception for future
-	# except Exception as e:
+        # except Exception as e:
         #     print('Unhandled general exception {}'.format(e))
         #     raise e
        
@@ -153,9 +152,10 @@ class MainHandler(object):
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
             return
-        except Exception as e:
-            print('General exception {} is not handled well'.format(e))
-            raise e
+        # FIXME 63 Disable to catch general exception
+        # except Exception as e:
+        #         print('General exception {} is not handled well'.format(e))
+        #         raise e
 
         # TODO 66: Task 66/67 takes over from here --------------------------
         # response for file loaded
@@ -442,9 +442,9 @@ class MainHandler(object):
                     merged_item += item.split('.')[0]
                 # add to UI file list
                 QtWidgets.QListWidgetItem(merged_item, self.ui.file_list)
-		# FIXME 63: this does not work: ui.file_list.setCurrentItem does not accept str or unicode
-		# Example /SNS/REF_M/IPTS-25531/nexus/REF_M_38189+/SNS/REF_M/IPTS-25531/nexus/REF_M_38189 
-		# type <type 'unicode'>
+                # FIXME 63: this does not work: ui.file_list.setCurrentItem does not accept str or unicode
+                # Example /SNS/REF_M/IPTS-25531/nexus/REF_M_38189+/SNS/REF_M/IPTS-25531/nexus/REF_M_38189 
+                # type <type 'unicode'>
                 # self.ui.file_list.setCurrentItem(merged_item)
 
             # add rest of the files

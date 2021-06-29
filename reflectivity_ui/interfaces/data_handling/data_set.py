@@ -410,32 +410,22 @@ class NexusData(object):
 
         Returns
         -------
-        dict
+        ~dict
             cross sections
 
         """
         # TODO 64 - Implement
         # TODO FIXME 64 - Consider the possbility to combine load() and load_merge()
-        # TODO FIXME 64 Remove fake_for_ui after development
-        if fake_for_ui:
-            print('[FIXME 64] self.file_path = {}'.format(self.file_path))
-            cache = self.file_path
-            self.file_path = self.file_path_list[0]
-            r = self.load(update_parameters=True, progress=None)
-            self.file_path = cache
-            return r
-        # END-OF-FAKE
-
         self.cross_sections = OrderedDict()
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)
 
         try:
-            xs_list = self.configuration.instrument.load_merge_data (self.file_path_list)
-            logging.info("{} loaded: {} xs".format(self.file_paths, len(xs_list)))
-            print('[DEBUG Back] Load {} to {}'.format(self.file_paths, xs_list))
-        except:
-            logging.error("Could not load file %s\n  %s", str(self.file_path), sys.exc_value)
+            xs_list = self.configuration.instrument.load_merge_data(self.file_path_list)
+            logging.info("{} loaded: {} xs".format(self.file_path_list, len(xs_list)))
+            print('[DEBUG Back] Load {} to {}'.format(self.file_path_list, xs_list))
+        except RuntimeError as run_err:
+            logging.error("Could not load file {}\n  {}\nError: {}".format(self.file_path_list, sys.exc_value, run_err))
             return self.cross_sections
 
         progress_value = 0
