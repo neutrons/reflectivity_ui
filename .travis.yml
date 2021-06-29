@@ -9,7 +9,6 @@ before_install:
 
 install:
   #- sudo apt-get update
-
   # Download and set up micromamba
   - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
   - export MAMBA_ROOT_PREFIX=$HOME/micromamba
@@ -17,8 +16,6 @@ install:
   - hash -r
   - micromamba config set always_yes yes
   - micromamba create -n test python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
-  # Useful for debugging any issues with conda
-  - conda info -a
 
   # Create the testing environment
   - micromamba activate test-environment
