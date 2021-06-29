@@ -71,11 +71,11 @@ class MainHandler(object):
             :param bool force: if true, the file will be reloaded
             :param bool silent: if true, the UI will not be updated
         """
-        print('[DEBUG] open_file is called for {}'.format(file_path))
         if not os.path.isfile(file_path):
             self.report_message("File does not exist",
                                 detailed_message="The following file does not exist:\n  %s" % file_path,
                                 pop_up=True, is_error=True)
+	    raise NotImplementedError('Trace...')
             return
         t_0 = time.time()
         self.main_window.auto_change_active = True
@@ -99,6 +99,7 @@ class MainHandler(object):
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
 
+    # TODO 63 - rename the method to open_files_merge
     def load_merge_files(self, file_paths, force=False, silent=False):
         """Load and merge multiple Nexus file
 
@@ -131,7 +132,7 @@ class MainHandler(object):
         # Verify that all files selected shall exist
         for file_path in file_paths:
             if not os.path.isfile(file_path):
-                self.report_message("File does not exist",
+                self.report_message("File (to merge) does not exist",
                                     detailed_message="The following file does not exist:\n  %s" % file_path,
                                     pop_up=True, is_error=True)
                 return
@@ -441,8 +442,10 @@ class MainHandler(object):
                     merged_item += item.split('.')[0]
                 # add to UI file list
                 QtWidgets.QListWidgetItem(merged_item, self.ui.file_list)
-                # FIXME 63: does this work?
-                self.ui.file_list.setCurrentItem(merged_item)
+		# FIXME 63: this does not work: ui.file_list.setCurrentItem does not accept str or unicode
+		# Example /SNS/REF_M/IPTS-25531/nexus/REF_M_38189+/SNS/REF_M/IPTS-25531/nexus/REF_M_38189 
+		# type <type 'unicode'>
+                # self.ui.file_list.setCurrentItem(merged_item)
 
             # add rest of the files
             print('[DEBUG 63-64] data manager current file name: {}'.format(self._data_manager.current_file_name))
@@ -721,7 +724,7 @@ class MainHandler(object):
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
             if not silent:
-                self.report_message("Data incompatible or already in the list.", pop_up=True)
+                self.report_message("(Add reflectivity) Data incompatible or already in the list.", pop_up=True)
             return False
         self.main_window.auto_change_active = True
 
@@ -887,7 +890,7 @@ class MainHandler(object):
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_normalization():
             if not silent:
-                self.report_message("Data incompatible or already in the list.", pop_up=True)
+                self.report_message("(Add direct beam) Data incompatible or already in the list.", pop_up=True)
             return False
 
         self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))

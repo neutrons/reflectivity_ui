@@ -144,6 +144,7 @@ class MainWindow(QtWidgets.QMainWindow,
     def file_open_from_list(self):
         """
             Called when a new file is selected from the file list.
+	    This is an event call
         """
         if self.auto_change_active:
             return
@@ -151,6 +152,8 @@ class MainWindow(QtWidgets.QMainWindow,
         item=self.ui.file_list.currentItem()
         name=unicode(item.text())
         QtWidgets.QApplication.instance().processEvents()
+	# FIXME 63 - main_handler.open_file only work for SINGLE file but not a list of files
+	# TODO 63 - file_handler shall be able to tell the selected is a file or files
         self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
 
     def reload_file(self):
@@ -368,6 +371,7 @@ class MainWindow(QtWidgets.QMainWindow,
     def autoRef(self):
         self.file_handler.automated_file_selection()
 
+    # TODO 66 - Test merged data will work
     def reduceDatasets(self):
         '''
         Open a dialog to select reduction options for the current list of
@@ -377,10 +381,12 @@ class MainWindow(QtWidgets.QMainWindow,
             self.file_handler.report_message("The data to be reduced must be added to the reduction table",
                                              pop_up=True)
             return
-        dialog=ReductionDialog(self)
+        dialog = ReductionDialog(self)
         dialog.exec_()
+	# get options as a dictionary
         output_options = dialog.get_options()
         dialog.destroy()
+	print('[DEBUG 66] Output options: {}'.format(output_options))
 
         if output_options is not None:
             self.file_handler.get_configuration()
@@ -409,6 +415,8 @@ class MainWindow(QtWidgets.QMainWindow,
                 self.update_off_specular_viewer.emit()
             if output_options['export_gisans']:
                 self.update_gisans_viewer.emit()
+	else:
+	    print('[DEBUG 66] output_options is None.  No reduction is executed')
 
     def toggle_smoothing(self):
         if self.ui.offspec_smooth_checkbox.isChecked():

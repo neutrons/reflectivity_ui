@@ -181,6 +181,9 @@ class DataManager(object):
         """
             Add active data set to reduction list
         """
+	# TODO 66 - Document how this mehod is called in the reduction workflow (UI)
+	# TODO 66 - This method does not work with merged data
+	print('[DEBUG 66] self._nexus_data: {}'.format(self._nexus_data))
         if not self._nexus_data in self.reduction_list:
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
@@ -515,6 +518,7 @@ class DataManager(object):
         # We must have a direct beam data set to normalize with
         direct_beam = self._find_direct_beam(nexus_data)
         if direct_beam is None:
+	    # TODO 67 Handle this error with GUI prompt GUI
             raise RuntimeError("Please select a direct beam data set for your data.")
 
         nexus_data.calculate_gisans(direct_beam=direct_beam, progress=progress)
