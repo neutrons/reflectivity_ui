@@ -12,7 +12,7 @@ install:
   - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
   - hash -r
   - eval "$(./bin/micromamba shell hook -s posix)"
-  - micromamba create -y -n testenv python=$TRAVIS_PYTHON_VERSION
+  - micromamba create -y -n testenv python=$TRAVIS_PYTHON_VERSION -c conda-forge
   - micromamba activate testenv
   - micromamba install -y pylint matplotlib numpy pyqt=5 -c conda-forge
   - micromamba install -y mantid-framework=4.0 -c mantid/label/main
