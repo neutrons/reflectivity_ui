@@ -245,7 +245,7 @@ class DataManager(object):
             :param bool force: it True, existing data will be replaced if it exists.
             :param bool update_parameters: if True, we will find peak ranges
         """
-        print('[DEBUG Back] File path: {}, configuration: {}'.format(file_path, configuration))
+        print('[DEBUG Back 63] File path: {}, configuration: {}'.format(file_path, configuration))
         nexus_data = None
         is_from_cache = False
         reduction_list_id = None

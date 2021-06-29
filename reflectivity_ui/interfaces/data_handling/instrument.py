@@ -108,12 +108,16 @@ class Instrument(object):
             try:
                 _ws = api.FilterByLogValue(InputWorkspace=ws, LogName=state_log, TimeTolerance=0.1,
                                            MinimumValue=states[pol_state],
-                                           MaximumValue=states[pol_state], LogBoundary='Left',
+                                           MaximumValue=states[pol_state],
+                                           LogBoundary='Left',
+                                           # FIXME 64 - the merged workspace only shows the first run's number
+                                           #  Thus this method won't give a merged workspace a unique name
+                                           #  And potentially it could confuse the program with single-run workspace
                                            OutputWorkspace='%s_entry-%s' % (ws.getRunNumber(), pol_state))
                 _ws.getRun()['cross_section_id'] = pol_state
                 cross_sections.append(_ws)
-            except:
-                logging.error("Could not filter %s: %s", pol_state, sys.exc_info()[1])
+            except RuntimeError as run_err:
+                logging.error("Could not filter {}: {}\nError: {}".format(pol_state, sys.exc_info()[1], run_err))
 
         return cross_sections
 
