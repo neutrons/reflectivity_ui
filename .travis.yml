@@ -15,7 +15,7 @@ install:
   - micromamba create -y -n testenv python=$TRAVIS_PYTHON_VERSION -c conda-forge
   - micromamba activate testenv
   - micromamba install -y pylint matplotlib numpy pyqt=5 -c conda-forge
-  - micromamba install -y mantid-framework=4.0 -c mantid/label/main
+  - micromamba install -y mantid-framework=4.0 -c conda-forge -c mantid -c mantid/label/nightly
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
