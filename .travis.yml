@@ -9,25 +9,33 @@ before_install:
 
 install:
   #- sudo apt-get update
-  # Download and set up micromamba
-  - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-  - export MAMBA_ROOT_PREFIX=$HOME/micromamba
-  - eval "$(./bin/micromamba shell hook -s posix)"
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
-  - micromamba config set always_yes yes
-  - micromamba create -n test python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
+  - conda config --set always_yes yes --set changeps1 no
+  - conda config --add channels conda-forge
+  - conda config --add channels mantid
+  - conda config --add channels mantid/label/nightly
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
 
-  # Create the testing environment
-  - micromamba activate test-environment
-  - micromamba install pylint matplotlib numpy pyqt=5 mantid-framework=4.0
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5 mantid-framework=4.2
+  - source activate test-environment
   - pip install --upgrade codecov
-
-  # Fetch test data
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
   - wget http://198.74.56.37/ftp/external-data/MD5/58d6698e1d6bf98e0315687cb980d333 -O REF_M_29160
 
- script:
+script:
   #- python setup.py install
   - cd test; coverage run data_handling_test.py
 
