@@ -10,10 +10,12 @@ before_install:
 install:
   #- sudo apt-get update
   - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-  - ./bin/micromamba shell init -s bash -p $HOME/micromamba
-  - micromamba create -y -n testenv python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
+  - hash -r
+  - eval "$(./bin/micromamba shell hook -s posix)"
+  - micromamba create -y -n testenv python=$TRAVIS_PYTHON_VERSION
   - micromamba activate testenv
-  - micromamba install -y pylint matplotlib numpy pyqt=5 mantid-framework=4.0
+  - micromamba install -y pylint matplotlib numpy pyqt=5 -c conda-forge
+  - micromamba install -y mantid-framework=4.0 -c mantid/label/main
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
