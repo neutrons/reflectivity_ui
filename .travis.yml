@@ -12,6 +12,8 @@ install:
   - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
   - export MAMBA_ROOT_PREFIX=$HOME/micromamba
   - eval "$(./bin/micromamba shell hook -s posix)"
+  - micromamba config set always_yes yes
+  - micromamba create -n test-environment python=$TRAVIS_PYTHON_VERSION -c conda-forge -c mantid -c mantid/label/nightly
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
