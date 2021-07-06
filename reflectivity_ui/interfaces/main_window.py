@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, bare-except
-"""
+# pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes,
+# pylint; disable=wrong-import-order, bare-except
+r"""
     Main application window
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -15,7 +16,7 @@ from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from .data_manager import DataManager
 from .plotting import PlotManager
 from .reduction_dialog import ReductionDialog
-from .event_handlers.progress_reporter import ProgressReporter
+# from .event_handlers.progress_reporter import ProgressReporter
 from .smooth_dialog import SmoothDialog
 
 
@@ -51,7 +52,7 @@ class MainWindow(QtWidgets.QMainWindow,
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
 
-        self.auto_change_active=False
+        self.auto_change_active = False
 
         # Event handlers
         self.plot_handler = PlotHandler(self)
@@ -78,14 +79,14 @@ class MainWindow(QtWidgets.QMainWindow,
 
     def keyPressEvent(self, event):
         """ UI event """
-        if event.modifiers()==QtCore.Qt.ControlModifier:
-            self.plot_handler.control_down=True
+        if event.modifiers() == QtCore.Qt.ControlModifier:
+            self.plot_handler.control_down = True
         else:
-            self.plot_handler.control_down=False
+            self.plot_handler.control_down = False
 
     def keyReleaseEvent(self, event):
         """ UI event """
-        self.plot_handler.control_down=False
+        self.plot_handler.control_down = False
 
     def initialize_instrument(self):
         """
@@ -93,7 +94,7 @@ class MainWindow(QtWidgets.QMainWindow,
             and saved parameters
         """
         for i in range(1, 12):
-            getattr(self.ui, 'selectedChannel%i'%i).hide()
+            getattr(self.ui, 'selectedChannel%i' % i).hide()
         self.ui.selectedChannel0.show()
         self.ui.selectedChannel0.setText(u"None")
 
@@ -190,36 +191,36 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.data_manager.active_channel is None:
             return
         color = str(self.ui.color_selector.currentText())
-        if color!=self.plot_manager.color and self.plot_manager.color is not None:
+        if color != self.plot_manager.color and self.plot_manager.color is not None:
             self.plot_manager.color = color
-            plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
-                   self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
-                   self.ui.xy_overview, self.ui.xtof_overview]
+            plots = [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                     self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                     self.ui.xy_overview, self.ui.xtof_overview]
             for plot in plots:
                 plot.clear_fig()
         elif self.plot_manager.color is None:
             self.plot_manager.color = color
-        if self.ui.plotTab.currentIndex()==0:
+        if self.ui.plotTab.currentIndex() == 0:
             self.plot_manager.plot_overview()
-        elif self.ui.plotTab.currentIndex()==1:
+        elif self.ui.plotTab.currentIndex() == 1:
             self.plot_manager.plot_xy()
-        elif self.ui.plotTab.currentIndex()==2:
+        elif self.ui.plotTab.currentIndex() == 2:
             self.plot_manager.plot_xtof()
-        elif self.ui.plotTab.currentIndex()==3:
+        elif self.ui.plotTab.currentIndex() == 3:
             self.file_handler.compute_offspec_on_change()
             self.plot_manager.plot_offspec()
-        elif self.ui.plotTab.currentIndex()==4:
+        elif self.ui.plotTab.currentIndex() == 4:
             self.file_handler.compute_gisans_on_change(active_only=True)
             self.plot_manager.plot_gisans()
-        elif self.ui.plotTab.currentIndex()==6:
+        elif self.ui.plotTab.currentIndex() == 6:
             self.ui.compare_widget.draw()
 
     def toggleColorbars(self):
         """ Refresh plots because of a color or scale change """
-        plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
-               self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
-               self.ui.xy_overview, self.ui.xtof_overview,
-               self.ui.offspec_pp, self.ui.offspec_mp, self.ui.offspec_pm, self.ui.offspec_mm]
+        plots = [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                 self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                 self.ui.xy_overview, self.ui.xtof_overview,
+                 self.ui.offspec_pp, self.ui.offspec_mp, self.ui.offspec_pm, self.ui.offspec_mm]
         for plot in plots:
             plot.clear_fig()
         self.plotActiveTab()
@@ -250,7 +251,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 if change_type > 0:
                     try:
                         self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
-                    except:
+                    except Exception:  # TODO find out which exceptions types are thrown here
                         self.file_handler.report_message("There was a problem updating the reflectivity",
                                                          pop_up=False)
                         logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
@@ -285,7 +286,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if col == 0:
             self.data_manager.set_active_data_from_direct_beam_list(row)
             self.file_loaded()
-            #self.file_handler.active_data_changed()
+            # self.file_handler.active_data_changed()
 
     def replotProjections(self):
         """ Signal handling """
@@ -327,7 +328,7 @@ class MainWindow(QtWidgets.QMainWindow,
             QtWidgets.QApplication.instance().processEvents()
             try:
                 self.data_manager.calculate_reflectivity()
-            except:
+            except Exception:  # TODO find out which exceptions types are thrown here
                 self.file_handler.report_message("There was a problem updating the reflectivity",
                                                  pop_up=False)
                 logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
@@ -378,20 +379,20 @@ class MainWindow(QtWidgets.QMainWindow,
 
     # TODO 66 - Test merged data will work
     def reduceDatasets(self):
-        '''
+        r"""
         Open a dialog to select reduction options for the current list of
         reduction items.
-        '''
-        if len(self.data_manager.reduction_list)==0:
+        """
+        if len(self.data_manager.reduction_list) == 0:
             self.file_handler.report_message("The data to be reduced must be added to the reduction table",
                                              pop_up=True)
             return
         dialog = ReductionDialog(self)
         dialog.exec_()
-	# get options as a dictionary
+        # get options as a dictionary
         output_options = dialog.get_options()
         dialog.destroy()
-	print('[DEBUG 66] Output options: {}'.format(output_options))
+        print('[DEBUG 66] Output options: {}'.format(output_options))
 
         if output_options is not None:
             self.file_handler.get_configuration()
@@ -420,8 +421,8 @@ class MainWindow(QtWidgets.QMainWindow,
                 self.update_off_specular_viewer.emit()
             if output_options['export_gisans']:
                 self.update_gisans_viewer.emit()
-	else:
-	    print('[DEBUG 66] output_options is None.  No reduction is executed')
+        else:
+            print('[DEBUG 66] output_options is None.  No reduction is executed')
 
     def toggle_smoothing(self):
         if self.ui.offspec_smooth_checkbox.isChecked():
@@ -451,7 +452,7 @@ class MainWindow(QtWidgets.QMainWindow,
         self.ui.offspec_qz_bin_width_label.setText("%8.6f 1/A" % width)
 
     # Un-used UI signals
-    #pylint: disable=missing-docstring, multiple-statements, no-self-use
+    # pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self): return NotImplemented
 
     # From the Advanced menu
