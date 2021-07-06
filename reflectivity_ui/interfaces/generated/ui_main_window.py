@@ -1569,6 +1569,9 @@ class Ui_MainWindow(object):
         self.actionAdvanced_Background.setVisible(False)
         self.actionAdvanced_Background.setObjectName("actionAdvanced_Background")
         self.actionOpen_Sum = QtWidgets.QAction(MainWindow)
+        icon125 = QtGui.QIcon()
+        icon125.addPixmap(QtGui.QPixmap(":/General/document-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionOpen_Sum.setIcon(icon125)
         self.actionOpen_Sum.setObjectName("actionOpen_Sum")
         self.actionCut_Points = QtWidgets.QAction(MainWindow)
         icon13 = QtGui.QIcon()
@@ -1626,8 +1629,6 @@ class Ui_MainWindow(object):
         self.actionRemove_Normalization.setObjectName("actionRemove_Normalization")
         self.actionResult_Viewer = QtWidgets.QAction(MainWindow)
         self.actionResult_Viewer.setObjectName("actionResult_Viewer")
-        self.actionOpenSum = QtWidgets.QAction(MainWindow)
-        self.actionOpenSum.setObjectName("actionOpenSum")
         self.menuReduction.addAction(self.actionNorm)
         self.menuReduction.addAction(self.actionRemove_Normalization)
         self.menuReduction.addAction(self.actionClear_Normalizations)
@@ -1652,7 +1653,7 @@ class Ui_MainWindow(object):
         self.menuAutomatics.addSeparator()
         self.menuAutomatics.addAction(self.actionResult_Viewer)
         self.menuFile.addAction(self.actionOpen)
-        self.menuFile.addAction(self.actionOpenSum)
+        self.menuFile.addAction(self.actionOpen_Sum)
         self.menuFile.addAction(self.actionLoad_Extraction)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuReduction.menuAction())
@@ -1710,7 +1711,7 @@ class Ui_MainWindow(object):
         self.gisansImax.editingFinished.connect(MainWindow.change_gisans_colorscale)
         self.actionAdvanced_Background.triggered.connect(MainWindow.open_advanced_background)
         self.refresh_offspec_button.pressed.connect(MainWindow.refresh_offspec)
-        self.actionOpen_Sum.triggered.connect(MainWindow.fileOpenSumDialog)
+        self.actionOpen_Sum.triggered.connect(MainWindow.file_open_sum_dialog)
         self.refScale.valueChanged['double'].connect(MainWindow.changeRegionValues)
         self.color_selector.currentIndexChanged['int'].connect(MainWindow.toggleColorbars)
         self.show_colorbars.stateChanged['int'].connect(MainWindow.toggleColorbars)
@@ -2179,8 +2180,7 @@ class Ui_MainWindow(object):
         self.actionRemove_Normalization.setIconText(_translate("MainWindow", "Remove from normalizations"))
         self.actionRemove_Normalization.setToolTip(_translate("MainWindow", "Remove the selected data set from normalization list"))
         self.actionResult_Viewer.setText(_translate("MainWindow", "Result Viewer"))
-        self.actionOpenSum.setText(_translate("MainWindow", "Open Sum"))
-        self.actionOpenSum.setToolTip(_translate("MainWindow", "Open and merge multiple runs"))
+
 from .compare_plots import CompareWidget
 from .mplwidget import MPLWidget
 import icons_rc

@@ -64,9 +64,6 @@ class MainWindow(QtWidgets.QMainWindow,
         self.hide_unsupported()
         self.toggle_smoothing()
 
-        # UI events
-        self.ui.actionOpenSum.triggered.connect(self.files_open_dialog)
-
         self.file_loaded_signal.connect(self.file_handler.update_info)
         self.file_loaded_signal.connect(self.file_handler.update_daslog)
         self.file_loaded_signal.connect(self.plotActiveTab)
@@ -127,13 +124,13 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_handler.file_open_dialog()
 
     # Actions defined in Qt Designer
-    def files_open_dialog(self):
+    def file_open_sum_dialog(self):
         """
             Show a dialog to open a new file.
             TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
         print('[DEBUG] Triggered event: file[s] open dialog')
-        self.file_handler.files_open_dialog()
+        self.file_handler.file_open_sum_dialog()
 
     def file_loaded(self):
         """
@@ -456,7 +453,6 @@ class MainWindow(QtWidgets.QMainWindow,
     # Un-used UI signals
     #pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self): return NotImplemented
-    def fileOpenSumDialog(self): return NotImplemented
 
     # From the Advanced menu
     def open_advanced_background(self): return NotImplemented

@@ -103,9 +103,9 @@ class MainHandler(object):
         """Load and merge multiple Nexus file
 
         Event handling workflow
-        - reflectivity_ui/interfaces/main_window.py", line 136, in files_open_dialog
-          self.file_handler.files_open_dialog()
-        - reflectivity_ui/interfaces/event_handlers/main_handler.py", line 515, in files_open_dialog
+        - reflectivity_ui/interfaces/main_window.py", line 136, in file_open_sum_dialog
+          self.file_handler.file_open_sum_dialog()
+        - reflectivity_ui/interfaces/event_handlers/main_handler.py", line 515, in file_open_sum_dialog
           self.load_merge_files(file_paths)
 
         Examples:
@@ -595,7 +595,7 @@ class MainHandler(object):
             self.open_file(file_path)
 
     # Actions defined in Qt Designer
-    def files_open_dialog(self):
+    def file_open_sum_dialog(self):
         """
             Show a dialog to open a new file.
             TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
