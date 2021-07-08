@@ -119,18 +119,16 @@ class MainWindow(QtWidgets.QMainWindow,
     def file_open_dialog(self):
         """
             Show a dialog to open a new file.
-            TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
         print('[DEBUG] Triggered event: file open dialog')
         self.file_handler.file_open_dialog()
 
     # Actions defined in Qt Designer
     def file_open_sum_dialog(self):
+        r"""
+        @brief Read a set of congruent file data sets.
+        @details Select a list of event or histogram files, check their metadata is compatible, and read-in.
         """
-            Show a dialog to open a new file.
-            TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
-        """
-        print('[DEBUG] Triggered event: file[s] open dialog')
         self.file_handler.file_open_sum_dialog()
 
     def file_loaded(self):
@@ -150,15 +148,15 @@ class MainWindow(QtWidgets.QMainWindow,
         item = self.ui.file_list.currentItem()
         name = unicode(item.text())
         QtWidgets.QApplication.instance().processEvents()
-        # FIXME 63 - main_handler.open_file only work for SINGLE file but not a list of files
-        # TODO 63 - file_handler shall be able to tell the selected is a file or files
+        # FIXME 73 - main_handler.open_file only work for SINGLE file but not a list of files
+        # TODO 73 - file_handler shall be able to tell the selected is a file or files
         if str(name).count('+') == 0:
             # regular single NeXus file (base) name
             self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
         else:
             # a list of file as a+b+c
             file_list = str(name).split('+')
-            print('[DEBUG 63] data manager dir = {}'.format(self.data_manager.current_directory))
+            print('[DEBUG 73] data manager dir = {}'.format(self.data_manager.current_directory))
             file_list = [os.path.join(self.data_manager.current_directory, file_path) for file_path in file_list]
             self.file_handler.open_files_merge(file_list)
 
