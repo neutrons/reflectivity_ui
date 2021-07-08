@@ -4,6 +4,7 @@
     and manages the data cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import glob
 import sys
 import os
 import time
@@ -20,13 +21,15 @@ class DataManager(object):
     MAX_CACHE = 50
 
     def __init__(self, current_directory):
+        print('[DEBUG] ENTERING data_manager.DataManager.__init__()')
+        print('[DEBUG] current_directory = {}'.format(str(current_directory)))
         self.current_directory = current_directory
         # current file name is used for file list table to set the current item
         self.current_file_name = None
         # Current data set
         self._nexus_data = None
         self.active_channel = None
-	# Cache of loaded data: list of NexusData instances
+        # Cache of loaded data: list of NexusData instances
         self._cache = list()
 
         # The following is information about the data to be combined together
@@ -245,7 +248,6 @@ class DataManager(object):
             :param bool force: it True, existing data will be replaced if it exists.
             :param bool update_parameters: if True, we will find peak ranges
         """
-        print('[DEBUG Back 63] File path: {}, configuration: {}'.format(file_path, configuration))
         nexus_data = None
         is_from_cache = False
         reduction_list_id = None
@@ -315,6 +317,7 @@ class DataManager(object):
             progress(100)
         return is_from_cache
 
+    # TODO Task #74
     def load_merge(self, file_paths, configuration, force=True, update_parameters=True, progress=None):
         """Load and merge Nexus files
 
@@ -336,8 +339,6 @@ class DataManager(object):
             True if the files have been loaded, processed and stored in cache
 
         """
-        # TODO 64 - Implement by mimic method load()
-        # TODO 63.5 - This is a method as a bridge between Task 63 and Task 64
         nexus_data = None
         is_from_cache = False
         reduction_list_id = None
@@ -374,7 +375,6 @@ class DataManager(object):
             # Nexus data will handle a list of files to merge
             nexus_data = NexusData(file_paths, configuration)
             sub_task = progress.create_sub_task(max_value=70) if progress else None
-	    print('[DEBUG 63-64] load and merge with update parameters {}'.format(update_parameters))
             nexus_data.load_merge(progress=sub_task, update_parameters=update_parameters)
 
         if progress is not None:
@@ -387,7 +387,7 @@ class DataManager(object):
         # Set the reduced data to DataManager instance
         self._nexus_data = nexus_data
         # use the first Nexus file as current directory and file name
-        # TODO 63 - Implement a new method to convert a list of Nexus file to a specific 'file name' for table
+        # TODO Task #74 - Implement a new method to convert a list of Nexus file to a specific 'file name' for table
         directory, file_name = os.path.split(file_paths[0])
         self.current_directory = directory
         self.current_file_name = file_name
@@ -422,15 +422,6 @@ class DataManager(object):
             progress(100)
 
         return is_from_cache
-
-    @staticmethod
-    def check_files_for_merging(file_paths):
-        """Check files whether they can be merged or not
-
-        :return: bool
-        """
-        # TODO 65 (new method and finished)
-        return NexusData.check_files_for_merging(file_paths)
 
     def update_configuration(self, configuration, active_only=False, nexus_data=None):
         """
@@ -807,3 +798,15 @@ class DataManager(object):
             progress.set_value(n_total, message="Done", out_of=n_total)
 
         logging.info("DONE: %s sec", time.time()-t_0)
+
+    @property
+    def current_event_files(self):
+        # type: () -> List[str]
+        r"""
+        @brief Sorted list of event files in the current directory
+        @details return only file names with pattern '*event.nxs' or '*.nxs.h5'
+        """
+        event_file_list = glob.glob(os.path.join(self.current_directory, '*event.nxs'))
+        h5_file_list = glob.glob(os.path.join(self.current_directory, '*.nxs.h5'))
+        event_file_list.extend(h5_file_list)
+        return sorted([os.path.basename(name) for name in event_file_list])

@@ -88,17 +88,13 @@ class MainHandler(object):
             # FIXME - need to find out what kind of error it could have
             self.report_message("Error loading file {} due to {}".format(self._data_manager.current_file_name, run_err),
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
-        # FIXME 63 - Disable general exception for future
-        # except Exception as e:
-        #     print('Unhandled general exception {}'.format(e))
-        #     raise e
-       
+
         if not silent:
             self.file_loaded()
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
 
-    # TODO 63 - NEW method
+    # TODO 74 - NEW method
     def open_files_merge(self, file_paths, force=False, silent=False):
         """Load and merge multiple Nexus file
 
@@ -127,7 +123,6 @@ class MainHandler(object):
         None
 
         """
-        # TODO 63: TASK 1 (in progress): clean, document and set fake
         # Verify that all files selected shall exist
         for file_path in file_paths:
             if not os.path.isfile(file_path):
@@ -143,7 +138,7 @@ class MainHandler(object):
             self.report_message("Loading files {}".format(file_paths))
             prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
             configuration = self.get_configuration()
-            # FIXME 63 (clean and doc) data manage of of type
+            # FIXME Task #74 (clean and doc) data manage of of type
             #  <class 'reflectivity_ui.interfaces.data_manager.DataManager'>
             self._data_manager.load_merge(file_paths, configuration, force=force, progress=prog)
             self.report_message("Loaded file %s" % self._data_manager.current_file_name)
@@ -152,12 +147,12 @@ class MainHandler(object):
             self.report_message("Error loading file %s" % self._data_manager.current_file_name,
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
             return
-        # FIXME 63 Disable to catch general exception
+        # FIXME Task #74 Disable to catch general exception
         # except Exception as e:
         #         print('General exception {} is not handled well'.format(e))
         #         raise e
 
-        # TODO 66: Task 66/67 takes over from here --------------------------
+        # TODO Task #66: Task #66/#67 takes over from here --------------------------
         # response for file loaded
         if not silent:
             self.merged_files_loaded()
@@ -242,23 +237,16 @@ class MainHandler(object):
 
         self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
 
-    def check_files_to_merge(self, file_paths):
-        """Check whether these files can be merged
-
-        Parameters
-        ----------
-        file_paths: ~list
-            List of Nexus files (full path)
-
-        Returns
-        -------
-        str, None
-           Error message
-
+    # TODO Task #64
+    def _congruency_fail_report(self, file_paths, log_names=None):
+        r"""
+        # type: List[str], Optional(List[str]) -> str
+        @brief Check whether these files can be merged
+        @param file_paths : List of Nexus files (full paths)
+        @returns str : Error message; empty string if no error is found,
         """
-        message = self._data_manager.check_files_for_merging(file_paths)
-
-        return message
+        fail_report = ''  # no failures
+        return fail_report
 
     def update_tables(self):
         """
@@ -374,100 +362,93 @@ class MainHandler(object):
 
         self.main_window.auto_change_active = False
 
-    def update_file_list(self, file_path=None, merge_mode=False):
-        """Update the list of data files
-
-        Parameters
-        ----------
-        file_path: str, ~list
-            Full nexus file path or a list of nexut file path
-        merge_mode: bool
-            Flag if it is in merge mode
-
-        Returns
-        -------
-        None
-
+    # TODO Task #73
+    def update_file_list(self, query_path=None):
+        # type: (Optional[Union[str, List[str]]]) -> None
+        r"""
+        @brief Update the list of data files
+        @param query_path: full path for a directory, a Nexus file, or a list of Nexus files
+        @para merge_mode: specifies files's data will be aggregated.
         """
-        # TODO 63 [in progress] #63 - Implement if merge_mode is True
+        print('[DEBUG] Entering main_handler.update_file_list')
+        print('[DEBUG] query_path = {}'.format(str(query_path)))
 
-        # set the UI mode
-        self.main_window.auto_change_active = True
+        def _split_composites():
+            r"""Split the list of files in widget self.ui.file_list into a list of single files and
+            a list of composite files"""
+            singles, composites = list(), list()
+            for i in range(self.ui.file_list.count()):
+                file_name = self.ui.file_list.item(i).text()
+                if '+' in file_name:
+                    composites.append(file_name)
+                else:
+                    singles.append(file_name)
+            return singles, composites
 
-        # TODO 63 (new): merge mode
-        if merge_mode:
-            # check file
-            if isinstance(file_path, list) is False:
-                raise RuntimeError('Must be list')
+        def _updated_current_list():
+            r"""Most updated list of single and composite files from the current directory"""
+            _, composites = _split_composites()
+            return sorted(self._data_manager.current_event_files + composites)
 
-            # set path
-            file_paths = file_path
-            file_path = file_paths[0]
-        else:
-            file_paths = None
-
-        if file_path is not None and not file_path == self._data_manager.current_directory:
-            print('[DEBUG] File path is not None and data manager current directory = {}'.format(file_path))
-            if os.path.isdir(file_path):
-                file_dir = file_path
-            else:
-                file_dir, file_name = os.path.split(unicode(file_path))
-                self._data_manager.current_file_name = file_name
-            self.main_window.settings.setValue('current_directory', file_dir)
-            self._path_watcher.removePath(self._data_manager.current_directory)
-            self._data_manager.current_directory = file_dir
-            self._path_watcher.addPath(self._data_manager.current_directory)
-        else:
-            # do nothing
-            print('[DEBUG] {} is either None or not equal to data manager current directory "{}"'
-                  ''.format(file_path, self._data_manager.current_directory))
-
-        # Update the list of files
-        event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*event.nxs'))
-        h5_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*.nxs.h5'))
-        event_file_list.extend(h5_file_list)
-        event_file_list.sort()
-        event_file_list = [os.path.basename(name) for name in event_file_list]
-
-        current_list = [self.ui.file_list.item(i).text() for i in range(self.ui.file_list.count())]
-        if event_file_list != current_list:
-            # Reset ui.file_list
-            print('[DEBUG UI] current list = {} Not equal to event lsit'.format(current_list))
-            self.ui.file_list.clear()
-
-            # TODO 63: combined item (in progress)
-            if merge_mode:
-                # combine file names for a new entry: as f1+f2+
-                merged_item = ''
-                for fi, item in enumerate(file_paths):
-                    item = os.path.basename(item)
-                    if fi > 0:
-                        merged_item += '+'
-                    merged_item += item
-                # add to UI file list
-                QtWidgets.QListWidgetItem(merged_item, self.ui.file_list)
-                # FIXME 63: this does not work: ui.file_list.setCurrentItem does not accept str or unicode
-                # Example /SNS/REF_M/IPTS-25531/nexus/REF_M_38189+/SNS/REF_M/IPTS-25531/nexus/REF_M_38189 
-                # type <type 'unicode'>
-                # self.ui.file_list.setCurrentItem(merged_item)
-
-            # add rest of the files
-            print('[DEBUG 63-64] data manager current file name: {}'.format(self._data_manager.current_file_name))
-            for item in event_file_list:
-                # create and add QListWidgetItem from self.ui.file_list by 
+        def _reset_ui_file_list(fresh_list):
+            r"""reset widget self.ui.file_list and highlight the current file_name"""
+            self.ui.file_list.clear()  # Reset ui.file_list, a QtWidgets.QListWidget object
+            for item in fresh_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
-                # current_file_name: focus the file list table
                 if item == self._data_manager.current_file_name:
                     self.ui.file_list.setCurrentItem(listitem)
-        else:
-            # Focus ui.file_list to current file name
-            try:
-                self.ui.file_list.setCurrentRow(event_file_list.index(self._data_manager.current_file_name))
-            except ValueError:
-                self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
-                                    detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
 
-        # reset the flag
+        def _composite_name(file_paths):
+            r"""join the file names of an Open Sum case"""
+            file_names = sorted([os.path.basename(fp) for fp in file_paths])
+            return '+'.join(file_names)
+
+        def _update_current_directory(new_dir):
+            r"""Update the directory path in the main window and the path watcher"""
+            self.main_window.settings.setValue('current_directory', new_dir)
+            self._path_watcher.removePath(self._data_manager.current_directory)
+            self._data_manager.current_directory = new_dir
+            self._path_watcher.addPath(self._data_manager.current_directory)
+
+        file_path = query_path[0] if isinstance(query_path, list) else query_path
+
+        # Use case 1: the contents of the current directory may have changed with the addition of new
+        # event files. This could happen if the experiment is running, producing new event files.
+        if file_path is None:
+            new_list = _updated_current_list()
+        # Use case 2: a composite from using Open Sum
+        elif isinstance(query_path, list):
+            file_name, file_dir = os.path.split(file_path)
+            self._data_manager.current_file_name = _composite_name(query_path)
+            # Use case 2.1: the composite is made up of files in the current directory
+            if file_dir == self._data_manager.current_directory:
+                new_list = sorted(_updated_current_list() + [_composite_name(query_path)])
+            # Use case 2.2: the composite is made up of files in a new directory
+            else:
+                _update_current_directory(file_dir)
+                new_list = sorted(self._data_manager.current_event_files + [_composite_name(query_path)])
+        # Use case 3: a single path pointing to a file or a directory
+        else:
+            # Use case 3.1: a single path pointing to a new directory
+            if os.path.isdir(file_path):
+                file_dir = file_path
+                if file_dir != self._data_manager.current_directory:  # User changed directory
+                    _update_current_directory(file_dir)
+                    self._data_manager.current_file_name = self._data_manager.current_event_files[0]
+                    new_list = self._data_manager.current_event_files
+            # Use case 3.2: a single path pointing to a file in the current or new directory
+            else:
+                file_dir, file_name = os.path.split(unicode(query_path))
+                self._data_manager.current_file_name = file_name
+                if file_dir == self._data_manager.current_directory:  # User selected a new file in the directory
+                    new_list = _updated_current_list()
+                else:  # User selected a new file in a new directory
+                    _update_current_directory(file_dir)
+                    new_list = self._data_manager.current_event_files
+        print('[DEBUG] main_handler.update_file_list')
+        print('[DEBUG] new_list = {}'.format(str(new_list)))
+        _reset_ui_file_list(new_list)
+
         self.main_window.auto_change_active = False
 
     def automated_file_selection(self):
@@ -596,36 +577,21 @@ class MainHandler(object):
 
     # Actions defined in Qt Designer
     def file_open_sum_dialog(self):
+        r"""
+        Included responsibilities:
+        1. Open a file dialog. Selects files
+        2. Call to verify file congruency. Files can be merged
+        3. Call to update the list of data files (where? what does this mean?)
+        4. Call to read-in the data files
         """
-            Show a dialog to open a new file.
-            TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
-        """
-        def select_files():
-            """launch a dialog to select multiple files
-
-            Returns
-            -------
-            ~list
-                list of full path to Nexus files selected
-
-            """
-            # TODO 63 - Implement the dialog to select multiple files
-            # file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
-            #                                                      directory=self._data_manager.current_directory,
-            #                                                      filter=filter_)
-
-            # FIXME 63 - using fake data now
-            selected_file_paths = ['/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5',
-                                   '/SNS/REF_M/IPTS-25531/nexus/REF_M_38189.nxs.h5']
-            return selected_file_paths
-
         # Set file filters
         if self.ui.histogramActive.isChecked():
             filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
         else:
             filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
-        # FIXME TODO - Replace by multiple files selector
-        file_paths = select_files()
+        file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(self.main_window, u'Open NXS file...',
+                                                               directory=self._data_manager.current_directory,
+                                                               filter=filter_)
 
         # user cancel operation
         if len(file_paths) == 0:
@@ -634,22 +600,15 @@ class MainHandler(object):
             self.report_message('Merge mode must have more than 1 file selected')
             return
 
-        # Process files that are selected
         # check whether files can be merged without further notice
-        message = self.check_files_to_merge(file_paths)
-        # need user's permission
-        if message or len(message) > 0:
-            # TODO # 65 - Implement method 'ask_user_permission'
-            user_say_go = self.ask_user_permission(message)
-            if not user_say_go:
-                return
+        message = self._congruency_fail_report(file_paths, log_names=None)  # TODO Task #64
+        if message and not self._user_gives_permission(message):  # TODO Task #65
+            return
 
-        # update file list
-        self.update_file_list(file_paths, merge_mode=True)
-        # merge and load file
+        self.update_file_list(file_paths)
         self.open_files_merge(file_paths)
 
-    def ask_user_permission(self, message):
+    def _user_gives_permission(self, message):
         """Ask user's permission to proceed or quit if the select runs do not have same sample logs
         """
         # TODO 65 - Implement
@@ -661,12 +620,12 @@ class MainHandler(object):
         """
             Open a data file by typing a run number
         """
-        # TODO 63 - if multiple runs are provided as 'a, b, c' or 'a, b:c' or 'a, b-c', then
+        # TODO Task #75 - if multiple runs are provided as 'a, b, c' or 'a, b:c' or 'a, b-c', then
         #  the reduction shall be in the 'open sum' mode
         self.main_window.auto_change_active = True
         if number is None:
             number = self.ui.numberSearchEntry.text()
-            # TODO FIXME number can be numbers
+            # TODO FIXME Task #75 number can be numbers
         QtWidgets.QApplication.instance().processEvents()
 
         # Look for new-style nexus file name
@@ -1350,13 +1309,13 @@ class MainHandler(object):
 
     def report_message(self, message, informative_message=None,
                        detailed_message=None, pop_up=False, is_error=False):
-        """
-            Report an error.
-            :param str message: message string to be reported
-            :param str informative_message: extra information
-            :param str detailed_message: detailed message for the log
-            :param bool pop_up: if True, a dialog will pop up
-            :param bool is_error: if True, the message is logged on the error channel
+        r"""
+        Report an error.
+        :param str message: message string to be reported
+        :param str informative_message: extra information
+        :param str detailed_message: detailed message for the log
+        :param bool pop_up: if True, a dialog will pop up
+        :param bool is_error: if True, the message is logged on the error channel
         """
         self.status_message.setText(message)
         if is_error:

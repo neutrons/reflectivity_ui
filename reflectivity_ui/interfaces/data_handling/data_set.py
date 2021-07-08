@@ -324,23 +324,6 @@ class NexusData(object):
         for xs in self.cross_sections:
             self.cross_sections[xs].update_calculated_values()
 
-    @staticmethod
-    def check_files_for_merging(file_paths):
-        """Check whether the Nexus files can be merged without user permission
-
-        Parameters
-        ----------
-        file_paths
-
-        Returns
-        -------
-        str, None
-            reason for not merging, None for fine to merge
-
-        """
-        # TODO 64 - Implement
-        return 'Not Implemented Yet'
-
     def load(self, update_parameters=True, progress=None):
         """
             Load cross-sections from a nexus file.
@@ -362,9 +345,6 @@ class NexusData(object):
         except RuntimeError as run_err:
             logging.error("Could not load file {}\n   {}\n   {}".format(str(self.file_path), sys.exc_value, run_err))
             return self.cross_sections
-        # except Exception as ge:
-        #     # FIXME 63 FIXME 64 - do not cache exception blindly
-        #     raise ge
 
         progress_value = 0
         # Keep track of cross-section with max counts so we can use it to
@@ -424,8 +404,6 @@ class NexusData(object):
             cross sections
 
         """
-        # TODO 64 - Implement
-        # TODO FIXME 64 - Consider the possibility to combine load() and load_merge()
         self.cross_sections = OrderedDict()
         if progress is not None:
             progress(5, "Filtering data...", out_of=100.0)
