@@ -21,8 +21,8 @@ class DataManager(object):
     MAX_CACHE = 50
 
     def __init__(self, current_directory):
-        print('[DEBUG] ENTERING data_manager.DataManager.__init__()')
-        print('[DEBUG] current_directory = {}'.format(str(current_directory)))
+        print('[DEBUG] ENTERING DataManager.__init__()')
+        #print('[DEBUG] current_directory = {}'.format(str(current_directory)))
         self.current_directory = current_directory
         # current file name is used for file list table to set the current item
         self.current_file_name = None
@@ -43,6 +43,7 @@ class DataManager(object):
         # Cached outputs
         self.cached_offspec = None
         self.cached_gisans = None
+        print('[DEBUG] EXITING DataManager.__init__()')
 
     @property
     def data_sets(self):
