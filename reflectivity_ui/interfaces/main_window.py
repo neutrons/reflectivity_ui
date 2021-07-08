@@ -37,6 +37,7 @@ class MainWindow(QtWidgets.QMainWindow,
         """
             Initialization
         """
+        print('[DEBUG] ENTERING MainWindow.__init__()')
         # Base class
         QtWidgets.QMainWindow.__init__(self)
 
@@ -47,8 +48,10 @@ class MainWindow(QtWidgets.QMainWindow,
 
         # Application settings
         self.settings = QtCore.QSettings('.refredm')
-
+        #print('[DEBUG] MainWindow.settings = {0}, {1}'.format(str(type(self.settings)), str(self.settings)))
+        #print('[DEBUG] settings.filename = {}'.format(self.settings.fileName()))
         # Object managers
+        #print('[DEBUG] settings["current_directory"] = {}'.format(self.settings.value('current_directory', os.path.expanduser('~'))))
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
 
@@ -71,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow,
         self.initiate_projection_plot.connect(self.plot_manager.plot_projections)
 
         self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
+        print('[DEBUG] EXITING MainWindow.__init__()')
 
     def closeEvent(self, event):
         """ Close UI event """
@@ -142,7 +146,9 @@ class MainWindow(QtWidgets.QMainWindow,
             Called when a new file is selected from the file list.
         This is an event call
         """
+        print('\n[DEBUG] ENTERING file_open_from_list')
         if self.auto_change_active:
+            print('\n[DEBUG] EXITING file_open_from_list')
             return
         QtWidgets.QApplication.instance().processEvents()
         item = self.ui.file_list.currentItem()
@@ -159,6 +165,7 @@ class MainWindow(QtWidgets.QMainWindow,
             print('[DEBUG 73] data manager dir = {}'.format(self.data_manager.current_directory))
             file_list = [os.path.join(self.data_manager.current_directory, file_path) for file_path in file_list]
             self.file_handler.open_files_merge(file_list)
+        print('\n[DEBUG] EXITING file_open_from_list')
 
     def reload_file(self):
         """

@@ -123,6 +123,8 @@ class MainHandler(object):
         None
 
         """
+        print('[DEBUG]')
+        print('[DEBUG] ENTERING main_handler.open_files_merge()')
         # Verify that all files selected shall exist
         for file_path in file_paths:
             if not os.path.isfile(file_path):
@@ -364,67 +366,85 @@ class MainHandler(object):
 
     # TODO Task #73
     def update_file_list(self, query_path=None):
-        # type: (Optional[Union[str, List[str]]]) -> None
+        # type: (Optional[Union[str, List[str]]], Optional[bool]) -> None
         r"""
         @brief Update the list of data files
         @param query_path: full path for a directory, a Nexus file, or a list of Nexus files
         @para merge_mode: specifies files's data will be aggregated.
         """
         print('[DEBUG] Entering main_handler.update_file_list')
-        print('[DEBUG] query_path = {}'.format(str(query_path)))
+        #print('[DEBUG update_file_list] query_path = {}'.format(str(query_path)))
 
         def _split_composites():
             r"""Split the list of files in widget self.ui.file_list into a list of single files and
             a list of composite files"""
             singles, composites = list(), list()
             for i in range(self.ui.file_list.count()):
-                file_name = self.ui.file_list.item(i).text()
-                if '+' in file_name:
-                    composites.append(file_name)
+                file_base_name = self.ui.file_list.item(i).text()
+                if '+' in file_base_name:
+                    composites.append(file_base_name)
                 else:
-                    singles.append(file_name)
+                    singles.append(file_base_name)
             return singles, composites
 
         def _updated_current_list():
             r"""Most updated list of single and composite files from the current directory"""
             _, composites = _split_composites()
+            #print('\n[DEBUG _updated_current_list] composites = {}'.format(str(composites)))
             return sorted(self._data_manager.current_event_files + composites)
 
         def _reset_ui_file_list(fresh_list):
             r"""reset widget self.ui.file_list and highlight the current file_name"""
+            #print('\n[DEBUG] ENTERING _reset_ui_file_list')
+            #print('\n[DEBUG _reset_ui_file_list] current_file_name = {}'.format(self._data_manager.current_file_name))
             self.ui.file_list.clear()  # Reset ui.file_list, a QtWidgets.QListWidget object
             for item in fresh_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
+                query = (item == self._data_manager.current_file_name)
+                #print('[DEBUG _reset_ui_file_list] {0} == {1} ? = {2}'.format(item, self._data_manager.current_file_name, query))
                 if item == self._data_manager.current_file_name:
+                    #print('\n[DEBUG _reset_ui_file_list] setCurrentItem to {}'.format(str(item)))
+                    # Changing the current selection will trigger self.main_window.file_open_from_list() to be called,
+                    # however, the current setting self.main_window.auto_change_active == True will cause
+                    # self.main_window.file_open_from_list() to return before any statement is executed
                     self.ui.file_list.setCurrentItem(listitem)
+            #print('\n[DEBUG] EXITING _reset_ui_file_list')
 
         def _composite_name(file_paths):
             r"""join the file names of an Open Sum case"""
             file_names = sorted([os.path.basename(fp) for fp in file_paths])
-            return '+'.join(file_names)
+            return unicode('+'.join(file_names))
 
         def _update_current_directory(new_dir):
             r"""Update the directory path in the main window and the path watcher"""
+            #print('[DEBUG _update_current_directory] new_dir = {}'.format(str(new_dir)))
             self.main_window.settings.setValue('current_directory', new_dir)
+            #print('[DEBUG _update_current_directory] settings["current_directory"] = {}'.format(str(self.main_window.settings.value('current_directory'))))
             self._path_watcher.removePath(self._data_manager.current_directory)
             self._data_manager.current_directory = new_dir
+            #print('[DEBUG _update_current_directory] self._data_manager.current_directory = {}'.format(str(self._data_manager.current_directory)))
             self._path_watcher.addPath(self._data_manager.current_directory)
 
+        # This setting prevents automatic read-in of the currently selected item in the list
+        # when the currently selected items changes due to the list update.
+        self.main_window.auto_change_active = True
         file_path = query_path[0] if isinstance(query_path, list) else query_path
-
+        #print('[DEBUG update_file_list] file_path = {}'.format(str(file_path)))
         # Use case 1: the contents of the current directory may have changed with the addition of new
         # event files. This could happen if the experiment is running, producing new event files.
         if file_path is None:
             new_list = _updated_current_list()
         # Use case 2: a composite from using Open Sum
         elif isinstance(query_path, list):
-            file_name, file_dir = os.path.split(file_path)
+            #print('[DEBUG update_file_list] Use case 2: a composite from using Open Sum')
+            file_dir, file_name = os.path.split(file_path)
             self._data_manager.current_file_name = _composite_name(query_path)
             # Use case 2.1: the composite is made up of files in the current directory
             if file_dir == self._data_manager.current_directory:
                 new_list = sorted(_updated_current_list() + [_composite_name(query_path)])
             # Use case 2.2: the composite is made up of files in a new directory
             else:
+                #print('[DEBUG update_file_list] file_dir = {}, self._data_manager.current_directory = {}'.format(str(file_dir), str(self._data_manager.current_directory)))
                 _update_current_directory(file_dir)
                 new_list = sorted(self._data_manager.current_event_files + [_composite_name(query_path)])
         # Use case 3: a single path pointing to a file or a directory
@@ -445,11 +465,10 @@ class MainHandler(object):
                 else:  # User selected a new file in a new directory
                     _update_current_directory(file_dir)
                     new_list = self._data_manager.current_event_files
-        print('[DEBUG] main_handler.update_file_list')
-        print('[DEBUG] new_list = {}'.format(str(new_list)))
+        #print('[DEBUG] new_list = {}'.format(str(new_list)))
         _reset_ui_file_list(new_list)
-
         self.main_window.auto_change_active = False
+        print('\n[DEBUG] EXITING update_file_list')
 
     def automated_file_selection(self):
         """
@@ -577,6 +596,7 @@ class MainHandler(object):
 
     # Actions defined in Qt Designer
     def file_open_sum_dialog(self):
+        print('[DEBUG] ENTERING file_open_sum_dialog()')
         r"""
         Included responsibilities:
         1. Open a file dialog. Selects files
@@ -605,8 +625,11 @@ class MainHandler(object):
         if message and not self._user_gives_permission(message):  # TODO Task #65
             return
 
+        #print('[DEBUG file_open_sum_dialog] file_paths before update_file_list() = {}'.format(str(file_paths)))
         self.update_file_list(file_paths)
+        #print('[DEBUG file_open_sum_dialog] file_paths after update_file_list() = {}'.format(str(file_paths)))
         self.open_files_merge(file_paths)
+        print('[DEBUG] EXITING file_open_sum_dialog')
 
     def _user_gives_permission(self, message):
         """Ask user's permission to proceed or quit if the select runs do not have same sample logs
