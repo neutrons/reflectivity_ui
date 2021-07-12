@@ -5,19 +5,25 @@ r"""
     Main application window
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import sys
-import os
-import logging
-from PyQt5 import QtCore, QtWidgets
-import reflectivity_ui
-import reflectivity_ui.interfaces.generated.ui_main_window
-from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
-from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
+
+# package imports
 from .data_manager import DataManager
 from .plotting import PlotManager
 from .reduction_dialog import ReductionDialog
-# from .event_handlers.progress_reporter import ProgressReporter
 from .smooth_dialog import SmoothDialog
+import reflectivity_ui
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
+from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
+import reflectivity_ui.interfaces.generated.ui_main_window
+
+# 3rd-party
+from PyQt5 import QtCore, QtWidgets
+
+# standard imports
+import logging
+import os
+import sys
 
 
 class MainWindow(QtWidgets.QMainWindow,
@@ -55,6 +61,10 @@ class MainWindow(QtWidgets.QMainWindow,
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
 
+        r"""Setting `auto_change_active = True` bypasses execution of:
+        - MainWindow.file_open_from_list()
+        - MainWindow.changeRegionValues()
+        - MainHandler.reduction_table_changed()"""
         self.auto_change_active = False
 
         # Event handlers
@@ -142,30 +152,14 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_handler.file_loaded()
 
     def file_open_from_list(self):
-        """
-            Called when a new file is selected from the file list.
-        This is an event call
-        """
-        print('\n[DEBUG] ENTERING file_open_from_list')
+        r"""Called when a new file is selected from the file list. This is an event call."""
         if self.auto_change_active:
-            print('\n[DEBUG] EXITING file_open_from_list')
             return
         QtWidgets.QApplication.instance().processEvents()
-        item = self.ui.file_list.currentItem()
-        name = unicode(item.text())
-        QtWidgets.QApplication.instance().processEvents()
-        # FIXME 73 - main_handler.open_file only work for SINGLE file but not a list of files
-        # TODO 73 - file_handler shall be able to tell the selected is a file or files
-        if str(name).count('+') == 0:
-            # regular single NeXus file (base) name
-            self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
-        else:
-            # a list of file as a+b+c
-            file_list = str(name).split('+')
-            print('[DEBUG 73] data manager dir = {}'.format(self.data_manager.current_directory))
-            file_list = [os.path.join(self.data_manager.current_directory, file_path) for file_path in file_list]
-            self.file_handler.open_files_merge(file_list)
-        print('\n[DEBUG] EXITING file_open_from_list')
+        item = self.ui.file_list.currentItem()  # type: QListWidgetItem
+        name = unicode(item.text())  # e.g 'REF_M_38199.nxs.h5' or 'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        filepath = FilePath.join(self.data_manager.current_directory, name)
+        self.file_handler.open_file(filepath)
 
     def reload_file(self):
         """
