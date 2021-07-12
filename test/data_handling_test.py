@@ -4,9 +4,25 @@ sys.path.append('..')
 import os
 
 import reflectivity_ui.interfaces.data_handling.data_manipulation as dm
+from reflectivity_ui.interfaces.data_handling import ApplicationConfiguration
 from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
 from reflectivity_ui.interfaces.data_manager import DataManager
 from reflectivity_ui.interfaces.configuration import Configuration
+
+
+class ApplicationConfigurationTest(unittest.TestCase):
+    def test_init(self):
+        # System's installation of mantid
+        application_conf = ApplicationConfiguration()
+        assert os.path.dirname(application_conf.mantid_path) in sys.path
+        # Custom "installation" of mantid
+        mantid_path = '/tmp/mantid41'
+        if not os.path.isdir(mantid_path):
+            os.makedirs('/tmp/mantid41')
+        application_conf = ApplicationConfiguration(root_dir='/tmp')
+        assert application_conf.mantid_path == '/tmp/mantid41'
+        assert application_conf.mantid_version == '4.1.0'
+
 
 class DataLoaderTest(unittest.TestCase):
     def test_simple_load(self):
@@ -47,6 +63,7 @@ class DataLoaderTest(unittest.TestCase):
         self.assertEqual(len(data_list), 6)
         self.assertEqual(data_list[4][2].normalization, None)
 
+
 class DataManagerTest(unittest.TestCase):
 
     def test_manager(self):
@@ -81,6 +98,7 @@ class DataManagerTest(unittest.TestCase):
     def test_load_reduced(self):
         manager = DataManager(os.getcwd())
         manager.load_data_from_reduced_file('data/REF_M_29160_Specular_++.dat')
+
 
 if __name__ == '__main__':
     unittest.main()

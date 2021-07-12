@@ -1,42 +1,44 @@
 language: python
-python:
-  - "2.7"
-
 dist: trusty
 
+matrix:
+  include:
+  - env: CONDA=3.6
+
 before_install:
-  - echo $TRAVIS_OS_NAME
+- |
+  if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX=g++-4.8 CC=gcc-4.8; fi
+  if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
+   wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA:0:1}-latest-$OS.sh
+   bash miniconda.sh -b -p $HOME/miniconda
+   export PATH="$HOME/miniconda/bin:$PATH"
+   conda init bash
 
 install:
-  #- sudo apt-get update
-  # We do this conditionally because it saves us some downloading if the
-  # version is the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels conda-forge
-  - conda config --add channels mantid
-  - conda config --add channels mantid/label/nightly
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
+    # Setup conda activate/deactivate commands
+  - conda init bash
+  - source $(conda info --root)/etc/profile.d/conda.sh
+  - conda info --root
+   
+    # Conda config - behavior and channel setup
+  - conda config --set always_yes yes --set changeps1 no --set anaconda_upload no
+  - conda config --add channels conda-forge --add channels mantid --add channels mantid/label/nightly
 
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pylint matplotlib numpy pyqt=5 mantid-framework=4.2
-  - source activate test-environment
+script:
+    # TEST: create test environment and test build
+  - conda install mamba
+  - mamba create -q -n testenv python=2.7 mantid-framework=4.0.0 --file requirements.txt
+  - conda info --envs
+  - conda activate testenv
+  - python --version
+  
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
   - wget http://198.74.56.37/ftp/external-data/MD5/58d6698e1d6bf98e0315687cb980d333 -O REF_M_29160
+  - cd ..
 
-script:
-  #- python setup.py install
+    #- python setup.py install
   - cd test; coverage run data_handling_test.py
 
 after_success:

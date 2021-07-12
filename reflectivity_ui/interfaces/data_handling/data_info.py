@@ -16,7 +16,8 @@ from .peak_finding import find_peaks, peak_prominences, peak_widths
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
-sys.path.insert(0, ApplicationConfiguration().mantid_path)
+if ApplicationConfiguration().mantid_path is not None:
+    sys.path.insert(0, ApplicationConfiguration().mantid_path)
 import mantid.simpleapi as api
 
 

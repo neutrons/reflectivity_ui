@@ -53,8 +53,9 @@ matplotlib.use('Qt5Agg')
 # Do it here to enforce the correct version
 from reflectivity_ui.interfaces.data_handling import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
-sys.path.insert(0, os.path.join(application_conf.mantid_path, 'bin'))
-sys.path.insert(1, os.path.join(application_conf.mantid_path, 'lib'))
+if application_conf.mantid_path is not None:
+    sys.path.insert(0, os.path.join(application_conf.mantid_path, 'bin'))
+    sys.path.insert(1, os.path.join(application_conf.mantid_path, 'lib'))
 
 import mantid
 import reflectivity_ui

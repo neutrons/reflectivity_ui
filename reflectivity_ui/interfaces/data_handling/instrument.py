@@ -14,7 +14,8 @@ import numpy as np
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
-sys.path.insert(0, application_conf.mantid_path)
+if application_conf.mantid_path is not None:
+    sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 
 # Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
