@@ -4,14 +4,20 @@
 """
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
 from __future__ import absolute_import, division, print_function
-import sys
-import logging
+
+# local imports
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+
+# 3rd-party imports
+import numpy as np
+
+# standard imports
 from collections import OrderedDict
 import copy
+import logging
 import math
+import sys
 import time
-import numpy as np
-import os
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -62,29 +68,15 @@ class NexusData(object):
         Read a nexus file with multiple cross-section data.
     """
     def __init__(self, file_path, configuration):
+        # type: (unicode, Configurati0n) -> None
         """
-
-        Parameters
-        ----------
-        file_path: str, unicode, list
-            single file (path) or a list of file paths in merging mode
-        configuration
+        @brief Structure to read in one or more Nexus data files
+        @param file_path: absolute path to one or more files. If more than one, paths are concatenated with the
+        plus symbol '+'
+        @param configuration: reduction configurations
         """
-        self.file_path = None
-        self.file_path_list = None
-
-        if isinstance(file_path, str) or isinstance(file_path, unicode):
-            self.file_path = file_path
-        elif isinstance(file_path, list):
-            self.file_path_list = file_path[:]
-            # construct a file_path same as in the file_list
-            # FIXME 66 TODO 66 - consider to use a single method to generate unique 'file_path' from list of runs
-            self.file_path = ''
-            for file_path in self.file_path_list:
-                self.file_path += os.path.basename(file_path) + '+'
-            self.file_path = self.file_path[:-1]
-
-        self.number = 0
+        self.file_path = FilePath(file_path).path  # sort the paths if more than one
+        self.number = ''  # can be a singe number (e.g. '1234') or a composite (e.g '1234:1239+1245')
         self.configuration = configuration
         self.cross_sections = {}
         self.main_cross_section = None
@@ -343,7 +335,7 @@ class NexusData(object):
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
             print('[DEBUG Back] Load {} to {}'.format(self.file_path, xs_list))
         except RuntimeError as run_err:
-            logging.error("Could not load file {}\n   {}\n   {}".format(str(self.file_path), sys.exc_value, run_err))
+            logging.error("Could not load file(s) {}\n   {}\n   {}".format(str(self.file_path), sys.exc_value, run_err))
             return self.cross_sections
 
         progress_value = 0
@@ -368,7 +360,7 @@ class NexusData(object):
             name = ws.getRun().getProperty("cross_section_id").value
             cross_section = CrossSectionData(name, self.configuration, entry_name=channel, workspace=ws)
             self.cross_sections[name] = cross_section
-            self.number = cross_section.number
+            self.number = cross_section.number  # e.g '1234:1238+1239' if more than one run made up this cross section
             if cross_section.total_counts > _max_counts:
                 _max_counts = cross_section.total_counts
                 _max_xs = name
@@ -486,7 +478,7 @@ class CrossSectionData(object):
         self.cross_section_label = entry_name
         self.measurement_type = 'polarized'
         self.configuration = copy.deepcopy(configuration)
-        self.number = 0
+        self.number = ''  # can be singe number (e.g. '1234') or a composite (e.g '1234:1239+1245')
         self.q = None
         self._r = None
         self._dr = None
@@ -704,8 +696,7 @@ class CrossSectionData(object):
         self.total_time = data['duration'].value
 
         self.experiment = str(data['experiment_identifier'].value)
-        # TODO 67 FIXME 67 - this won't work for merged runs
-        self.number = int(workspace.getRunNumber())
+        self.number = workspace.getRun().getProperty('run_numbers').value
         self.merge_warnings = ''
 
         # Retrieve instrument-specific information
