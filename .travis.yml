@@ -1,30 +1,40 @@
 language: python
-python:
-  - "2.7"
-
 dist: trusty
 
 before_install:
-  - echo $TRAVIS_OS_NAME
+- |
+  # Install conda
+  "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
+  wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA:0:1}-latest-$OS.sh
+  bash miniconda.sh -b -p $HOME/miniconda
+  export PATH="$HOME/miniconda/bin:$PATH"
+  conda init bash
 
 install:
-  #- sudo apt-get update
-  - wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-  - hash -r
-  - eval "$(./bin/micromamba shell hook -s posix)"
-  - micromamba create -y -n testenv python=$TRAVIS_PYTHON_VERSION -c conda-forge
-  - micromamba activate testenv
-  - micromamba install -y pylint matplotlib numpy pyqt=5 -c conda-forge
-  - micromamba install -y mantid-framework=4.0 -c mantid mantid/label/nightly conda-forge
-  #- micromamba install -y openblas=0.3.15 -c conda-forge
-  #- micromamba install -y mantid-framework=4.0 -c mantid/label/main -c conda-forge
+    # Setup conda activate/deactivate commands
+  - conda init bash
+  - source $(conda info --root)/etc/profile.d/conda.sh
+  - conda info --root
+   
+    # Conda config - behavior and channel setup
+  - conda config --set always_yes yes --set changeps1 no --set anaconda_upload no
+  - conda config --add channels conda-forge --add channels mantid --add channels mantid/label/nightly
+
+script:
+    # TEST: create test environment and test build
+  - conda install mamba
+  - mamba create -q -n testenv python=2.7 mantid-framework=4.0.0 --file requirements.txt
+  - conda info --envs
+  - conda activate testenv
+  - python --version
+  
   - pip install --upgrade codecov
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
   - wget http://198.74.56.37/ftp/external-data/MD5/58d6698e1d6bf98e0315687cb980d333 -O REF_M_29160
+  - cd ..
 
-script:
-  #- python setup.py install
+    #- python setup.py install
   - cd test; coverage run data_handling_test.py
 
 after_success:
