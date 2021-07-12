@@ -2,13 +2,10 @@ language: python
 dist: trusty
 
 before_install:
-- |
-  # Install conda
-  "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
-  wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA:0:1}-latest-$OS.sh
-  bash miniconda.sh -b -p $HOME/miniconda
-  export PATH="$HOME/miniconda/bin:$PATH"
-  conda init bash
+  -  wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA:0:1}-latest-$OS.sh
+  -  bash miniconda.sh -b -p $HOME/miniconda
+  -  export PATH="$HOME/miniconda/bin:$PATH"
+  -  conda init bash
 
 install:
     # Setup conda activate/deactivate commands
