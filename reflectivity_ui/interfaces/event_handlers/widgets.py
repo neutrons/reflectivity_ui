@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 class CustomDialog(QDialog):
     """
+    Customized widget
+
     Refer to: https://www.mfitzp.com/tutorials/pyqt-dialogs/
     """
     def __init__(self, parent=None, title='', message=''):
