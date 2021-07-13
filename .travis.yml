@@ -40,7 +40,8 @@ script:
 
     # Test
   - xvfb-run --server-args="-screen 0 640x480x24" --auto-servernum python -m pytest test/ui --disable-pytest-warnings -vv -r w
-  - cd test; coverage run data_handling_test.py
+    # - cd test; coverage run data_handling_test.py;
+    # - cd ..
 
 after_success:
   - codecov
