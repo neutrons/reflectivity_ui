@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
-from .widgets import CustomDialog
+from .widgets import CustomDialog, AcceptRejectDialog
 
 # 3rd-party imports
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -651,11 +651,10 @@ class MainHandler(object):
         bool
 
         """
-        dialog = CustomDialog(self.main_window, title='Open Sum Confirmation',
-                              message=message)
+        dialog = AcceptRejectDialog(self.main_window, title='Open Sum Confirmation',
+                                    message=message)
 
         proceed = dialog.exec_()
-        print('[DEBUG 65] Proceed = {}'.format(proceed))
 
         return proceed
 
