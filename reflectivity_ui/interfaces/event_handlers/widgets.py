@@ -1,7 +1,7 @@
 """
 Zoo for customized simple widgets
 """
-from PyQt5 import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 
 class CustomDialog(QDialog):
@@ -9,9 +9,9 @@ class CustomDialog(QDialog):
     Refer to: https://www.mfitzp.com/tutorials/pyqt-dialogs/
     """
     def __init__(self, parent=None, title='', message=''):
-        QDialog.__init__(parent)
+        super(CustomDialog, self).__init__(parent)
 
-        self.setWindowTitle("HELLO!")
+        self.setWindowTitle(title)
 
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 
@@ -20,7 +20,7 @@ class CustomDialog(QDialog):
         self.buttonBox.rejected.connect(self.reject)
 
         self.layout = QVBoxLayout()
-        message = QLabel("Something happened, is that OK?")
+        message = QLabel(message)
         self.layout.addWidget(message)
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
