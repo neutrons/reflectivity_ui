@@ -333,7 +333,6 @@ class NexusData(object):
         try:
             xs_list = self.configuration.instrument.load_data(self.file_path)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
-            print('[DEBUG Back] Load {} to {}'.format(self.file_path, xs_list))
         except RuntimeError as run_err:
             logging.error("Could not load file(s) {}\n   {}\n   {}".format(str(self.file_path), sys.exc_value, run_err))
             return self.cross_sections

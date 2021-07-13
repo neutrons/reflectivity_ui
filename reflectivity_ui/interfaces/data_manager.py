@@ -38,7 +38,7 @@ class DataManager(object):
         self.reduction_list = []  # type: List[NexusData]
         self.direct_beam_list = []  # type: List[NexusData]
         # List of cross-sections common to all reduced data sets
-        self.reduction_states = []
+        self.reduction_states = []  # type: List[str]  # List of cross-section states
         self.final_merged_reflectivity = {}
 
         # Cached outputs
@@ -131,9 +131,8 @@ class DataManager(object):
         return data_set == self._nexus_data
 
     def is_active_data_compatible(self):
-        """
-            Determine whether the currently active data set is compatible
-            with the data sets that are currently part of the reduction list.
+        r"""
+        @brief Determine if the currently active data set is compatible with the data sets in the reduction list.
         """
         # If we are starting a new reduction list, just proceed
         if self.reduction_list == []:
@@ -141,11 +140,15 @@ class DataManager(object):
 
         # First, check that we have the same number of states
         if not len(self.reduction_states) == len(self.data_sets.keys()):
+            logging.error('Active data cross-sections ({}) different than those of the'
+                          ' reduction list ({})'.format(self.reduction_states, self.data_sets.keys()))
             return False
 
         # Second, make sure the states match
-        for item in self.data_sets.keys():
-            if not item in self.reduction_states:
+        for cross_section_state in self.data_sets.keys():
+            if cross_section_state not in self.reduction_states:
+                logging.error('Active data cross-section {} not found in those'
+                              ' of the reduction list'.format(cross_section_state))
                 return False
         return True 
 
@@ -194,6 +197,7 @@ class DataManager(object):
         print('[DEBUG add_active_to_reduction] self._nexus_data.number = {}'.format(self._nexus_data.number))
         print('[DEBUG add_active_to_reduction] self._nexus_data in self.reduction_list is {}'.format((self._nexus_data in self.reduction_list)))
         if not self._nexus_data in self.reduction_list:
+            print('[DEBUG add_active_to_reduction] is_active_data_compatible = {}'.format(self.is_active_data_compatible()))
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
                     self.reduction_states = self.data_sets.keys()

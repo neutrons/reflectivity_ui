@@ -19,8 +19,15 @@ class RunNumbers(object):
     range_symbol = ':'
 
     def __init__(self, numbers):
+        # type: (Union[List[int], List[str], int, str]) -> None
+        r"""
+        @param numbers: a list of numbers or a string containing one or more numbers. For instance, '1:3+5' translates
+          to [1, 2, 3, 5]
+        """
         self._numbers = None  # type: Optional[int]
-        if isinstance(numbers, list):
+        if isinstance(numbers, int):
+            self._numbers = [numbers]  # just one run number
+        elif isinstance(numbers, list):
             self._numbers = sorted([int(n) for n in numbers])
         elif isinstance(numbers, str):
             if self.merge_symbol in numbers or self.range_symbol in numbers:
@@ -87,18 +94,22 @@ class FilePath(object):
     merge_symbol = '+'
 
     @classmethod
-    def join(cls, dirname, basename):
-        # type: (unicode, unicode ) -> unicode
+    def join(cls, dirname, basename, sort=True):
+        # type: (unicode, unicode, Optional[bool]) -> unicode
         r"""
         @brief Create the file path for a single file or a set of files using one directory
         @param dirname: absolute path to a directory
         @param basename: name of one or more files. If more than one file, they're concatenated with the
           merge symbol '+'. Example: u'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        @param sort: if True, sort the basenames according to increasing run number when more than one file.
         @returns string representing the absolute path to the files.
           Example: u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38198.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38199.nxs.h5'
         """
         base_names = basename.split(cls.merge_symbol)
-        return unicode(cls.merge_symbol.join([os.path.join(dirname, name) for name in base_names]))
+        file_paths = [os.path.join(dirname, name) for name in base_names]
+        if sort:
+            file_paths.sort()
+        return unicode(cls.merge_symbol.join(file_paths))
 
     @classmethod
     def unique_dirname(cls, file_path):
@@ -109,7 +120,7 @@ class FilePath(object):
         return True
 
     def __init__(self, file_path, sort=True):
-        # type: (Union[str, list], Optional[bool]) -> None
+        # type: (Union[str, List[str]], Optional[bool]) -> None
         if isinstance(file_path, list):
             file_path = self.merge_symbol.join(file_path)
         if not self.unique_dirname(file_path):
