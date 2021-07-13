@@ -4,18 +4,23 @@
     Manage file-related and UI events
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import sys
-import os
-import logging
-import glob
-import math
-import time
-from PyQt5 import QtGui, QtCore, QtWidgets
 
+# package imports
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
-from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
 from .widgets import CustomDialog
+
+# 3rd-party imports
+from PyQt5 import QtGui, QtCore, QtWidgets
+
+# standard imports
+import glob
+import logging
+import math
+import os
+import sys
+import time
 
 
 class MainHandler(object):
@@ -653,35 +658,35 @@ class MainHandler(object):
         print('[DEBUG 65] Proceed = {}'.format(proceed))
 
     def open_run_number(self, number=None):
+        r"""
+        @brief Open a data file by typing a run number or a composite run number for merging data sets
+        @details Example: 120:123+125+127:132 opens files with run numbers from 120 to 132 except 124 and 126
         """
-            Open a data file by typing a run number
-        """
-        # TODO Task #75 - if multiple runs are provided as 'a, b, c' or 'a, b:c' or 'a, b-c', then
-        #  the reduction shall be in the 'open sum' mode
         self.main_window.auto_change_active = True
         if number is None:
-            number = self.ui.numberSearchEntry.text()
-            # TODO FIXME Task #75 number can be numbers
+            number = str(self.ui.numberSearchEntry.text())  # cast from unicode to string
         QtWidgets.QApplication.instance().processEvents()
-
+        run_numbers = RunNumbers(number)
+        file_list = list()
         # Look for new-style nexus file name
         configuration = self.get_configuration()
-        search_string = configuration.instrument.file_search_template % number
+        for run_number in run_numbers.numbers:
+            search_string = configuration.instrument.file_search_template % run_number
+            matches = glob.glob(search_string+'.nxs.h5')  # type: Optional[List[str]]
+            if not matches:  # Look for old-style nexus file name
+                search_string = configuration.instrument.legacy_search_template % run_number
+                matches = glob.glob(search_string+'_event.nxs')
+            file_list.append(matches[0])  # there should be only one match, since we query with one run number
 
-        file_list = glob.glob(search_string+'.nxs.h5')
-        # Look for old-style nexus file name
-        if not file_list:
-            search_string = configuration.instrument.legacy_search_template % number
-            file_list = glob.glob(search_string+'_event.nxs')
-        self.ui.numberSearchEntry.setText('')
-
+        self.ui.numberSearchEntry.setText('')  # empty the contents of in the LineEdit widget
         success = False
         if file_list > 0:
-            self.update_file_list(file_list[0])
-            self.open_file(os.path.abspath(file_list[0]))
+            file_path = FilePath(file_list).path  # single path or a composite of file paths
+            self.update_file_list(file_path)
+            self.open_file(file_path)
             success = True
         else:
-            self.report_message("Could not locate file %s" % number, pop_up=True)
+            self.report_message("Could not locate one or more of file(s) %s" % run_numbers.short, pop_up=True)
 
         self.main_window.auto_change_active = False
         return success

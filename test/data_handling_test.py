@@ -1,13 +1,15 @@
-import unittest
-import sys
-sys.path.append('..')
 import os
+import sys
+import unittest
 
 import reflectivity_ui.interfaces.data_handling.data_manipulation as dm
+from reflectivity_ui.interfaces.data_handling.filepath import RunNumbers, FilePath
 from reflectivity_ui.interfaces.data_handling import ApplicationConfiguration
 from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
 from reflectivity_ui.interfaces.data_manager import DataManager
 from reflectivity_ui.interfaces.configuration import Configuration
+
+sys.path.append('..')
 
 
 class ApplicationConfigurationTest(unittest.TestCase):
@@ -98,6 +100,73 @@ class DataManagerTest(unittest.TestCase):
     def test_load_reduced(self):
         manager = DataManager(os.getcwd())
         manager.load_data_from_reduced_file('data/REF_M_29160_Specular_++.dat')
+
+
+class RunNumberTest(unittest.TestCase):
+    def test_init(self):
+        self.assertEquals(RunNumbers(123).numbers, [123])
+        self.assertEquals(RunNumbers('123').numbers, [123])
+        self.assertEquals(RunNumbers([123, '126', 125]).numbers, [123, 125, 126])
+        self.assertEquals(RunNumbers('7:10+3:5+1').numbers, [1, 3, 4, 5, 7, 8, 9, 10])
+        self.assertEquals(RunNumbers('7:10 + 3:5 + 1').numbers, [1, 3, 4, 5, 7, 8, 9, 10])
+
+    def test_long(self):
+        runs = RunNumbers([7, 8, 9, 10, 3, 4, 5, 1])
+        self.assertEqual(runs.long, '1+3+4+5+7+8+9+10')
+
+    def test_short(self):
+        runs = RunNumbers([7, 8, 9, 10, 3, 4, 5, 1])
+        self.assertEqual(runs.short, '1+3:5+7:10')
+
+
+class FilePathTest(unittest.TestCase):
+    def test_init(self):
+        self.assertEqual(FilePath(u'/SNS/REF_M_1.nxs').path, u'/SNS/REF_M_1.nxs')
+        self.assertEqual(FilePath([u'/SNS/REF_M_2.nxs', u'/SNS/REF_M_1.nxs']).path,
+                         u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs')
+        self.assertEqual(FilePath([u'/SNS/REF_M_2.nxs', u'/SNS/REF_M_1.nxs'], sort=False).path,
+                         u'/SNS/REF_M_2.nxs+/SNS/REF_M_1.nxs')
+        self.assertEqual(FilePath(u'/SNS/REF_M_2.nxs+/SNS/REF_M_1.nxs').path,
+                         u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs')
+
+    def test_join(self):
+        self.assertEqual(FilePath.join(u'/SNS', u'REF_M_1.nxs'), u'/SNS/REF_M_1.nxs')
+        self.assertEqual(FilePath.join(u'/SNS', u'REF_M_2.nxs+REF_M_1.nxs'),
+                         u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs')
+
+    def test_unique_dirname(self):
+        self.assertTrue(FilePath.unique_dirname(u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'))
+        self.assertEqual(FilePath.unique_dirname(u'/NSN/REF_M_1.nxs+/SNS/REF_M_2.nxs'), False)
+
+    def test_single_paths(self):
+        self.assertEquals(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').single_paths,
+                          [u'/SNS/REF_M_1.nxs', u'/SNS/REF_M_3.nxs'])
+
+    def test_is_composite(self):
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs').is_composite, False)
+        self.assertTrue(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').is_composite)
+
+    def test_dirname(self):
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs').dirname, u'/SNS')
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').dirname, u'/SNS')
+
+    def test_basename(self):
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs').basename, u'REF_M_3.nxs')
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').basename, u'REF_M_1.nxs+REF_M_3.nxs')
+
+    def test_first_path(self):
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs').first_path, u'/SNS/REF_M_3.nxs')
+        self.assertEqual(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').first_path, u'/SNS/REF_M_1.nxs')
+
+    def test_split(self):
+        self.assertEquals(FilePath(u'/SNS/REF_M_3.nxs').split(), (u'/SNS', u'REF_M_3.nxs'))
+        self.assertEquals(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').split(), (u'/SNS', u'REF_M_1.nxs+REF_M_3.nxs'))
+
+    def test_run_numbers(self):
+        self.assertEquals(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').run_numbers(), [1, 3])
+        file_path = FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs+/SNS/REF_M_6.nxs+/SNS/REF_M_2.nxs')
+        self.assertEqual(file_path.run_numbers(string_representation='long'), '1+2+3+6')
+        self.assertEqual(file_path.run_numbers(string_representation='short'), '1:3+6')
 
 
 if __name__ == '__main__':
