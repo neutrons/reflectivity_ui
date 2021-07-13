@@ -28,7 +28,7 @@ script:
     # TEST: create test environment and test build
     # - mamba create -q -n testenv python=2.7 mantid-framework=4.0.0 --file requirements.txt --file requirements_dev.txt
   - conda install mamba
-  - mamba create -q -n testenv python=2.7 mantid-framework=4.0.0 --file requirements.txt
+  - mamba create -q -n testenv python=2.7 mantid-framework=4.0.0 --file requirements.txt --file requirements_dev.txt
   - conda info --envs
   - conda activate testenv
   - python --version
@@ -40,8 +40,8 @@ script:
   - cd ..
 
     # Test
-  - cd test; coverage run data_handling_test.py;
   - xvfb-run --server-args="-screen 0 640x480x24" --auto-servernum python -m pytest test/ui --disable-pytest-warnings -vv -r w
+  - cd test; coverage run data_handling_test.py;
 
 after_success:
   - codecov
