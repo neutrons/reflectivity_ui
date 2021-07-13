@@ -186,7 +186,7 @@ class FilePath(object):
         """
         numbers = list()
         for path in self.single_paths:
-            match = re.search(r'REF_M_(\d+)\.', path)
+            match = re.search(r'REF_M_(\d+)', path)
             if match is None:
                 raise ValueError('Could not extract run number in file path {}'.format(path))
             numbers.append(int(match.groups()[0]))
