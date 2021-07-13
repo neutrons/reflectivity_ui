@@ -651,11 +651,13 @@ class MainHandler(object):
         bool
 
         """
-        dialog = CustomDialog(self, title='Open Sum Confirmation',
+        dialog = CustomDialog(self.main_window, title='Open Sum Confirmation',
                               message=message)
 
-        proceed = dialog.exec()
+        proceed = dialog.exec_()
         print('[DEBUG 65] Proceed = {}'.format(proceed))
+
+        return proceed
 
     def open_run_number(self, number=None):
         r"""
