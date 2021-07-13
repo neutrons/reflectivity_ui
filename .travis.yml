@@ -27,7 +27,7 @@ install:
 script:
     # TEST: create test environment and test build
   - conda install mamba
-  - mamba create -q -n testenv python=2.7 mantid-framework=4.0.0 --file requirements.txt
+  - mamba create -q -n testenv python=2.7 mantid-framework=4.0 --file requirements.txt --file requirements_dev.txt
   - conda info --envs
   - conda activate testenv
   - python --version
