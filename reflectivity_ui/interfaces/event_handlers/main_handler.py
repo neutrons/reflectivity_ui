@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
+from .widgets import AcceptRejectDialog
 
 # 3rd-party imports
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -601,7 +602,11 @@ class MainHandler(object):
 
         # check whether files can be merged without further notice
         message = self._congruency_fail_report(file_paths, log_names=None)  # TODO Task #64
-        if message and not self._user_gives_permission(message):  # TODO Task #65
+
+        # FIXME 65 Test case
+        message += 'Waiting for Task #64 to be merged'
+
+        if message and not self._user_gives_permission(message):
             return
 
         print('\n[DEBUG] EXITING _file_open_sum_dialog')
@@ -635,11 +640,23 @@ class MainHandler(object):
 
     def _user_gives_permission(self, message):
         """Ask user's permission to proceed or quit if the select runs do not have same sample logs
-        """
-        # TODO 65 - Implement
-        print('[DEBUG] Show message: "{}" and ask user to proceed or not.'.format(message))
 
-        return True
+        Parameters
+        ----------
+        message: str
+            message to show in the dialog box
+
+        Returns
+        -------
+        bool
+
+        """
+        dialog = AcceptRejectDialog(self.main_window, title='Open Sum Confirmation',
+                                    message=message)
+
+        proceed = dialog.exec_()
+
+        return proceed
 
     def open_run_number(self, number=None):
         r"""
