@@ -32,16 +32,14 @@ script:
   - conda info --envs
   - conda activate testenv
   - python --version
-  
   - pip install --upgrade codecov
+  - python setup.py develop
   - cd test
   - wget http://198.74.56.37/ftp/external-data/MD5/214df921d4fa70ff5a33c4eb6f8284ad -O REF_M_24949
   - wget http://198.74.56.37/ftp/external-data/MD5/58d6698e1d6bf98e0315687cb980d333 -O REF_M_29160
+  - coverage run -m unittest discover
   - cd ..
-
-    # Test
   - xvfb-run --server-args="-screen 0 640x480x24" --auto-servernum python -m pytest test/ui --disable-pytest-warnings -vv -r w
-  - cd test; coverage run data_handling_test.py;
 
 after_success:
   - codecov
