@@ -118,7 +118,6 @@ class MainHandler(object):
         @param force: flag to force
         @param silent: If False, update the plots currently shown in the interface
         """
-        print('[DEBUG] ENTERING open_files_merge()')
         # Verify that all files selected shall exist
         for file_path in file_paths:
             if not os.path.isfile(file_path):
@@ -156,7 +155,6 @@ class MainHandler(object):
         # set flag
         self.main_window.auto_change_active = False
         logging.info("DONE: %s sec", time.time()-t_0)
-        print('[DEBUG] EXITING open_files_merge()')
 
     def merged_files_loaded(self):
         """
@@ -175,15 +173,12 @@ class MainHandler(object):
         for i in range(12):
             if getattr(self.ui, 'selectedChannel%i' % i).isChecked():
                 current_channel = i
-        print('[DEBUG 66] select channel {}'.format(current_channel))
 
         # Set channel to data manager
         success = self._data_manager.set_channel(current_channel)
         if not success:
             self.ui.selectedChannel0.setChecked(True)
 
-        print('[DEBUG] data manager type: {}'.format(type(self._data_manager)))
-        print('[DEBUG] data manager data set keys: {}'.format(list(self._data_manager.data_sets.keys())))
         channels = self._data_manager.data_sets.keys()
         for i, channel in enumerate(channels):
             getattr(self.ui, 'selectedChannel%i'%i).show()
@@ -253,9 +248,6 @@ class MainHandler(object):
         # Update the reduction table if this data set is in it
         idx = self._data_manager.find_active_data_id()
         if idx is not None:
-            print('[DEBUG 66] Update reduction table row {} with {}'.format(idx, self._data_manager.active_channel))
-            # Example: [DEBUG 66] Update reduction table row 0
-            #     with <reflectivity_ui.interfaces.data_handling.data_set.CrossSectionData object at 0x7f8df0385350>
             self.update_reduction_table(idx, self._data_manager.active_channel)
 
         # Update the direct beam table if this data set is in it
@@ -367,8 +359,6 @@ class MainHandler(object):
         @param query_path: full path of a directory, a Nexus file, or a list of Nexus files. If a list of files,
         their paths are joined by the plus symbol '+'.
         """
-        print('[DEBUG] Entering main_handler.update_file_list')
-        #print('[DEBUG update_file_list] query_path = {}'.format(str(query_path)))
 
         def _split_composites():
             r"""Split the list of files in widget self.ui.file_list into a list of single files and
@@ -385,34 +375,24 @@ class MainHandler(object):
         def _updated_current_list():
             r"""Most updated list of single and composite files from the current directory"""
             _, composites = _split_composites()
-            #print('\n[DEBUG _updated_current_list] composites = {}'.format(str(composites)))
             return sorted(self._data_manager.current_event_files + composites)
 
         def _reset_ui_file_list(fresh_list):
             r"""reset widget self.ui.file_list and highlight the current file_name"""
-            #print('\n[DEBUG] ENTERING _reset_ui_file_list')
-            #print('\n[DEBUG _reset_ui_file_list] current_file_name = {}'.format(self._data_manager.current_file_name))
             self.ui.file_list.clear()  # Reset ui.file_list, a QtWidgets.QListWidget object
             for item in fresh_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
-                query = (item == self._data_manager.current_file_name)
-                #print('[DEBUG _reset_ui_file_list] {0} == {1} ? = {2}'.format(item, self._data_manager.current_file_name, query))
                 if item == self._data_manager.current_file_name:
-                    #print('\n[DEBUG _reset_ui_file_list] setCurrentItem to {}'.format(str(item)))
                     # Changing the current selection will trigger self.main_window.file_open_from_list() to be called,
                     # however, the current setting self.main_window.auto_change_active == True will cause
                     # self.main_window.file_open_from_list() to return before any statement is executed
                     self.ui.file_list.setCurrentItem(listitem)
-            #print('\n[DEBUG] EXITING _reset_ui_file_list')
 
         def _update_current_directory(new_dir):
             r"""Update the directory path in the main window and the path watcher"""
-            #print('[DEBUG _update_current_directory] new_dir = {}'.format(str(new_dir)))
             self.main_window.settings.setValue('current_directory', new_dir)
-            #print('[DEBUG _update_current_directory] settings["current_directory"] = {}'.format(str(self.main_window.settings.value('current_directory'))))
             self._path_watcher.removePath(self._data_manager.current_directory)
             self._data_manager.current_directory = new_dir
-            #print('[DEBUG _update_current_directory] self._data_manager.current_directory = {}'.format(str(self._data_manager.current_directory)))
             self._path_watcher.addPath(self._data_manager.current_directory)
 
         # This setting prevents automatic read-in of the currently selected item in the list
@@ -420,7 +400,6 @@ class MainHandler(object):
         self.main_window.auto_change_active = True
 
         file_path = None if query_path is None else FilePath(query_path)
-        print('[DEBUG update_file_list] file_path = {}'.format(file_path))
 
         # Use case 1: the contents of the current directory may have changed with the addition of new
         # event files. This could happen if the experiment is running, producing new event files.
@@ -428,7 +407,6 @@ class MainHandler(object):
             new_list = _updated_current_list()
         # Use case 2: a composite from using Open Sum
         elif file_path.is_composite:
-            print('\n[DEBUG update_file_list] Use case 2: a composite from using Open Sum')
             file_dir, file_name = file_path.split()
             self._data_manager.current_file_name = file_path.basename
             # Use case 2.1: the composite is made up of files in the current directory
@@ -436,7 +414,6 @@ class MainHandler(object):
                 new_list = sorted(_updated_current_list() + [file_path.basename])
             # Use case 2.2: the composite is made up of files in a new directory
             else:
-                #print('[DEBUG update_file_list] file_dir = {}, self._data_manager.current_directory = {}'.format(file_dir, self._data_manager.current_directory))
                 _update_current_directory(file_dir)
                 new_list = sorted(self._data_manager.current_event_files + [file_path.basename])
         # Use case 3: a single path pointing to a file or a directory
@@ -457,10 +434,8 @@ class MainHandler(object):
                 else:  # User selected a new file in a new directory
                     _update_current_directory(file_dir)
                     new_list = self._data_manager.current_event_files
-        #print('[DEBUG] new_list = {}'.format(str(new_list)))
         _reset_ui_file_list(new_list)
         self.main_window.auto_change_active = False
-        print('\n[DEBUG] EXITING update_file_list')
 
     def automated_file_selection(self):
         """
@@ -589,7 +564,6 @@ class MainHandler(object):
         @param filter_: show files with only selected extensions
         @returns absolute paths to the selected files, joined by the plus symbol '+'
         """
-        print('\n[DEBUG] ENTERING _file_open_sum_dialog')
         file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(self.main_window, u'Open NXS file...',
                                                                directory=self._data_manager.current_directory,
                                                                filter=filter_)
@@ -609,7 +583,6 @@ class MainHandler(object):
         if message and not self._user_gives_permission(message):
             return
 
-        print('\n[DEBUG] EXITING _file_open_sum_dialog')
         return FilePath(file_paths).path
 
     def _process_file_path(self, dialog_opening_method):
@@ -754,7 +727,6 @@ class MainHandler(object):
             Update the reduction tale
         """
         self.main_window.auto_change_active = True
-        print('[DEBUG 67] CrossSectionData.number = {}'.format(d.number))
         item = QtWidgets.QTableWidgetItem(str(d.number))
         if d == self._data_manager.active_channel:
             item.setBackground(QtGui.QColor(246, 213, 16))

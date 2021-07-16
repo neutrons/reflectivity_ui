@@ -68,10 +68,7 @@ class ProcessingWorkflow(object):
             :param ProgressReporter progress: reporter object
         """
         if not self.data_manager.reduction_states:
-            print('[DEBUG 67] Return due to reduction_states: {}'.format(self.data_manager.reduction_states))
             return
-        else:
-            print('[DEBUG 67] Continue due to reduction_states: {}'.format(self.data_manager.reduction_states))
 
         if self.output_options['export_specular']:
             if progress is not None:

@@ -43,7 +43,6 @@ class MainWindow(QtWidgets.QMainWindow,
         """
             Initialization
         """
-        print('[DEBUG] ENTERING MainWindow.__init__()')
         # Base class
         QtWidgets.QMainWindow.__init__(self)
 
@@ -54,10 +53,7 @@ class MainWindow(QtWidgets.QMainWindow,
 
         # Application settings
         self.settings = QtCore.QSettings('.refredm')
-        #print('[DEBUG] MainWindow.settings = {0}, {1}'.format(str(type(self.settings)), str(self.settings)))
-        #print('[DEBUG] settings.filename = {}'.format(self.settings.fileName()))
         # Object managers
-        #print('[DEBUG] settings["current_directory"] = {}'.format(self.settings.value('current_directory', os.path.expanduser('~'))))
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
 
@@ -84,7 +80,6 @@ class MainWindow(QtWidgets.QMainWindow,
         self.initiate_projection_plot.connect(self.plot_manager.plot_projections)
 
         self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
-        print('[DEBUG] EXITING MainWindow.__init__()')
 
     def closeEvent(self, event):
         """ Close UI event """
@@ -134,7 +129,6 @@ class MainWindow(QtWidgets.QMainWindow,
         """
             Show a dialog to open a new file.
         """
-        print('[DEBUG] Triggered event: file open dialog')
         self.file_handler.file_open_dialog()
 
     # Actions defined in Qt Designer
@@ -391,7 +385,6 @@ class MainWindow(QtWidgets.QMainWindow,
         # get options as a dictionary
         output_options = dialog.get_options()
         dialog.destroy()
-        print('[DEBUG 66] Output options: {}'.format(output_options))
 
         if output_options is not None:
             self.file_handler.get_configuration()
@@ -420,8 +413,6 @@ class MainWindow(QtWidgets.QMainWindow,
                 self.update_off_specular_viewer.emit()
             if output_options['export_gisans']:
                 self.update_gisans_viewer.emit()
-        else:
-            print('[DEBUG 66] output_options is None.  No reduction is executed')
 
     def toggle_smoothing(self):
         if self.ui.offspec_smooth_checkbox.isChecked():
