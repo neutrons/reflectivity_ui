@@ -280,7 +280,6 @@ class NexusData(object):
                 return False
         return True
 
-    # TODO 67 Find out whether it can work with merged data
     def calculate_offspec(self, direct_beam=None):
         """
             Loop through the cross-section data sets and update

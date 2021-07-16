@@ -150,10 +150,6 @@ class Instrument(object):
         for path in fp_instance.single_paths:
             is_legacy = path.endswith(".nxs")
             if is_legacy or not USE_SLOW_FLIPPER_LOG:
-                # TODO get a temporary workspace name to prevent overwriting an existing workpsace. For instance,
-                # TODO if we loaded run 12345 there will be workspaces 12345_entry-POLSTATE1, 12334_entry_POLSTATE2,...
-                # TODO but if we now want to load data for runs 12345 + 12346 together, we should avoid overwriting
-                # TODO the previous workspaces when loading the data for the first run of the pair, run 12345.
                 _path_xs_list = api.MRFilterCrossSections(Filename=path,
                                                           PolState=self.pol_state,
                                                           AnaState=self.ana_state,

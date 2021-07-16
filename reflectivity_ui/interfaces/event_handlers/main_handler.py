@@ -204,14 +204,6 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         d = self._data_manager.active_channel
-
-        if d is None:
-            # TODO 66 - find out what if d is None
-            return
-            # raise RuntimeError('active channel d is None')
-        else:
-            print('active channel d is of type {}'.format(type(d)))
-
         self.populate_from_configuration(d.configuration)
         self.main_window.initiate_projection_plot.emit(False)
         QtWidgets.QApplication.instance().processEvents()
@@ -263,7 +255,6 @@ class MainHandler(object):
 
         self.main_window.auto_change_active = False
 
-    # TODO Task #73
     def update_file_list(self, query_path=None):
         # type: (Optional[str]) -> None
         r"""
