@@ -181,52 +181,6 @@ class Instrument(object):
                              LogType='String')
         return xs_list
 
-    # TODO 64 - Implement (in progress) NEW of Task 64
-    def load_merge_data(self, file_paths):
-        """Load a data set according to the needs ot the instrument.
-        Returns a WorkspaceGroup with any number of cross-sections.
-
-        Parameters
-        ----------
-        file_paths: ~list
-            list of file path
-
-        Returns
-        -------
-        WorkspaceGroup
-            with any number of cross-secitons
-
-        """
-        # sanity check
-        if not isinstance(file_paths, list):
-            raise TypeError('Method load_merge_data accepts list (of file path) only but not {}'.format(file_paths))
-        elif len(file_paths) < 2:
-            raise NotImplementedError('Method load_merge_data only work on more than 1 file path.')
-
-        # Be careful with legacy data
-        is_legacy = file_paths[0].endswith(".nxs")
-        if is_legacy or not USE_SLOW_FLIPPER_LOG:
-            # TODO 64 FIXME 64 - Need test data for legacy data (can they be merged????)
-            base_name = os.path.basename(file_path)
-            _xs_list = api.MRFilterCrossSections(Filename=file_path,
-                                                 PolState=self.pol_state,
-                                                 AnaState=self.ana_state,
-                                                 PolVeto=self.pol_veto,
-                                                 AnaVeto=self.ana_veto,
-                                                 CrossSectionWorkspaces="%s_entry" % base_name)
-            # Only keep good workspaced and get rid of the rejected events
-            xs_list = [ws for ws in _xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
-        else:
-            # Load first data file
-            ws = api.LoadEventNexus(Filename=file_paths[0], OutputWorkspace="raw_events")
-            for ipath in range(1, len(file_paths)):
-                file_path = file_paths[ipath]
-                ws_new = api.LoadEventNexus(Filename=file_path, OutputWorkspace="raw_events_merged")
-                ws = ws + ws_new
-            xs_list = self.dummy_filter_cross_sections(ws)
-
-        return xs_list
-
     @classmethod
     def mid_q_value(cls, ws):
         """
