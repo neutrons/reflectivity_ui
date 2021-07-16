@@ -12,7 +12,7 @@ class TestDataLoader(object):
     @pytest.fixture(autouse=True)
     def _data_dir(self, data_server):
         r"""pass the data_file fixture """
-        self.file = data_server.file
+        self.file = data_server.path_to
 
     def test_simple_load(self):
         file_path = self.file('REF_M_28613+28614+28615+28616+28617+28618+28619_Specular_++.dat')
