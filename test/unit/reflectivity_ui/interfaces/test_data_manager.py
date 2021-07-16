@@ -15,7 +15,7 @@ class TestDataManagerTest(object):
         manager = DataManager(data_server.directory)
         manager.load(data_server.file("REF_M_29160"), Configuration())
 
-        assert manager.current_file == "REF_M_29160"
+        assert manager.current_file == data_server.file("REF_M_29160")
 
         manager.add_active_to_reduction()
         assert manager.find_data_in_reduction_list(manager._nexus_data) == 0

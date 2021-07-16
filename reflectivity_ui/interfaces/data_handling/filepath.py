@@ -29,7 +29,7 @@ class RunNumbers(object):
             self._numbers = [numbers]  # just one run number
         elif isinstance(numbers, list):
             self._numbers = sorted([int(n) for n in numbers])
-        elif isinstance(numbers, str):
+        elif isinstance(numbers, (str, unicode)):
             if self.merge_symbol in numbers or self.range_symbol in numbers:
                 self._numbers = sorted(self._uncompress(numbers))
             else:
