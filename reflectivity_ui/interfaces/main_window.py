@@ -244,7 +244,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 if change_type > 0:
                     try:
                         self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
-                    except Exception:  # TODO find out which exceptions types are thrown here
+                    except Exception:
                         self.file_handler.report_message("There was a problem updating the reflectivity",
                                                          pop_up=False)
                         logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
@@ -321,7 +321,7 @@ class MainWindow(QtWidgets.QMainWindow,
             QtWidgets.QApplication.instance().processEvents()
             try:
                 self.data_manager.calculate_reflectivity()
-            except Exception:  # TODO find out which exceptions types are thrown here
+            except Exception:
                 self.file_handler.report_message("There was a problem updating the reflectivity",
                                                  pop_up=False)
                 logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
@@ -370,7 +370,6 @@ class MainWindow(QtWidgets.QMainWindow,
     def autoRef(self):
         self.file_handler.automated_file_selection()
 
-    # TODO 66 - Test merged data will work
     def reduceDatasets(self):
         r"""
         Open a dialog to select reduction options for the current list of
