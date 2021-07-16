@@ -44,7 +44,7 @@ def data_server():
             r"""Directory where to find the data es"""
             return self._directory
 
-        def file(self, basename):
+        def path_to(self, basename):
             r"""Absolute path to a data file. If it doesn't exist, try to find it in the remote repository"""
             file_path = os.path.join(self._directory, basename)
             if not os.path.isfile(file_path):

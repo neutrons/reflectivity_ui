@@ -13,9 +13,9 @@ class TestDataManagerTest(object):
 
     def test_manager(self, data_server):
         manager = DataManager(data_server.directory)
-        manager.load(data_server.file("REF_M_29160"), Configuration())
+        manager.load(data_server.path_to("REF_M_29160"), Configuration())
 
-        assert manager.current_file == data_server.file("REF_M_29160")
+        assert manager.current_file == data_server.path_to("REF_M_29160")
 
         manager.add_active_to_reduction()
         assert manager.find_data_in_reduction_list(manager._nexus_data) == 0
@@ -40,7 +40,7 @@ class TestDataManagerTest(object):
 
     def test_load_reduced(self, data_server):
         manager = DataManager(data_server.directory)
-        manager.load_data_from_reduced_file(data_server.file('REF_M_29160_Specular_++.dat'))
+        manager.load_data_from_reduced_file(data_server.path_to('REF_M_29160_Specular_++.dat'))
 
 
 if __name__ == '__main__':
