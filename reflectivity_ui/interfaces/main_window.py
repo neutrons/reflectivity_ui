@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
-#pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, bare-except
-"""
+# pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes,
+# pylint; disable=wrong-import-order, bare-except
+r"""
     Main application window
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import sys
-import os
-import logging
-from PyQt5 import QtCore, QtWidgets
-import reflectivity_ui
-import reflectivity_ui.interfaces.generated.ui_main_window
-from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
-from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
+
+# package imports
 from .data_manager import DataManager
 from .plotting import PlotManager
 from .reduction_dialog import ReductionDialog
-from .event_handlers.progress_reporter import ProgressReporter
 from .smooth_dialog import SmoothDialog
+import reflectivity_ui
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
+from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
+import reflectivity_ui.interfaces.generated.ui_main_window
+
+# 3rd-party
+from PyQt5 import QtCore, QtWidgets
+
+# standard imports
+import logging
+import os
+import sys
 
 
 class MainWindow(QtWidgets.QMainWindow,
@@ -46,12 +53,15 @@ class MainWindow(QtWidgets.QMainWindow,
 
         # Application settings
         self.settings = QtCore.QSettings('.refredm')
-
         # Object managers
         self.data_manager = DataManager(self.settings.value('current_directory', os.path.expanduser('~')))
         self.plot_manager = PlotManager(self)
 
-        self.auto_change_active=False
+        r"""Setting `auto_change_active = True` bypasses execution of:
+        - MainWindow.file_open_from_list()
+        - MainWindow.changeRegionValues()
+        - MainHandler.reduction_table_changed()"""
+        self.auto_change_active = False
 
         # Event handlers
         self.plot_handler = PlotHandler(self)
@@ -64,7 +74,6 @@ class MainWindow(QtWidgets.QMainWindow,
         self.hide_unsupported()
         self.toggle_smoothing()
 
-        # UI events
         self.file_loaded_signal.connect(self.file_handler.update_info)
         self.file_loaded_signal.connect(self.file_handler.update_daslog)
         self.file_loaded_signal.connect(self.plotActiveTab)
@@ -79,14 +88,14 @@ class MainWindow(QtWidgets.QMainWindow,
 
     def keyPressEvent(self, event):
         """ UI event """
-        if event.modifiers()==QtCore.Qt.ControlModifier:
-            self.plot_handler.control_down=True
+        if event.modifiers() == QtCore.Qt.ControlModifier:
+            self.plot_handler.control_down = True
         else:
-            self.plot_handler.control_down=False
+            self.plot_handler.control_down = False
 
     def keyReleaseEvent(self, event):
         """ UI event """
-        self.plot_handler.control_down=False
+        self.plot_handler.control_down = False
 
     def initialize_instrument(self):
         """
@@ -94,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow,
             and saved parameters
         """
         for i in range(1, 12):
-            getattr(self.ui, 'selectedChannel%i'%i).hide()
+            getattr(self.ui, 'selectedChannel%i' % i).hide()
         self.ui.selectedChannel0.show()
         self.ui.selectedChannel0.setText(u"None")
 
@@ -119,9 +128,16 @@ class MainWindow(QtWidgets.QMainWindow,
     def file_open_dialog(self):
         """
             Show a dialog to open a new file.
-            TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
         """
         self.file_handler.file_open_dialog()
+
+    # Actions defined in Qt Designer
+    def file_open_sum_dialog(self):
+        r"""
+        @brief Read a set of congruent file data sets.
+        @details Select a list of event or histogram files, check their metadata is compatible, and read-in.
+        """
+        self.file_handler.file_open_sum_dialog()
 
     def file_loaded(self):
         """
@@ -130,16 +146,14 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_handler.file_loaded()
 
     def file_open_from_list(self):
-        """
-            Called when a new file is selected from the file list.
-        """
+        r"""Called when a new file is selected from the file list. This is an event call."""
         if self.auto_change_active:
             return
         QtWidgets.QApplication.instance().processEvents()
-        item=self.ui.file_list.currentItem()
-        name=unicode(item.text())
-        QtWidgets.QApplication.instance().processEvents()
-        self.file_handler.open_file(os.path.join(self.data_manager.current_directory, name))
+        item = self.ui.file_list.currentItem()  # type: QListWidgetItem
+        name = unicode(item.text())  # e.g 'REF_M_38199.nxs.h5' or 'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        filepath = FilePath.join(self.data_manager.current_directory, name)
+        self.file_handler.open_file(filepath)
 
     def reload_file(self):
         """
@@ -170,36 +184,36 @@ class MainWindow(QtWidgets.QMainWindow,
         if self.data_manager.active_channel is None:
             return
         color = str(self.ui.color_selector.currentText())
-        if color!=self.plot_manager.color and self.plot_manager.color is not None:
+        if color != self.plot_manager.color and self.plot_manager.color is not None:
             self.plot_manager.color = color
-            plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
-                   self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
-                   self.ui.xy_overview, self.ui.xtof_overview]
+            plots = [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                     self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                     self.ui.xy_overview, self.ui.xtof_overview]
             for plot in plots:
                 plot.clear_fig()
         elif self.plot_manager.color is None:
             self.plot_manager.color = color
-        if self.ui.plotTab.currentIndex()==0:
+        if self.ui.plotTab.currentIndex() == 0:
             self.plot_manager.plot_overview()
-        elif self.ui.plotTab.currentIndex()==1:
+        elif self.ui.plotTab.currentIndex() == 1:
             self.plot_manager.plot_xy()
-        elif self.ui.plotTab.currentIndex()==2:
+        elif self.ui.plotTab.currentIndex() == 2:
             self.plot_manager.plot_xtof()
-        elif self.ui.plotTab.currentIndex()==3:
+        elif self.ui.plotTab.currentIndex() == 3:
             self.file_handler.compute_offspec_on_change()
             self.plot_manager.plot_offspec()
-        elif self.ui.plotTab.currentIndex()==4:
+        elif self.ui.plotTab.currentIndex() == 4:
             self.file_handler.compute_gisans_on_change(active_only=True)
             self.plot_manager.plot_gisans()
-        elif self.ui.plotTab.currentIndex()==6:
+        elif self.ui.plotTab.currentIndex() == 6:
             self.ui.compare_widget.draw()
 
     def toggleColorbars(self):
         """ Refresh plots because of a color or scale change """
-        plots=[self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
-               self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
-               self.ui.xy_overview, self.ui.xtof_overview,
-               self.ui.offspec_pp, self.ui.offspec_mp, self.ui.offspec_pm, self.ui.offspec_mm]
+        plots = [self.ui.xy_pp, self.ui.xy_mp, self.ui.xy_pm, self.ui.xy_mm,
+                 self.ui.xtof_pp, self.ui.xtof_mp, self.ui.xtof_pm, self.ui.xtof_mm,
+                 self.ui.xy_overview, self.ui.xtof_overview,
+                 self.ui.offspec_pp, self.ui.offspec_mp, self.ui.offspec_pm, self.ui.offspec_mm]
         for plot in plots:
             plot.clear_fig()
         self.plotActiveTab()
@@ -230,7 +244,7 @@ class MainWindow(QtWidgets.QMainWindow,
                 if change_type > 0:
                     try:
                         self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
-                    except:
+                    except Exception:
                         self.file_handler.report_message("There was a problem updating the reflectivity",
                                                          pop_up=False)
                         logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
@@ -265,7 +279,7 @@ class MainWindow(QtWidgets.QMainWindow,
         if col == 0:
             self.data_manager.set_active_data_from_direct_beam_list(row)
             self.file_loaded()
-            #self.file_handler.active_data_changed()
+            # self.file_handler.active_data_changed()
 
     def replotProjections(self):
         """ Signal handling """
@@ -307,7 +321,7 @@ class MainWindow(QtWidgets.QMainWindow,
             QtWidgets.QApplication.instance().processEvents()
             try:
                 self.data_manager.calculate_reflectivity()
-            except:
+            except Exception:
                 self.file_handler.report_message("There was a problem updating the reflectivity",
                                                  pop_up=False)
                 logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
@@ -357,16 +371,17 @@ class MainWindow(QtWidgets.QMainWindow,
         self.file_handler.automated_file_selection()
 
     def reduceDatasets(self):
-        '''
+        r"""
         Open a dialog to select reduction options for the current list of
         reduction items.
-        '''
-        if len(self.data_manager.reduction_list)==0:
+        """
+        if len(self.data_manager.reduction_list) == 0:
             self.file_handler.report_message("The data to be reduced must be added to the reduction table",
                                              pop_up=True)
             return
-        dialog=ReductionDialog(self)
+        dialog = ReductionDialog(self)
         dialog.exec_()
+        # get options as a dictionary
         output_options = dialog.get_options()
         dialog.destroy()
 
@@ -426,9 +441,8 @@ class MainWindow(QtWidgets.QMainWindow,
         self.ui.offspec_qz_bin_width_label.setText("%8.6f 1/A" % width)
 
     # Un-used UI signals
-    #pylint: disable=missing-docstring, multiple-statements, no-self-use
+    # pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self): return NotImplemented
-    def fileOpenSumDialog(self): return NotImplemented
 
     # From the Advanced menu
     def open_advanced_background(self): return NotImplemented

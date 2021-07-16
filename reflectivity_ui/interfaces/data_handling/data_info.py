@@ -20,7 +20,6 @@ if ApplicationConfiguration().mantid_path is not None:
     sys.path.insert(0, ApplicationConfiguration().mantid_path)
 import mantid.simpleapi as api
 
-
 NX_PIXELS = 304
 NY_PIXELS = 256
 

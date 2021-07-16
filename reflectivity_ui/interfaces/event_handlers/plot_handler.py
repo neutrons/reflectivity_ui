@@ -24,6 +24,7 @@ def slow_down_events(fn):
         return fn(self, *args, **kws)
     return function_wrapper
 
+
 class PlotHandler(object):
     """
         Class to handle plotting events
