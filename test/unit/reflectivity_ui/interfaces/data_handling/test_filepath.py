@@ -16,7 +16,7 @@ class TestRunNumber(object):
     def test_init(self):
         assert_equal_arrays(RunNumbers(123).numbers, [123])
         assert_equal_arrays(RunNumbers('123').numbers, [123])
-        assert_equal_arrays(RunNumbers([123, '126', 125]).numbers, [123, 125, 126])
+        assert_equal_arrays(RunNumbers(['123', 126, '125']).numbers, [123, 125, 126])
         assert_equal_arrays(RunNumbers('7:10+3:5+1').numbers, [1, 3, 4, 5, 7, 8, 9, 10])
         assert_equal_arrays(RunNumbers('7:10 + 3:5 + 1').numbers, [1, 3, 4, 5, 7, 8, 9, 10])
 
