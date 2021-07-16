@@ -22,8 +22,6 @@ class DataManager(object):
     MAX_CACHE = 50  # maximum number of loaded datasets (either single-file or merged-files types)
 
     def __init__(self, current_directory):
-        print('[DEBUG] ENTERING DataManager.__init__()')
-        #print('[DEBUG] current_directory = {}'.format(str(current_directory)))
         self.current_directory = current_directory
         # current file name is used for file list table to set the current item
         self.current_file_name = None
@@ -44,7 +42,6 @@ class DataManager(object):
         # Cached outputs
         self.cached_offspec = None
         self.cached_gisans = None
-        print('[DEBUG] EXITING DataManager.__init__()')
 
     @property
     def data_sets(self):
@@ -111,7 +108,6 @@ class DataManager(object):
         if index < len(channels):
             # channel index is allowed
             self.active_channel = self.data_sets[channels[index]]
-            print('[DEBUG set_channel] type(active_channel) = {}'.format(type(self.active_channel)))
             return True
         elif len(channels) == 0:
             # no channel
@@ -119,7 +115,6 @@ class DataManager(object):
         else:
             # default
             self.active_channel = self.data_sets[channels[0]]
-            print('[DEBUG set_channel] type(active_channel) = {}'.format(type(self.active_channel)))
 
         return False
 
@@ -192,12 +187,7 @@ class DataManager(object):
         r"""
         @brief Add active data set to reduction list
         """
-        print('#################################################################')
-        print('[DEBUG add_active_to_reduction] self._nexus_data.file_path = {}'.format(self._nexus_data.file_path))
-        print('[DEBUG add_active_to_reduction] self._nexus_data.number = {}'.format(self._nexus_data.number))
-        print('[DEBUG add_active_to_reduction] self._nexus_data in self.reduction_list is {}'.format((self._nexus_data in self.reduction_list)))
-        if not self._nexus_data in self.reduction_list:
-            print('[DEBUG add_active_to_reduction] is_active_data_compatible = {}'.format(self.is_active_data_compatible()))
+        if self._nexus_data not in self.reduction_list:
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
                     self.reduction_states = self.data_sets.keys()
@@ -293,7 +283,6 @@ class DataManager(object):
                 break
 
         # If we don't have the data, load it
-        print('[DEBUG data_manager.load] Nexus data is {}; file path = {}'.format(nexus_data, file_path))
         if nexus_data is None:
             configuration.normalization = None
             nexus_data = NexusData(file_path, configuration)
@@ -312,8 +301,6 @@ class DataManager(object):
             self.current_directory = directory
             self.current_file_name = file_name
             self.set_channel(0)
-
-            print('[DEBUG Back] Process {}'.format(file_name))
 
             # If we didn't get this data set from our cache, add it and compute its reflectivity.
             if not is_from_cache:
@@ -418,8 +405,6 @@ class DataManager(object):
         self.current_directory = directory
         self.current_file_name = file_name
         self.set_channel(0)
-
-        print('[DEBUG Back] Process {}'.format(file_name))
 
         # If we didn't get this data set from our cache,
         # then add it and compute its reflectivity.

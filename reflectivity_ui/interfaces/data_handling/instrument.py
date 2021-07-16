@@ -143,8 +143,6 @@ class Instrument(object):
         with the plus symbol '+'.
         @returns WorkspaceGroup with any number of cross-sections
         """
-        print('*********************************************************')
-        print('[DEBUG instrument.load_data] file_path = {}'.format(file_path))
         fp_instance = FilePath(file_path)
         xs_list = list()
         temp_workspace_root_name = ''.join(random.sample(string.ascii_letters, 12))  # random string of 12 characters
@@ -166,8 +164,6 @@ class Instrument(object):
                 path_xs_list = [ws for ws in _path_xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
             else:
                 ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
-                print('[DEBUG instrument.load_data] LoadEventNexus({} has {} events)'.format(path, ws.getNumberEvents()))
-
                 path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
             if len(xs_list) == 0:  # initialize xs_list with the cross sections of the first data file
                 xs_list = path_xs_list
@@ -183,7 +179,6 @@ class Instrument(object):
                              LogName='run_numbers',
                              LogText=fp_instance.run_numbers(string_representation='short'),
                              LogType='String')
-            print('[DEBUG instrument.load_data] Workspace {} has {} events'.format(str(ws), ws.getNumberEvents()))
         return xs_list
 
     # TODO 64 - Implement (in progress) NEW of Task 64
@@ -202,8 +197,6 @@ class Instrument(object):
             with any number of cross-secitons
 
         """
-        print('[DEBUG 64] Am I called? file paths: {}'.format(file_paths))
-
         # sanity check
         if not isinstance(file_paths, list):
             raise TypeError('Method load_merge_data accepts list (of file path) only but not {}'.format(file_paths))

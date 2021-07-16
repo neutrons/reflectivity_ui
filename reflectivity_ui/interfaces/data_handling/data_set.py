@@ -344,7 +344,6 @@ class NexusData(object):
         _max_xs = None
         for ws in xs_list:
             # Get the unique name for the cross-section, determined by the filtering
-            print('[DEBUG Back SingleLoad] Process workspace {} from xs_list'.format(str(ws)))
             channel = ws.getRun().getProperty("cross_section_id").value
             if progress is not None:
                 progress_value += int(100.0/len(xs_list))
@@ -407,7 +406,6 @@ class NexusData(object):
             ws_names = ''
             for xs in xs_list:
                 ws_names += '{} (type: {}), '.format(str(xs), type(xs))
-            print('[DEBUG Back] Load {} to {}'.format(self.file_path_list, ws_names))
         except RuntimeError as run_err:
             logging.error("Could not load file {}\n  {}\nError: {}".format(self.file_path_list, sys.exc_value, run_err))
             return self.cross_sections
