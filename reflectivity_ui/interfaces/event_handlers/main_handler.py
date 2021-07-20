@@ -8,11 +8,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 # package imports
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
+from .widgets import AcceptRejectDialog
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
-from .widgets import CustomDialog, AcceptRejectDialog
+from reflectivity_ui.config import Settings
 
 # 3rd-party imports
 from PyQt5 import QtGui, QtCore, QtWidgets
+from mantid.simpleapi import DeleteWorkspace, LoadEventNexus
 
 # standard imports
 import glob
@@ -141,7 +143,6 @@ class MainHandler(object):
 
         self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
 
-    # TODO Task #64
     def _congruency_fail_report(self, file_paths, log_names=None):
         r"""
         # type: List[str], Optional(List[str]) -> str
@@ -149,8 +150,51 @@ class MainHandler(object):
         @param file_paths : List of Nexus files (full paths)
         @returns str : Error message; empty string if no error is found,
         """
-        fail_report = ''  # no failures
-        return fail_report
+        assert len(file_paths) > 1, 'We require more than one data file in order to compare their metadata'
+        # Log names validation and collect tolerances
+        tolerances = dict()  # store the tolerance value for each log name
+        all_tolerances = Settings()['OpenSum']['Tolerances']  # type: List[float]
+        all_log_names = Settings()['OpenSum']['LogNames']  # type: List[str]
+        assert all_log_names  # failsafe if structure of settings.json changes
+        if log_names is None:
+            log_names = all_log_names
+        for log_name in log_names:
+            try:
+                i = all_log_names.index(log_name)
+            except ValueError:
+                return '{} is not a valid Log for comparison'.format(log_name)
+            tolerances[log_name] = all_tolerances[i]
+
+        # simple data structure to collect the log values from all files
+        log_values = {name: list() for name in log_names}
+        for file_path in file_paths:
+            for entry in ['', '-Off_Off', '-On_Off', '-Off_On', '-On_On']:  # for new and old nexus files
+                workspace = None
+                try:
+                    workspace = LoadEventNexus(Filename=file_path,
+                                               NXentryName='entry' + entry,
+                                               MetaDataOnly=True)
+                    break
+                except RuntimeError:
+                    continue
+            if workspace is None:
+                return 'Could not load {}'.format(file_path)
+            metadata = workspace.getRun()
+            for log_name in log_names:
+                try:
+                    log_property = metadata.getProperty(log_name)
+                except RuntimeError as e:
+                    return e.message
+                log_values[log_name].append(log_property.getStatistics().mean)
+            DeleteWorkspace(workspace)
+
+        # Find the minimum and maximum values for each log, and compare to the tolerance
+        for log_name, values in log_values.items():
+            if max(values) - min(values) > tolerances[log_name]:
+                message_template = 'Files {0} contain values for log {1} that differ above tolerance {2}'
+                return message_template.format(file_paths, log_name, tolerances[log_name])
+
+        return ''  # no failures
 
     def update_tables(self):
         """

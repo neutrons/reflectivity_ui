@@ -94,7 +94,8 @@ class Instrument(object):
         self.ana_state = application_conf.ANA_STATE
         self.ana_veto = application_conf.ANA_VETO
 
-    def dummy_filter_cross_sections(self, ws, name_prefix=None):
+    @staticmethod
+    def dummy_filter_cross_sections(ws, name_prefix=None):
         # type: (EventWorkspace, Optional[str]) -> WorkspaceGroup
         r"""
         @brief Filter events according to an aggregated state log.
