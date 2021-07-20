@@ -1,9 +1,9 @@
 # INSTALL THE requirements.txt AS WELL
 
 # testing
-# codecov
+codecov
 pytest
-# pytest-cov
+pytest-cov
 pytest-qt
 
 # linting and static analysis
