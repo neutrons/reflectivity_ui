@@ -15,7 +15,8 @@ import urllib
 this_module_path = sys.modules[__name__].__file__
 
 
-@pytest.fixture(scope="session", autouse=True)
+#@pytest.fixture(scope="session", autouse=True)
+@pytest.mark.skip(reason="is this preventing Travis from testing?")
 def fetch_remote_files():
     r"""Fetch remote files before any test runs"""
     data_dir = os.path.join(os.path.dirname(this_module_path), 'data')
