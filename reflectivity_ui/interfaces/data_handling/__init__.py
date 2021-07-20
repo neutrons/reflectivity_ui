@@ -28,7 +28,7 @@ class ApplicationConfiguration(object):
         # Check for installed Mantid versions under /opt
         for version in self._valid_mantid_versions:
             short = ''.join(version.split('.')[0:2])
-            install_path = os.path.join(root_dir, 'mantid' + short)
+            install_path = os.path.join(root_dir, 'mantid' + short)  # e.g "/opt/mantid42"
             if os.path.isdir(install_path):  # check only for the existence of the directory, but not its contents
                 self.mantid_path = install_path
                 self.mantid_version = version

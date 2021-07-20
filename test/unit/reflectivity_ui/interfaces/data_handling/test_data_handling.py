@@ -16,7 +16,7 @@ class TestApplicationConfiguration(object):
     def test_init(self):
         # System's installation of mantid
         application_conf = ApplicationConfiguration()
-        assert os.path.dirname(application_conf.mantid_path) in sys.path
+        assert os.path.isdir(application_conf.mantid_path)
         # Custom "installation" of mantid
         mantid_path = '/tmp/mantid41'
         if not os.path.isdir(mantid_path):

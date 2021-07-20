@@ -18,7 +18,7 @@ class TestConfiguration(object):
 
     def test_defaults(self):
         settings = Settings()
-        assert settings['OpenSum']['LogNames'][-1] == 'S4Vheight'
+        assert settings['OpenSum']['LogNames'][-1] == 'S3Vheight'
         assert settings['OpenSum']['Tolerances'][-1] == 0.01
 
 
