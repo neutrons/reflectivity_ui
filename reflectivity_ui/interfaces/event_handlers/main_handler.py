@@ -523,8 +523,7 @@ class MainHandler(object):
             return
 
         # check whether files can be merged without further notice
-        message = self._congruency_fail_report(file_paths, log_names=None)  # TODO Task #64
-
+        message = self._congruency_fail_report(file_paths, log_names=None)
         if message and not self._user_gives_permission(message):
             return
 
@@ -593,6 +592,11 @@ class MainHandler(object):
         success = False
         if file_list > 0:
             file_path = FilePath(file_list).path  # single path or a composite of file paths
+            # If opening more than one file, check whether files can be merged
+            if len(file_list) > 1:
+                message = self._congruency_fail_report(file_list, log_names=None)
+                if message and not self._user_gives_permission(message):
+                    return
             self.update_file_list(file_path)
             self.open_file(file_path)
             success = True
