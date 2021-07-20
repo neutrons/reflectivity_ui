@@ -1,10 +1,10 @@
 # INSTALL THE requirements.txt AS WELL
 
 # testing
-codecov
 pytest
-pytest-cov
 pytest-qt
+codecov
+pytest-cov
 
 # linting and static analysis
 # flake8
