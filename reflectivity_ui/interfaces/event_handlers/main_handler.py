@@ -191,8 +191,9 @@ class MainHandler(object):
         # Find the minimum and maximum values for each log, and compare to the tolerance
         for log_name, values in log_values.items():
             if max(values) - min(values) > tolerances[log_name]:
-                message_template = 'Files {0} contain values for log {1} that differ above tolerance {2}'
-                return message_template.format(file_paths, log_name, tolerances[log_name])
+                runs = FilePath(file_paths).run_numbers(string_representation='statement')
+                message_template = 'Runs {0} contain values for log {1} that differ above tolerance {2}'
+                return message_template.format(runs, log_name, tolerances[log_name])
 
         return ''  # no failures
 
@@ -524,9 +525,6 @@ class MainHandler(object):
         # check whether files can be merged without further notice
         message = self._congruency_fail_report(file_paths, log_names=None)  # TODO Task #64
 
-        # FIXME 65 Test case
-        message += 'Waiting for Task #64 to be merged'
-
         if message and not self._user_gives_permission(message):
             return
 
@@ -559,23 +557,15 @@ class MainHandler(object):
         self._process_file_path('_file_open_sum_dialog')
 
     def _user_gives_permission(self, message):
-        """Ask user's permission to proceed or quit if the select runs do not have same sample logs
-
-        Parameters
-        ----------
-        message: str
-            message to show in the dialog box
-
-        Returns
-        -------
-        bool
-
+        # type: (str) -> bool
+        r"""
+        @brief Ask user's permission to proceed or quit if the select runs do not have same sample logs
+        @param message: message to show in the dialog box
         """
+        message += '.\nProceed with Open Sum?'
         dialog = AcceptRejectDialog(self.main_window, title='Open Sum Confirmation',
                                     message=message)
-
         proceed = dialog.exec_()
-
         return proceed
 
     def open_run_number(self, number=None):

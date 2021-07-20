@@ -83,6 +83,22 @@ class RunNumbers(object):
             ranges.append(run_range)
         return self.merge_symbol.join(ranges)
 
+    @property
+    def statement(self):
+        # type: () -> str
+        r"""
+        @brief Human readable string representation.
+         @details Examples: '12', '12 and 13', '12, 13, and 14'
+        """
+        runs_str = [str(n) for n in self._numbers]
+        if len(runs_str) == 1:
+            return runs_str[0]
+        runs = ', '.join(runs_str[:-1])
+        if len(runs_str) > 2:
+            runs += ','
+        runs += ' and ' + runs_str[-1]
+        return runs
+
 
 class FilePath(object):
     r"""
@@ -193,7 +209,7 @@ class FilePath(object):
         numbers.sort()  # this should be unnecessary, though, since self._file_path is already sorted
         if string_representation is None:
             return numbers
-        elif string_representation in ('long', 'short'):
+        elif string_representation in ('long', 'short', 'statement'):
             return getattr(RunNumbers(numbers), string_representation)
         else:
             raise ValueError('parameter string_representation must be one of [None, "long", "short"]')

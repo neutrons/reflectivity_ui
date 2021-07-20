@@ -28,6 +28,11 @@ class TestRunNumber(object):
         runs = RunNumbers([7, 8, 9, 10, 3, 4, 5, 1])
         assert runs.short == '1+3:5+7:10'
 
+    def test_statement(self):
+        assert RunNumbers([7]).statement == '7'
+        assert RunNumbers([7, 8]).statement == '7 and 8'
+        assert RunNumbers([7, 8, 9]).statement == '7, 8, and 9'
+
 
 class TestFilePath(object):
     def test_init(self):
