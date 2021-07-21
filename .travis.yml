@@ -1,5 +1,7 @@
 language: python
 dist: trusty
+services:
+  - xvfb
 
 matrix:
   include:
@@ -34,10 +36,10 @@ script:
   - python --version
   - pip install --upgrade -r requirements_dev.txt
   - python setup.py develop
-  - python ./test/data/remote_files.py  # fetch remote files for testing
-  - pytest -vv --cov-report=term --cov=reflectivity_ui ./test/unit  # run unit tests with pytest
-  - codecov
-  - xvfb-run --server-args="-screen 0 640x480x24" --auto-servernum python -m pytest test/ui --disable-pytest-warnings -vv -r w
+  - cd ./test
+  - python ./data/remote_files.py  # fetch remote files for testing
+  - pytest -vv --cov-report=term --cov=reflectivity_ui ./unit  # run unit tests with pytest
+  - xvfb-run --server-args="-screen 0 640x480x24" --auto-servernum python -m pytest ./ui --disable-pytest-warnings -vv -r w
 
 after_success:
   - codecov
