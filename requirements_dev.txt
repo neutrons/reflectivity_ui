@@ -1,0 +1,11 @@
+# INSTALL THE requirements.txt AS WELL
+
+# testing
+pytest
+pytest-qt
+codecov
+pytest-cov
+
+# linting and static analysis
+# flake8
+# mypy

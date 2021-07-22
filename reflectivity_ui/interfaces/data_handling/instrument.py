@@ -5,14 +5,23 @@
 """
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, bare-except
 from __future__ import absolute_import, division, print_function
-import sys
-import os
-import math
-import logging
+
+# local
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from . import ApplicationConfiguration
+
+# 3rd party
 import numpy as np
 
+# standard
+import logging
+import math
+import os
+import random
+import sys
+import string
+
 # Import mantid according to the application configuration
-from . import ApplicationConfiguration
 application_conf = ApplicationConfiguration()
 if application_conf.mantid_path is not None:
     sys.path.insert(0, application_conf.mantid_path)
@@ -85,17 +94,20 @@ class Instrument(object):
         self.ana_state = application_conf.ANA_STATE
         self.ana_veto = application_conf.ANA_VETO
 
-    def dummy_filter_cross_sections(self, ws):
-        """
-            Filter events according to an aggregated state log.
-            :param str file_path: file to read
-
-            BL4A:SF:ICP:getDI
-
-            015 (0000 1111): SF1=OFF, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
-            047 (0010 1111): SF1=ON, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
-            031 (0001 1111): SF1=OFF, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
-            063 (0011 1111): SF1=ON, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+    @staticmethod
+    def dummy_filter_cross_sections(ws, name_prefix=None):
+        # type: (EventWorkspace, Optional[str]) -> WorkspaceGroup
+        r"""
+        @brief Filter events according to an aggregated state log.
+        @details  BL4A:SF:ICP:getDI
+          015 (0000 1111): SF1=OFF, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
+          047 (0010 1111): SF1=ON, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
+          031 (0001 1111): SF1=OFF, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+          063 (0011 1111): SF1=ON, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+        @param ws: workspace containing the unfiltered events
+        @param name_prefix: root name of the output WorkspaceGroup. If None, the run number of the workspace is chosen
+        as the root name.
+        @return a group workspace for each of the four different filter/analyzer conbinations
         """
         state_log = "BL4A:SF:ICP:getDI"
         states = {'Off_Off': 15,
@@ -103,43 +115,67 @@ class Instrument(object):
                   'Off_On': 31,
                   'On_On': 63}
         cross_sections = []
-
+        if name_prefix is None:
+            name_prefix = str(ws.getRunNumber())
         for pol_state in ['Off_Off', 'On_On', 'Off_On', 'On_Off']:
             try:
                 _ws = api.FilterByLogValue(InputWorkspace=ws, LogName=state_log, TimeTolerance=0.1,
                                            MinimumValue=states[pol_state],
-                                           MaximumValue=states[pol_state], LogBoundary='Left',
-                                           OutputWorkspace='%s_entry-%s' % (ws.getRunNumber(), pol_state))
+                                           MaximumValue=states[pol_state],
+                                           LogBoundary='Left',
+                                           # FIXME 64 - the merged workspace only shows the first run's number
+                                           #  Thus this method won't give a merged workspace a unique name
+                                           #  And potentially it could confuse the program with single-run workspace
+                                           OutputWorkspace='%s_entry-%s' % (name_prefix, pol_state))
                 _ws.getRun()['cross_section_id'] = pol_state
                 cross_sections.append(_ws)
-            except:
-                logging.error("Could not filter %s: %s", pol_state, sys.exc_info()[1])
+            except RuntimeError as run_err:
+                logging.error("Could not filter {}: {}\nError: {}".format(pol_state, sys.exc_info()[1], run_err))
 
         return cross_sections
 
     def load_data(self, file_path):
+        r"""
+        # type: (unicode) -> WorkspaceGroup
+        @brief Load one or more data sets according to the needs ot the instrument.
+        @details This function assumes that when loading more than one data file, the files are congruent and their
+        events will be added together.
+        @param file_path: absolute path to one or more data files. If more than one, paths should be concatenated
+        with the plus symbol '+'.
+        @returns WorkspaceGroup with any number of cross-sections
         """
-            Load a data set according to the needs ot the instrument.
-            Returns a WorkspaceGroup with any number of cross-sections.
-
-            :param str file_path: path to the data file
-        """
-        # Be careful with legacy data
-        is_legacy = file_path.endswith(".nxs")
-        if is_legacy or not USE_SLOW_FLIPPER_LOG:
-            base_name = os.path.basename(file_path)
-            _xs_list = api.MRFilterCrossSections(Filename=file_path,
-                                                 PolState=self.pol_state,
-                                                 AnaState=self.ana_state,
-                                                 PolVeto=self.pol_veto,
-                                                 AnaVeto=self.ana_veto,
-                                                 CrossSectionWorkspaces="%s_entry" % base_name)
-            # Only keep good workspaced and get rid of the rejected events
-            xs_list = [ws for ws in _xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
-        else:
-            ws = api.LoadEventNexus(Filename=file_path, OutputWorkspace="raw_events")
-            xs_list = self.dummy_filter_cross_sections(ws)
-
+        fp_instance = FilePath(file_path)
+        xs_list = list()
+        temp_workspace_root_name = ''.join(random.sample(string.ascii_letters, 12))  # random string of 12 characters
+        workspace_root_name = fp_instance.run_numbers(string_representation='short')
+        for path in fp_instance.single_paths:
+            is_legacy = path.endswith(".nxs")
+            if is_legacy or not USE_SLOW_FLIPPER_LOG:
+                _path_xs_list = api.MRFilterCrossSections(Filename=path,
+                                                          PolState=self.pol_state,
+                                                          AnaState=self.ana_state,
+                                                          PolVeto=self.pol_veto,
+                                                          AnaVeto=self.ana_veto,
+                                                          CrossSectionWorkspaces="%s_entry" % temp_workspace_root_name)
+                # Only keep good workspaces, and get rid of the rejected events
+                path_xs_list = [ws for ws in _path_xs_list if not ws.getRun()['cross_section_id'].value == 'unfiltered']
+            else:
+                ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
+                path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
+            if len(xs_list) == 0:  # initialize xs_list with the cross sections of the first data file
+                xs_list = path_xs_list
+                for ws in xs_list:  # replace the temporary names with the run number(s)
+                    name_new = str(ws).replace(temp_workspace_root_name, workspace_root_name)
+                    api.RenameWorkspace(str(ws), name_new)
+            else:
+                for i, ws in enumerate(xs_list):
+                    api.Plus(LHSWorkspace=str(ws), RHSWorkspace=str(path_xs_list[i]), OutputWorkspace=str(ws))
+        # Insert a log indicating which run numbers contributed to this cross-section
+        for ws in xs_list:
+            api.AddSampleLog(Workspace=str(ws),
+                             LogName='run_numbers',
+                             LogText=fp_instance.run_numbers(string_representation='short'),
+                             LogType='String')
         return xs_list
 
     @classmethod

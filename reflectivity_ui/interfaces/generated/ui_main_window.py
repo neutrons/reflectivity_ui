@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'designer/ui_main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -160,7 +162,7 @@ class Ui_MainWindow(object):
         self.toolBox.setLineWidth(0)
         self.toolBox.setObjectName("toolBox")
         self.page = QtWidgets.QWidget()
-        self.page.setGeometry(QtCore.QRect(0, 0, 352, 207))
+        self.page.setGeometry(QtCore.QRect(0, 0, 361, 207))
         self.page.setObjectName("page")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.page)
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
@@ -269,7 +271,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.q_rebin_spinbox, 7, 3, 1, 1)
         self.toolBox.addItem(self.page, "")
         self.page_2 = QtWidgets.QWidget()
-        self.page_2.setGeometry(QtCore.QRect(0, 0, 352, 207))
+        self.page_2.setGeometry(QtCore.QRect(0, 0, 361, 207))
         self.page_2.setObjectName("page_2")
         self.gridLayout_15 = QtWidgets.QGridLayout(self.page_2)
         self.gridLayout_15.setContentsMargins(2, 2, 2, 2)
@@ -281,7 +283,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.directPixelOverwrite.sizePolicy().hasHeightForWidth())
         self.directPixelOverwrite.setSizePolicy(sizePolicy)
-        self.directPixelOverwrite.setDecimals(1)
+        self.directPixelOverwrite.setDecimals(2)
         self.directPixelOverwrite.setMinimum(-1.0)
         self.directPixelOverwrite.setMaximum(304.0)
         self.directPixelOverwrite.setSingleStep(1.0)
@@ -317,7 +319,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dangle0Overwrite.sizePolicy().hasHeightForWidth())
         self.dangle0Overwrite.setSizePolicy(sizePolicy)
-        self.dangle0Overwrite.setDecimals(1)
+        self.dangle0Overwrite.setDecimals(4)
         self.dangle0Overwrite.setMinimum(-1.0)
         self.dangle0Overwrite.setMaximum(360.0)
         self.dangle0Overwrite.setObjectName("dangle0Overwrite")
@@ -372,7 +374,7 @@ class Ui_MainWindow(object):
         self.bandwidth_spinbox.raise_()
         self.toolBox.addItem(self.page_2, "")
         self.page_3 = QtWidgets.QWidget()
-        self.page_3.setGeometry(QtCore.QRect(0, 0, 352, 207))
+        self.page_3.setGeometry(QtCore.QRect(0, 0, 361, 207))
         self.page_3.setObjectName("page_3")
         self.gridLayout_17 = QtWidgets.QGridLayout(self.page_3)
         self.gridLayout_17.setContentsMargins(2, 2, 2, 2)
@@ -804,7 +806,7 @@ class Ui_MainWindow(object):
         self.reductionTable.horizontalHeader().setMinimumSectionSize(20)
         self.reductionTable.horizontalHeader().setStretchLastSection(True)
         self.reductionTable.verticalHeader().setVisible(False)
-        self.reductionTable.verticalHeader().setDefaultSectionSize(20)
+        self.reductionTable.verticalHeader().setDefaultSectionSize(21)
         self.verticalLayout_16.addWidget(self.reductionTable)
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
@@ -837,7 +839,7 @@ class Ui_MainWindow(object):
         self.normalizeTable.horizontalHeader().setMinimumSectionSize(30)
         self.normalizeTable.horizontalHeader().setStretchLastSection(True)
         self.normalizeTable.verticalHeader().setVisible(False)
-        self.normalizeTable.verticalHeader().setDefaultSectionSize(20)
+        self.normalizeTable.verticalHeader().setDefaultSectionSize(21)
         self.verticalLayout_17.addWidget(self.normalizeTable)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout_12.addWidget(self.tabWidget)
@@ -1567,6 +1569,9 @@ class Ui_MainWindow(object):
         self.actionAdvanced_Background.setVisible(False)
         self.actionAdvanced_Background.setObjectName("actionAdvanced_Background")
         self.actionOpen_Sum = QtWidgets.QAction(MainWindow)
+        icon125 = QtGui.QIcon()
+        icon125.addPixmap(QtGui.QPixmap(":/General/document-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionOpen_Sum.setIcon(icon125)
         self.actionOpen_Sum.setObjectName("actionOpen_Sum")
         self.actionCut_Points = QtWidgets.QAction(MainWindow)
         icon13 = QtGui.QIcon()
@@ -1648,6 +1653,7 @@ class Ui_MainWindow(object):
         self.menuAutomatics.addSeparator()
         self.menuAutomatics.addAction(self.actionResult_Viewer)
         self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionOpen_Sum)
         self.menuFile.addAction(self.actionLoad_Extraction)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuReduction.menuAction())
@@ -1705,7 +1711,7 @@ class Ui_MainWindow(object):
         self.gisansImax.editingFinished.connect(MainWindow.change_gisans_colorscale)
         self.actionAdvanced_Background.triggered.connect(MainWindow.open_advanced_background)
         self.refresh_offspec_button.pressed.connect(MainWindow.refresh_offspec)
-        self.actionOpen_Sum.triggered.connect(MainWindow.fileOpenSumDialog)
+        self.actionOpen_Sum.triggered.connect(MainWindow.file_open_sum_dialog)
         self.refScale.valueChanged['double'].connect(MainWindow.changeRegionValues)
         self.color_selector.currentIndexChanged['int'].connect(MainWindow.toggleColorbars)
         self.show_colorbars.stateChanged['int'].connect(MainWindow.toggleColorbars)

@@ -4,16 +4,25 @@
     Manage file-related and UI events
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import sys
-import os
-import logging
-import glob
-import math
-import time
-from PyQt5 import QtGui, QtCore, QtWidgets
 
+# package imports
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
+from .widgets import AcceptRejectDialog
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
+from reflectivity_ui.config import Settings
+
+# 3rd-party imports
+from PyQt5 import QtGui, QtCore, QtWidgets
+from mantid.simpleapi import DeleteWorkspace, LoadEventNexus
+
+# standard imports
+import glob
+import logging
+import math
+import os
+import sys
+import time
 
 
 class MainHandler(object):
@@ -65,28 +74,39 @@ class MainHandler(object):
         self.cache_indicator.setText("Files loaded: 0")
 
     def open_file(self, file_path, force=False, silent=False):
+        # type: (str, Optional[bool], Optional[bool]) -> None
+        r"""
+        @brief Read one or more data files. If more than one, merge their data.
+        @param file_path: absolute path to data files. If more than one file, paths are joined with
+        the plus symbol '+'
+        @param force: if true, the file will be reloaded even if it was loaded previously
+        @param silent: if true, the plots currently shown in the interface will NOT be updated
         """
-            Read a data file
-            :param str file_path: file path
-            :param bool force: if true, the file will be reloaded
-            :param bool silent: if true, the UI will not be updated
-        """
-        if not os.path.isfile(file_path):
-            self.report_message("File does not exist",
-                                detailed_message="The following file does not exist:\n  %s" % file_path,
-                                pop_up=True, is_error=True)
-            return
+        # Actions carried out:
+        # 1. check the file exists
+        # 2. Invoke DataManager.load()
+        # 3. if silent==False, invoke DataManager.file_loaded()
+
+        for single_file_path in file_path.split(FilePath.merge_symbol):  # also works when file_path is just the path to one file
+            if not os.path.isfile(single_file_path):
+                self.report_message("File does not exist",
+                                    detailed_message="The following file does not exist:\n  %s" % single_file_path,
+                                    pop_up=True, is_error=True)
+                return
+
         t_0 = time.time()
         self.main_window.auto_change_active = True
         try:
-            self.report_message("Loading file %s" % file_path)
+            self.report_message("Loading file(s) %s" % file_path)
             prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force, progress=prog)
-            self.report_message("Loaded file %s" % self._data_manager.current_file_name)
-        except:
-            self.report_message("Error loading file %s" % self._data_manager.current_file_name,
+            self.report_message("Loaded file(s) %s" % self._data_manager.current_file_name)
+        except RuntimeError as run_err:
+            # FIXME - need to find out what kind of error it could have
+            self.report_message("Error loading file(s) {} due to {}".format(self._data_manager.current_file_name, run_err),
                                 detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+
         if not silent:
             self.file_loaded()
         self.main_window.auto_change_active = False
@@ -122,6 +142,60 @@ class MainHandler(object):
         self.main_window.initiate_projection_plot.emit(False)
 
         self.cache_indicator.setText('Files loaded: %s' % (self._data_manager.get_cachesize()))
+
+    def _congruency_fail_report(self, file_paths, log_names=None):
+        r"""
+        # type: List[str], Optional(List[str]) -> str
+        @brief Check whether these files can be merged
+        @param file_paths : List of Nexus files (full paths)
+        @returns str : Error message; empty string if no error is found,
+        """
+        assert len(file_paths) > 1, 'We require more than one data file in order to compare their metadata'
+        # Log names validation and collect tolerances
+        tolerances = dict()  # store the tolerance value for each log name
+        all_tolerances = Settings()['OpenSum']['Tolerances']  # type: List[float]
+        all_log_names = Settings()['OpenSum']['LogNames']  # type: List[str]
+        assert all_log_names  # failsafe if structure of settings.json changes
+        if log_names is None:
+            log_names = all_log_names
+        for log_name in log_names:
+            try:
+                i = all_log_names.index(log_name)
+            except ValueError:
+                return '{} is not a valid Log for comparison'.format(log_name)
+            tolerances[log_name] = all_tolerances[i]
+
+        # simple data structure to collect the log values from all files
+        log_values = {name: list() for name in log_names}
+        for file_path in file_paths:
+            for entry in ['', '-Off_Off', '-On_Off', '-Off_On', '-On_On']:  # for new and old nexus files
+                workspace = None
+                try:
+                    workspace = LoadEventNexus(Filename=file_path,
+                                               NXentryName='entry' + entry,
+                                               MetaDataOnly=True)
+                    break
+                except RuntimeError:
+                    continue
+            if workspace is None:
+                return 'Could not load {}'.format(file_path)
+            metadata = workspace.getRun()
+            for log_name in log_names:
+                try:
+                    log_property = metadata.getProperty(log_name)
+                except RuntimeError as e:
+                    return e.message
+                log_values[log_name].append(log_property.getStatistics().mean)
+            DeleteWorkspace(workspace)
+
+        # Find the minimum and maximum values for each log, and compare to the tolerance
+        for log_name, values in log_values.items():
+            if max(values) - min(values) > tolerances[log_name]:
+                runs = FilePath(file_paths).run_numbers(string_representation='statement')
+                message_template = 'Runs {0} contain values for log {1} that differ above tolerance {2}'
+                return message_template.format(runs, log_name, tolerances[log_name])
+
+        return ''  # no failures
 
     def update_tables(self):
         """
@@ -203,8 +277,8 @@ class MainHandler(object):
         self.ui.datasetDangle0.setText(dangle0)
         self.ui.datasetSangle.setText(u"%.3f°"%d.sangle)
         self.ui.datasetDirectPixel.setText(dpix)
-        self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: <b>%s</b>'%(d.number, d.experiment,
-                                                                                                                             d.measurement_type, d.name))
+        self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: '
+                                       '<b>%s</b>'%(d.number, d.experiment, d.measurement_type, d.name))
 
         # Update direct beam indicator
         if d.is_direct_beam:
@@ -226,42 +300,89 @@ class MainHandler(object):
 
         self.main_window.auto_change_active = False
 
-    def update_file_list(self, file_path=None):
+    def update_file_list(self, query_path=None):
+        # type: (Optional[str]) -> None
+        r"""
+        @brief Update the list of data files
+        @param query_path: full path of a directory, a Nexus file, or a list of Nexus files. If a list of files,
+        their paths are joined by the plus symbol '+'.
         """
-            Update the list of data files
-        """
-        self.main_window.auto_change_active = True
-        if file_path is not None and not file_path==self._data_manager.current_directory:
-            if os.path.isdir(file_path):
-                file_dir = file_path
-            else:
-                file_dir, file_name = os.path.split(unicode(file_path))
-                self._data_manager.current_file_name = file_name
-            self.main_window.settings.setValue('current_directory', file_dir)
-            self._path_watcher.removePath(self._data_manager.current_directory)
-            self._data_manager.current_directory = file_dir
-            self._path_watcher.addPath(self._data_manager.current_directory)
 
-        # Update the list of files
-        event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*event.nxs'))
-        h5_file_list = glob.glob(os.path.join(self._data_manager.current_directory, '*.nxs.h5'))
-        event_file_list.extend(h5_file_list)
-        event_file_list.sort()
-        event_file_list = [os.path.basename(name) for name in event_file_list]
+        def _split_composites():
+            r"""Split the list of files in widget self.ui.file_list into a list of single files and
+            a list of composite files"""
+            singles, composites = list(), list()
+            for i in range(self.ui.file_list.count()):
+                file_base_name = self.ui.file_list.item(i).text()
+                if FilePath.merge_symbol in file_base_name:
+                    composites.append(file_base_name)
+                else:
+                    singles.append(file_base_name)
+            return singles, composites
 
-        current_list = [self.ui.file_list.item(i).text() for i in range(self.ui.file_list.count())]
-        if event_file_list != current_list:
-            self.ui.file_list.clear()
-            for item in event_file_list:
+        def _updated_current_list():
+            r"""Most updated list of single and composite files from the current directory"""
+            _, composites = _split_composites()
+            return sorted(self._data_manager.current_event_files + composites)
+
+        def _reset_ui_file_list(fresh_list):
+            r"""reset widget self.ui.file_list and highlight the current file_name"""
+            self.ui.file_list.clear()  # Reset ui.file_list, a QtWidgets.QListWidget object
+            for item in fresh_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
                 if item == self._data_manager.current_file_name:
+                    # Changing the current selection will trigger self.main_window.file_open_from_list() to be called,
+                    # however, the current setting self.main_window.auto_change_active == True will cause
+                    # self.main_window.file_open_from_list() to return before any statement is executed
                     self.ui.file_list.setCurrentItem(listitem)
+
+        def _update_current_directory(new_dir):
+            r"""Update the directory path in the main window and the path watcher"""
+            self.main_window.settings.setValue('current_directory', new_dir)
+            self._path_watcher.removePath(self._data_manager.current_directory)
+            self._data_manager.current_directory = new_dir
+            self._path_watcher.addPath(self._data_manager.current_directory)
+
+        # This setting prevents automatic read-in of the currently selected item in the list
+        # when the currently selected items changes due to the list update.
+        self.main_window.auto_change_active = True
+
+        file_path = None if query_path is None else FilePath(query_path)
+
+        # Use case 1: the contents of the current directory may have changed with the addition of new
+        # event files. This could happen if the experiment is running, producing new event files.
+        if file_path is None:
+            new_list = _updated_current_list()
+        # Use case 2: a composite from using Open Sum
+        elif file_path.is_composite:
+            file_dir, file_name = file_path.split()
+            self._data_manager.current_file_name = file_path.basename
+            # Use case 2.1: the composite is made up of files in the current directory
+            if file_dir == self._data_manager.current_directory:
+                new_list = sorted(_updated_current_list() + [file_path.basename])
+            # Use case 2.2: the composite is made up of files in a new directory
+            else:
+                _update_current_directory(file_dir)
+                new_list = sorted(self._data_manager.current_event_files + [file_path.basename])
+        # Use case 3: a single path pointing to a file or a directory
         else:
-            try:
-                self.ui.file_list.setCurrentRow(event_file_list.index(self._data_manager.current_file_name))
-            except ValueError:
-                self.report_message("Could not set file selection: %s" % self._data_manager.current_file_name,
-                                    detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+            # Use case 3.1: a single path pointing to a new directory
+            if os.path.isdir(query_path):
+                file_dir = query_path
+                if file_dir != self._data_manager.current_directory:  # User changed directory
+                    _update_current_directory(file_dir)
+                    self._data_manager.current_file_name = self._data_manager.current_event_files[0]
+                    new_list = self._data_manager.current_event_files
+            # Use case 3.2: a single path pointing to a file in the current or new directory
+            else:
+                file_dir, file_name = file_path.split()
+                self._data_manager.current_file_name = file_name
+                if file_dir == self._data_manager.current_directory:  # User selected a new file in the directory
+                    new_list = _updated_current_list()
+                else:  # User selected a new file in a new directory
+                    _update_current_directory(file_dir)
+                    new_list = self._data_manager.current_event_files
+        _reset_ui_file_list(new_list)
         self.main_window.auto_change_active = False
 
     def automated_file_selection(self):
@@ -370,51 +491,117 @@ class MainHandler(object):
 
             logging.info("UI updated: %s", time.time()-t_0)
 
-    # Actions defined in Qt Designer
-    def file_open_dialog(self):
+    def _file_open_dialog(self, filter_=None):
+        # type: (Optional[str]) -> Optional[str]
+        r"""
+        @brief Pop a File dialog window for the user to select one file
+        @param filter_: show files with only selected extensions
+        @returns absolute path to the selected file
         """
-            Show a dialog to open a new file.
-            TODO: consider multiple selection. In this case QuickNXS tries to automatically sort and reduce.
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
+                                                             directory=self._data_manager.current_directory,
+                                                             filter=filter_)
+        return file_path
+
+    def _file_open_sum_dialog(self, filter_=None):
+        # type: (Optional[str]) -> Optional[unicode]
+        r"""
+        @brief Pop a File dialog Window for the user to select two or more files
+        @details Congruency among the selected files is checked by comparing the values of selected metadata. User
+        is asked to override if congruency fails.
+        @param filter_: show files with only selected extensions
+        @returns absolute paths to the selected files, joined by the plus symbol '+'
+        """
+        file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(self.main_window, u'Open NXS file...',
+                                                               directory=self._data_manager.current_directory,
+                                                               filter=filter_)
+        # user cancel operation
+        if len(file_paths) == 0:
+            return
+        elif len(file_paths) == 1:
+            self.report_message('Merge mode must have more than 1 file selected')
+            return
+
+        # check whether files can be merged without further notice
+        message = self._congruency_fail_report(file_paths, log_names=None)
+        if message and not self._user_gives_permission(message):
+            return
+
+        return FilePath(file_paths).path
+
+    def _process_file_path(self, dialog_opening_method):
+        # type: (str) -> None
+        r"""
+        @brief Wrapper of the opening-file dialogs
+        @details This wrapper defines the extension of the files to be shown by the file dialog, and process the
+        file(s) selected by the user. It updates the file list widget as well as reads-in the file(s)
         """
         if self.ui.histogramActive.isChecked():
             filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
         else:
             filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
-                                                             directory=self._data_manager.current_directory,
-                                                             filter=filter_)
+
+        file_path = getattr(self, dialog_opening_method)(filter_=filter_)
 
         if file_path:
             self.update_file_list(file_path)
             self.open_file(file_path)
 
-    def open_run_number(self, number=None):
+    def file_open_dialog(self):
+        r"""GUI callback for backend MainHandler._file_open_dialog."""
+        self._process_file_path('_file_open_dialog')
+
+    def file_open_sum_dialog(self):
+        r"""GUI callback for backend MainHandler._file_open_sum_dialog."""
+        self._process_file_path('_file_open_sum_dialog')
+
+    def _user_gives_permission(self, message):
+        # type: (str) -> bool
+        r"""
+        @brief Ask user's permission to proceed or quit if the select runs do not have same sample logs
+        @param message: message to show in the dialog box
         """
-            Open a data file by typing a run number
+        message += '.\nProceed with Open Sum?'
+        dialog = AcceptRejectDialog(self.main_window, title='Open Sum Confirmation',
+                                    message=message)
+        proceed = dialog.exec_()
+        return proceed
+
+    def open_run_number(self, number=None):
+        r"""
+        @brief Open a data file by typing a run number or a composite run number for merging data sets
+        @details Example: 120:123+125+127:132 opens files with run numbers from 120 to 132 except 124 and 126
         """
         self.main_window.auto_change_active = True
         if number is None:
-            number = self.ui.numberSearchEntry.text()
+            number = str(self.ui.numberSearchEntry.text())  # cast from unicode to string
         QtWidgets.QApplication.instance().processEvents()
-
+        run_numbers = RunNumbers(number)
+        file_list = list()
         # Look for new-style nexus file name
         configuration = self.get_configuration()
-        search_string = configuration.instrument.file_search_template % number
+        for run_number in run_numbers.numbers:
+            search_string = configuration.instrument.file_search_template % run_number
+            matches = glob.glob(search_string+'.nxs.h5')  # type: Optional[List[str]]
+            if not matches:  # Look for old-style nexus file name
+                search_string = configuration.instrument.legacy_search_template % run_number
+                matches = glob.glob(search_string+'_event.nxs')
+            file_list.append(matches[0])  # there should be only one match, since we query with one run number
 
-        file_list = glob.glob(search_string+'.nxs.h5')
-        # Look for old-style nexus file name
-        if not file_list:
-            search_string = configuration.instrument.legacy_search_template % number
-            file_list = glob.glob(search_string+'_event.nxs')
-        self.ui.numberSearchEntry.setText('')
-
+        self.ui.numberSearchEntry.setText('')  # empty the contents of in the LineEdit widget
         success = False
         if file_list > 0:
-            self.update_file_list(file_list[0])
-            self.open_file(os.path.abspath(file_list[0]))
+            file_path = FilePath(file_list).path  # single path or a composite of file paths
+            # If opening more than one file, check whether files can be merged
+            if len(file_list) > 1:
+                message = self._congruency_fail_report(file_list, log_names=None)
+                if message and not self._user_gives_permission(message):
+                    return
+            self.update_file_list(file_path)
+            self.open_file(file_path)
             success = True
         else:
-            self.report_message("Could not locate file %s" % number, pop_up=True)
+            self.report_message("Could not locate one or more of file(s) %s" % run_numbers.short, pop_up=True)
 
         self.main_window.auto_change_active = False
         return success
@@ -461,12 +648,13 @@ class MainHandler(object):
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
             if not silent:
-                self.report_message("Data incompatible or already in the list.", pop_up=True)
+                self.report_message("(Add reflectivity) Data incompatible or already in the list.", pop_up=True)
             return False
         self.main_window.auto_change_active = True
 
-        # Update the reduction and direct beam tables
         idx = self._data_manager.find_data_in_reduction_list(self._data_manager._nexus_data)
+        if idx is None:
+            raise RuntimeError('It could be None but not likely')
         self.ui.reductionTable.insertRow(idx)
         self.update_tables()
 
@@ -627,7 +815,7 @@ class MainHandler(object):
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_normalization():
             if not silent:
-                self.report_message("Data incompatible or already in the list.", pop_up=True)
+                self.report_message("(Add direct beam) Data incompatible or already in the list.", pop_up=True)
             return False
 
         self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
@@ -823,8 +1011,11 @@ class MainHandler(object):
         return -1
 
     def get_configuration(self):
-        """
-            Gather the reduction options.
+        # type: () -> Configuration
+        r"""
+        @brief Gather the reduction options.
+        @details Retrieve the reduction options either from the active channel or from the current settings
+         in the graphical interface.
         """
         if self._data_manager.active_channel is not None:
             configuration = self._data_manager.active_channel.configuration
@@ -1070,13 +1261,13 @@ class MainHandler(object):
 
     def report_message(self, message, informative_message=None,
                        detailed_message=None, pop_up=False, is_error=False):
-        """
-            Report an error.
-            :param str message: message string to be reported
-            :param str informative_message: extra information
-            :param str detailed_message: detailed message for the log
-            :param bool pop_up: if True, a dialog will pop up
-            :param bool is_error: if True, the message is logged on the error channel
+        r"""
+        Report an error.
+        :param str message: message string to be reported
+        :param str informative_message: extra information
+        :param str detailed_message: detailed message for the log
+        :param bool pop_up: if True, a dialog will pop up
+        :param bool is_error: if True, the message is logged on the error channel
         """
         self.status_message.setText(message)
         if is_error:

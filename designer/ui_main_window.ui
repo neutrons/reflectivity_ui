@@ -359,7 +359,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>352</width>
+             <width>361</width>
              <height>207</height>
             </rect>
            </property>
@@ -675,7 +675,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>352</width>
+             <width>361</width>
              <height>207</height>
             </rect>
            </property>
@@ -930,8 +930,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>233</width>
-             <height>127</height>
+             <width>361</width>
+             <height>207</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2069,11 +2069,11 @@
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
                       </attribute>
-                      <attribute name="horizontalHeaderDefaultSectionSize">
-                       <number>70</number>
-                      </attribute>
                       <attribute name="horizontalHeaderMinimumSectionSize">
                        <number>20</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>70</number>
                       </attribute>
                       <attribute name="horizontalHeaderStretchLastSection">
                        <bool>true</bool>
@@ -2082,7 +2082,7 @@
                        <bool>false</bool>
                       </attribute>
                       <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>20</number>
+                       <number>21</number>
                       </attribute>
                       <column>
                        <property name="text">
@@ -2217,11 +2217,11 @@
                       <property name="editTriggers">
                        <set>QAbstractItemView::NoEditTriggers</set>
                       </property>
-                      <attribute name="horizontalHeaderDefaultSectionSize">
-                       <number>70</number>
-                      </attribute>
                       <attribute name="horizontalHeaderMinimumSectionSize">
                        <number>30</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>70</number>
                       </attribute>
                       <attribute name="horizontalHeaderStretchLastSection">
                        <bool>true</bool>
@@ -2230,7 +2230,7 @@
                        <bool>false</bool>
                       </attribute>
                       <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>20</number>
+                       <number>21</number>
                       </attribute>
                       <column>
                        <property name="text">
@@ -3922,6 +3922,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpen_Sum"/>
     <addaction name="actionLoad_Extraction"/>
    </widget>
    <addaction name="menuFile"/>
@@ -4180,8 +4181,15 @@
    </property>
   </action>
   <action name="actionOpen_Sum">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/General/document-open.png</normaloff>:/General/document-open.png</iconset>
+   </property>
    <property name="text">
     <string>Open Sum...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open and merge multiple runs</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
@@ -4758,7 +4766,7 @@
    <sender>actionOpen_Sum</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>fileOpenSumDialog()</slot>
+   <slot>file_open_sum_dialog()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -5694,7 +5702,7 @@
   <slot>change_gisans_colorscale()</slot>
   <slot>open_advanced_background()</slot>
   <slot>refresh_offspec()</slot>
-  <slot>fileOpenSumDialog()</slot>
+  <slot>file_open_sum_dialog()</slot>
   <slot>reload_file()</slot>
   <slot>cutPoints()</slot>
   <slot>autoRef()</slot>

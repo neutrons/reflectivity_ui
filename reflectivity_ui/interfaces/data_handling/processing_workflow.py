@@ -54,6 +54,9 @@ class ProcessingWorkflow(object):
         Carry out the reduction process for a set of data runs and manages outputs
     """
     def __init__(self, data_manager, output_options=None):
+        """
+        :param data_manager: all the reduced data shall come from data manager
+        """
         self.data_manager = data_manager
         self.output_options = output_options if output_options else DEFAULT_OPTIONS
         self.exported_data_files = []
@@ -81,6 +84,7 @@ class ProcessingWorkflow(object):
         if progress is not None:
                 progress(60, "Computing GISANS")
         if self.output_options['export_gisans']:
+            # FIXME 66 - could be an AttributeError from self.gisans().  Catch it!
             self.gisans(progress=progress)
 
         if self.output_options['email_send']:

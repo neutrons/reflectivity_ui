@@ -4,35 +4,39 @@
     and manages the data cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import glob
 import sys
 import os
 import time
 import numpy as np
 import logging
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
+from reflectivity_ui.interfaces.data_handling.filepath import RunNumbers, FilePath
 from .data_handling import data_manipulation
 from .data_handling import quicknxs_io
 from .data_handling import off_specular
 from .data_handling import gisans
 
+
 class DataManager(object):
-    MAX_CACHE = 50
+    MAX_CACHE = 50  # maximum number of loaded datasets (either single-file or merged-files types)
 
     def __init__(self, current_directory):
         self.current_directory = current_directory
+        # current file name is used for file list table to set the current item
         self.current_file_name = None
         # Current data set
         self._nexus_data = None
-        self.active_channel = None
-        # Cache of loaded data
-        self._cache = []
+        self.active_channel = None  # type: Optional[CrossSectionData]
+        # Cache of loaded data: list of NexusData instances
+        self._cache = list()  # type: List[NexusData]
 
         # The following is information about the data to be combined together
         # List of data sets
-        self.reduction_list = []
-        self.direct_beam_list = []
+        self.reduction_list = []  # type: List[NexusData]
+        self.direct_beam_list = []  # type: List[NexusData]
         # List of cross-sections common to all reduced data sets
-        self.reduction_states = []
+        self.reduction_states = []  # type: List[str]  # List of cross-section states
         self.final_merged_reflectivity = {}
 
         # Cached outputs
@@ -41,6 +45,13 @@ class DataManager(object):
 
     @property
     def data_sets(self):
+        """Reduced cross sections
+
+        Returns
+        -------
+        dict
+            dictionary of cross sections
+        """
         if self._nexus_data is None:
             return None
         return self._nexus_data.cross_sections
@@ -78,20 +89,33 @@ class DataManager(object):
             self.set_channel(0)
 
     def set_channel(self, index):
-        """
-            Set the current channel to the specified index, or zero
-            if it doesn't exist.
+        """Set the current channel to the specified index, or zero
+        if it doesn't exist.
+
+        Parameters
+        ----------
+        index: int
+            channel index
+
+        Returns
+        -------
+        bool
+
         """
         if self.data_sets is None:
             return False
         channels = self.data_sets.keys()
         if index < len(channels):
+            # channel index is allowed
             self.active_channel = self.data_sets[channels[index]]
             return True
         elif len(channels) == 0:
+            # no channel
             logging.error("Could not set active channel: no data available")
         else:
+            # default
             self.active_channel = self.data_sets[channels[0]]
+
         return False
 
     def is_active(self, data_set):
@@ -102,9 +126,8 @@ class DataManager(object):
         return data_set == self._nexus_data
 
     def is_active_data_compatible(self):
-        """
-            Determine whether the currently active data set is compatible
-            with the data sets that are currently part of the reduction list.
+        r"""
+        @brief Determine if the currently active data set is compatible with the data sets in the reduction list.
         """
         # If we are starting a new reduction list, just proceed
         if self.reduction_list == []:
@@ -112,11 +135,15 @@ class DataManager(object):
 
         # First, check that we have the same number of states
         if not len(self.reduction_states) == len(self.data_sets.keys()):
+            logging.error('Active data cross-sections ({}) different than those of the'
+                          ' reduction list ({})'.format(self.reduction_states, self.data_sets.keys()))
             return False
 
         # Second, make sure the states match
-        for item in self.data_sets.keys():
-            if not item in self.reduction_states:
+        for cross_section_state in self.data_sets.keys():
+            if cross_section_state not in self.reduction_states:
+                logging.error('Active data cross-section {} not found in those'
+                              ' of the reduction list'.format(cross_section_state))
                 return False
         return True 
 
@@ -157,10 +184,10 @@ class DataManager(object):
         return self.find_data_in_direct_beam_list(self._nexus_data)
 
     def add_active_to_reduction(self):
+        r"""
+        @brief Add active data set to reduction list
         """
-            Add active data set to reduction list
-        """
-        if not self._nexus_data in self.reduction_list:
+        if self._nexus_data not in self.reduction_list:
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
                     self.reduction_states = self.data_sets.keys()
@@ -214,26 +241,39 @@ class DataManager(object):
         call_back(_value, message)
 
     def load(self, file_path, configuration, force=False, update_parameters=True, progress=None):
+        # type: (str, Configuration, Optional[bool], Optional[bool], Optional[ProgressReporter]) -> bool
+        r"""
+        @brief Load one ore more Nexus data files
+        @param file_path: absolute path to one or more files. If more than one, files are concatenated with the
+        merge symbol '+'.
+        @param configuration: configuration to use to load the data
+        @param force: it True, existing data in the cache will be replaced by reading from file.
+        @param update_parameters: if True, we will find peak ranges
+        @param progress: aggregator to estimate percent of time allotted to this function
+        @returns True if the data is retrieved from the cache of past loading events
         """
-            Load a data file
-            :param str file_path: file path
-            :param Configuration configuration: configuration to use to load the data
-            :param bool force: it True, existing data will be replaced if it exists.
-            :param bool update_parameters: if True, we will find peak ranges
-        """
-        nexus_data = None
-        is_from_cache = False
+        # Actions taken in this function:
+        # 1. Find if the file has been loaded in the past. Retrieve the cache when force==False
+        # 2. If file not in cache, or if force==True: invoke NexusData.load()
+        # 3. Update attributes _nexus_data, current_directory, and current_file_name
+        # 4. If we're overwriting cached data that was allocated in the reduction_list and direct_beam_list,
+        #    then assign the new data to the proper indexes in lists reduction_list and direct_beam_list
+        # 5. Compute reflectivity if data is loaded from file
+
+        nexus_data = None  # type: NexusData
+        is_from_cache = False  # if True, the file has been loaded before
         reduction_list_id = None
         direct_beam_list_id = None
+        file_path = FilePath(file_path, sort=True).path  # force sorting by increasing run number
 
-        # Check whether the file is in cache
         if progress is not None:
             progress(10, "Loading data...")
+
+        # Check whether the file has already been loaded (in cache)
         for i in range(len(self._cache)):
             if self._cache[i].file_path == file_path:
                 if force:
-                    # Check whether the data is in the reduction list before
-                    # removing it.
+                    # Check whether the data is in the reduction list before removing it
                     reduction_list_id = self.find_data_in_reduction_list(self._cache[i])
                     direct_beam_list_id = self.find_data_in_direct_beam_list(self._cache[i])
                     self._cache.pop(i)
@@ -254,13 +294,15 @@ class DataManager(object):
 
         if nexus_data is not None:
             self._nexus_data = nexus_data
-            directory, file_name = os.path.split(file_path)
+            # Example: '/SNS/REF_M/IPTS-25531/nexus/REF_M_38198.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38199.nxs.h5'
+            # will be split into directory='/SNS/REF_M/IPTS-25531/nexus' and
+            # file_name='REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+            directory, file_name = FilePath(file_path).split()
             self.current_directory = directory
             self.current_file_name = file_name
             self.set_channel(0)
 
-            # If we didn't get this data set from our cache,
-            # then add it and compute its reflectivity.
+            # If we didn't get this data set from our cache, add it and compute its reflectivity.
             if not is_from_cache:
                 # Find suitable direct beam
                 logging.info("Direct beam from loader: %s", configuration.normalization)
@@ -272,13 +314,15 @@ class DataManager(object):
                     self.reduction_list[reduction_list_id] = nexus_data
                 if direct_beam_list_id is not None:
                     self.direct_beam_list[direct_beam_list_id] = nexus_data
+
                 # Compute reflectivity
                 try:
                     self.calculate_reflectivity()
                 except:
                     logging.error("Reflectivity calculation failed for %s", file_name)
 
-                while len(self._cache)>=self.MAX_CACHE:
+                # if cached reduced data exceeds maximum cache size, remove the oldest reduced data
+                while len(self._cache) >= self.MAX_CACHE:
                     self._cache.pop(0)
                 self._cache.append(nexus_data)
 
@@ -374,6 +418,7 @@ class DataManager(object):
         # We must have a direct beam data set to normalize with
         direct_beam = self._find_direct_beam(nexus_data)
         if direct_beam is None:
+	    # TODO 67 Handle this error with GUI prompt GUI
             raise RuntimeError("Please select a direct beam data set for your data.")
 
         nexus_data.calculate_gisans(direct_beam=direct_beam, progress=progress)
@@ -424,9 +469,10 @@ class DataManager(object):
         return gisans.rebin_extract(self.reduction_list, pol_state=pol_state, wl_min=wl_min, wl_max=wl_max,
                                     qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf)
 
+    # TODO 67 FInd out whether it can work with merged data
     def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
         """
-            Calculater reflectivity using the current configuration
+            Calculate reflectivity using the current configuration
         """
         # Select the data to work on
         if nexus_data is None:
@@ -448,16 +494,20 @@ class DataManager(object):
             Returns a run number.
             Returns True if we have updated the data with a new normalization run.
         """
+        # TODO 65+ Can it work with merged data?
+        # Select the first run number if the active channel cross section is derived from more than one run
+        active_channel_number = RunNumbers(self.active_channel.number).numbers[0]
         closest = None
         for item in self.direct_beam_list:
+            item_number = int(item.number)
             xs_keys = item.cross_sections.keys()
             if len(xs_keys) > 0:
                 channel = item.cross_sections[item.cross_sections.keys()[0]]
                 if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel):
                     if closest is None:
-                        closest = item.number
-                    elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
-                        closest = item.number
+                        closest = item_number
+                    elif abs(item_number - active_channel_number) < abs(closest - active_channel_number):
+                        closest = item_number
 
         if closest is None:
             # If we didn't find a direct beam, try with just the wavelength
@@ -467,9 +517,9 @@ class DataManager(object):
                     channel = item.cross_sections[item.cross_sections.keys()[0]]
                     if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel, skip_slits=True):
                         if closest is None:
-                            closest = item.number
-                        elif abs(item.number-self.active_channel.number) < abs(closest-self.active_channel.number):
-                            closest = item.number
+                            closest = item_number
+                        elif abs(item_number - active_channel_number) < abs(closest - active_channel_number):
+                            closest = item_number
         if closest is not None:
             return self._nexus_data.set_parameter("normalization", closest)
         return False
@@ -658,3 +708,15 @@ class DataManager(object):
             progress.set_value(n_total, message="Done", out_of=n_total)
 
         logging.info("DONE: %s sec", time.time()-t_0)
+
+    @property
+    def current_event_files(self):
+        # type: () -> List[str]
+        r"""
+        @brief Sorted list of event files in the current directory
+        @details return only file names with pattern '*event.nxs' or '*.nxs.h5'
+        """
+        event_file_list = glob.glob(os.path.join(self.current_directory, '*event.nxs'))
+        h5_file_list = glob.glob(os.path.join(self.current_directory, '*.nxs.h5'))
+        event_file_list.extend(h5_file_list)
+        return sorted([os.path.basename(name) for name in event_file_list])
