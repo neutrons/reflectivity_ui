@@ -328,6 +328,7 @@ class MainHandler(object):
         def _reset_ui_file_list(fresh_list):
             r"""reset widget self.ui.file_list and highlight the current file_name"""
             self.ui.file_list.clear()  # Reset ui.file_list, a QtWidgets.QListWidget object
+            assert isinstance(fresh_list, list), 'fresh_list must be list but not {}'.format(type(fresh_list))
             for item in fresh_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
                 if item == self._data_manager.current_file_name:
@@ -373,6 +374,9 @@ class MainHandler(object):
                     _update_current_directory(file_dir)
                     self._data_manager.current_file_name = self._data_manager.current_event_files[0]
                     new_list = self._data_manager.current_event_files
+                else:
+                    # TODO FIXME discovered from #93.  This path is not checked and thus problematic
+                    new_list = None
             # Use case 3.2: a single path pointing to a file in the current or new directory
             else:
                 file_dir, file_name = file_path.split()
@@ -382,8 +386,10 @@ class MainHandler(object):
                 else:  # User selected a new file in a new directory
                     _update_current_directory(file_dir)
                     new_list = self._data_manager.current_event_files
-        _reset_ui_file_list(new_list)
-        self.main_window.auto_change_active = False
+        # TODO FIXME  - new_list is not None has not been defined by stakeholder
+        if new_list is not None:
+            _reset_ui_file_list(new_list)
+            self.main_window.auto_change_active = False
 
     def automated_file_selection(self):
         """
