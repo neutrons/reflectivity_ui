@@ -373,14 +373,12 @@ class DataManager(object):
                 # convert _run_number to int if it can be
                 try:
                     _run_number = int(data_xs.configuration.normalization)
-                except:
-                    # TODO 93 - good to catch specific type of exception
+                except (ValueError, TypeError):
                     _run_number = data_xs.configuration.normalization
                 # convert item.number to int if it can be
                 try:
-                    item_number = int(item_number)
-                except:
-                    # TODO 93 - good to catch specific type of exception
+                    item_number = int(item.number)
+                except (ValueError, TypeError):
                     item_number = item.number
                 if item_number == _run_number:
                     keys = item.cross_sections.keys()
