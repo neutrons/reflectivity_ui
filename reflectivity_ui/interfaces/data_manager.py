@@ -370,11 +370,17 @@ class DataManager(object):
 
         if data_xs.configuration is not None and data_xs.configuration.normalization is not None:
             for item in self.direct_beam_list:
+                # convert _run_number to int if it can be
                 try:
                     _run_number = int(data_xs.configuration.normalization)
-                except:
+                except (ValueError, TypeError):
                     _run_number = data_xs.configuration.normalization
-                if item.number == _run_number:
+                # convert item.number to int if it can be
+                try:
+                    item_number = int(item.number)
+                except (ValueError, TypeError):
+                    item_number = item.number
+                if item_number == _run_number:
                     keys = item.cross_sections.keys()
                     if len(keys) >= 1:
                         if len(keys) > 1:
@@ -418,7 +424,7 @@ class DataManager(object):
         # We must have a direct beam data set to normalize with
         direct_beam = self._find_direct_beam(nexus_data)
         if direct_beam is None:
-	    # TODO 67 Handle this error with GUI prompt GUI
+            # TODO 67 Handle this error with GUI prompt GUI
             raise RuntimeError("Please select a direct beam data set for your data.")
 
         nexus_data.calculate_gisans(direct_beam=direct_beam, progress=progress)
