@@ -40,21 +40,34 @@ def generate_short_script(reduction_list):
             continue
 
         ws_name = "r%s" % reduction_list[i].cross_sections[xs].number
-        if len(api.mtd[ws_name]) == 0:
-            logging.info("  No entry in %s workspace group", ws_name)
+
+        # NOTE: It is possible that only one cross section is present in the run, therefore
+        #       api.mtd[ws_name] could be a Workspace2D instead of a workspcae group.
+        #       Given that a modernization process is scheduled, we are going to do a ducktape
+        #       fixing here.
+        contain_single_crosssection = False
+        try:
+            if len(api.mtd[ws_name]) == 0:
+                logging.info("  No entry in %s workspace group", ws_name)
+        except:
+            contain_single_crosssection = True
+            logging.info("  single cross sectoin in %s (Workspace2D)", ws_name)
+        # short-hand it
+        ws_iterable = [api.mtd[ws_name]] if contain_single_crosssection else api.mtd[ws_name]
 
         script += "# Run:%s\n" % reduction_list[i].cross_sections[xs].number
-        script_text = api.GeneratePythonScript(api.mtd[ws_name][0])
+        script_text = api.GeneratePythonScript(ws_iterable[0])
         script += script_text.replace(', ', ',\n                                ')
         script += '\n\n'
         script += '# Crop points on each end\n'
-        q = api.mtd[ws_name][0].readX(0)
+        q = ws_iterable[0].readX(0)
         p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
         p_f = len(q) - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points -1
         q0 = q[p_0]
         qf = q[p_f]
         logging.info("%s %s %s %s", q0, qf, p_0, p_f)
-        for item in api.mtd[ws_name]:
+
+        for item in ws_iterable:
             script += "CropWorkspace(InputWorkspace='%s', XMin=%s, XMax=%s, " % (str(item), q0, qf)
             script += "OutputWorkspace='%s')\n" % str(item)
             script += "Scale(InputWorkspace='%s', Operation='Multiply', " %str(item)
