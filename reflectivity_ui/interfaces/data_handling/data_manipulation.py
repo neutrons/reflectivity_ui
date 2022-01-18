@@ -49,7 +49,9 @@ def generate_short_script(reduction_list):
         try:
             if len(api.mtd[ws_name]) == 0:
                 logging.info("  No entry in %s workspace group", ws_name)
-        except:
+        except TypeError:
+            # NOTE: based on the information we have, the only possible data type here should be
+            #       a workspace2D
             contain_single_crosssection = True
             logging.info("  single cross sectoin in %s (Workspace2D)", ws_name)
         # short-hand it
