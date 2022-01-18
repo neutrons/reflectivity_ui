@@ -54,7 +54,7 @@
 
 ### How to start the GUI on the analysis cluster
 
-This app `QuickNXS` requires an ancient version of `Mantid` (Mantid42), therefore the development needs to be performed on the analysis cluster where the proper version is instaled.
+This app `QuickNXS` requires an ancient version of `Mantid` (Mantid42), therefore the development needs to be performed on the analysis cluster where the proper version is installed.
 To start the app as a developer, please follow the following steps:
 
 - Disable your customized conda environment as `QuickNXS` needs to use the system python2.7.
