@@ -49,3 +49,19 @@
  - Selecting a very wide wavelength band will pick the actual band in the data.
  - Made sure cutting TOF bins matches between specular (not rebinned) and off-specular
  - Updated wavelength band.
+
+## Developer Instructions
+
+### How to start the GUI on the analysis cluster
+
+This app `QuickNXS` requires an ancient version of `Mantid` (Mantid42), therefore the development needs to be performed on the analysis cluster where the proper version is instaled.
+To start the app as a developer, please follow the following steps:
+
+- Disable your customized conda environment as `QuickNXS` needs to use the system python2.7.
+- Clone the repo as usual (use ssh or access token per Github requirement)
+- Go to the root of the repo and do a dirty install with `python setup.py install --user`.
+  - This unfortunately will affect you local python2 env located in your home directory.
+- To start the app, simply do `mantidpython42 --classic bin/quicknxs2` at the root of the repo
+  - Missing the argument `--classic` might result in a black screen of QuickNXS.
+
+> NOTE: the instruction above is only valid until the starting of the moderniazation process.
