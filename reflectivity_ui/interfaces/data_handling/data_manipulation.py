@@ -42,7 +42,7 @@ def generate_short_script(reduction_list):
         ws_name = "r%s" % reduction_list[i].cross_sections[xs].number
 
         # NOTE: It is possible that only one cross section is present in the run, therefore
-        #       api.mtd[ws_name] could be a Workspace2D instead of a workspcae group.
+        #       api.mtd[ws_name] could be a Workspace2D instead of a workspace group.
         #       Given that a modernization process is scheduled, we are going to do a ducktape
         #       fixing here.
         contain_single_crosssection = False
