@@ -37,7 +37,7 @@ if 'pyrcc' in sys.argv[:]:
     os.system(command)
     sys.exit(0)
 
-package_data = {"reflectivity_ui.interfaces.data_handling": ["genx_templates/*.gx",], "reflectivity_ui.config": ["./*.json"]}
+package_data = {"reflectivity_ui.interfaces.data_handling": ["genx_templates/*.gx",], "reflectivity_ui.config": ["./settings.json"]}
 
 setup(name="reflectivity_ui",
       version=reflectivity_ui.__version__,
