@@ -18,7 +18,7 @@ from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 import zipfile
-import cStringIO
+import io
 
 from ..configuration import Configuration
 from . import quicknxs_io, data_manipulation, off_specular, gisans
@@ -678,7 +678,7 @@ class ProcessingWorkflow(object):
             exported_files.extend(self.exported_data_plots)
         if self.output_options['email_zip_data']:
             # Create an in-memory zip file which gets attached to the mail
-            fobj = cStringIO.StringIO()
+            fobj = io.BytesIO()
             _file = zipfile.ZipFile(fobj, 'w', zipfile.ZIP_DEFLATED)
             for item in exported_files:
                 _file.write(item, arcname=os.path.basename(item))

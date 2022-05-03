@@ -467,9 +467,7 @@
   <tabstop>gridSizeCoupled</tabstop>
   <tabstop>sigmasCoupled</tabstop>
  </tabstops>
- <resources>
-  <include location="../icons/icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>kizmkfzVSqz</sender>
