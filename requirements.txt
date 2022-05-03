@@ -23,7 +23,6 @@ PyQtWebEngine==5.12.1
 python-dateutil==2.8.2
 pytz==2022.1
 PyYAML==6.0
-reflectivity-ui==2.2.0rc3
 scipy==1.8.0
 setuptools==62.1.0
 sip==6.5.1
