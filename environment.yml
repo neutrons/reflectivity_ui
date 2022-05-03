@@ -32,5 +32,5 @@ dependencies:
 - scipy
 - h5py>=2.10.0,<3
 - hdf5=1.10.*
-- mantid==6.3
+- mantid>=6.3,<6.4
 
