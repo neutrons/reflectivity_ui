@@ -1,4 +1,4 @@
-name: gui
+name: quicknxs
 channels:
     - conda-forge
     - mantid/label/nightly
