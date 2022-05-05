@@ -36,14 +36,6 @@ sys.excepthook = no_abort_excepthook
 for item in sys.path:
     if '.local' in item and 'reflectivity_ui' not in item:
         sys.path.remove(item)
-    for item in sys.modules:
-        m = sys.modules.setdefault(item, types.ModuleType(item))
-        if m is not None:
-            mp = m.__dict__.setdefault('__path__',[])
-            for loc in mp:
-                if '.local' in loc and 'reflectivity_ui' not in loc:
-                    logging.warning("Removing local reference to %s" % loc)
-                    mp.remove(loc)
 
 # Set Qt5Agg now so matplotlib doesn't complain later
 import matplotlib
