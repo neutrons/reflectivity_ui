@@ -3,7 +3,7 @@
 """
     Application configuration, including reduction options
 """
-from __future__ import absolute_import, division, print_function
+
 import sys
 import logging
 from .data_handling.instrument import Instrument
@@ -124,7 +124,7 @@ class Configuration(object):
             try:
                 self.from_q_settings(settings)
             except:
-                logging.error("Could not process application settings\n  %s", sys.exc_value)
+                logging.exception("Could not process application settings")
 
     @property
     def peak_roi(self):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'designer/ui_main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -1569,9 +1569,7 @@ class Ui_MainWindow(object):
         self.actionAdvanced_Background.setVisible(False)
         self.actionAdvanced_Background.setObjectName("actionAdvanced_Background")
         self.actionOpen_Sum = QtWidgets.QAction(MainWindow)
-        icon125 = QtGui.QIcon()
-        icon125.addPixmap(QtGui.QPixmap(":/General/document-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionOpen_Sum.setIcon(icon125)
+        self.actionOpen_Sum.setIcon(icon1)
         self.actionOpen_Sum.setObjectName("actionOpen_Sum")
         self.actionCut_Points = QtWidgets.QAction(MainWindow)
         icon13 = QtGui.QIcon()
@@ -2146,6 +2144,7 @@ class Ui_MainWindow(object):
         self.actionAdvanced_Background.setText(_translate("MainWindow", "Advanced Background..."))
         self.actionAdvanced_Background.setShortcut(_translate("MainWindow", "Ctrl+B"))
         self.actionOpen_Sum.setText(_translate("MainWindow", "Open Sum..."))
+        self.actionOpen_Sum.setToolTip(_translate("MainWindow", "Open and merge multiple runs"))
         self.actionOpen_Sum.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
         self.actionCut_Points.setText(_translate("MainWindow", "Cut Points (L/R)"))
         self.actionCut_Points.setToolTip(_translate("MainWindow", "Change the left and right cutoff (Cut Pts) values for the active file from the normalization intensity (Ctrl+Shift+C)"))
@@ -2180,7 +2179,5 @@ class Ui_MainWindow(object):
         self.actionRemove_Normalization.setIconText(_translate("MainWindow", "Remove from normalizations"))
         self.actionRemove_Normalization.setToolTip(_translate("MainWindow", "Remove the selected data set from normalization list"))
         self.actionResult_Viewer.setText(_translate("MainWindow", "Result Viewer"))
-
 from .compare_plots import CompareWidget
 from .mplwidget import MPLWidget
-import icons_rc

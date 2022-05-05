@@ -177,7 +177,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         if fname:
             try:
                 self.canvas.print_figure(unicode(fname[0]))
-            except Exception, e:
+            except Exception as e:
                 QtWidgets.QMessageBox.critical(
                     self, "Error saving file", str(e),
                     QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton)

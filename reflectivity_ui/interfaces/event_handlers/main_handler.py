@@ -23,6 +23,7 @@ import math
 import os
 import sys
 import time
+import traceback
 
 
 class MainHandler(object):
@@ -105,7 +106,7 @@ class MainHandler(object):
         except RuntimeError as run_err:
             # FIXME - need to find out what kind of error it could have
             self.report_message("Error loading file(s) {} due to {}".format(self._data_manager.current_file_name, run_err),
-                                detailed_message=str(sys.exc_value), pop_up=False, is_error=True)
+                                detailed_message=str(traceback.format_exc()), pop_up=False, is_error=True)
 
         if not silent:
             self.file_loaded()
@@ -804,7 +805,7 @@ class MainHandler(object):
                 self._data_manager.calculate_reflectivity(nexus_data=refl)
             except:
                 self.report_message("Could not compute reflectivity for %s" % self._data_manager.current_file_name,
-                                    detailed_message=str(sys.exc_value), pop_up=False, is_error=False)
+                                    detailed_message=str(traceback.format_exc()), pop_up=False, is_error=False)
 
         self.main_window.initiate_reflectivity_plot.emit(True)
         self.main_window.update_specular_viewer.emit()

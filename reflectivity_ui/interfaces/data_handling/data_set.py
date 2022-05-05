@@ -17,6 +17,7 @@ import copy
 import logging
 import math
 import sys
+import traceback
 import time
 
 # Import mantid according to the application configuration
@@ -139,7 +140,7 @@ class NexusData(object):
                         setattr(self.cross_sections[xs].configuration, param, value)
                         has_changed = True
         except:
-            logging.error("Could not set parameter %s %s\n  %s", param, value, sys.exc_value)
+            logging.exception("Could not set parameter %s %s", param, value)
         return has_changed
 
     def calculate_reflectivity(self, direct_beam=None, configuration=None):
@@ -253,8 +254,8 @@ class NexusData(object):
                 self.cross_sections[xs].gisans(direct_beam=direct_beam)
             except:
                 has_errors = True
-                detailed_msg += "Could not calculate GISANS reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
-                logging.error("Could not calculate GISANS reflectivity for %s\n  %s", xs, sys.exc_value)
+                detailed_msg += "Could not calculate GISANS reflectivity for %s\n  %s\n\n" % (xs, traceback.format_exc())
+                logging.exception("Could not calculate GISANS reflectivity for %s", xs)
             if progress:
                 progress(i, message="Computed GISANS %s" % xs, out_of=len(self.cross_sections))
         if has_errors:
@@ -290,10 +291,10 @@ class NexusData(object):
         for xs in self.cross_sections:
             try:
                 self.cross_sections[xs].offspec(direct_beam=direct_beam)
-            except:
+            except Exception:
                 has_errors = True
-                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, sys.exc_value)
-                logging.error("Could not calculate off-specular reflectivity for %s\n  %s", xs, sys.exc_value)
+                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, traceback.format_exc())
+                logging.exception(detailed_msg)
         if has_errors:
             raise RuntimeError(detailed_msg)
 
@@ -306,7 +307,7 @@ class NexusData(object):
             try:
                 self.cross_sections[xs].update_configuration(configuration)
             except:
-                logging.error("Could not update configuration for %s\n  %s", xs, sys.exc_value)
+                logging.exception("Could not update configuration for %s", xs)
 
     def update_calculated_values(self):
         """
@@ -333,7 +334,7 @@ class NexusData(object):
             xs_list = self.configuration.instrument.load_data(self.file_path)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
         except RuntimeError as run_err:
-            logging.error("Could not load file(s) {}\n   {}\n   {}".format(str(self.file_path), sys.exc_value, run_err))
+            logging.exception("Could not load file(s) {}\n   {}".format(str(self.file_path), run_err))
             return self.cross_sections
 
         progress_value = 0
@@ -612,7 +613,7 @@ class CrossSectionData(object):
                     self.logs[motor] = np.float64(stats.mean)
                     self.log_minmax[motor] = (np.float64(stats.minimum), np.float64(stats.maximum))
             except:
-                logging.error("Error reading DASLogs %s: %s", motor, sys.exc_value)
+                logging.exception("Error reading DASLogs %s", motor)
 
         self.proton_charge = data['gd_prtn_chrg'].value
         self.total_counts = workspace.getNumberEvents()

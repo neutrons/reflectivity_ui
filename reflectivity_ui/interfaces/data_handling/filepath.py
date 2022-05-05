@@ -1,7 +1,7 @@
 r"""
 Classes to handle string representations of sets of run numbers and absolute paths to data files
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 # standard imports
 import itertools
@@ -29,7 +29,7 @@ class RunNumbers(object):
             self._numbers = [numbers]  # just one run number
         elif isinstance(numbers, list):
             self._numbers = sorted([int(n) for n in numbers])
-        elif isinstance(numbers, (str, unicode)):
+        elif isinstance(numbers, str):
             if self.merge_symbol in numbers or self.range_symbol in numbers:
                 self._numbers = sorted(self._uncompress(numbers))
             else:
@@ -77,7 +77,7 @@ class RunNumbers(object):
         @details Example: [1, 2, 3, 6] becomes '1:3+6'
         """
         ranges = list()
-        for _, g in itertools.groupby(enumerate(self._numbers), lambda (i, run_number): i - run_number):
+        for _, g in itertools.groupby(enumerate(self._numbers), lambda i_run_number: i_run_number[0] - i_run_number[1]):
             runs = list(map(operator.itemgetter(1), g))  # e.g. [3,4,5]
             run_range = str(runs[0]) if len(runs) == 1 else '{}{}{}'.format(runs[0], self.range_symbol, runs[-1])
             ranges.append(run_range)
@@ -125,7 +125,7 @@ class FilePath(object):
         file_paths = [os.path.join(dirname, name) for name in base_names]
         if sort:
             file_paths.sort()
-        return unicode(cls.merge_symbol.join(file_paths))
+        return str(cls.merge_symbol.join(file_paths))
 
     @classmethod
     def unique_dirname(cls, file_path):
@@ -144,11 +144,11 @@ class FilePath(object):
         if self.merge_symbol in file_path:
             if sort:
                 paths = sorted(file_path.split(self.merge_symbol))
-                self._file_path = unicode(self.merge_symbol.join(paths))
+                self._file_path = str(self.merge_symbol.join(paths))
             else:
-                self._file_path = unicode(file_path)
+                self._file_path = str(file_path)
         else:
-            self._file_path = unicode(file_path)
+            self._file_path = str(file_path)
 
     def __str__(self):
         return self._file_path

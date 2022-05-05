@@ -247,7 +247,7 @@ class MainWindow(QtWidgets.QMainWindow,
                     except Exception:
                         self.file_handler.report_message("There was a problem updating the reflectivity",
                                                          pop_up=False)
-                        logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
+                        logging.exception("There was a problem updating the reflectivity")
                 self.plot_manager.plot_refl()
                 self.update_specular_viewer.emit()
 
@@ -324,7 +324,7 @@ class MainWindow(QtWidgets.QMainWindow,
             except Exception:
                 self.file_handler.report_message("There was a problem updating the reflectivity",
                                                  pop_up=False)
-                logging.error("There was a problem updating the reflectivity\n%s", sys.exc_value)
+                logging.exception("There was a problem updating the reflectivity")
             self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):

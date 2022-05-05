@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'designer/ui_compare_widget.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -110,5 +112,4 @@ class Ui_Form(object):
         self.clear_item_button.setText(_translate("Form", "Clear item"))
         self.pushButton_2.setToolTip(_translate("Form", "Open a new file to plot"))
         self.pushButton_2.setText(_translate("Form", "Open"))
-
 from .mplwidget import MPLWidget
