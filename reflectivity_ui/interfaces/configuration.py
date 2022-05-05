@@ -124,7 +124,7 @@ class Configuration(object):
             try:
                 self.from_q_settings(settings)
             except:
-                logging.error("Could not process application settings\n  %s", sys.exc_info()[1])
+                logging.exception("Could not process application settings")
 
     @property
     def peak_roi(self):
