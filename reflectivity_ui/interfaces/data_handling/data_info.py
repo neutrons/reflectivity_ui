@@ -2,7 +2,7 @@
     Meta-data information for MR reduction
 """
 #pylint: disable=too-few-public-methods, wrong-import-position, too-many-instance-attributes, wrong-import-order
-from __future__ import absolute_import, division, print_function
+
 import sys
 import time
 import logging
@@ -339,7 +339,7 @@ class Fitter2(object):
         quality_pos[high_peaks] = quality_pos[high_peaks] * (1 - np.abs(nx-delta-peaks[high_peaks])/delta)**3
         quality = -peaks_w * prom * quality_pos
 
-        zipped = zip(peaks, peaks_w, quality, prom)
+        zipped = list(zip(peaks, peaks_w, quality, prom))
         ordered = sorted(zipped, key=lambda a:a[2])
         found_peaks = [p[0] for p in ordered]
 

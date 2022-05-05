@@ -3,7 +3,7 @@
 """
     Manage file-related and UI events
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 # package imports
 from ..configuration import Configuration
@@ -127,7 +127,7 @@ class MainHandler(object):
         if not success:
             self.ui.selectedChannel0.setChecked(True)
 
-        channels = self._data_manager.data_sets.keys()
+        channels = list(self._data_manager.data_sets.keys())
         for i, channel in enumerate(channels):
             getattr(self.ui, 'selectedChannel%i'%i).show()
             good_label = channel.replace('_', '-')
@@ -190,7 +190,7 @@ class MainHandler(object):
             DeleteWorkspace(workspace)
 
         # Find the minimum and maximum values for each log, and compare to the tolerance
-        for log_name, values in log_values.items():
+        for log_name, values in list(log_values.items()):
             if max(values) - min(values) > tolerances[log_name]:
                 runs = FilePath(file_paths).run_numbers(string_representation='statement')
                 message_template = 'Runs {0} contain values for log {1} that differ above tolerance {2}'
@@ -220,29 +220,29 @@ class MainHandler(object):
             after a change is made that will affect the displayed results.
         """
         d = self._data_manager.active_channel
-        self.ui.datasetAi.setText(u"%.3f°"%(d.scattering_angle))
+        self.ui.datasetAi.setText("%.3f°"%(d.scattering_angle))
 
         wl_min, wl_max = d.wavelength_range
-        self.ui.datasetLambda.setText(u"%.2f (%.2f-%.2f) Å"%(d.lambda_center,
+        self.ui.datasetLambda.setText("%.2f (%.2f-%.2f) Å"%(d.lambda_center,
                                                              wl_min, wl_max))
 
         # DIRPIX and DANGLE0 overwrite
         if self.ui.set_dangle0_checkbox.isChecked():
-            dangle0 = u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d._angle_offset)
+            dangle0 = "%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d._angle_offset)
         else:
-            dangle0 = u"%.3f°"%(d.angle_offset)
+            dangle0 = "%.3f°"%(d.angle_offset)
         self.ui.datasetDangle0.setText(dangle0)
 
         if self.ui.set_dirpix_checkbox.isChecked():
-            dpix = u"%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d._direct_pixel)
+            dpix = "%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d._direct_pixel)
         else:
-            dpix = u"%.1f"%d.direct_pixel
+            dpix = "%.1f"%d.direct_pixel
         self.ui.datasetDirectPixel.setText(dpix)
 
         if d.configuration.normalization is not None:
-            self.ui.matched_direct_beam_label.setText(u"%s" % d.configuration.normalization)
+            self.ui.matched_direct_beam_label.setText("%s" % d.configuration.normalization)
         else:
-            self.ui.matched_direct_beam_label.setText(u"None")
+            self.ui.matched_direct_beam_label.setText("None")
 
     def update_info(self):
         """
@@ -255,44 +255,44 @@ class MainHandler(object):
         QtWidgets.QApplication.instance().processEvents()
 
         if self.ui.set_dangle0_checkbox.isChecked():
-            dangle0 = u"%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d.angle_offset)
+            dangle0 = "%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d.angle_offset)
         else:
-            dangle0 = u"%.3f°"%(d.angle_offset)
+            dangle0 = "%.3f°"%(d.angle_offset)
 
         if self.ui.set_dirpix_checkbox.isChecked():
-            dpix = u"%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d.direct_pixel)
+            dpix = "%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d.direct_pixel)
         else:
-            dpix = u"%.1f"%d.direct_pixel
+            dpix = "%.1f"%d.direct_pixel
 
         wl_min, wl_max = d.wavelength_range
-        self.ui.datasetLambda.setText(u"%.2f (%.2f-%.2f) Å"%(d.lambda_center,
+        self.ui.datasetLambda.setText("%.2f (%.2f-%.2f) Å"%(d.lambda_center,
                                                              wl_min, wl_max))
-        self.ui.datasetPCharge.setText(u"%.3e"%d.proton_charge)
-        self.ui.datasetTime.setText(u"%i s"%d.total_time)
-        self.ui.datasetTotCounts.setText(u"%.4e"%d.total_counts)
+        self.ui.datasetPCharge.setText("%.3e"%d.proton_charge)
+        self.ui.datasetTime.setText("%i s"%d.total_time)
+        self.ui.datasetTotCounts.setText("%.4e"%d.total_counts)
         try:
-            self.ui.datasetRate.setText(u"%.1f cps"%(d.total_counts/d.total_time))
+            self.ui.datasetRate.setText("%.1f cps"%(d.total_counts/d.total_time))
         except ZeroDivisionError:
-            self.ui.datasetRate.setText(u"NaN")
-        self.ui.datasetDangle.setText(u"%.3f°"%d.dangle)
+            self.ui.datasetRate.setText("NaN")
+        self.ui.datasetDangle.setText("%.3f°"%d.dangle)
         self.ui.datasetDangle0.setText(dangle0)
-        self.ui.datasetSangle.setText(u"%.3f°"%d.sangle)
+        self.ui.datasetSangle.setText("%.3f°"%d.sangle)
         self.ui.datasetDirectPixel.setText(dpix)
         self.ui.currentChannel.setText('<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: '
                                        '<b>%s</b>'%(d.number, d.experiment, d.measurement_type, d.name))
 
         # Update direct beam indicator
         if d.is_direct_beam:
-            self.ui.is_direct_beam_label.setText(u"Direct beam")
+            self.ui.is_direct_beam_label.setText("Direct beam")
         else:
-            self.ui.is_direct_beam_label.setText(u"")
+            self.ui.is_direct_beam_label.setText("")
 
         # Update the calculated data
         self.update_calculated_data()
 
-        self.ui.roi_used_label.setText(u"%s" % d.use_roi_actual)
-        self.ui.roi_peak_label.setText(u"%s" % str(d.meta_data_roi_peak))
-        self.ui.roi_bck_label.setText(u"%s" % str(d.meta_data_roi_bck))
+        self.ui.roi_used_label.setText("%s" % d.use_roi_actual)
+        self.ui.roi_peak_label.setText("%s" % str(d.meta_data_roi_peak))
+        self.ui.roi_bck_label.setText("%s" % str(d.meta_data_roi_bck))
 
         # Update reduction tables
         self.update_tables()
@@ -455,9 +455,9 @@ class MainHandler(object):
             Open a reduced file and all the data files needed to reproduce it.
         """
         # Open file dialog
-        filter_ = u'QuickNXS files (*.dat);;All (*.*)'
+        filter_ = 'QuickNXS files (*.dat);;All (*.*)'
         output_dir = self.main_window.settings.value('output_directory', os.path.expanduser('~'))
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open reduced file...',
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, 'Open reduced file...',
                                                              directory=output_dir,
                                                              filter=filter_)
 
@@ -472,7 +472,7 @@ class MainHandler(object):
                                                            progress=prog)
 
             # Update output directory
-            file_dir, _ = os.path.split(unicode(file_path))
+            file_dir, _ = os.path.split(str(file_path))
             self.main_window.settings.setValue('output_directory', file_dir)
 
             self.main_window.auto_change_active = True
@@ -487,7 +487,7 @@ class MainHandler(object):
                 self.update_reduction_table(idx, self._data_manager.active_channel)
 
             direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
-            self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
+            self.ui.normalization_list_label.setText(", ".join(direct_beam_ids))
 
             self.file_loaded()
 
@@ -505,7 +505,7 @@ class MainHandler(object):
         @param filter_: show files with only selected extensions
         @returns absolute path to the selected file
         """
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, u'Open NXS file...',
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window, 'Open NXS file...',
                                                              directory=self._data_manager.current_directory,
                                                              filter=filter_)
         return file_path
@@ -519,7 +519,7 @@ class MainHandler(object):
         @param filter_: show files with only selected extensions
         @returns absolute paths to the selected files, joined by the plus symbol '+'
         """
-        file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(self.main_window, u'Open NXS file...',
+        file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(self.main_window, 'Open NXS file...',
                                                                directory=self._data_manager.current_directory,
                                                                filter=filter_)
         # user cancel operation
@@ -544,9 +544,9 @@ class MainHandler(object):
         file(s) selected by the user. It updates the file list widget as well as reads-in the file(s)
         """
         if self.ui.histogramActive.isChecked():
-            filter_ = u'All (*.*);;histo.nxs (*histo.nxs)'
+            filter_ = 'All (*.*);;histo.nxs (*histo.nxs)'
         else:
-            filter_ = u'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
+            filter_ = 'All (*.*);;nxs.h5 (*nxs.h5);;event.nxs (*event.nxs)'
 
         file_path = getattr(self, dialog_opening_method)(filter_=filter_)
 
@@ -622,16 +622,16 @@ class MainHandler(object):
         table.setRowCount(0)
         table.sortItems(-1)
         table.setColumnCount(len(self._data_manager.data_sets)+2)
-        table.setHorizontalHeaderLabels(['Name']+self._data_manager.data_sets.keys()+['Unit'])
-        for j, key in enumerate(sorted(self._data_manager.active_channel.logs.keys(), key=lambda s: s.lower())):
+        table.setHorizontalHeaderLabels(['Name']+list(self._data_manager.data_sets.keys())+['Unit'])
+        for j, key in enumerate(sorted(list(self._data_manager.active_channel.logs.keys()), key=lambda s: s.lower())):
             table.insertRow(j)
             table.setItem(j, 0, QtWidgets.QTableWidgetItem(key))
             table.setItem(j, len(self._data_manager.data_sets)+1,
                           QtWidgets.QTableWidgetItem(self._data_manager.active_channel.log_units[key]))
             i = 0
             for xs in self._data_manager.data_sets:
-                item = QtWidgets.QTableWidgetItem(u'%g' % self._data_manager.data_sets[xs].logs[key])
-                item.setToolTip(u'MIN: %g   MAX: %g' % (self._data_manager.data_sets[xs].log_minmax[key]))
+                item = QtWidgets.QTableWidgetItem('%g' % self._data_manager.data_sets[xs].logs[key])
+                item.setToolTip('MIN: %g   MAX: %g' % (self._data_manager.data_sets[xs].log_minmax[key]))
                 table.setItem(j, i+1, item)
                 i += 1
         table.resizeColumnsToContents()
@@ -728,7 +728,7 @@ class MainHandler(object):
         """
         self._data_manager.clear_direct_beam_list()
         self.ui.normalizeTable.setRowCount(0)
-        self.ui.normalization_list_label.setText(u"None")
+        self.ui.normalization_list_label.setText("None")
         self.main_window.initiate_reflectivity_plot.emit(False)
 
     def remove_reflectivity(self):
@@ -796,7 +796,7 @@ class MainHandler(object):
         # Update the direct beam table if this data set is in it
         idx = self._data_manager.find_data_in_direct_beam_list(refl)
         if idx is not None:
-            channels = refl.cross_sections.keys()
+            channels = list(refl.cross_sections.keys())
             self.update_direct_beam_table(idx, refl.cross_sections[channels[0]])
 
         # Only recalculate if we need to, otherwise just replot
@@ -829,7 +829,7 @@ class MainHandler(object):
         self.update_tables()
 
         direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
-        self.ui.normalization_list_label.setText(u", ".join(direct_beam_ids))
+        self.ui.normalization_list_label.setText(", ".join(direct_beam_ids))
 
         self.main_window.initiate_reflectivity_plot.emit(False)
         return True
@@ -849,7 +849,7 @@ class MainHandler(object):
             item.setBackground(QtGui.QColor(255, 255, 255))
 
         self.ui.normalizeTable.setItem(idx, 0, QtWidgets.QTableWidgetItem(item))
-        wl = u"%s - %s" % (d.wavelength[0], d.wavelength[-1])
+        wl = "%s - %s" % (d.wavelength[0], d.wavelength[-1])
         self.ui.normalizeTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(wl))
         item = QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
         item.setBackground(QtGui.QColor(200, 200, 200))

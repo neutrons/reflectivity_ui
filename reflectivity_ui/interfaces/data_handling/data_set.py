@@ -3,7 +3,7 @@
     Uses Mantid Framework
 """
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
-from __future__ import absolute_import, division, print_function
+
 
 # local imports
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
@@ -88,7 +88,7 @@ class NexusData(object):
             Approximate data size
         """
         total_size = 0
-        for d in self.cross_sections.keys():
+        for d in list(self.cross_sections.keys()):
             total_size += self.cross_sections[d].nbytes
         return total_size
 
@@ -595,12 +595,12 @@ class CrossSectionData(object):
         self.log_minmax = {}
         self.log_units = {}
 
-        for motor in data.keys():
+        for motor in list(data.keys()):
             if motor in ['proton_charge', 'frequency', 'Veto_pulse']:
                 continue
             item = data[motor]
             try:
-                self.log_units[motor] = unicode(item.units, encoding='utf8')
+                self.log_units[motor] = str(item.units, encoding='utf8')
                 if item.type == 'string':
                     pass
                     #self.logs[motor] = item.value

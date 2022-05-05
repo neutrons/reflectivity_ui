@@ -12,7 +12,7 @@ All rights reserved.
 Copyright (c) 2003-2017 SciPy Developers.
 All rights reserved.
 """
-from __future__ import division, print_function, absolute_import
+
 
 import math
 import numpy as np
@@ -175,38 +175,38 @@ def find_peaks(x, height=None, threshold=None, distance=None,
         peaks = peaks[keep]
         properties["left_thresholds"] = left_thresholds
         properties["right_thresholds"] = right_thresholds
-        properties = {key: array[keep] for key, array in properties.items()}
+        properties = {key: array[keep] for key, array in list(properties.items())}
 
     if distance is not None:
         raise ValueError("find_peaks: distance option not available")
 
     if prominence is not None or width is not None:
         # Calculate prominence (required for both conditions)
-        properties.update(zip(
+        properties.update(list(zip(
             ['prominences', 'left_bases', 'right_bases'],
             peak_prominences(x, peaks, wlen=wlen)
-        ))
+        )))
 
     if prominence is not None:
         # Evaluate prominence condition
         pmin, pmax = _unpack_condition_args(prominence, x, peaks)
         keep = _select_by_property(properties['prominences'], pmin, pmax)
         peaks = peaks[keep]
-        properties = {key: array[keep] for key, array in properties.items()}
+        properties = {key: array[keep] for key, array in list(properties.items())}
 
     if width is not None:
         # Calculate widths
-        properties.update(zip(
+        properties.update(list(zip(
             ['widths', 'width_heights', 'left_ips', 'right_ips'],
             peak_widths(x, peaks, rel_height, (properties['prominences'],
                                                properties['left_bases'],
                                                properties['right_bases']))
-        ))
+        )))
         # Evaluate width condition
         wmin, wmax = _unpack_condition_args(width, x, peaks)
         keep = _select_by_property(properties['widths'], wmin, wmax)
         peaks = peaks[keep]
-        properties = {key: array[keep] for key, array in properties.items()}
+        properties = {key: array[keep] for key, array in list(properties.items())}
 
     
     return np.asarray(peaks), properties

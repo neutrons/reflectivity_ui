@@ -3,7 +3,7 @@
    and in which formats to write them.
 """
 #pylint: disable=bare-except
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 from PyQt5 import QtCore, QtWidgets
 import reflectivity_ui.interfaces.generated.ui_reduce_dialog
@@ -12,7 +12,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
     """
         Reduction dialog
     """
-    default_template = u'(instrument)_{numbers}_{item}_{state}.{type}'
+    default_template = '(instrument)_{numbers}_{item}_{state}.{type}'
 
     def __init__(self, parent):
         super(ReductionDialog, self).__init__(parent)
@@ -98,7 +98,7 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         """
         old_d = self.directoryEntry.text()
         new_d = QtWidgets.QFileDialog.getExistingDirectory(parent=self,
-                                                           caption=u'Select new directory',
+                                                           caption='Select new directory',
                                                            directory=old_d)
         if new_d is not None:
             self.directoryEntry.setText(new_d)

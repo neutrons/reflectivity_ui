@@ -4,7 +4,7 @@
     information from the data file
 """
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, bare-except
-from __future__ import absolute_import, division, print_function
+
 
 # local
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath

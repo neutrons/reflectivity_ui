@@ -2,7 +2,7 @@
     Class used to report on progress. It allows for sub-tasks and
     computes a meaningful progress status accordingly.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 
 class ProgressReporter(object):

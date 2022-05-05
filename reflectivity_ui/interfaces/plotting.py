@@ -88,14 +88,14 @@ class PlotManager(object):
             main_window.ui.xy_overview.imshow(xy, log=main_window.ui.logarithmic_colorscale.isChecked(),
                                               aspect='auto', cmap=self.color, origin='lower',
                                               extent=[tth_range+tth0, tth0, phi0, phi0-phi_range])
-            main_window.ui.xy_overview.set_xlabel(u'2$\\Theta{}$ [°]')
-            main_window.ui.xy_overview.set_ylabel(u'$\\phi{}$ [°]')
+            main_window.ui.xy_overview.set_xlabel('2$\\Theta{}$ [°]')
+            main_window.ui.xy_overview.set_ylabel('$\\phi{}$ [°]')
             main_window.ui.xy_overview.cplot.set_clim([xy_imin, xy_imax])
         else:
             main_window.ui.xy_overview.imshow(xy, log=main_window.ui.logarithmic_colorscale.isChecked(),
                                               aspect='auto', cmap=self.color, origin='lower')
-            main_window.ui.xy_overview.set_xlabel(u'x [pix]')
-            main_window.ui.xy_overview.set_ylabel(u'y [pix]')
+            main_window.ui.xy_overview.set_xlabel('x [pix]')
+            main_window.ui.xy_overview.set_ylabel('y [pix]')
             main_window.ui.xy_overview.cplot.set_clim([xy_imin, xy_imax])
 
             if self.xy_x1 is None:
@@ -114,13 +114,13 @@ class PlotManager(object):
             main_window.ui.xtof_overview.imshow(xtof[::-1], log=main_window.ui.logarithmic_colorscale.isChecked(),
                                          aspect='auto', cmap=self.color,
                                          extent=[data.wavelength[0], data.wavelength[-1], 0, data.x.shape[0]-1])
-            main_window.ui.xtof_overview.set_xlabel(u'$\\lambda{}$ [Å]')
+            main_window.ui.xtof_overview.set_xlabel('$\\lambda{}$ [Å]')
         else:
             main_window.ui.xtof_overview.imshow(xtof[::-1], log=main_window.ui.logarithmic_colorscale.isChecked(),
                                          aspect='auto', cmap=self.color,
                                          extent=[data.tof[0]*1e-3, data.tof[-1]*1e-3, 0, data.x.shape[0]-1])
-            main_window.ui.xtof_overview.set_xlabel(u'ToF [ms]')
-        main_window.ui.xtof_overview.set_ylabel(u'x [pix]')
+            main_window.ui.xtof_overview.set_xlabel('ToF [ms]')
+        main_window.ui.xtof_overview.set_ylabel('x [pix]')
 
         if self.xtof_x1 is None:
             self.xtof_x1 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak-x_width/2., color='#aa0000')
@@ -146,7 +146,7 @@ class PlotManager(object):
             X vs. Y plots for all channels.
         """
         main_window = self.main_window
-        data_set_keys = main_window.data_manager.data_sets.keys()
+        data_set_keys = list(main_window.data_manager.data_sets.keys())
         plots=[main_window.ui.xy_pp, main_window.ui.xy_mm, main_window.ui.xy_pm, main_window.ui.xy_mp]
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
@@ -194,13 +194,13 @@ class PlotManager(object):
                 plots[i].imshow(datai, log=main_window.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
                                 aspect='auto', cmap=self.color, origin='lower',
                                 extent=[tth_range+tth0, tth0, phi0, phi0-phi_range])
-                plots[i].set_xlabel(u'2$\\Theta{}$ [°]')
-                plots[i].set_ylabel(u'$\\phi{}$ [°]')
+                plots[i].set_xlabel('2$\\Theta{}$ [°]')
+                plots[i].set_ylabel('$\\phi{}$ [°]')
             else:
                 plots[i].imshow(datai, log=main_window.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
                                 aspect='auto', cmap=self.color, origin='lower')
-                plots[i].set_xlabel(u'x [pix]')
-                plots[i].set_ylabel(u'y [pix]')
+                plots[i].set_xlabel('x [pix]')
+                plots[i].set_ylabel('y [pix]')
             plots[i].set_title(data_set_keys[i])
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([imin, imax])
@@ -214,7 +214,7 @@ class PlotManager(object):
             X vs. ToF plots for all channels.
         """
         main_window = self.main_window
-        data_set_keys = main_window.data_manager.data_sets.keys()
+        data_set_keys = list(main_window.data_manager.data_sets.keys())
         imin=1e20
         imax=1e-20
         xtofnormed=[]
@@ -266,13 +266,13 @@ class PlotManager(object):
             if main_window.ui.xLamda.isChecked():
                 plots[i].imshow(datai[::-1], log=main_window.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
                                 aspect='auto', cmap=self.color, extent=[wavelength[0], wavelength[-1], 0, datai.shape[0]-1])
-                plots[i].set_xlabel(u'$\\lambda{}$ [Å]')
+                plots[i].set_xlabel('$\\lambda{}$ [Å]')
             else:
                 plots[i].imshow(datai[::-1], log=main_window.ui.logarithmic_colorscale.isChecked(), imin=imin, imax=imax,
                                 aspect='auto', cmap=self.color, extent=[tof[0]*1e-3, tof[-1]*1e-3, 0, datai.shape[0]-1])
-                plots[i].set_xlabel(u'ToF [ms]')
+                plots[i].set_xlabel('ToF [ms]')
             plots[i].set_title(data_set_keys[i])
-            plots[i].set_ylabel(u'x [pix]')
+            plots[i].set_ylabel('x [pix]')
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([imin, imax])
             if plots[i].cplot is not None and main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
@@ -389,7 +389,7 @@ class PlotManager(object):
                self.main_window.ui.offspec_pm, self.main_window.ui.offspec_mp]
         for plot in plots:
             plot.clear()
-        data_set_keys = self.main_window.data_manager.data_sets.keys()
+        data_set_keys = list(self.main_window.data_manager.data_sets.keys())
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
@@ -459,18 +459,18 @@ class PlotManager(object):
             if self.main_window.ui.kizmkfzVSqz.isChecked():
                 plot.canvas.ax.set_xlim([k_diff_min, k_diff_max])
                 plot.canvas.ax.set_ylim([qz_min, qz_max])
-                plot.set_xlabel(u'k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]')
-                plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+                plot.set_xlabel('k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]')
+                plot.set_ylabel('Q$_z$ [Å$^{-1}$]')
             elif self.main_window.ui.qxVSqz.isChecked():
                 plot.canvas.ax.set_xlim([qx_min, qx_max])
                 plot.canvas.ax.set_ylim([qz_min, qz_max])
-                plot.set_xlabel(u'Q$_x$ [Å$^{-1}$]')
-                plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+                plot.set_xlabel('Q$_x$ [Å$^{-1}$]')
+                plot.set_ylabel('Q$_z$ [Å$^{-1}$]')
             else:
                 plot.canvas.ax.set_xlim([ki_z_min, ki_z_max])
                 plot.canvas.ax.set_ylim([kf_z_min, kf_z_max])
-                plot.set_xlabel(u'k$_{i,z}$ [Å$^{-1}$]')
-                plot.set_ylabel(u'k$_{f,z}$ [Å$^{-1}$]')
+                plot.set_xlabel('k$_{i,z}$ [Å$^{-1}$]')
+                plot.set_ylabel('k$_{f,z}$ [Å$^{-1}$]')
             plot.set_title(channel)
             if plot.cplot is not None:
                 plot.cplot.set_clim([i_min, i_max])
@@ -494,7 +494,7 @@ class PlotManager(object):
             or self.main_window.data_manager.active_channel.dr is None:
             self.main_window.ui.refl.clear()
             self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
-                                        u'No data',
+                                        'No data',
                                         horizontalalignment='center',
                                         verticalalignment='center',
                                         fontsize=14,
@@ -516,7 +516,7 @@ class PlotManager(object):
         data = self.main_window.data_manager.active_channel
         if data.total_counts == 0:
             self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
-                                        u'No points to show\nin active dataset!',
+                                        'No points to show\nin active dataset!',
                                         horizontalalignment='center',
                                         verticalalignment='center',
                                         fontsize=14,
@@ -533,7 +533,7 @@ class PlotManager(object):
                                       label='Active', lw=2, color='black')
             else:
                 self.main_window.ui.refl.canvas.ax.text(0.5, 0.5,
-                                            u'No points to show\nin active dataset!',
+                                            'No points to show\nin active dataset!',
                                             horizontalalignment='center',
                                             verticalalignment='center',
                                             fontsize=14,
@@ -561,7 +561,7 @@ class PlotManager(object):
                                                   color=self._refl_color_list[i%len(self._refl_color_list)])
             #self.main_window.ui.refl.set_ylabel(u'I')
             self.main_window.ui.refl.canvas.ax.set_ylim((ymin*0.9, ymax*1.1))
-            self.main_window.ui.refl.set_xlabel(u'Q$_z$ [Å$^{-1}$]')
+            self.main_window.ui.refl.set_xlabel('Q$_z$ [Å$^{-1}$]')
 
         if self.main_window.ui.logarithmic_y.isChecked():
             self.main_window.ui.refl.set_yscale('log')
@@ -595,7 +595,7 @@ class PlotManager(object):
 
         for plot in plots:
             plot.clear()
-        data_set_keys = self.main_window.data_manager.data_sets.keys()
+        data_set_keys = list(self.main_window.data_manager.data_sets.keys())
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].draw()
@@ -613,8 +613,8 @@ class PlotManager(object):
                                 selected_data.gisans_data.SGrid,
                                 log=self.main_window.ui.logarithmic_colorscale.isChecked(), imin=Imin, imax=Imax,
                                 cmap=self.color)
-            plots[i].set_xlabel(u'Q$_y$ [Å$^{-1}$]')
-            plots[i].set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+            plots[i].set_xlabel('Q$_y$ [Å$^{-1}$]')
+            plots[i].set_ylabel('Q$_z$ [Å$^{-1}$]')
             plots[i].set_title(channel)
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([Imin, Imax])

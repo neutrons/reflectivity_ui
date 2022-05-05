@@ -2,7 +2,7 @@
     Methods used to process data, usually calling Mantid
 """
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
-from __future__ import absolute_import, division, print_function
+
 import sys
 import logging
 import h5py
@@ -27,9 +27,9 @@ def generate_short_script(reduction_list):
     if len(reduction_list) == 0:
         return '# No data in reduction list\n'
 
-    xs = reduction_list[0].cross_sections.keys()[0]
+    xs = list(reduction_list[0].cross_sections.keys())[0]
     script = "# Mantid version %s\n" % mantid.__version__
-    script += "# Date: %s\n\n" % time.strftime(u"%Y-%m-%d %H:%M:%S")
+    script += "# Date: %s\n\n" % time.strftime("%Y-%m-%d %H:%M:%S")
     script += "from mantid.simpleapi import *\n"
 
     logging.info("Cross section for script %s", xs)
@@ -112,7 +112,7 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
 
     # Select the cross-section we will use to determine the scaling factors
     if xs is None:
-        xs = reduction_list[0].cross_sections.keys()[0]
+        xs = list(reduction_list[0].cross_sections.keys())[0]
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
@@ -183,7 +183,7 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
 
     # Select the cross-section we will use to determine the scaling factors
     if xs is None:
-        xs = reduction_list[0].cross_sections.keys()[0]
+        xs = list(reduction_list[0].cross_sections.keys())[0]
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
@@ -312,7 +312,7 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         raise RuntimeError("Either a file path or a data object must be supplied")
 
     nxs = h5py.File(file_path, mode='r')
-    keys = nxs.keys()
+    keys = list(nxs.keys())
     keys.sort()
     nxs.close()
 

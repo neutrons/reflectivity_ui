@@ -1,9 +1,9 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 import json
 import os
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 this_module_path = sys.modules[__name__].__file__
@@ -18,11 +18,11 @@ def fetch_remote_files():
     remote_address = remote_info['address']
     remote_files = remote_info['files']
 
-    for basename, md5 in remote_files.items():
+    for basename, md5 in list(remote_files.items()):
         file_path = os.path.join(data_dir, basename)
         if not os.path.isfile(file_path):
             print('Fetching data file ' + basename)
-            urllib.urlretrieve(os.path.join(remote_address, md5), file_path)
+            urllib.request.urlretrieve(os.path.join(remote_address, md5), file_path)
 
 
 if __name__ == '__main__':

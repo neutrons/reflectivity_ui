@@ -1,6 +1,7 @@
 import numpy as np
 import plotly.offline as py
 import plotly.graph_objs as go
+from functools import reduce
 py.init_notebook_mode(connected=True)
 
 def plot1d(data_list, data_names=None, x_title='', y_title='',
@@ -159,7 +160,7 @@ def read_settings(file_path):
                 continue
             toks = line.strip().split()
             if len(toks) == len(DIRECT_BEAM_HEADERS):    
-                settings_dict = reduce(fill_dict, zip(DIRECT_BEAM_HEADERS, toks), {})
+                settings_dict = reduce(fill_dict, list(zip(DIRECT_BEAM_HEADERS, toks)), {})
                 reduction_settings['direct_beam_runs'].append(settings_dict)
 
         elif line.startswith('#') and current_block == DATA_RUN_BLOCK:
@@ -168,7 +169,7 @@ def read_settings(file_path):
                 continue
             toks = line.strip().split()
             if len(toks) == len(DATA_RUN_HEADERS):    
-                settings_dict = reduce(fill_dict, zip(DATA_RUN_HEADERS, toks), {})
+                settings_dict = reduce(fill_dict, list(zip(DATA_RUN_HEADERS, toks)), {})
                 reduction_settings['data_runs'].append(settings_dict)
 
     return reduction_settings
