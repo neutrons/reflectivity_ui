@@ -291,10 +291,10 @@ class NexusData(object):
         for xs in self.cross_sections:
             try:
                 self.cross_sections[xs].offspec(direct_beam=direct_beam)
-            except:
+            except Exception:
                 has_errors = True
-                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, traceback.format_exc()
-                logging.exception("Could not calculate off-specular reflectivity for %s", xs)
+                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (xs, traceback.format_exc())
+                logging.exception(detailed_msg)
         if has_errors:
             raise RuntimeError(detailed_msg)
 
