@@ -307,7 +307,7 @@ class ProcessingWorkflow(object):
                     self.data_manager.cached_offspec = smooth_output
                 except:
                     raise
-                    logging.error("Problem writing smooth off-spec output: %s", sys.exc_value)
+                    logging.exception("Problem writing smooth off-spec output")
             else:
                 # Binned version
                 binned_data, slice_data_dict = self.get_rebinned_offspec_data()
