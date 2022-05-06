@@ -7,4 +7,5 @@ dependencies:
 - matplotlib
 - numpy
 - mantid>=6.3,<6.4
-
+- pytest
+- pytest-qt
