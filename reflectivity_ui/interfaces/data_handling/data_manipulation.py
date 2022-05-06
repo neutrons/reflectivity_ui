@@ -27,7 +27,7 @@ def generate_short_script(reduction_list):
     if len(reduction_list) == 0:
         return '# No data in reduction list\n'
 
-    xs = reduction_list[0].cross_sections.keys()[0]
+    xs = list(reduction_list[0].cross_sections.keys())[0]
     script = "# Mantid version %s\n" % mantid.__version__
     script += "# Date: %s\n\n" % time.strftime("%Y-%m-%d %H:%M:%S")
     script += "from mantid.simpleapi import *\n"
@@ -112,7 +112,7 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
 
     # Select the cross-section we will use to determine the scaling factors
     if xs is None:
-        xs = reduction_list[0].cross_sections.keys()[0]
+        xs = list(reduction_list[0].cross_sections.keys())[0]
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
@@ -183,7 +183,7 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
 
     # Select the cross-section we will use to determine the scaling factors
     if xs is None:
-        xs = reduction_list[0].cross_sections.keys()[0]
+        xs = list(reduction_list[0].cross_sections.keys())[0]
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0

@@ -600,7 +600,7 @@ class CrossSectionData(object):
                 continue
             item = data[motor]
             try:
-                self.log_units[motor] = str(item.units, encoding='utf8')
+                self.log_units[motor] = str(item.units)
                 if item.type == 'string':
                     pass
                     #self.logs[motor] = item.value
