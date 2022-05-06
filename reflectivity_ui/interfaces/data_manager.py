@@ -134,18 +134,18 @@ class DataManager(object):
             return True
 
         # First, check that we have the same number of states
-        if not len(self.reduction_states) == len(list(self.data_sets.keys())):
+        if not len(self.reduction_states) == len(self.data_sets.keys()):
             logging.error('Active data cross-sections ({}) different than those of the'
-                          ' reduction list ({})'.format(self.reduction_states, list(self.data_sets.keys())))
+                          ' reduction list ({})'.format(self.reduction_states, self.data_sets.keys()))
             return False
 
         # Second, make sure the states match
-        for cross_section_state in list(self.data_sets.keys()):
+        for cross_section_state in self.data_sets.keys():
             if cross_section_state not in self.reduction_states:
                 logging.error('Active data cross-section {} not found in those'
                               ' of the reduction list'.format(cross_section_state))
                 return False
-        return True 
+        return True
 
     def find_data_in_reduction_list(self, nexus_data):
         """
@@ -564,7 +564,7 @@ class DataManager(object):
         for idx, item in enumerate(self.reduction_list[:-1]):
             next_item=self.reduction_list[idx+1]
             end_idx=next_item.cross_sections[xs].configuration.cut_first_n_points
-            
+
             overlap_idx=np.where(item.cross_sections[xs].q >= next_item.cross_sections[xs].q[end_idx])
             logging.error(overlap_idx[0])
             if len(overlap_idx[0]) > 0:
@@ -588,7 +588,7 @@ class DataManager(object):
             merged_ws = data_manipulation.merge_reflectivity(self.reduction_list, xs=pol_state,
                                                              q_min=0.001, q_step=-0.01)
             self.final_merged_reflectivity[pol_state] = merged_ws
-        
+
         # Compute asymmetry
         if asymmetry:
             self.asymmetry()
@@ -630,7 +630,7 @@ class DataManager(object):
                 p_state = None
                 m_state = None
 
-        # - If we haven't made sense of it yet, take the first and last cross-sections 
+        # - If we haven't made sense of it yet, take the first and last cross-sections
         if p_state is None and m_state is None and len(self.reduction_states)>=2:
             p_state = self.reduction_states[0]
             m_state = self.reduction_states[-1]

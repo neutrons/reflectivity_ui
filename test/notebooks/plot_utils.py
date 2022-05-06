@@ -159,8 +159,8 @@ def read_settings(file_path):
             if line.startswith('# DB_ID'):
                 continue
             toks = line.strip().split()
-            if len(toks) == len(DIRECT_BEAM_HEADERS):    
-                settings_dict = reduce(fill_dict, list(zip(DIRECT_BEAM_HEADERS, toks)), {})
+            if len(toks) == len(DIRECT_BEAM_HEADERS):
+                settings_dict = reduce(fill_dict, zip(DIRECT_BEAM_HEADERS, toks), {})
                 reduction_settings['direct_beam_runs'].append(settings_dict)
 
         elif line.startswith('#') and current_block == DATA_RUN_BLOCK:
@@ -168,8 +168,8 @@ def read_settings(file_path):
             if line.startswith('# scale'):
                 continue
             toks = line.strip().split()
-            if len(toks) == len(DATA_RUN_HEADERS):    
-                settings_dict = reduce(fill_dict, list(zip(DATA_RUN_HEADERS, toks)), {})
+            if len(toks) == len(DATA_RUN_HEADERS):
+                settings_dict = reduce(fill_dict, zip(DATA_RUN_HEADERS, toks), {})
                 reduction_settings['data_runs'].append(settings_dict)
 
     return reduction_settings

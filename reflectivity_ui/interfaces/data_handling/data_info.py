@@ -339,7 +339,7 @@ class Fitter2(object):
         quality_pos[high_peaks] = quality_pos[high_peaks] * (1 - np.abs(nx-delta-peaks[high_peaks])/delta)**3
         quality = -peaks_w * prom * quality_pos
 
-        zipped = list(zip(peaks, peaks_w, quality, prom))
+        zipped = zip(peaks, peaks_w, quality, prom)
         ordered = sorted(zipped, key=lambda a:a[2])
         found_peaks = [p[0] for p in ordered]
 
@@ -417,7 +417,7 @@ class Fitter2(object):
             _deriv_err = np.sqrt(_running)[:-1]
             _deriv_err[_deriv_err<1] = 1
             _y = np.arange(len(self.y_vs_counts))[5:-5]
-    
+
             _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
             peak_min = _coef[1] - np.abs(_coef[2])/2.0 - 2.0 * np.abs(_coef[3])
             peak_max = _coef[1] + np.abs(_coef[2])/2.0 + 2.0 * np.abs(_coef[3])
@@ -425,7 +425,7 @@ class Fitter2(object):
                 logging.error("Low statisting: trying again")
                 _y_running = self.y[5:-4]
                 _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
-    
+
             self.guess_y = _coef[1]
             self.guess_wy = (peak_max - peak_min) / 2.0
             peak_min = max(peak_min, self.DEAD_PIXELS)

@@ -83,7 +83,7 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
                 direct_beam = db_i
         if direct_beam is None:
             continue
-        db_pol = list(direct_beam.cross_sections.keys())[0]
+        db_pol = direct_beam.cross_sections.keys()[0]
         conf = direct_beam.cross_sections[db_pol].configuration
         i_direct_beam += 1
         dpix = run_object.getProperty("normalization_dirpix").value

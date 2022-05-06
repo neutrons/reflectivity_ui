@@ -70,7 +70,7 @@ def plot1d(data_list, data_names=None, x_title='', y_title='',
 
     fig = go.Figure(data=data, layout=layout)
     py.iplot(fig, show_link=False)
-        
+
 def plot_heatmap(x, y, z, x_title='', y_title='', surface=False,
                  x_log=False, y_log=False):
     """
@@ -113,8 +113,8 @@ def plot_heatmap(x, y, z, x_title='', y_title='', surface=False,
                      hoverinfo="x+y+z", colorscale=colorscale)
     fig = go.Figure(data=[trace], layout=layout)
     py.iplot(fig, show_link=False)
-    
-    
+
+
 
 def fill_dict(accum_dict, value):
     if value[0] in ['#', 'File']:
@@ -138,7 +138,7 @@ def read_settings(file_path):
                         'y_pos', 'y_width', 'bg_pos', 'bg_width',
                         'extract_fan', 'dpix', 'tth', 'number', 'DB_ID', 'File']
 
-    reduction_settings = {'direct_beam_runs': [], 'data_runs': [], 'process_type': 'Specular'}    
+    reduction_settings = {'direct_beam_runs': [], 'data_runs': [], 'process_type': 'Specular'}
 
     fd = open(file_path, 'r')
     current_block = DATA_BLOCK
@@ -162,8 +162,8 @@ def read_settings(file_path):
             if line.startswith('# DB_ID'):
                 continue
             toks = line.strip().split()
-            if len(toks) == len(DIRECT_BEAM_HEADERS):    
-                settings_dict = reduce(fill_dict, list(zip(DIRECT_BEAM_HEADERS, toks)), {})
+            if len(toks) == len(DIRECT_BEAM_HEADERS):
+                settings_dict = reduce(fill_dict, zip(DIRECT_BEAM_HEADERS, toks), {})
                 reduction_settings['direct_beam_runs'].append(settings_dict)
 
         elif line.startswith('#') and current_block == DATA_RUN_BLOCK:
@@ -171,8 +171,8 @@ def read_settings(file_path):
             if line.startswith('# scale'):
                 continue
             toks = line.strip().split()
-            if len(toks) == len(DATA_RUN_HEADERS):    
-                settings_dict = reduce(fill_dict, list(zip(DATA_RUN_HEADERS, toks)), {})
+            if len(toks) == len(DATA_RUN_HEADERS):
+                settings_dict = reduce(fill_dict, zip(DATA_RUN_HEADERS, toks), {})
                 reduction_settings['data_runs'].append(settings_dict)
 
     return reduction_settings
@@ -185,7 +185,7 @@ def find_peaks(workspace, x_min=50, x_max=250):
     peaks = CropWorkspace(InputWorkspace=peaks, XMin=x_min, XMax=x_max)
     output = LRPeakSelection(InputWorkspace=peaks)
     x_peak = (output[0][0]+x_min, output[0][1]+x_min)
-    
+
     roi=RefRoi(InputWorkspace=workspace, NXPixel=304, NYPixel=256, XPixelMin=0, XPixelMax=303,
                YPixelMin=0, YPixelMax=255, IntegrateY=False, ConvertToQ=False)
     peaks2 = Transpose(InputWorkspace=roi)
@@ -205,7 +205,6 @@ def process_run(run_number, settings, direct_beam=True):
     r_min = settings['x_pos'] - settings['x_width']/2.0
     low_max = settings['y_pos'] + settings['y_width']/2.0
     low_min = settings['y_pos'] - settings['y_width']/2.0
-    
-    print(("r%s - PEAK: [%s %s]   Input: [%s %s]" % (run_number, x_peak[0], x_peak[1], r_min, r_max)))
-    print(("r%s - LOW:  [%s %s]   Input: [%s %s]" % (run_number, y_peak[0], y_peak[1], low_min, low_max)))
 
+    print("r%s - PEAK: [%s %s]   Input: [%s %s]" % (run_number, x_peak[0], x_peak[1], r_min, r_max))
+    print("r%s - LOW:  [%s %s]   Input: [%s %s]" % (run_number, y_peak[0], y_peak[1], low_min, low_max))

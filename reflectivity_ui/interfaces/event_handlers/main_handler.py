@@ -190,7 +190,7 @@ class MainHandler(object):
             DeleteWorkspace(workspace)
 
         # Find the minimum and maximum values for each log, and compare to the tolerance
-        for log_name, values in list(log_values.items()):
+        for log_name, values in log_values.items():
             if max(values) - min(values) > tolerances[log_name]:
                 runs = FilePath(file_paths).run_numbers(string_representation='statement')
                 message_template = 'Runs {0} contain values for log {1} that differ above tolerance {2}'
@@ -622,8 +622,8 @@ class MainHandler(object):
         table.setRowCount(0)
         table.sortItems(-1)
         table.setColumnCount(len(self._data_manager.data_sets)+2)
-        table.setHorizontalHeaderLabels(['Name']+list(self._data_manager.data_sets.keys())+['Unit'])
-        for j, key in enumerate(sorted(list(self._data_manager.active_channel.logs.keys()), key=lambda s: s.lower())):
+        table.setHorizontalHeaderLabels(['Name']+self._data_manager.data_sets.keys()+['Unit'])
+        for j, key in enumerate(sorted(self._data_manager.active_channel.logs.keys(), key=lambda s: s.lower())):
             table.insertRow(j)
             table.setItem(j, 0, QtWidgets.QTableWidgetItem(key))
             table.setItem(j, len(self._data_manager.data_sets)+1,

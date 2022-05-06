@@ -18,7 +18,7 @@ def fetch_remote_files():
     remote_address = remote_info['address']
     remote_files = remote_info['files']
 
-    for basename, md5 in list(remote_files.items()):
+    for basename, md5 in remote_files.items():
         file_path = os.path.join(data_dir, basename)
         if not os.path.isfile(file_path):
             print('Fetching data file ' + basename)

@@ -88,7 +88,7 @@ class NexusData(object):
             Approximate data size
         """
         total_size = 0
-        for d in list(self.cross_sections.keys()):
+        for d in self.cross_sections.keys():
             total_size += self.cross_sections[d].nbytes
         return total_size
 
@@ -473,7 +473,7 @@ class CrossSectionData(object):
     @property
     def direct_pixel(self):
         if self.configuration.set_direct_pixel:
-            return self.configuration.direct_pixel_overwrite 
+            return self.configuration.direct_pixel_overwrite
         return self._direct_pixel
 
     @direct_pixel.setter
@@ -483,7 +483,7 @@ class CrossSectionData(object):
     @property
     def angle_offset(self):
         if self.configuration.set_direct_angle_offset:
-            return self.configuration.direct_angle_offset_overwrite 
+            return self.configuration.direct_angle_offset_overwrite
         return self._angle_offset
 
     @angle_offset.setter
@@ -595,7 +595,7 @@ class CrossSectionData(object):
         self.log_minmax = {}
         self.log_units = {}
 
-        for motor in list(data.keys()):
+        for motor in data.keys():
             if motor in ['proton_charge', 'frequency', 'Veto_pulse']:
                 continue
             item = data[motor]
@@ -678,7 +678,7 @@ class CrossSectionData(object):
             #data_info = DataInfo(workspace, self.name, self.configuration)
             self.use_roi_actual = data_info.use_roi_actual
             self.is_direct_beam = data_info.is_direct_beam
-            
+
 
             self.meta_data_roi_peak = data_info.roi_peak
             self.meta_data_roi_bck = data_info.roi_background

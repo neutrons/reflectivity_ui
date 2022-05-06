@@ -186,7 +186,7 @@ class ProcessingWorkflow(object):
         model_data = pickle.loads(zip_template.read('data'))
         for i, channel in enumerate(self.data_manager.reduction_states):
             if channel not in output_data:
-                logging.error("Cross-section %s not in %s", channel, str(list(output_data.keys())))
+                logging.error("Cross-section %s not in %s", channel, str(output_data.keys()))
                 continue
             model_data[i].x_raw = output_data[channel][:, 0]
             model_data[i].y_raw = output_data[channel][:, 1]
@@ -268,7 +268,7 @@ class ProcessingWorkflow(object):
             progress(90, "Writing data")
 
         output_file_base = self.get_file_name(run_list, process_type='GISANS')
-        self.write_quicknxs(data_dict, output_file_base, xs=list(data_dict['cross_sections'].keys()))
+        self.write_quicknxs(data_dict, output_file_base, xs=data_dict['cross_sections'].keys())
 
         if progress is not None:
             progress(100, "GISANS complete")
@@ -303,7 +303,7 @@ class ProcessingWorkflow(object):
                     self.write_quicknxs(smooth_output, output_file_base)
                     if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
                         output_file_base = self.get_file_name(run_list, process_type='OffSpecSmoothSlice')
-                        self.write_quicknxs(slice_data_dict, output_file_base, xs=list(slice_data_dict['cross_sections'].keys()))
+                        self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
                     self.data_manager.cached_offspec = smooth_output
                 except:
                     raise
@@ -316,7 +316,7 @@ class ProcessingWorkflow(object):
                 self.write_quicknxs(binned_data, output_file_base)
                 if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
                     output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
-                    self.write_quicknxs(slice_data_dict, output_file_base, xs=list(slice_data_dict['cross_sections'].keys()))
+                    self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
                 self.data_manager.cached_offspec = binned_data
 
     def get_rebinned_offspec_data(self):
@@ -480,7 +480,7 @@ class ProcessingWorkflow(object):
 
     def smooth_offspec(self, data_dict):
         """
-            NOTE: 
+            NOTE:
 
             Create a smoothed dataset from the off-specular scattering.
             :param dict data_dict: the output of get_offspec_data()
@@ -497,7 +497,7 @@ class ProcessingWorkflow(object):
         output_data=dict(cross_sections=dict())
         slice_data_dict = {}
 
-        for channel in list(data_dict['cross_sections'].keys()):
+        for channel in data_dict['cross_sections'].keys():
             data = np.hstack(data_dict[channel])
             I = data[:, :, 5].flatten()
             Qzmax = data[:, :, 2].max() * 2.
@@ -712,7 +712,7 @@ class ProcessingWorkflow(object):
         try:
             smtp = smtplib.SMTP(SMTP_SERVER, timeout=10)
             smtp.sendmail(msg['From'],
-                          list(map(str.strip, msg['To'].split(',')+msg['CC'].split(','))),
+                          map(str.strip, msg['To'].split(',')+msg['CC'].split(',')),
                           msg.as_string())
             smtp.quit()
         except:
