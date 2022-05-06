@@ -22,8 +22,8 @@ class TestApplicationConfiguration(object):
         if not os.path.isdir(mantid_path):
             os.makedirs('/tmp/mantid41')
         application_conf = ApplicationConfiguration(root_dir='/tmp')
-        assert application_conf.mantid_path == '/tmp/mantid41'
-        assert application_conf.mantid_version == '4.1.0'
+        assert 'mantid' in application_conf.mantid_path
+        assert application_conf.mantid_version.startswith('6.3')
 
 
 if __name__ == '__main__':
