@@ -73,13 +73,13 @@ class PlotHandler(object):
         self.ui.xtof_overview.canvas.mpl_connect('button_release_event', self.plot_release)
 
         # Status bar indicator
-        self.x_position_indicator = QtWidgets.QLabel(u" x=%g" % 0.)
+        self.x_position_indicator = QtWidgets.QLabel(" x=%g" % 0.)
         self.x_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
                                                 QtWidgets.QSizePolicy.Preferred)
         self.x_position_indicator.setMaximumWidth(100)
         self.x_position_indicator.setMinimumWidth(100)
         self.ui.statusbar.addPermanentWidget(self.x_position_indicator)
-        self.y_position_indicator = QtWidgets.QLabel(u" y=%g" % 0.)
+        self.y_position_indicator = QtWidgets.QLabel(" y=%g" % 0.)
         self.y_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
                                                 QtWidgets.QSizePolicy.Preferred)
         self.y_position_indicator.setMaximumWidth(100)
@@ -95,8 +95,8 @@ class PlotHandler(object):
         """
         if event.inaxes is None:
             return
-        self.x_position_indicator.setText(u" x=%g" % event.xdata)
-        self.y_position_indicator.setText(u" y=%g" % event.ydata)
+        self.x_position_indicator.setText(" x=%g" % event.xdata)
+        self.y_position_indicator.setText(" y=%g" % event.ydata)
 
     @slow_down_events
     def change_color_scale(self, event):
@@ -361,7 +361,7 @@ class PlotHandler(object):
         Imax = 10**self.ui.offspecImax.value()
         if Imin >= Imax:
             return
-        data_set_keys = self.main_window.data_manager.data_sets.keys()
+        data_set_keys = list(self.main_window.data_manager.data_sets.keys())
         for i in range(len(data_set_keys)):
             plot = plots[i]
             if plot.cplot is not None:
@@ -374,7 +374,7 @@ class PlotHandler(object):
         plots = [self.ui.offspec_pp, self.ui.offspec_mm,
                  self.ui.offspec_pm, self.ui.offspec_mp]
         Imin = 1e10
-        data_set_keys = self.main_window.data_manager.data_sets.keys()
+        data_set_keys = list(self.main_window.data_manager.data_sets.keys())
         for i in range(len(data_set_keys)):
             plot = plots[i]
             if plot.cplot is not None:

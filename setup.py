@@ -2,7 +2,7 @@
 """
     Setup script for magnetic reflectivity reduction application
 """
-from __future__ import absolute_import, division, print_function
+
 import sys
 from setuptools import setup, find_packages
 import os

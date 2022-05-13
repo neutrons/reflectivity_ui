@@ -2,7 +2,7 @@
 """
     Read and write quicknxs reduced files
 """
-from __future__ import absolute_import, division, print_function
+
 import sys
 import os
 import time
@@ -54,7 +54,7 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
     fd = open(output_path, 'w')
     fd.write("# Datafile created by QuickNXS %s\n" % __version__)
     fd.write("# Datafile created using Mantid %s\n" % mantid.__version__)
-    fd.write("# Date: %s\n" % time.strftime(u"%Y-%m-%d %H:%M:%S"))
+    fd.write("# Date: %s\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     fd.write("# Type: Specular\n")
     run_list = [str(item.number) for item in reduction_list]
     fd.write("# Input file indices: %s\n" % ','.join(run_list))
@@ -65,7 +65,7 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
     fd.write("# %s\n" % '  '.join(toks))
 
     # Get the list of cross-sections
-    pol_list = reduction_list[0].cross_sections.keys()
+    pol_list = list(reduction_list[0].cross_sections.keys())
     if not pol_list:
         logging.error("No data found in run %s", reduction_list[0].number)
         return
@@ -83,7 +83,7 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
                 direct_beam = db_i
         if direct_beam is None:
             continue
-        db_pol = direct_beam.cross_sections.keys()[0]
+        db_pol = list(direct_beam.cross_sections.keys())[0]
         conf = direct_beam.cross_sections[db_pol].configuration
         i_direct_beam += 1
         dpix = run_object.getProperty("normalization_dirpix").value
@@ -197,17 +197,17 @@ def write_reflectivity_data(output_path, data, col_names, as_5col=True):
 
         fd.write("# [Data]\n")
         if four_cols:
-            toks = [u'%12s' % item for item in col_names[:4]]
+            toks = ['%12s' % item for item in col_names[:4]]
         else:
-            toks = [u'%12s' % item for item in col_names]
-        fd.write(u"# %s\n" % '\t'.join(toks))
+            toks = ['%12s' % item for item in col_names]
+        fd.write("# %s\n" % '\t'.join(toks))
 
         if isinstance(data, list):
             # [TOF][pixel][parameter]
             for tof_item in data:
                 for pixel_item in tof_item:
                     np.savetxt(fd, pixel_item, delimiter='\t', fmt='%-18e')
-                    fd.write(u'\n'.encode('utf8'))
+                    fd.write('\n'.encode('utf8'))
         else:
             if four_cols:
                 np.savetxt(fd, data[:, :4], delimiter=' ', fmt='%-18e')

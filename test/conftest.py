@@ -1,7 +1,7 @@
 r"""
 Fixtures for pytest
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 # 3rd-party imports
 import pytest
@@ -29,8 +29,9 @@ def data_server():
         def path_to(self, basename):
             r"""Absolute path to a data file. If it doesn't exist, try to find it in the remote repository"""
             file_path = os.path.join(self._directory, basename)
-            if not os.path.isfile(file_path):
-                raise IOError('File {0} not found in data directory {1}'.format(basename, self._directory))
-            return file_path
+            for ext in ['', '.nxs.h5', '_event.nxs']:
+                if os.path.isfile(file_path + ext):
+                    return file_path + ext
+            raise IOError('File {0} not found in data directory {1}'.format(basename, self._directory))
 
     return _DataServe()

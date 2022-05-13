@@ -12,7 +12,7 @@ All rights reserved.
 Copyright (c) 2003-2017 SciPy Developers.
 All rights reserved.
 """
-from __future__ import division, print_function, absolute_import
+
 
 import math
 import numpy as np
@@ -23,7 +23,7 @@ __all__ = ['peak_prominences', 'peak_widths', 'find_peaks']
 def peak_prominences(x, peaks, wlen=None):
     """
     Calculate the prominence of each peak in a signal.
- 
+
     .. versionadded:: 1.1.0
 
     References
@@ -208,7 +208,7 @@ def find_peaks(x, height=None, threshold=None, distance=None,
         peaks = peaks[keep]
         properties = {key: array[keep] for key, array in properties.items()}
 
-    
+
     return np.asarray(peaks), properties
 
 # The following code belongs in _peak_finding_utils #####################################

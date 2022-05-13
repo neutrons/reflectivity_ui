@@ -4,7 +4,7 @@
    This code was taken as-is from QuickNXS v1
 """
 #pylint: disable=bare-except
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 from PyQt5 import QtWidgets
 
 from matplotlib.lines import Line2D
@@ -72,8 +72,8 @@ class SmoothDialog(QtWidgets.QDialog):
         if self.ui.kizmkfzVSqz.isChecked():
             plot.canvas.ax.set_xlim([-0.035, 0.035])
             plot.canvas.ax.set_ylim([0., Qzmax*1.01])
-            plot.set_xlabel(u'k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]')
-            plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+            plot.set_xlabel('k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]')
+            plot.set_ylabel('Q$_z$ [Å$^{-1}$]')
             x1=-0.03
             x2=0.03
             y1=0.
@@ -87,8 +87,8 @@ class SmoothDialog(QtWidgets.QDialog):
         elif self.ui.qxVSqz.isChecked():
             plot.canvas.ax.set_xlim([-0.0005, 0.0005])
             plot.canvas.ax.set_ylim([0., Qzmax*1.01])
-            plot.set_xlabel(u'Q$_x$ [Å$^{-1}$]')
-            plot.set_ylabel(u'Q$_z$ [Å$^{-1}$]')
+            plot.set_xlabel('Q$_x$ [Å$^{-1}$]')
+            plot.set_ylabel('Q$_z$ [Å$^{-1}$]')
             x1=-0.0002
             x2=0.0002
             y1=0.
@@ -102,8 +102,8 @@ class SmoothDialog(QtWidgets.QDialog):
         else:
             plot.canvas.ax.set_xlim([0., Qzmax/2.*1.01])
             plot.canvas.ax.set_ylim([0., Qzmax/2.*1.01])
-            plot.set_xlabel(u'k$_{i,z}$ [Å$^{-1}$]')
-            plot.set_ylabel(u'k$_{f,z}$ [Å$^{-1}$]')
+            plot.set_xlabel('k$_{i,z}$ [Å$^{-1}$]')
+            plot.set_ylabel('k$_{f,z}$ [Å$^{-1}$]')
             x1=0.0
             x2=Qzmax/2.
             y1=0.

@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 # package imports
 from reflectivity_ui.interfaces.main_window import MainWindow
@@ -52,7 +52,7 @@ class TestMainHandler(object):
         # New files
         message = self.handler._congruency_fail_report([data_server.path_to('REF_M_38198.nxs.h5'),
                                                         data_server.path_to('REF_M_38199.nxs.h5')])
-        assert 'values for log S1HWidth that differ above tolerance 0.01' in message
+        assert 'values for log DANGLE that differ above tolerance 0.01' in message
 
 
 if __name__ == '__main__':

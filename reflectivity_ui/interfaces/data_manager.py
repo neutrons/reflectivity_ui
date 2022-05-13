@@ -3,7 +3,7 @@
     Data manager. Holds information about the current data location
     and manages the data cache.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 import glob
 import sys
 import os
@@ -104,7 +104,7 @@ class DataManager(object):
         """
         if self.data_sets is None:
             return False
-        channels = self.data_sets.keys()
+        channels = list(self.data_sets.keys())
         if index < len(channels):
             # channel index is allowed
             self.active_channel = self.data_sets[channels[index]]
@@ -145,7 +145,7 @@ class DataManager(object):
                 logging.error('Active data cross-section {} not found in those'
                               ' of the reduction list'.format(cross_section_state))
                 return False
-        return True 
+        return True
 
     def find_data_in_reduction_list(self, nexus_data):
         """
@@ -190,7 +190,7 @@ class DataManager(object):
         if self._nexus_data not in self.reduction_list:
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
-                    self.reduction_states = self.data_sets.keys()
+                    self.reduction_states = list(self.data_sets.keys())
                 # Append to the reduction list, but keep the run number ordering
                 q_min, _q_max = self._nexus_data.get_q_range()
                 is_inserted = False
@@ -360,7 +360,7 @@ class DataManager(object):
         if isinstance(nexus_data, NexusData):
             # Get the direct beam info from the configuration
             # All the cross sections should have the same direct beam file.
-            data_keys = nexus_data.cross_sections.keys()
+            data_keys = list(nexus_data.cross_sections.keys())
             if len(data_keys) == 0:
                 logging.error("DataManager._find_direct_beam: no data available in NexusData object")
                 return
@@ -381,7 +381,7 @@ class DataManager(object):
                 except (ValueError, TypeError):
                     item_number = item.number
                 if item_number == _run_number:
-                    keys = item.cross_sections.keys()
+                    keys = list(item.cross_sections.keys())
                     if len(keys) >= 1:
                         if len(keys) > 1:
                             logging.error("More than one cross-section for the direct beam, using the first one")
@@ -506,9 +506,9 @@ class DataManager(object):
         closest = None
         for item in self.direct_beam_list:
             item_number = int(item.number)
-            xs_keys = item.cross_sections.keys()
+            xs_keys = list(item.cross_sections.keys())
             if len(xs_keys) > 0:
-                channel = item.cross_sections[item.cross_sections.keys()[0]]
+                channel = item.cross_sections[list(item.cross_sections.keys())[0]]
                 if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel):
                     if closest is None:
                         closest = item_number
@@ -518,9 +518,9 @@ class DataManager(object):
         if closest is None:
             # If we didn't find a direct beam, try with just the wavelength
             for item in self.direct_beam_list:
-                xs_keys = item.cross_sections.keys()
+                xs_keys = list(item.cross_sections.keys())
                 if len(xs_keys) > 0:
-                    channel = item.cross_sections[item.cross_sections.keys()[0]]
+                    channel = item.cross_sections[list(item.cross_sections.keys())[0]]
                     if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel, skip_slits=True):
                         if closest is None:
                             closest = item_number
@@ -564,7 +564,7 @@ class DataManager(object):
         for idx, item in enumerate(self.reduction_list[:-1]):
             next_item=self.reduction_list[idx+1]
             end_idx=next_item.cross_sections[xs].configuration.cut_first_n_points
-            
+
             overlap_idx=np.where(item.cross_sections[xs].q >= next_item.cross_sections[xs].q[end_idx])
             logging.error(overlap_idx[0])
             if len(overlap_idx[0]) > 0:
@@ -588,7 +588,7 @@ class DataManager(object):
             merged_ws = data_manipulation.merge_reflectivity(self.reduction_list, xs=pol_state,
                                                              q_min=0.001, q_step=-0.01)
             self.final_merged_reflectivity[pol_state] = merged_ws
-        
+
         # Compute asymmetry
         if asymmetry:
             self.asymmetry()
@@ -630,7 +630,7 @@ class DataManager(object):
                 p_state = None
                 m_state = None
 
-        # - If we haven't made sense of it yet, take the first and last cross-sections 
+        # - If we haven't made sense of it yet, take the first and last cross-sections
         if p_state is None and m_state is None and len(self.reduction_states)>=2:
             p_state = self.reduction_states[0]
             m_state = self.reduction_states[-1]

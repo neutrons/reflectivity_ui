@@ -3,7 +3,7 @@
     Uses Mantid Framework
 """
 #pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
-from __future__ import absolute_import, division, print_function
+
 
 # local imports
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
@@ -473,7 +473,7 @@ class CrossSectionData(object):
     @property
     def direct_pixel(self):
         if self.configuration.set_direct_pixel:
-            return self.configuration.direct_pixel_overwrite 
+            return self.configuration.direct_pixel_overwrite
         return self._direct_pixel
 
     @direct_pixel.setter
@@ -483,7 +483,7 @@ class CrossSectionData(object):
     @property
     def angle_offset(self):
         if self.configuration.set_direct_angle_offset:
-            return self.configuration.direct_angle_offset_overwrite 
+            return self.configuration.direct_angle_offset_overwrite
         return self._angle_offset
 
     @angle_offset.setter
@@ -600,7 +600,7 @@ class CrossSectionData(object):
                 continue
             item = data[motor]
             try:
-                self.log_units[motor] = unicode(item.units, encoding='utf8')
+                self.log_units[motor] = str(item.units)
                 if item.type == 'string':
                     pass
                     #self.logs[motor] = item.value
@@ -678,7 +678,7 @@ class CrossSectionData(object):
             #data_info = DataInfo(workspace, self.name, self.configuration)
             self.use_roi_actual = data_info.use_roi_actual
             self.is_direct_beam = data_info.is_direct_beam
-            
+
 
             self.meta_data_roi_peak = data_info.roi_peak
             self.meta_data_roi_bck = data_info.roi_background

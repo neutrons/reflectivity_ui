@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 # local imports
 from reflectivity_ui.interfaces.data_handling.filepath import RunNumbers, FilePath
@@ -36,48 +36,48 @@ class TestRunNumber(object):
 
 class TestFilePath(object):
     def test_init(self):
-        assert FilePath(u'/SNS/REF_M_1.nxs').path == u'/SNS/REF_M_1.nxs'
-        assert FilePath([u'/SNS/REF_M_2.nxs', u'/SNS/REF_M_1.nxs']).path == u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'
-        assert FilePath([u'/SNS/REF_M_2.nxs', u'/SNS/REF_M_1.nxs'], sort=False).path == \
-               u'/SNS/REF_M_2.nxs+/SNS/REF_M_1.nxs'
-        assert FilePath(u'/SNS/REF_M_2.nxs+/SNS/REF_M_1.nxs').path == u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'
+        assert FilePath('/SNS/REF_M_1.nxs').path == '/SNS/REF_M_1.nxs'
+        assert FilePath(['/SNS/REF_M_2.nxs', '/SNS/REF_M_1.nxs']).path == '/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'
+        assert FilePath(['/SNS/REF_M_2.nxs', '/SNS/REF_M_1.nxs'], sort=False).path == \
+               '/SNS/REF_M_2.nxs+/SNS/REF_M_1.nxs'
+        assert FilePath('/SNS/REF_M_2.nxs+/SNS/REF_M_1.nxs').path == '/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'
 
     def test_join(self):
-        assert FilePath.join(u'/SNS', u'REF_M_1.nxs') == u'/SNS/REF_M_1.nxs'
-        assert FilePath.join(u'/SNS', u'REF_M_2.nxs+REF_M_1.nxs') == u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'
+        assert FilePath.join('/SNS', 'REF_M_1.nxs') == '/SNS/REF_M_1.nxs'
+        assert FilePath.join('/SNS', 'REF_M_2.nxs+REF_M_1.nxs') == '/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs'
 
     def test_unique_dirname(self):
-        assert FilePath.unique_dirname(u'/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs')
-        assert FilePath.unique_dirname(u'/NSN/REF_M_1.nxs+/SNS/REF_M_2.nxs') is False
+        assert FilePath.unique_dirname('/SNS/REF_M_1.nxs+/SNS/REF_M_2.nxs')
+        assert FilePath.unique_dirname('/NSN/REF_M_1.nxs+/SNS/REF_M_2.nxs') is False
 
     def test_single_paths(self):
-        assert_equal_arrays(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').single_paths,
-                            [u'/SNS/REF_M_1.nxs', u'/SNS/REF_M_3.nxs'])
+        assert_equal_arrays(FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').single_paths,
+                            ['/SNS/REF_M_1.nxs', '/SNS/REF_M_3.nxs'])
 
     def test_is_composite(self):
-        assert FilePath(u'/SNS/REF_M_3.nxs').is_composite is False
-        assert FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').is_composite
+        assert FilePath('/SNS/REF_M_3.nxs').is_composite is False
+        assert FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').is_composite
 
     def test_dirname(self):
-        assert FilePath(u'/SNS/REF_M_3.nxs').dirname == u'/SNS'
-        assert FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').dirname == u'/SNS'
+        assert FilePath('/SNS/REF_M_3.nxs').dirname == '/SNS'
+        assert FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').dirname == '/SNS'
 
     def test_basename(self):
-        assert FilePath(u'/SNS/REF_M_3.nxs').basename == u'REF_M_3.nxs'
-        assert FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').basename == u'REF_M_1.nxs+REF_M_3.nxs'
+        assert FilePath('/SNS/REF_M_3.nxs').basename == 'REF_M_3.nxs'
+        assert FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').basename == 'REF_M_1.nxs+REF_M_3.nxs'
 
     def test_first_path(self):
-        assert FilePath(u'/SNS/REF_M_3.nxs').first_path == u'/SNS/REF_M_3.nxs'
-        assert FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').first_path == u'/SNS/REF_M_1.nxs'
+        assert FilePath('/SNS/REF_M_3.nxs').first_path == '/SNS/REF_M_3.nxs'
+        assert FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').first_path == '/SNS/REF_M_1.nxs'
 
     def test_split(self):
-        assert_equal_arrays(FilePath(u'/SNS/REF_M_3.nxs').split(), (u'/SNS', u'REF_M_3.nxs'))
-        assert_equal_arrays(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').split(),
-                            (u'/SNS', u'REF_M_1.nxs+REF_M_3.nxs'))
+        assert_equal_arrays(FilePath('/SNS/REF_M_3.nxs').split(), ('/SNS', 'REF_M_3.nxs'))
+        assert_equal_arrays(FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').split(),
+                            ('/SNS', 'REF_M_1.nxs+REF_M_3.nxs'))
 
     def test_run_numbers(self):
-        assert_equal_arrays(FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').run_numbers(), [1, 3])
-        file_path = FilePath(u'/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs+/SNS/REF_M_6.nxs+/SNS/REF_M_2.nxs')
+        assert_equal_arrays(FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs').run_numbers(), [1, 3])
+        file_path = FilePath('/SNS/REF_M_3.nxs+/SNS/REF_M_1.nxs+/SNS/REF_M_6.nxs+/SNS/REF_M_2.nxs')
         assert file_path.run_numbers(string_representation='long') == '1+2+3+6'
         assert file_path.run_numbers(string_representation='short') == '1:3+6'
 

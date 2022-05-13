@@ -2,7 +2,7 @@
     Meta-data information for MR reduction
 """
 #pylint: disable=too-few-public-methods, wrong-import-position, too-many-instance-attributes, wrong-import-order
-from __future__ import absolute_import, division, print_function
+
 import sys
 import time
 import logging
@@ -417,7 +417,7 @@ class Fitter2(object):
             _deriv_err = np.sqrt(_running)[:-1]
             _deriv_err[_deriv_err<1] = 1
             _y = np.arange(len(self.y_vs_counts))[5:-5]
-    
+
             _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, gaussian_first=False)
             peak_min = _coef[1] - np.abs(_coef[2])/2.0 - 2.0 * np.abs(_coef[3])
             peak_max = _coef[1] + np.abs(_coef[2])/2.0 + 2.0 * np.abs(_coef[3])
@@ -425,7 +425,7 @@ class Fitter2(object):
                 logging.error("Low statisting: trying again")
                 _y_running = self.y[5:-4]
                 _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
-    
+
             self.guess_y = _coef[1]
             self.guess_wy = (peak_max - peak_min) / 2.0
             peak_min = max(peak_min, self.DEAD_PIXELS)

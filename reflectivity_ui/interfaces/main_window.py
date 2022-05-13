@@ -4,7 +4,7 @@
 r"""
     Main application window
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 # package imports
 from .data_manager import DataManager
@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow,
         # Initialize the UI widgets
         self.ui = reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(u'QuickNXS %s' % reflectivity_ui.__version__)
+        self.setWindowTitle('QuickNXS %s' % reflectivity_ui.__version__)
 
         # Application settings
         self.settings = QtCore.QSettings('.refredm')
@@ -105,7 +105,7 @@ class MainWindow(QtWidgets.QMainWindow,
         for i in range(1, 12):
             getattr(self.ui, 'selectedChannel%i' % i).hide()
         self.ui.selectedChannel0.show()
-        self.ui.selectedChannel0.setText(u"None")
+        self.ui.selectedChannel0.setText("None")
 
         self.file_handler.populate_from_configuration()
 
@@ -151,7 +151,7 @@ class MainWindow(QtWidgets.QMainWindow,
             return
         QtWidgets.QApplication.instance().processEvents()
         item = self.ui.file_list.currentItem()  # type: QListWidgetItem
-        name = unicode(item.text())  # e.g 'REF_M_38199.nxs.h5' or 'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        name = str(item.text())  # e.g 'REF_M_38199.nxs.h5' or 'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
         filepath = FilePath.join(self.data_manager.current_directory, name)
         self.file_handler.open_file(filepath)
 
