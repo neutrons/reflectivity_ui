@@ -597,7 +597,7 @@ class MainHandler(object):
 
         self.ui.numberSearchEntry.setText('')  # empty the contents of in the LineEdit widget
         success = False
-        if file_list > 0:
+        if len(file_list) > 0:
             file_path = FilePath(file_list).path  # single path or a composite of file paths
             # If opening more than one file, check whether files can be merged
             if len(file_list) > 1:
@@ -622,7 +622,7 @@ class MainHandler(object):
         table.setRowCount(0)
         table.sortItems(-1)
         table.setColumnCount(len(self._data_manager.data_sets)+2)
-        table.setHorizontalHeaderLabels(['Name']+self._data_manager.data_sets.keys()+['Unit'])
+        table.setHorizontalHeaderLabels(['Name']+list(self._data_manager.data_sets.keys())+['Unit'])
         for j, key in enumerate(sorted(self._data_manager.active_channel.logs.keys(), key=lambda s: s.lower())):
             table.insertRow(j)
             table.setItem(j, 0, QtWidgets.QTableWidgetItem(key))
