@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'designer/ui_result_viewer.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -19,7 +20,6 @@ class Ui_Dialog(object):
         self.specular_tab = QtWidgets.QWidget()
         self.specular_tab.setObjectName("specular_tab")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.specular_tab)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.specular_compare_widget = CompareWidget(self.specular_tab)
         self.specular_compare_widget.setObjectName("specular_compare_widget")
@@ -28,7 +28,6 @@ class Ui_Dialog(object):
         self.offspecular_tab = QtWidgets.QWidget()
         self.offspecular_tab.setObjectName("offspecular_tab")
         self.gridLayout = QtWidgets.QGridLayout(self.offspecular_tab)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setVerticalSpacing(6)
@@ -94,7 +93,6 @@ class Ui_Dialog(object):
         self.gisans_tab = QtWidgets.QWidget()
         self.gisans_tab.setObjectName("gisans_tab")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.gisans_tab)
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
@@ -143,7 +141,6 @@ class Ui_Dialog(object):
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1319, 685))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
-        self.gridLayout_6.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.gridLayout_4 = QtWidgets.QGridLayout()
         self.gridLayout_4.setObjectName("gridLayout_4")
@@ -225,6 +222,7 @@ class Ui_Dialog(object):
         self.gisans_apply_crop_button.setText(_translate("Dialog", "Apply cropping to all"))
         self.gisans_reset_crop_button.setText(_translate("Dialog", "Refresh"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.gisans_tab), _translate("Dialog", "GISANS"))
+
 
 from .compare_plots import CompareWidget
 from .mplwidget import MPLWidget

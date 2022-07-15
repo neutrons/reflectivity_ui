@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'designer/ui_smooth_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -50,7 +51,6 @@ class Ui_Dialog(object):
         self.widget = QtWidgets.QWidget(Dialog)
         self.widget.setObjectName("widget")
         self.gridLayout = QtWidgets.QGridLayout(self.widget)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
         self.gridXmax = QtWidgets.QDoubleSpinBox(self.widget)
         self.gridXmax.setDecimals(6)
@@ -245,6 +245,7 @@ class Ui_Dialog(object):
         self.label_4.setText(_translate("Dialog", "Y"))
         self.label_6.setText(_translate("Dialog", "X"))
         self.label_14.setText(_translate("Dialog", "R [Sigmas]"))
+
 
 from .mplwidget import MPLWidget
 import icons_rc
