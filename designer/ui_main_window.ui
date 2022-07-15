@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1945</width>
-    <height>848</height>
+    <height>945</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2064,7 +2064,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>false</bool>
+                       <bool>true</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>

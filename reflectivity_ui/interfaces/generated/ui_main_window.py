@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1945, 848)
+        MainWindow.resize(1945, 945)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/General/logo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -799,7 +799,7 @@ class Ui_MainWindow(object):
         self.reductionTable.setHorizontalHeaderItem(11, item)
         item = QtWidgets.QTableWidgetItem()
         self.reductionTable.setHorizontalHeaderItem(12, item)
-        self.reductionTable.horizontalHeader().setVisible(False)
+        self.reductionTable.horizontalHeader().setVisible(True)
         self.reductionTable.horizontalHeader().setCascadingSectionResizes(False)
         self.reductionTable.horizontalHeader().setDefaultSectionSize(70)
         self.reductionTable.horizontalHeader().setMinimumSectionSize(20)
