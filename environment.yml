@@ -9,3 +9,8 @@ dependencies:
 - mantid>=6.3,<6.4
 - pytest
 - pytest-qt
+- build
+- toml
+- pip:
+    - versioningit
+    - check-wheel-contents
