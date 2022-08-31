@@ -7,22 +7,6 @@ on:
     branches: [next, qa, main]
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
-      with:
-        auto-update-conda: true
-        mamba-version: "*"
-        environment-file: environment.yml
-    - name: Install testing requirements
-      run: mamba env update --name test --file environment.yml
-    - name: Install quicknxs in editable mode
-      run: python setup.py install
   build-wheel:
     runs-on: ubuntu-latest
     defaults:
@@ -35,7 +19,9 @@ jobs:
         auto-update-conda: true
         mamba-version: "*"
         environment-file: environment.yml
-    - name: Install Wheel
+    - name: Install quicknxs via setup.py
+      run: python setup.py install
+    - name: Build Wheel
       run: python -m build --no-isolation --wheel
     - name: Check Wheel Contents
       run: check-wheel-contents .
