@@ -1,4 +1,0 @@
-pylint
-matplotlib
-numpy
-mantid>=6.3,<6.4
