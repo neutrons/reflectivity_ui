@@ -1,0 +1,61 @@
+# load information from setup.cfg/setup.py
+{% set data = load_setup_py_data() %}
+{% set license = data.get('license') %}
+{% set description = data.get('description') %}
+{% set url = data.get('url') %}
+# this will reproduce the version from tags to match versioningit
+{% set version_tag = environ.get('GIT_DESCRIBE_TAG', '0.0.0') %}
+{% set version_number = environ.get('GIT_DESCRIBE_NUMBER', '0') | string %}
+{% set version_number = '_' + version_number if version_number != '0' else '' %}
+
+{% set version = version_tag + version_number %}
+
+package:
+  name: "reflectivity_ui"
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  string: py{{py}}
+  script: {{ PYTHON }} setup.py bdist_wheel
+
+requirements:
+  host:
+    - python
+    - versioningit
+
+  build:
+    - mantid
+    - matplotlib
+    - codecov
+    - pylint
+    - pytest
+    - pytest-qt
+    - pytest-cov
+    - build
+    - toml
+    - setuptools
+    - versioningit
+
+  run:
+    - mantid
+    - matplotlib
+
+test:
+  imports:
+    - reflectivity_ui
+
+about:
+  home: {{ url }}
+  license: {{ license }}
+  license_family: Apache License 2.0
+  license_file: ../LICENSE
+  summary: {{ description }}
+
+extra:
+  recipe-maintainers:
+    - peterfpeterson
+    - mdoucet
