@@ -18,7 +18,7 @@ build:
   noarch: python
   number: {{ version_number }}
   string: py{{py}}
-  script: {{ PYTHON }} setup.py bdist_wheel
+  script: {{ PYTHON }} setup.py install
 
 requirements:
   host:
@@ -26,20 +26,15 @@ requirements:
     - versioningit
 
   build:
-    - mantid
+    - numpy
     - matplotlib
-    - codecov
-    - pylint
-    - pytest
-    - pytest-qt
-    - pytest-cov
     - build
     - toml
     - setuptools
     - versioningit
 
   run:
-    - mantid
+    - numpy
     - matplotlib
 
 test:
