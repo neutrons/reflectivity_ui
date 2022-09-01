@@ -33,7 +33,7 @@ jobs:
         echo GITHUB REF ${{ github.ref }}
         conda install -y anaconda-client conda-build conda-verify
         cd conda.recipe
-        conda build --output-folder . . -c neutrons -c mantid
+        conda build --output-folder . . -c conda-forge -c mantid/label/nightly
         conda verify noarch/reflectivity_ui-*py*.tar.bz2
 
     - name: Deploy to Anaconda

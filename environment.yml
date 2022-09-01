@@ -2,6 +2,7 @@ name: quicknxs
 channels:
     - conda-forge
     - mantid
+    - mantid/label/nightly
 dependencies:
 - matplotlib
 - mantid>=6.3,<6.4

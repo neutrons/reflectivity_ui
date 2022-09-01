@@ -53,7 +53,7 @@ setup(name="reflectivity_ui",
       install_requires=[
         'numpy',
         'matplotlib',
-        'mantid',
+        # 'mantid',
     ],
       setup_requires=[],
 )
