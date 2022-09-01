@@ -19,9 +19,7 @@ jobs:
         auto-update-conda: true
         mamba-version: "*"
         environment-file: environment.yml
-    - name: Install quicknxs via setup.py
-      run: python setup.py install
     - name: Build Wheel
-      run: python -m build --no-isolation --wheel
+      run: python setup.py bdist_wheel
     - name: Check Wheel Contents
       run: check-wheel-contents .
