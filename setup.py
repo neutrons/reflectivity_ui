@@ -6,7 +6,7 @@
 import sys
 from setuptools import setup, find_packages
 import os
-import reflectivity_ui
+from versioningit import get_cmdclasses
 
 if 'pyuic' in sys.argv[:]:
     indir = 'designer'
@@ -40,9 +40,9 @@ if 'pyrcc' in sys.argv[:]:
 package_data = {"reflectivity_ui.interfaces.data_handling": ["genx_templates/*.gx",], "reflectivity_ui.config": ["./settings.json"]}
 
 setup(name="reflectivity_ui",
-      version=reflectivity_ui.__version__,
       description = "Magnetic Reflectivity Reduction",
-      url = "https://github.com/mdoucet/reflectivity_ui",
+      cmdclass=get_cmdclasses(),
+      url = "https://github.com/neutrons/reflectivity_ui",
       long_description = """Desktop application for magnetic reflectivity reduction""",
       license = "Apache License 2.0",
       scripts=["bin/RefRedM", "bin/quicknxs2"],
@@ -53,7 +53,7 @@ setup(name="reflectivity_ui",
       install_requires=[
         'numpy',
         'matplotlib',
-        'mantid',
+        'mantidworkbench',
     ],
       setup_requires=[],
 )
