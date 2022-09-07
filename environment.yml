@@ -6,6 +6,8 @@ dependencies:
 - matplotlib
 - mantid>=6.3,<6.4
 - codecov
+- conda-build
+- conda-verify
 - pylint
 - pytest
 - pytest-qt

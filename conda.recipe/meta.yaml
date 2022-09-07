@@ -1,0 +1,50 @@
+# load information from setup.cfg/setup.py
+{% set data = load_setup_py_data() %}
+{% set license = data.get('license') %}
+{% set description = data.get('description') %}
+{% set url = data.get('url') %}
+# this will reproduce the version from tags to match versioningit
+{% set version = environ.get('GIT_DESCRIBE_TAG', '0.0.0') %}
+{% set version_number = environ.get('GIT_DESCRIBE_NUMBER', '0') | string %}
+
+package:
+  name: "reflectivity_ui"
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  version: {{ version_number }}
+  string: py{{py}}
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv
+
+requirements:
+  host:
+    - python
+    - versioningit
+
+  build:
+    - mantidworkbench
+    - setuptools
+    - versioningit
+
+  run:
+    - mantidworkbench
+
+test:
+  imports:
+    - reflectivity_ui
+
+about:
+  home: {{ url }}
+  license: {{ license }}
+  license_family: Apache
+  license_file: ../LICENSE
+  summary: {{ description }}
+
+extra:
+  recipe-maintainers:
+    - Mathieu Doucet
+    - Pete Peterson
