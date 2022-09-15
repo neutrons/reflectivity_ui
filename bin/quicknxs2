@@ -14,11 +14,11 @@ import logging.handlers
 logging.getLogger().setLevel(logging.INFO)
 
 # Formatter
-ft = logging.Formatter('%(levelname)s:%(asctime)-15s %(message)s')
+ft = logging.Formatter("%(levelname)s:%(asctime)-15s %(message)s")
 # Create a log file handler
-fh = logging.handlers.TimedRotatingFileHandler(os.path.join(os.path.expanduser('~'),
-                                                            'refred_m.log'),
-                                               when='midnight', backupCount=15)
+fh = logging.handlers.TimedRotatingFileHandler(
+    os.path.join(os.path.expanduser("~"), "refred_m.log"), when="midnight", backupCount=15
+)
 fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
@@ -30,27 +30,31 @@ def no_abort_excepthook(exc_type, value, tback):
     # then call the default handler
     sys.__excepthook__(exc_type, value, tback)
 
+
 sys.excepthook = no_abort_excepthook
 
 # Avoid clash with user-installed packages
 for item in sys.path:
-    if '.local' in item and 'reflectivity_ui' not in item:
+    if ".local" in item and "reflectivity_ui" not in item:
         sys.path.remove(item)
 
 # Set Qt5Agg now so matplotlib doesn't complain later
 import matplotlib
-matplotlib.use('Qt5Agg')
+
+matplotlib.use("Qt5Agg")
 
 # Import mantid according to the application configuration
 # Do it here to enforce the correct version
 from reflectivity_ui.interfaces.data_handling import ApplicationConfiguration
+
 application_conf = ApplicationConfiguration()
 if application_conf.mantid_path is not None:
-    sys.path.insert(0, os.path.join(application_conf.mantid_path, 'bin'))
-    sys.path.insert(1, os.path.join(application_conf.mantid_path, 'lib'))
+    sys.path.insert(0, os.path.join(application_conf.mantid_path, "bin"))
+    sys.path.insert(1, os.path.join(application_conf.mantid_path, "lib"))
 
 import mantid
 import reflectivity_ui
+
 print("##################################################")
 print("# QuickNXS %s " % reflectivity_ui.__version__)
 print("#    with Mantid: %s " % mantid.__version__)
@@ -59,11 +63,13 @@ print("##################################################")
 from PyQt5.QtWidgets import QApplication
 from reflectivity_ui.interfaces.main_window import MainWindow
 
+
 def main():
     app = QApplication(sys.argv)
     application = MainWindow()
     application.show()
     app.exec_()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

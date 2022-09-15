@@ -10,7 +10,8 @@ class AcceptRejectDialog(QDialog):
 
     Refer to: https://www.mfitzp.com/tutorials/pyqt-dialogs/
     """
-    def __init__(self, parent=None, title='', message=''):
+
+    def __init__(self, parent=None, title="", message=""):
         super(AcceptRejectDialog, self).__init__(parent)
 
         self.setWindowTitle(title)

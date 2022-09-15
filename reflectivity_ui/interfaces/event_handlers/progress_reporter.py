@@ -4,13 +4,12 @@
 """
 
 
-
 class ProgressReporter(object):
     """
-        Progress reporter class that allows for sub-tasks.
+    Progress reporter class that allows for sub-tasks.
     """
-    def __init__(self, max_value=100, call_back=None,
-                 status_bar=None, progress_bar=None):
+
+    def __init__(self, max_value=100, call_back=None, status_bar=None, progress_bar=None):
         """
 
         Parameters
@@ -24,15 +23,15 @@ class ProgressReporter(object):
             progress bar
         """
         self.max_value = max_value
-        self.message = ''
+        self.message = ""
         self.call_back = call_back
         self.value = 0
         self.sub_tasks = []
         self.status_bar = status_bar
         self.progress_bar = progress_bar
 
-    def __call__(self, value, message='', out_of=None):
-        """ Shortcut to set_value() so that the object can be used
+    def __call__(self, value, message="", out_of=None):
+        """Shortcut to set_value() so that the object can be used
         as a function to be compatible with QProgressDialog.setValue().
 
         Parameters
@@ -49,10 +48,10 @@ class ProgressReporter(object):
         """
         return self.set_value(value, message, out_of)
 
-    def set_value(self, value, message='', out_of=None):
+    def set_value(self, value, message="", out_of=None):
         """
-            Set the value of a progress indicator
-            :param int value: completion value, as a percentage
+        Set the value of a progress indicator
+        :param int value: completion value, as a percentage
         """
         if out_of is not None:
             value = int(value / out_of * self.max_value)
@@ -60,12 +59,12 @@ class ProgressReporter(object):
         self.value = value
         self.update(message)
 
-    def update(self, message=''):
+    def update(self, message=""):
         """
-            Updates the progress status according to
-            sub-tasks.
+        Updates the progress status according to
+        sub-tasks.
 
-            :param str message: message to be displayed
+        :param str message: message to be displayed
         """
         _value = self.value
         for item in self.sub_tasks:
@@ -83,11 +82,11 @@ class ProgressReporter(object):
 
     def create_sub_task(self, max_value):
         """
-            Create a sub-task, with max_value being its portion
-            of the complete task. Returns a call-back function
-            to be called by the worker to update the progress.
+        Create a sub-task, with max_value being its portion
+        of the complete task. Returns a call-back function
+        to be called by the worker to update the progress.
 
-            :param int max_value: portion of the task
+        :param int max_value: portion of the task
         """
         sub_task_progress = ProgressReporter(max_value, self.update)
         self.sub_tasks.append(sub_task_progress)

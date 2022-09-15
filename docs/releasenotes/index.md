@@ -1,6 +1,6 @@
 ## v2.0.43 [06/11/2020]
  - Pinned to use mantid42 and python2 fixed
- 
+
 ## v2.0.42 [05/28/2020]
  - Pinned to use mantid42 and python2
 
