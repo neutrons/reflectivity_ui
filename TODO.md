@@ -98,4 +98,3 @@ To-do list:
 - Fixed saving/loading of peak ranges
 - Add option to cut the first N and last M points -> Needs to be saved properly to file
 - Deal with peak position when it's not in the middle of the range
-

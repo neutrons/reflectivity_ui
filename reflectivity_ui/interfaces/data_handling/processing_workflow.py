@@ -1,7 +1,7 @@
 """
     Data processing workflow, taking results and writing them to files.
 """
-#pylint: disable=bare-except, too-many-locals
+# pylint: disable=bare-except, too-many-locals
 
 import sys
 import os
@@ -24,35 +24,37 @@ from ..configuration import Configuration
 from . import quicknxs_io, data_manipulation, off_specular, gisans
 
 
-DEFAULT_OPTIONS = dict(export_specular=True,
-                       export_asym=False,
-                       export_gisans=False,
-                       export_offspec=False,
-                       export_offspec_smooth=False,
-                       format_genx=False,
-                       format_matlab=False,
-                       format_mantid=True,
-                       format_multi=True,
-                       format_numpy=False,
-                       format_5cols=False,
-                       output_sample_size=10,
-                       output_directory='',
-                       output_file_template='(instrument)_{numbers}_{item}_{state}.{type}',
-                       email_send=False,
-                       email_zip_data=False,
-                       email_send_plots=False,
-                       email_send_data=False,
-                       email_to='',
-                       email_cc='',
-                       email_subject='',
-                       email_test='',
-                       )
+DEFAULT_OPTIONS = dict(
+    export_specular=True,
+    export_asym=False,
+    export_gisans=False,
+    export_offspec=False,
+    export_offspec_smooth=False,
+    format_genx=False,
+    format_matlab=False,
+    format_mantid=True,
+    format_multi=True,
+    format_numpy=False,
+    format_5cols=False,
+    output_sample_size=10,
+    output_directory="",
+    output_file_template="(instrument)_{numbers}_{item}_{state}.{type}",
+    email_send=False,
+    email_zip_data=False,
+    email_send_plots=False,
+    email_send_data=False,
+    email_to="",
+    email_cc="",
+    email_subject="",
+    email_test="",
+)
 
 
 class ProcessingWorkflow(object):
     """
-        Carry out the reduction process for a set of data runs and manages outputs
+    Carry out the reduction process for a set of data runs and manages outputs
     """
+
     def __init__(self, data_manager, output_options=None):
         """
         :param data_manager: all the reduced data shall come from data manager
@@ -64,71 +66,74 @@ class ProcessingWorkflow(object):
 
     def execute(self, progress=None):
         """
-            Process data and write output files
-            :param ProgressReporter progress: reporter object
+        Process data and write output files
+        :param ProgressReporter progress: reporter object
         """
         if not self.data_manager.reduction_states:
             return
 
-        if self.output_options['export_specular']:
+        if self.output_options["export_specular"]:
             if progress is not None:
                 progress(10, "Computing reflectivity")
             self.specular_reflectivity()
 
-        if self.output_options['export_offspec'] or self.output_options['export_offspec_smooth']:
+        if self.output_options["export_offspec"] or self.output_options["export_offspec_smooth"]:
             if progress is not None:
                 progress(20, "Computing off-specular reflectivity")
-            self.offspec(raw=self.output_options['export_offspec'],
-                         binned=self.output_options['export_offspec_smooth'])
+            self.offspec(
+                raw=self.output_options["export_offspec"], binned=self.output_options["export_offspec_smooth"]
+            )
 
         if progress is not None:
-                progress(60, "Computing GISANS")
-        if self.output_options['export_gisans']:
+            progress(60, "Computing GISANS")
+        if self.output_options["export_gisans"]:
             # FIXME 66 - could be an AttributeError from self.gisans().  Catch it!
             self.gisans(progress=progress)
 
-        if self.output_options['email_send']:
+        if self.output_options["email_send"]:
             self.send_email()
 
         if progress is not None:
             progress(100, "Complete")
 
-    def get_file_name(self, run_list=None, pol_state=None, data_type='dat', process_type='Specular'):
+    def get_file_name(self, run_list=None, pol_state=None, data_type="dat", process_type="Specular"):
         """
-            Construct a file name according to the measurement type.
-            :param list run_list: list of run numbers
-            :param str pol_state: name for the polarization state
-            :param str data_type: file extension
-            :param str process_type: descriptor for the process type
+        Construct a file name according to the measurement type.
+        :param list run_list: list of run numbers
+        :param str pol_state: name for the polarization state
+        :param str data_type: file extension
+        :param str process_type: descriptor for the process type
         """
         if run_list is None:
             run_list = []
-        base_name = self.output_options['output_file_template'].replace('{numbers}', '+'.join(run_list))
-        base_name = base_name.replace('{instrument}', self.data_manager.active_channel.configuration.instrument.instrument_name)
-        base_name = base_name.replace('{item}', process_type)
+        base_name = self.output_options["output_file_template"].replace("{numbers}", "+".join(run_list))
+        base_name = base_name.replace(
+            "{instrument}", self.data_manager.active_channel.configuration.instrument.instrument_name
+        )
+        base_name = base_name.replace("{item}", process_type)
         if pol_state is not None:
-            base_name = base_name.replace('{state}', pol_state)
-        base_name = base_name.replace('{type}', data_type)
-        return os.path.join(self.output_options['output_directory'], base_name)
+            base_name = base_name.replace("{state}", pol_state)
+        base_name = base_name.replace("{type}", data_type)
+        return os.path.join(self.output_options["output_directory"], base_name)
 
     def write_quicknxs(self, output_data, output_file_base, xs=None):
         """
-            Write QuickNXS output reflectivity file.
-            :param dict output_data: dictionary of numpy arrays
-            :param str output_file_base: template for output file paths
-            :param list xs: list of cross sections available in the output_data
+        Write QuickNXS output reflectivity file.
+        :param dict output_data: dictionary of numpy arrays
+        :param str output_file_base: template for output file paths
+        :param list xs: list of cross sections available in the output_data
         """
         # Get the column names
-        units = output_data['units']
-        cols = output_data['columns']
-        col_names = ['%s [%s]' % (cols[i], units[i]) for i in range(len(cols))]
+        units = output_data["units"]
+        cols = output_data["columns"]
+        col_names = ["%s [%s]" % (cols[i], units[i]) for i in range(len(cols))]
 
         # List of all output states we have to deal with
         if xs is not None:
             output_states = xs
         else:
             output_states = copy.copy(self.data_manager.reduction_states)
-            if self.output_options['export_asym'] and 'SA' in output_data:
+            if self.output_options["export_asym"] and "SA" in output_data:
                 output_states.append("SA")
 
         # Sanity check
@@ -136,7 +141,7 @@ class ProcessingWorkflow(object):
             return
 
         # Write out the cross-section data
-        five_cols = self.output_options['format_5cols']
+        five_cols = self.output_options["format_5cols"]
         for pol_state in output_states:
             # The cross-sections might have different names
             if pol_state in self.data_manager.reduction_list[0].cross_sections:
@@ -147,19 +152,20 @@ class ProcessingWorkflow(object):
             if pol_state not in output_data:
                 continue
 
-            state_output_path = output_file_base.replace('{state}', pol_state)
-            quicknxs_io.write_reflectivity_header(self.data_manager.reduction_list,
-                                                  self.data_manager.direct_beam_list,
-                                                  state_output_path, _pol_state)
-            quicknxs_io.write_reflectivity_data(state_output_path, output_data[pol_state],
-                                                col_names, as_5col=five_cols)
+            state_output_path = output_file_base.replace("{state}", pol_state)
+            quicknxs_io.write_reflectivity_header(
+                self.data_manager.reduction_list, self.data_manager.direct_beam_list, state_output_path, _pol_state
+            )
+            quicknxs_io.write_reflectivity_data(
+                state_output_path, output_data[pol_state], col_names, as_5col=five_cols
+            )
             self.exported_data_files.append(state_output_path)
 
     def write_genx(self, output_data, output_path):
-        '''
-            Create a Genx .gx model file with the right polarization states
-            and the reflectivity data already included for convenience.
-        '''
+        """
+        Create a Genx .gx model file with the right polarization states
+        and the reflectivity data already included for convenience.
+        """
         try:
             import zipfile
             import pickle
@@ -169,21 +175,21 @@ class ProcessingWorkflow(object):
 
         # Load templates
         module_dir, _ = os.path.split(__file__)
-        template_dir = os.path.join(module_dir, 'genx_templates')
+        template_dir = os.path.join(module_dir, "genx_templates")
         logging.error("GENX: %s", template_dir)
         if len(self.data_manager.reduction_states) == 1:
-            template_path = os.path.join(template_dir, 'unpolarized.gx')
+            template_path = os.path.join(template_dir, "unpolarized.gx")
         if len(self.data_manager.reduction_states) == 2:
-            template_path = os.path.join(template_dir, 'polarized.gx')
+            template_path = os.path.join(template_dir, "polarized.gx")
         else:
-            template_path = os.path.join(template_dir, 'spinflip.gx')
+            template_path = os.path.join(template_dir, "spinflip.gx")
 
-        zip_template = zipfile.ZipFile(template_path, 'r')
-        zip_output = zipfile.ZipFile(output_path, 'w', zip_template.compression)
-        for key in ['script', 'parameters', 'fomfunction', 'config', 'optimizer']:
+        zip_template = zipfile.ZipFile(template_path, "r")
+        zip_output = zipfile.ZipFile(output_path, "w", zip_template.compression)
+        for key in ["script", "parameters", "fomfunction", "config", "optimizer"]:
             zip_output.writestr(key, zip_template.read(key))
 
-        model_data = pickle.loads(zip_template.read('data'))
+        model_data = pickle.loads(zip_template.read("data"))
         for i, channel in enumerate(self.data_manager.reduction_states):
             if channel not in output_data:
                 logging.error("Cross-section %s not in %s", channel, str(output_data.keys()))
@@ -192,62 +198,63 @@ class ProcessingWorkflow(object):
             model_data[i].y_raw = output_data[channel][:, 1]
             model_data[i].error_raw = output_data[channel][:, 2]
             model_data[i].xerror_raw = output_data[channel][:, 3]
-            model_data[i].name = output_data['cross_sections'][channel]
+            model_data[i].name = output_data["cross_sections"][channel]
             model_data[i].run_command()
-        zip_output.writestr('data', pickle.dumps(model_data, 0))
+        zip_output.writestr("data", pickle.dumps(model_data, 0))
         zip_template.close()
         zip_output.close()
 
     def specular_reflectivity(self):
         """
-            Retrieve the computed reflectivity and save it to file
+        Retrieve the computed reflectivity and save it to file
         """
         # The reflectivity should always be up to date, so we don't need to recalculate it.
         # The following would be used to recalculate it:
         #    self.data_manager.calculate_reflectivity(specular=True)
 
-        #self.data_manager.merge_data_sets(asymmetry=self.output_options['export_asym'])
+        # self.data_manager.merge_data_sets(asymmetry=self.output_options['export_asym'])
 
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
         output_data = self.get_output_data()
 
         # QuickNXS format
-        if self.output_options['format_multi']:
+        if self.output_options["format_multi"]:
             output_file_base = self.get_file_name(run_list)
             self.write_quicknxs(output_data, output_file_base)
 
         # Numpy arrays
-        if self.output_options['format_numpy']:
-            output_file = self.get_file_name(run_list, data_type='npz', pol_state='all')
+        if self.output_options["format_numpy"]:
+            output_file = self.get_file_name(run_list, data_type="npz", pol_state="all")
             np.savez(output_file, **output_data)
             self.exported_data_files.append(output_file)
 
         # Matlab output
-        if self.output_options['format_matlab']:
+        if self.output_options["format_matlab"]:
             try:
                 from scipy.io import savemat
-                output_file = self.get_file_name(run_list, data_type='mat', pol_state='all')
-                savemat(output_file, output_data, oned_as='column')
+
+                output_file = self.get_file_name(run_list, data_type="mat", pol_state="all")
+                savemat(output_file, output_data, oned_as="column")
                 self.exported_data_files.append(output_file)
             except:
                 logging.error("Could not save in matlab format: %s", sys.exc_info([1]))
 
-        if self.output_options['format_genx']:
-            output_path = self.get_file_name(run_list, data_type='gx', pol_state='all')
+        if self.output_options["format_genx"]:
+            output_path = self.get_file_name(run_list, data_type="gx", pol_state="all")
             self.write_genx(output_data, output_path)
             self.exported_data_files.append(output_path)
 
-        if self.output_options['format_mantid']:
-            output_file = self.get_file_name(run_list, data_type='py', pol_state='all')
+        if self.output_options["format_mantid"]:
+            output_file = self.get_file_name(run_list, data_type="py", pol_state="all")
             script = data_manipulation.generate_short_script(self.data_manager.reduction_list)
-            with open(output_file, 'w') as file_object:
+            with open(output_file, "w") as file_object:
                 file_object.write(script)
             self.exported_data_files.append(output_file)
 
     def gisans(self, progress=None):
         """
-            Export GISANS.
+        Export GISANS.
         """
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
@@ -267,17 +274,17 @@ class ProcessingWorkflow(object):
         if progress is not None:
             progress(90, "Writing data")
 
-        output_file_base = self.get_file_name(run_list, process_type='GISANS')
-        self.write_quicknxs(data_dict, output_file_base, xs=data_dict['cross_sections'].keys())
+        output_file_base = self.get_file_name(run_list, process_type="GISANS")
+        self.write_quicknxs(data_dict, output_file_base, xs=data_dict["cross_sections"].keys())
 
         if progress is not None:
             progress(100, "GISANS complete")
 
     def offspec(self, raw=True, binned=False):
         """
-            Export off-specular reflectivity.
-            :param bool raw: if true, the raw results will be saved
-            :param bool binned: if true, the raw results will be binned and saved
+        Export off-specular reflectivity.
+        :param bool raw: if true, the raw results will be saved
+        :param bool binned: if true, the raw results will be binned and saved
         """
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
 
@@ -290,7 +297,7 @@ class ProcessingWorkflow(object):
         # Export raw result
         if raw:
             # QuickNXS format
-            output_file_base = self.get_file_name(run_list, process_type='OffSpec')
+            output_file_base = self.get_file_name(run_list, process_type="OffSpec")
             self.write_quicknxs(output_data, output_file_base)
 
         # Export binned result
@@ -299,11 +306,13 @@ class ProcessingWorkflow(object):
                 # "Smooth" version
                 try:
                     smooth_output, slice_data_dict = self.smooth_offspec(output_data)
-                    output_file_base = self.get_file_name(run_list, process_type='OffSpecSmooth')
+                    output_file_base = self.get_file_name(run_list, process_type="OffSpecSmooth")
                     self.write_quicknxs(smooth_output, output_file_base)
-                    if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
-                        output_file_base = self.get_file_name(run_list, process_type='OffSpecSmoothSlice')
-                        self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
+                    if slice_data_dict is not None and "cross_sections" in slice_data_dict:
+                        output_file_base = self.get_file_name(run_list, process_type="OffSpecSmoothSlice")
+                        self.write_quicknxs(
+                            slice_data_dict, output_file_base, xs=slice_data_dict["cross_sections"].keys()
+                        )
                     self.data_manager.cached_offspec = smooth_output
                 except:
                     raise
@@ -312,16 +321,16 @@ class ProcessingWorkflow(object):
                 # Binned version
                 binned_data, slice_data_dict = self.get_rebinned_offspec_data()
                 # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
-                output_file_base = self.get_file_name(run_list, process_type='OffSpecBinned')
+                output_file_base = self.get_file_name(run_list, process_type="OffSpecBinned")
                 self.write_quicknxs(binned_data, output_file_base)
-                if slice_data_dict is not None and 'cross_sections' in slice_data_dict:
-                    output_file_base = self.get_file_name(run_list, process_type='OffSpecSlice')
-                    self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict['cross_sections'].keys())
+                if slice_data_dict is not None and "cross_sections" in slice_data_dict:
+                    output_file_base = self.get_file_name(run_list, process_type="OffSpecSlice")
+                    self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict["cross_sections"].keys())
                 self.data_manager.cached_offspec = binned_data
 
     def get_rebinned_offspec_data(self):
         """
-            Get a data dictionary ready for saving
+        Get a data dictionary ready for saving
         """
         data_dict = None
         slice_data_dict = {}
@@ -332,20 +341,22 @@ class ProcessingWorkflow(object):
             return {}
 
         for pol_state in self.data_manager.reduction_states:
-            r, dr, x, y, labels = off_specular.rebin_extract(self.data_manager.reduction_list,
-                                                             pol_state,
-                                                             axes=self.data_manager.active_channel.configuration.off_spec_x_axis,
-                                                             use_weights=self.data_manager.active_channel.configuration.off_spec_err_weight,
-                                                             n_bins_x=self.data_manager.active_channel.configuration.off_spec_nxbins,
-                                                             n_bins_y=self.data_manager.active_channel.configuration.off_spec_nybins,
-                                                             x_min=self.data_manager.active_channel.configuration.off_spec_x_min,
-                                                             x_max=self.data_manager.active_channel.configuration.off_spec_x_max,
-                                                             y_min=self.data_manager.active_channel.configuration.off_spec_y_min,
-                                                             y_max=self.data_manager.active_channel.configuration.off_spec_y_max)
+            r, dr, x, y, labels = off_specular.rebin_extract(
+                self.data_manager.reduction_list,
+                pol_state,
+                axes=self.data_manager.active_channel.configuration.off_spec_x_axis,
+                use_weights=self.data_manager.active_channel.configuration.off_spec_err_weight,
+                n_bins_x=self.data_manager.active_channel.configuration.off_spec_nxbins,
+                n_bins_y=self.data_manager.active_channel.configuration.off_spec_nybins,
+                x_min=self.data_manager.active_channel.configuration.off_spec_x_min,
+                x_max=self.data_manager.active_channel.configuration.off_spec_x_max,
+                y_min=self.data_manager.active_channel.configuration.off_spec_y_min,
+                y_max=self.data_manager.active_channel.configuration.off_spec_y_max,
+            )
             if data_dict is None:
-                data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'],
-                                 columns=[labels[0], labels[1], 'I', 'dI'],
-                                 cross_sections={})
+                data_dict = dict(
+                    units=["1/A", "1/A", "a.u.", "a.u."], columns=[labels[0], labels[1], "I", "dI"], cross_sections={}
+                )
 
             # Create array of x-values
             x_tiled = np.tile(x, len(y))
@@ -366,8 +377,7 @@ class ProcessingWorkflow(object):
             data_dict["cross_sections"][pol_state] = _pol_state
 
             # Slices
-            slice_data_dict = self.get_slice_output_data(x, y, r, dr, pol_state, labels[1],
-                                                         **slice_data_dict)
+            slice_data_dict = self.get_slice_output_data(x, y, r, dr, pol_state, labels[1], **slice_data_dict)
 
         return data_dict, slice_data_dict
 
@@ -379,12 +389,11 @@ class ProcessingWorkflow(object):
         qz_npts = self.data_manager.active_channel.configuration.gisans_qz_npts
         use_pf = self.data_manager.active_channel.configuration.gisans_use_pf
 
-        data_dict = dict(units=['1/A', '1/A', 'a.u.', 'a.u.'], cross_sections={},
-                         cross_section_bins={})
+        data_dict = dict(units=["1/A", "1/A", "a.u.", "a.u."], cross_sections={}, cross_section_bins={})
         if use_pf:
-            data_dict['columns'] = ['Qy', 'pf', 'I', 'dI']
+            data_dict["columns"] = ["Qy", "pf", "I", "dI"]
         else:
-            data_dict['columns'] = ['Qy', 'Qz', 'I', 'dI']
+            data_dict["columns"] = ["Qy", "Qz", "I", "dI"]
 
         # Extract common information
         if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
@@ -395,9 +404,16 @@ class ProcessingWorkflow(object):
         _parallel = False
         for pol_state in self.data_manager.reduction_states:
             if _parallel:
-                binned_data = gisans.rebin_parallel(self.data_manager.reduction_list, pol_state,
-                                                    wl_min=wl_min, wl_max=wl_max, wl_npts=wl_npts,
-                                                    qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf)
+                binned_data = gisans.rebin_parallel(
+                    self.data_manager.reduction_list,
+                    pol_state,
+                    wl_min=wl_min,
+                    wl_max=wl_max,
+                    wl_npts=wl_npts,
+                    qy_npts=qy_npts,
+                    qz_npts=qz_npts,
+                    use_pf=use_pf,
+                )
             data_dict["cross_section_bins"][pol_state] = []
             for i in range(wl_npts):
                 wl_step = (wl_max - wl_min) / wl_npts
@@ -406,12 +422,9 @@ class ProcessingWorkflow(object):
                 if _parallel:
                     _intensity, _qy, _qz_axis, _intensity_err = binned_data[i]
                 else:
-                    _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(pol_state,
-                                                                                               wl_min=_wl_min,
-                                                                                               wl_max=_wl_max,
-                                                                                               qy_npts=qy_npts,
-                                                                                               qz_npts=qz_npts,
-                                                                                               use_pf=use_pf)
+                    _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(
+                        pol_state, wl_min=_wl_min, wl_max=_wl_max, qy_npts=qy_npts, qz_npts=qz_npts, use_pf=use_pf
+                    )
 
                 qz, qy = np.meshgrid(_qz_axis, _qy)
                 rdata = np.array([qy, qz, _intensity, _intensity_err]).transpose((1, 2, 0))
@@ -421,22 +434,24 @@ class ProcessingWorkflow(object):
                 else:
                     _pol_state = pol_state
 
-                _pol_state = '%.3f-%.3f_%s' % (_wl_min, _wl_max, pol_state)
-                _pol_state_clean = '%.3f-%.3f_%s' % (_wl_min, _wl_max, _pol_state)
+                _pol_state = "%.3f-%.3f_%s" % (_wl_min, _wl_max, pol_state)
+                _pol_state_clean = "%.3f-%.3f_%s" % (_wl_min, _wl_max, _pol_state)
                 data_dict[_pol_state] = [np.nan_to_num(rdata)]
                 data_dict["cross_sections"][_pol_state] = _pol_state_clean
                 data_dict["cross_section_bins"][pol_state].append(_pol_state)
 
-        logging.info("GISANS processing time: %s sec", (time.time()-t_0))
+        logging.info("GISANS processing time: %s sec", (time.time() - t_0))
         return data_dict
 
     def get_offspec_data(self):
         """
-            Get a data dictionary ready for saving
+        Get a data dictionary ready for saving
         """
-        data_dict = dict(units=['1/A', '1/A', '1/A', '1/A', '1/A', 'a.u.', 'a.u.'],
-                         columns=['Qx', 'Qz', 'ki_z', 'kf_z', 'ki_z-kf_z', 'I', 'dI'],
-                         cross_sections={})
+        data_dict = dict(
+            units=["1/A", "1/A", "1/A", "1/A", "1/A", "a.u.", "a.u."],
+            columns=["Qx", "Qz", "ki_z", "kf_z", "ki_z-kf_z", "I", "dI"],
+            cross_sections={},
+        )
 
         # Extract common information
         if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
@@ -444,8 +459,14 @@ class ProcessingWorkflow(object):
             return data_dict
 
         first_state = self.data_manager.reduction_states[0]
-        p_0 = [item.cross_sections[first_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
-        p_n = [item.cross_sections[first_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
+        p_0 = [
+            item.cross_sections[first_state].configuration.cut_first_n_points
+            for item in self.data_manager.reduction_list
+        ]
+        p_n = [
+            item.cross_sections[first_state].configuration.cut_last_n_points
+            for item in self.data_manager.reduction_list
+        ]
 
         ki_max = 0.01
         for pol_state in self.data_manager.reduction_states:
@@ -456,16 +477,24 @@ class ProcessingWorkflow(object):
 
             for item in self.data_manager.reduction_list:
                 offspec = item.cross_sections[pol_state].off_spec
-                Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z,
-                                             offspec.S, offspec.dS)
+                Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z, offspec.S, offspec.dS)
 
                 n_total = len(S[0])
                 # P_0 and P_N are the number of points to cut in TOF on each side
                 p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
-                p_n = n_total-item.cross_sections[pol_state].configuration.cut_last_n_points
+                p_n = n_total - item.cross_sections[pol_state].configuration.cut_last_n_points
 
-                rdata = np.array([Qx[:, p_0:p_n], Qz[:, p_0:p_n], ki_z[:, p_0:p_n], kf_z[:, p_0:p_n],
-                                  ki_z[:, p_0:p_n]-kf_z[:, p_0:p_n], S[:, p_0:p_n], dS[:, p_0:p_n]]).transpose((1, 2, 0))
+                rdata = np.array(
+                    [
+                        Qx[:, p_0:p_n],
+                        Qz[:, p_0:p_n],
+                        ki_z[:, p_0:p_n],
+                        kf_z[:, p_0:p_n],
+                        ki_z[:, p_0:p_n] - kf_z[:, p_0:p_n],
+                        S[:, p_0:p_n],
+                        dS[:, p_0:p_n],
+                    ]
+                ).transpose((1, 2, 0))
                 combined_data.append(rdata)
                 ki_max = max(ki_max, ki_z.max())
 
@@ -475,115 +504,123 @@ class ProcessingWorkflow(object):
                 _pol_state = pol_state
             data_dict[pol_state] = combined_data
             data_dict["cross_sections"][pol_state] = _pol_state
-        data_dict['ki_max'] = ki_max
+        data_dict["ki_max"] = ki_max
         return data_dict
 
     def smooth_offspec(self, data_dict):
         """
-            NOTE:
+        NOTE:
 
-            Create a smoothed dataset from the off-specular scattering.
-            :param dict data_dict: the output of get_offspec_data()
+        Create a smoothed dataset from the off-specular scattering.
+        :param dict data_dict: the output of get_offspec_data()
 
-            Note for my own integrity (MD):
-               I don't think one should smooth data distributions and do any quantitative
-               work with it following this process. The way this was implemented in the
-               previouse QuickNXS, replicated here, is equivalent to adding an extra resolution,
-               which then would have to be properly taken into account when fitting.
-               In addition, the process doesn't produce errors in intensity.
-               It effectively only produces a pretty picture and should only be used as such.
+        Note for my own integrity (MD):
+           I don't think one should smooth data distributions and do any quantitative
+           work with it following this process. The way this was implemented in the
+           previouse QuickNXS, replicated here, is equivalent to adding an extra resolution,
+           which then would have to be properly taken into account when fitting.
+           In addition, the process doesn't produce errors in intensity.
+           It effectively only produces a pretty picture and should only be used as such.
         """
         axes = self.data_manager.active_channel.configuration.off_spec_x_axis
-        output_data=dict(cross_sections=dict())
+        output_data = dict(cross_sections=dict())
         slice_data_dict = {}
 
-        for channel in data_dict['cross_sections'].keys():
+        for channel in data_dict["cross_sections"].keys():
             data = np.hstack(data_dict[channel])
             I = data[:, :, 5].flatten()
-            Qzmax = data[:, :, 2].max() * 2.
-            y_label = 'Qz'
+            Qzmax = data[:, :, 2].max() * 2.0
+            y_label = "Qz"
             if axes == Configuration.QX_VS_QZ:
-                x=data[:, :, 0].flatten()
-                y=data[:, :, 1].flatten()
-                output_data['units'] = ['1/A', '1/A', 'a.u.']
-                output_data['columns'] = ['Qx', 'Qz', 'I']
+                x = data[:, :, 0].flatten()
+                y = data[:, :, 1].flatten()
+                output_data["units"] = ["1/A", "1/A", "a.u."]
+                output_data["columns"] = ["Qx", "Qz", "I"]
                 axis_sigma_scaling = 2
-                xysigma0 = Qzmax / 3.
+                xysigma0 = Qzmax / 3.0
             elif axes == Configuration.KZI_VS_KZF:
-                y_label = 'kf_z'
-                x=data[:, :, 2].flatten()
-                y=data[:, :, 3].flatten()
-                output_data['units'] = ['1/A', '1/A', 'a.u.']
-                output_data['columns'] = ['ki_z', 'kf_z', 'I']
+                y_label = "kf_z"
+                x = data[:, :, 2].flatten()
+                y = data[:, :, 3].flatten()
+                output_data["units"] = ["1/A", "1/A", "a.u."]
+                output_data["columns"] = ["ki_z", "kf_z", "I"]
                 axis_sigma_scaling = 3
-                xysigma0 = Qzmax / 6.
+                xysigma0 = Qzmax / 6.0
             else:
-                x=data[:, :, 4].flatten()
-                y=data[:, :, 1].flatten()
-                output_data['units'] = ['1/A', '1/A', 'a.u.']
-                output_data['columns'] = ['ki_z-kf_z', 'Qz', 'I']
+                x = data[:, :, 4].flatten()
+                y = data[:, :, 1].flatten()
+                output_data["units"] = ["1/A", "1/A", "a.u."]
+                output_data["columns"] = ["ki_z-kf_z", "Qz", "I"]
                 axis_sigma_scaling = 2
-                xysigma0 = Qzmax / 3.
+                xysigma0 = Qzmax / 3.0
 
-            x, y, I = off_specular.smooth_data(x, y, I,
-                                               sigmas=self.output_options['off_spec_sigmas'],
-                                               gridx=self.output_options['off_spec_nxbins'],
-                                               gridy=self.output_options['off_spec_nybins'],
-                                               sigmax=self.output_options['off_spec_sigmax'],
-                                               sigmay=self.output_options['off_spec_sigmay'],
-                                               x1=self.output_options['off_spec_x_min'],
-                                               x2=self.output_options['off_spec_x_max'],
-                                               y1=self.output_options['off_spec_y_min'],
-                                               y2=self.output_options['off_spec_y_max'],
-                                               axis_sigma_scaling=axis_sigma_scaling, xysigma0=xysigma0)
+            x, y, I = off_specular.smooth_data(
+                x,
+                y,
+                I,
+                sigmas=self.output_options["off_spec_sigmas"],
+                gridx=self.output_options["off_spec_nxbins"],
+                gridy=self.output_options["off_spec_nybins"],
+                sigmax=self.output_options["off_spec_sigmax"],
+                sigmay=self.output_options["off_spec_sigmay"],
+                x1=self.output_options["off_spec_x_min"],
+                x2=self.output_options["off_spec_x_max"],
+                y1=self.output_options["off_spec_y_min"],
+                y2=self.output_options["off_spec_y_max"],
+                axis_sigma_scaling=axis_sigma_scaling,
+                xysigma0=xysigma0,
+            )
             output_data[channel] = [np.array([x, y, I]).transpose((1, 2, 0))]
-            output_data['cross_sections'][channel] = data_dict['cross_sections'][channel]
+            output_data["cross_sections"][channel] = data_dict["cross_sections"][channel]
 
             # Slices
-            slice_data_dict = self.get_slice_output_data(x[0], y.T[0], I, None, channel, y_label,
-                                                         **slice_data_dict)
+            slice_data_dict = self.get_slice_output_data(x[0], y.T[0], I, None, channel, y_label, **slice_data_dict)
 
-        output_data['ki_max'] = data_dict['ki_max']
+        output_data["ki_max"] = data_dict["ki_max"]
         return output_data, slice_data_dict
 
     def get_slice_output_data(self, qx, qz, r, dr, pol_state, label, **slice_data_dict):
         """
-            Produce a data dictionary with a slice of the data.
+        Produce a data dictionary with a slice of the data.
         """
         if slice_data_dict == {}:
-            slice_data_dict = dict(units=['1/A', 'a.u.', 'a.u.'],
-                                   columns=[label, 'I', 'dI'],
-                                   cross_sections={})
+            slice_data_dict = dict(units=["1/A", "a.u.", "a.u."], columns=[label, "I", "dI"], cross_sections={})
 
         q_min = self.data_manager.active_channel.configuration.off_spec_slice_qz_min
         q_max = self.data_manager.active_channel.configuration.off_spec_slice_qz_max
         result, error = off_specular.get_slice(qz, r, dr, q_min, q_max)
         if error is not None:
-        # Is x what we need here, or the middle of the bin
+            # Is x what we need here, or the middle of the bin
             _to_save = np.asarray([qx, result, error]).T
         else:
             _to_save = np.asarray([qx, result]).T
-        slice_label = '%s_%s_%s-%s' % (pol_state, label, q_min, q_max)
+        slice_label = "%s_%s_%s-%s" % (pol_state, label, q_min, q_max)
         slice_data_dict["cross_sections"][slice_label] = slice_label
         slice_data_dict[slice_label] = _to_save
         return slice_data_dict
 
     def get_output_data(self):
         """
-            The QuickNXS format cannot be written from the merged reflectivity, so we
-            have to treat it differently and give it the workspaces for each angle.
+        The QuickNXS format cannot be written from the merged reflectivity, so we
+        have to treat it differently and give it the workspaces for each angle.
         """
-        data_dict = dict(units=['1/A', 'a.u.', 'a.u.', '1/A', 'rad'],
-                         columns=['Qz', 'R', 'dR', 'dQz', 'theta'],
-                         cross_sections={})
+        data_dict = dict(
+            units=["1/A", "a.u.", "a.u.", "1/A", "rad"], columns=["Qz", "R", "dR", "dQz", "theta"], cross_sections={}
+        )
 
         # Extract common information
         if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
             logging.error("List of cross-sections is empty")
             return data_dict
         first_state = self.data_manager.reduction_states[0]
-        p_0 = [item.cross_sections[first_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
-        p_n = [item.cross_sections[first_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
+        p_0 = [
+            item.cross_sections[first_state].configuration.cut_first_n_points
+            for item in self.data_manager.reduction_list
+        ]
+        p_n = [
+            item.cross_sections[first_state].configuration.cut_last_n_points
+            for item in self.data_manager.reduction_list
+        ]
 
         for pol_state in self.data_manager.reduction_states:
             # The scaling factors should have been determined at this point. Just use them
@@ -599,13 +636,13 @@ class ProcessingWorkflow(object):
             for i, ws in enumerate(ws_list):
                 _x = ws.readX(0)
                 n_total = len(_x)
-                x = ws.readX(0)[p_0[i]:n_total-p_n[i]]
-                y = ws.readY(0)[p_0[i]:n_total-p_n[i]]
-                dy = ws.readE(0)[p_0[i]:n_total-p_n[i]]
-                dx = ws.readDx(0)[p_0[i]:n_total-p_n[i]]
+                x = ws.readX(0)[p_0[i] : n_total - p_n[i]]
+                y = ws.readY(0)[p_0[i] : n_total - p_n[i]]
+                dy = ws.readE(0)[p_0[i] : n_total - p_n[i]]
+                dx = ws.readDx(0)[p_0[i] : n_total - p_n[i]]
                 # This should be actual theta calculated
                 tth_value = ws.getRun().getProperty("two_theta").value / 2.0 * np.pi / 180.0
-                #tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
+                # tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
                 tth = np.ones(len(x)) * tth_value
                 combined_data.append(np.vstack((x, y, dy, dx, tth)).transpose())
 
@@ -621,7 +658,7 @@ class ProcessingWorkflow(object):
             data_dict["cross_sections"][pol_state] = _pol_state
 
         # Asymmetry
-        if self.output_options['export_asym']:
+        if self.output_options["export_asym"]:
             p_state, m_state = self.data_manager.determine_asymmetry_states()
             if p_state and m_state:
                 # Get the list of workspaces
@@ -635,85 +672,93 @@ class ProcessingWorkflow(object):
                             m_point = data_dict[m_state][i_m]
                             if p_point[1] > 0 and m_point[1] > 0:
                                 ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
-                                d_ratio = 2.0 / (p_point[1] + m_point[1])**2
-                                d_ratio *= math.sqrt(m_point[1]**2 * p_point[2]**2 + p_point[1]**2 * m_point[2]**2)
+                                d_ratio = 2.0 / (p_point[1] + m_point[1]) ** 2
+                                d_ratio *= math.sqrt(
+                                    m_point[1] ** 2 * p_point[2] ** 2 + p_point[1] ** 2 * m_point[2] ** 2
+                                )
                                 asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
-                    data_dict['SA'] = np.asarray(asym_data)
+                    data_dict["SA"] = np.asarray(asym_data)
                 else:
-                    logging.error("Asym request but failed: %s %s %s %s", p_state, m_state,
-                                  len(data_dict[p_state]), len(data_dict[m_state]))
+                    logging.error(
+                        "Asym request but failed: %s %s %s %s",
+                        p_state,
+                        m_state,
+                        len(data_dict[p_state]),
+                        len(data_dict[m_state]),
+                    )
 
         return data_dict
 
     def _email_replace(self, text):
         """
-            Replace token templates in text
+        Replace token templates in text
         """
         run_list = [str(item.number) for item in self.data_manager.reduction_list]
-        return text.replace('{ipts}', '')\
-                   .replace('{numbers}', '+'.join(run_list))\
-                   .replace('{instrument}', self.data_manager.active_channel.configuration.instrument.instrument_name)
+        return (
+            text.replace("{ipts}", "")
+            .replace("{numbers}", "+".join(run_list))
+            .replace("{instrument}", self.data_manager.active_channel.configuration.instrument.instrument_name)
+        )
 
     def send_email(self):
         """
-            Collect all files and send them to the user via smtp mail.
-            #TODO: Put smtp server info in config file.
+        Collect all files and send them to the user via smtp mail.
+        #TODO: Put smtp server info in config file.
         """
-        SMTP_SERVER='160.91.4.26'
+        SMTP_SERVER = "160.91.4.26"
         msg = MIMEMultipart()
-        msg['Subject'] = self._email_replace(self.output_options['email_subject'])
-        msg['From'] = 'BL4A@ornl.gov'
-        msg['To'] = self.output_options['email_to'].replace(';', ', ')
-        msg['CC'] = self.output_options['email_cc'].replace(';', ', ')
-        text = self._email_replace(self.output_options['email_text'])
+        msg["Subject"] = self._email_replace(self.output_options["email_subject"])
+        msg["From"] = "BL4A@ornl.gov"
+        msg["To"] = self.output_options["email_to"].replace(";", ", ")
+        msg["CC"] = self.output_options["email_cc"].replace(";", ", ")
+        text = self._email_replace(self.output_options["email_text"])
         msg.preamble = text
         msg.attach(MIMEText(text))
 
-        if self.output_options['email_send_data']:
+        if self.output_options["email_send_data"]:
             exported_files = self.exported_data_files
-        elif self.output_options['email_send_plots']:
+        elif self.output_options["email_send_plots"]:
             exported_files = self.exported_data_plots
         else:
             exported_files = self.exported_data_files
             exported_files.extend(self.exported_data_plots)
-        if self.output_options['email_zip_data']:
+        if self.output_options["email_zip_data"]:
             # Create an in-memory zip file which gets attached to the mail
             fobj = io.BytesIO()
-            _file = zipfile.ZipFile(fobj, 'w', zipfile.ZIP_DEFLATED)
+            _file = zipfile.ZipFile(fobj, "w", zipfile.ZIP_DEFLATED)
             for item in exported_files:
                 _file.write(item, arcname=os.path.basename(item))
             _file.close()
             fobj.seek(0)
-            mitem = MIMEBase('application', 'zip')
+            mitem = MIMEBase("application", "zip")
             mitem.set_payload(fobj.read())
             encoders.encode_base64(mitem)
-            mitem.add_header('Content-Disposition', 'attachment',
-                             filename=self._email_replace('results_{numbers}.zip'))
+            mitem.add_header(
+                "Content-Disposition", "attachment", filename=self._email_replace("results_{numbers}.zip")
+            )
             msg.attach(mitem)
         else:
             # read each file, which was exported and attach it to the mail
             for item in exported_files:
                 try:
-                    if item.endswith('.png'):
-                        mitem=MIMEImage(open(item, 'rb').read(), 'png')
-                    elif item.endswith('.pdf'):
-                        mitem=MIMEText(open(item, 'rb').read(), 'pdf')
-                    elif item.endswith('.dat') or item.endswith('.gp'):
-                        mitem=MIMEText(open(item, 'rb').read())
+                    if item.endswith(".png"):
+                        mitem = MIMEImage(open(item, "rb").read(), "png")
+                    elif item.endswith(".pdf"):
+                        mitem = MIMEText(open(item, "rb").read(), "pdf")
+                    elif item.endswith(".dat") or item.endswith(".gp"):
+                        mitem = MIMEText(open(item, "rb").read())
                     else:
-                        mitem=MIMEBase('application', item[-3:])
-                        mitem.set_payload(open(item, 'rb').read())
+                        mitem = MIMEBase("application", item[-3:])
+                        mitem.set_payload(open(item, "rb").read())
                         encoders.encode_base64(mitem)
                 except:
                     logging.error("Could not package files for email: %s", sys.exc_info()[1])
-                mitem.add_header('Content-Disposition', 'attachment', filename=os.path.basename(item))
+                mitem.add_header("Content-Disposition", "attachment", filename=os.path.basename(item))
                 msg.attach(mitem)
 
         try:
             smtp = smtplib.SMTP(SMTP_SERVER, timeout=10)
-            smtp.sendmail(msg['From'],
-                          map(str.strip, msg['To'].split(',')+msg['CC'].split(',')),
-                          msg.as_string())
+            smtp.sendmail(msg["From"], map(str.strip, msg["To"].split(",") + msg["CC"].split(",")), msg.as_string())
             smtp.quit()
         except:
             logging.error("Could not send email: %s", sys.exc_info()[1])
