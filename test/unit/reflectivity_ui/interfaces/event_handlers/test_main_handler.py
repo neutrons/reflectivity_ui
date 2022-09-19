@@ -29,6 +29,7 @@ class TestMainHandler(object):
     application = MainWindow()
     handler = MainHandler(application)
 
+    @pytest.mark.skip(reason="Data file is missing: REF_M_24945_event.nxs")
     def test_congruency_fail_report(self, data_server):
         # Selected subset of log names with an invalid one
         message = self.handler._congruency_fail_report(
