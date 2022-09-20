@@ -5,7 +5,7 @@ channels:
 dependencies:
 - matplotlib
 - mantid>=6.3,<6.4
-- mantidworkbench>=6.3,<6.4
+- mantidworkbench
 - codecov
 - conda-build
 - conda-verify
