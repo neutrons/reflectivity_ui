@@ -19,8 +19,6 @@ jobs:
         auto-update-conda: true
         mamba-version: "*"
         environment-file: environment.yml
-    - name: Install reflectivity ui
-      run: make install
     - name: Unit test with code coverage
       run: |
         python -m pytest --cov --cov-report=xml --cov-report=term test/unit
