@@ -18,7 +18,6 @@ dependencies:
 - pytest-cov
 - build
 - toml
-- setuptools
 - pip:
     - versioningit
     - check-wheel-contents
