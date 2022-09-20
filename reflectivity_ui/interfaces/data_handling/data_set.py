@@ -2,7 +2,8 @@
     Loader for event nexus files.
     Uses Mantid Framework
 """
-# pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
+# pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, \
+# too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
 
 
 # local imports
@@ -35,7 +36,7 @@ from .data_info import DataInfo
 from . import off_specular
 from . import gisans
 
-### Parameters needed for some calculations.
+# Parameters needed for some calculations.
 H_OVER_M_NEUTRON = 3.956034e-7  # h/m_n [m^2/s]
 
 # Number of events under which we throw away a workspace
@@ -219,7 +220,7 @@ class NexusData(object):
             OutputWorkspace=output_ws,
         )
 
-        ################## FOR COMPATIBILITY WITH QUICKNXS ##################
+        # FOR COMPATIBILITY WITH QUICKNXS #
         _ws = ws[0] if len(ws_list) > 1 else ws
         run_object = _ws.getRun()
         peak_min = run_object.getProperty("scatt_peak_min").value
@@ -243,7 +244,7 @@ class NexusData(object):
         ws = api.Scale(
             InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
         )
-        #####################################################################
+        #
         _ws = ws if len(ws_list) > 1 else [ws]
         for xs in _ws:
             xs_id = xs.getRun().getProperty("cross_section_id").value
@@ -463,7 +464,7 @@ class CrossSectionData(object):
         if workspace:
             self.collect_info(workspace)
 
-    ################## Properties for easy data access ##########################
+    # Properties for easy data access #
     # return the size of the data stored in memory for this dataset
     # pylint: disable=missing-docstring
     @property
@@ -610,7 +611,7 @@ class CrossSectionData(object):
         self._active_area_y = value
 
     # pylint: enable=missing-docstring
-    ################## Properties for easy data access ##########################
+    # Properties for easy data access #
     def collect_info(self, workspace):
         """
         Extract meta data from DASLogs.
@@ -874,7 +875,7 @@ class CrossSectionData(object):
             OutputWorkspace=output_ws,
         )
 
-        ################## FOR COMPATIBILITY WITH QUICKNXS ##################
+        # FOR COMPATIBILITY WITH QUICKNXS #
         run_object = ws.getRun()
         peak_min = run_object.getProperty("scatt_peak_min").value
         peak_max = run_object.getProperty("scatt_peak_max").value
@@ -892,7 +893,7 @@ class CrossSectionData(object):
         ws = api.Scale(
             InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
         )
-        #####################################################################
+        #
 
         self.q = ws.readX(0)[:].copy()
         self._r = ws.readY(0)[:].copy()  # * self.configuration.scaling_factor

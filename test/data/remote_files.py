@@ -1,7 +1,9 @@
 import json
 import os
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 
 this_module_path = sys.modules[__name__].__file__
