@@ -1,11 +1,14 @@
 name: quicknxs
 channels:
     - conda-forge
+    - neutrons
+    - default
     - mantid
+    - mantid/label/nightly
 dependencies:
+- python=3.8
 - matplotlib
 - mantid>=6.3,<6.4
-- mantidworkbench
 - codecov
 - conda-build
 - conda-verify
@@ -15,6 +18,7 @@ dependencies:
 - pytest-cov
 - build
 - toml
+- setuptools
 - pip:
     - versioningit
     - check-wheel-contents
