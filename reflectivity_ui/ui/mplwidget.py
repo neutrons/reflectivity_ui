@@ -39,6 +39,16 @@ def _set_default_rc():
 
 _set_default_rc()
 
+# path where all of the icons are
+ICON_DIR = os.path.join(os.path.split(__file__)[0], "../", "icons")
+
+
+def getIcon(filename: str) -> "QtGui.QIcon":
+    filename_full = os.path.join(ICON_DIR, filename)
+    icon = QtGui.QIcon()
+    icon.addPixmap(QtGui.QPixmap(filename_full), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    return icon
+
 
 class NavigationToolbar(NavigationToolbar2QT):
     """
@@ -57,49 +67,40 @@ class NavigationToolbar(NavigationToolbar2QT):
             self._actions = {}
         self.basedir = os.path.join(matplotlib.rcParams["datapath"], "images")
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/go-home.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("go-home.png")
         a = self.addAction(icon, "Home", self.home)
         a.setToolTip("Reset original view")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/zoom-previous.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("zoom-previous.png")
         a = self.addAction(icon, "Back", self.back)
         a.setToolTip("Back to previous view")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/zoom-next.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("zoom-next.png")
         a = self.addAction(icon, "Forward", self.forward)
         a.setToolTip("Forward to next view")
         self.addSeparator()
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/transform-move.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("transform-move.png")
         a = self.addAction(icon, "Pan", self.pan)
         a.setToolTip("Pan axes with left mouse, zoom with right")
         a.setCheckable(True)
         self._actions["pan"] = a
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/zoom-select.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("zoom-select.png")
         a = self.addAction(icon, "Zoom", self.zoom)
         a.setToolTip("Zoom to rectangle")
         a.setCheckable(True)
         self._actions["zoom"] = a
         self.addSeparator()
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/edit-guides.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("edit-guides.png")
         a = self.addAction(icon, "Subplots", self.configure_subplots)
         a.setToolTip("Configure plot boundaries")
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/document-save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("document-save.png")
         a = self.addAction(icon, "Save", self.save_figure)
         a.setToolTip("Save the figure")
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/document-print.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("document-print.png")
         a = self.addAction(icon, "Print", self.print_figure)
         a.setToolTip("Print the figure with the default printer")
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/MPL Toolbar/toggle-log.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = getIcon("toggle-log.png")
         self.addSeparator()
         a = self.addAction(icon, "Log", self.toggle_log)
         a.setToolTip("Toggle logarithmic scale")

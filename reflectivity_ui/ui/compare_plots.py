@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from .ui_compare_widget import Ui_Form
-from ..data_handling.processing_workflow import ProcessingWorkflow
+from reflectivity_ui.interfaces import load_ui
+from ..interfaces.data_handling.processing_workflow import ProcessingWorkflow
 
 
 class CompareWidget(QtWidgets.QWidget):
@@ -23,8 +23,7 @@ class CompareWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
 
         self._refl_color_map = plt.get_cmap("Set1")
-        self.ui = Ui_Form()
-        self.ui.setupUi(self)
+        self.ui = load_ui("ui_compare_widget.ui", self)
         self.ui.compareList.verticalHeader().sectionMoved.connect(self.draw)
         self.file_paths = {}
         self.settings = QtCore.QSettings(".refredm")
