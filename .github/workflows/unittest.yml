@@ -21,8 +21,8 @@ jobs:
         environment-file: environment.yml
     - name: Build Wheel
       run: |
-        python setup.py bdist_wheel
-        check-wheel-contents .
+        python -m build --wheel --no-isolation
+        check-wheel-contents dist/reflectivity_ui-*.whl
 
     - name: Build Conda package
       run: |
