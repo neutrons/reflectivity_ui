@@ -231,15 +231,15 @@ class Configuration(object):
         settings.setValue("off_spec_y_max", self.off_spec_y_max)
 
         # GISANS options
-        settings.setValue('gisans_wl_min', self.gisans_wl_min)
-        settings.setValue('gisans_wl_max', self.gisans_wl_max)
-        settings.setValue('gisans_wl_npts', self.gisans_wl_npts)
-        settings.setValue('gisans_qy_npts', self.gisans_qy_npts)
-        settings.setValue('gisans_qz_npts', self.gisans_qz_npts)
-        settings.setValue('gisans_use_pf', self.gisans_use_pf)
-        settings.setValue('gisans_slice', self.gisans_slice)
-        settings.setValue('gisans_slice_qz_min', self.gisans_slice_qz_min)
-        settings.setValue('gisans_slice_qz_max', self.gisans_slice_qz_max)
+        settings.setValue("gisans_wl_min", self.gisans_wl_min)
+        settings.setValue("gisans_wl_max", self.gisans_wl_max)
+        settings.setValue("gisans_wl_npts", self.gisans_wl_npts)
+        settings.setValue("gisans_qy_npts", self.gisans_qy_npts)
+        settings.setValue("gisans_qz_npts", self.gisans_qz_npts)
+        settings.setValue("gisans_use_pf", self.gisans_use_pf)
+        settings.setValue("gisans_slice", self.gisans_slice)
+        settings.setValue("gisans_slice_qz_min", self.gisans_slice_qz_min)
+        settings.setValue("gisans_slice_qz_max", self.gisans_slice_qz_max)
 
     def from_q_settings(self, settings):
         """Retrieve configuration from QSettings"""
@@ -324,14 +324,13 @@ class Configuration(object):
         self.off_spec_y_max = float(settings.value("off_spec_y_max", self.off_spec_y_max))
 
         # GISANS options
-        self.gisans_wl_min = float(settings.value('gisans_wl_min', self.gisans_wl_min))
-        self.gisans_wl_max = float(settings.value('gisans_wl_max', self.gisans_wl_max))
-        self.gisans_wl_npts = int(settings.value('gisans_wl_npts', self.gisans_wl_npts))
-        self.gisans_qy_npts = int(settings.value('gisans_qy_npts', self.gisans_qy_npts))
-        self.gisans_qz_npts = int(settings.value('gisans_qz_npts', self.gisans_qz_npts))
-        self.gisans_use_pf = _verify_true('gisans_use_pf', self.gisans_use_pf)
+        self.gisans_wl_min = float(settings.value("gisans_wl_min", self.gisans_wl_min))
+        self.gisans_wl_max = float(settings.value("gisans_wl_max", self.gisans_wl_max))
+        self.gisans_wl_npts = int(settings.value("gisans_wl_npts", self.gisans_wl_npts))
+        self.gisans_qy_npts = int(settings.value("gisans_qy_npts", self.gisans_qy_npts))
+        self.gisans_qz_npts = int(settings.value("gisans_qz_npts", self.gisans_qz_npts))
+        self.gisans_use_pf = _verify_true("gisans_use_pf", self.gisans_use_pf)
 
-        self.gisans_slice = _verify_true('gisans_slice', self.gisans_slice)
-        self.gisans_slice_qz_min = float(settings.value('gisans_slice_qz_min', self.gisans_slice_qz_min))
-        self.gisans_slice_qz_max = float(settings.value('gisans_slice_qz_max', self.gisans_slice_qz_max))
-
+        self.gisans_slice = _verify_true("gisans_slice", self.gisans_slice)
+        self.gisans_slice_qz_min = float(settings.value("gisans_slice_qz_min", self.gisans_slice_qz_min))
+        self.gisans_slice_qz_max = float(settings.value("gisans_slice_qz_max", self.gisans_slice_qz_max))
