@@ -20,22 +20,22 @@ class ApplicationConfiguration(object):
     ANA_STATE = "AnalyzerState"
     ANA_VETO = "AnalyzerVeto"
 
-    _valid_mantid_versions = ['4.2.0', '4.1.0', '4.0.0']
+    _valid_mantid_versions = ["6.3.0", "6.0.0", "4.2.0", "4.1.0", "4.0.0"]
 
-    def __init__(self, root_dir='/opt'):
+    def __init__(self, root_dir="/opt"):
         self.mantid_path = None
         self.mantid_version = None
         # Check for installed Mantid versions under /opt
         for version in self._valid_mantid_versions:
-            short = ''.join(version.split('.')[0:2])
-            install_path = os.path.join(root_dir, 'mantid' + short)  # e.g "/opt/mantid42"
+            short = "".join(version.split(".")[0:2])
+            install_path = os.path.join(root_dir, "mantid" + short)  # e.g "/opt/mantid42"
             if os.path.isdir(install_path):  # check only for the existence of the directory, but not its contents
                 self.mantid_path = install_path
                 self.mantid_version = version
-                return
         # Check for installed Mantid versions already in the PYTHONPATH
         try:
             import mantid
+
             self.mantid_path = os.path.dirname(mantid.__file__)
             self.mantid_version = mantid.__version__
         except ImportError:

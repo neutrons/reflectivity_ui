@@ -4493,9 +4493,7 @@
   <tabstop>offspecImax</tabstop>
   <tabstop>daslogTableBox</tabstop>
  </tabstops>
- <resources>
-  <include location="../icons/icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>actionOpen</sender>

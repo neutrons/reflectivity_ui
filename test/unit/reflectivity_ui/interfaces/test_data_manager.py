@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 # local imports
 from reflectivity_ui.interfaces.data_manager import DataManager
 from reflectivity_ui.interfaces.configuration import Configuration
@@ -10,7 +8,7 @@ import pytest
 
 
 class TestDataManagerTest(object):
-
+    @pytest.mark.skip(reason="Data file is missing: REF_M_29160")
     def test_manager(self, data_server):
         manager = DataManager(data_server.directory)
         manager.load(data_server.path_to("REF_M_29160"), Configuration())
@@ -22,7 +20,7 @@ class TestDataManagerTest(object):
         assert manager.find_data_in_direct_beam_list(manager._nexus_data) is None
 
         q_range = manager._nexus_data.get_q_range()
-        assert q_range[0: 2] == pytest.approx([0.034, 0.068], abs=0.05)
+        assert q_range[0:2] == pytest.approx([0.034, 0.068], abs=0.05)
         assert manager.add_active_to_normalization()
         assert manager.remove_active_from_normalization() == 0
 
@@ -40,8 +38,8 @@ class TestDataManagerTest(object):
 
     def test_load_reduced(self, data_server):
         manager = DataManager(data_server.directory)
-        manager.load_data_from_reduced_file(data_server.path_to('REF_M_29160_Specular_++.dat'))
+        manager.load_data_from_reduced_file(data_server.path_to("REF_M_29160_Specular_++.dat"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

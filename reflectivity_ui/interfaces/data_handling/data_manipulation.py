@@ -1,8 +1,8 @@
 """
     Methods used to process data, usually calling Mantid
 """
-#pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
-from __future__ import absolute_import, division, print_function
+# pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
+
 import sys
 import logging
 import h5py
@@ -11,6 +11,7 @@ import time
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
+
 application_conf = ApplicationConfiguration()
 if application_conf.mantid_path is not None:
     sys.path.insert(0, application_conf.mantid_path)
@@ -22,14 +23,14 @@ from .data_set import NexusMetaData
 
 def generate_short_script(reduction_list):
     """
-        Generate a simple reduction script for Mantid
+    Generate a simple reduction script for Mantid
     """
     if len(reduction_list) == 0:
-        return '# No data in reduction list\n'
+        return "# No data in reduction list\n"
 
-    xs = reduction_list[0].cross_sections.keys()[0]
+    xs = list(reduction_list[0].cross_sections.keys())[0]
     script = "# Mantid version %s\n" % mantid.__version__
-    script += "# Date: %s\n\n" % time.strftime(u"%Y-%m-%d %H:%M:%S")
+    script += "# Date: %s\n\n" % time.strftime("%Y-%m-%d %H:%M:%S")
     script += "from mantid.simpleapi import *\n"
 
     logging.info("Cross section for script %s", xs)
@@ -59,12 +60,12 @@ def generate_short_script(reduction_list):
 
         script += "# Run:%s\n" % reduction_list[i].cross_sections[xs].number
         script_text = api.GeneratePythonScript(ws_iterable[0])
-        script += script_text.replace(', ', ',\n                                ')
-        script += '\n\n'
-        script += '# Crop points on each end\n'
+        script += script_text.replace(", ", ",\n                                ")
+        script += "\n\n"
+        script += "# Crop points on each end\n"
         q = ws_iterable[0].readX(0)
         p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
-        p_f = len(q) - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points -1
+        p_f = len(q) - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points - 1
         q0 = q[p_0]
         qf = q[p_f]
         logging.info("%s %s %s %s", q0, qf, p_0, p_f)
@@ -72,47 +73,49 @@ def generate_short_script(reduction_list):
         for item in ws_iterable:
             script += "CropWorkspace(InputWorkspace='%s', XMin=%s, XMax=%s, " % (str(item), q0, qf)
             script += "OutputWorkspace='%s')\n" % str(item)
-            script += "Scale(InputWorkspace='%s', Operation='Multiply', " %str(item)
+            script += "Scale(InputWorkspace='%s', Operation='Multiply', " % str(item)
             script += "Factor=%s, " % reduction_list[i].cross_sections[xs].configuration.scaling_factor
             script += "OutputWorkspace='%s')\n\n" % str(item)
 
     return script
 
+
 def generate_script(reduction_list, pol_state):
     """
-        Generate a Mantid script for the reflectivity reduction
+    Generate a Mantid script for the reflectivity reduction
 
-        :param list reduction_list: list of NexusData objects
-        :param str pol_state: cross-section name
+    :param list reduction_list: list of NexusData objects
+    :param str pol_state: cross-section name
     """
     ws_list = get_scaled_workspaces(reduction_list, pol_state)
 
     # If the reflectivity calculation failed, we may not have data to work with
     # for this cross-section.
     if not ws_list:
-        return ''
+        return ""
 
-    script = '# Cross-section: %s\n' % pol_state
+    script = "# Cross-section: %s\n" % pol_state
     for ws in ws_list:
-        script += '# Run:%s\n' % ws.getRunNumber()
+        script += "# Run:%s\n" % ws.getRunNumber()
         script_text = api.GeneratePythonScript(ws)
-        script += script_text.replace(', ', ',\n                                ')
-        script += '\n'
+        script += script_text.replace(", ", ",\n                                ")
+        script += "\n"
     return script
+
 
 def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01):
     """
-        Stitch and normalize data sets
+    Stitch and normalize data sets
 
-        :param string xs: name of the cross-section to use
-        :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
+    :param string xs: name of the cross-section to use
+    :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
     """
     if not reduction_list:
         return []
 
     # Select the cross-section we will use to determine the scaling factors
     if xs is None:
-        xs = reduction_list[0].cross_sections.keys()[0]
+        xs = list(reduction_list[0].cross_sections.keys())[0]
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
@@ -122,7 +125,7 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
         weights = 0
         for i in range(len(reduction_list[0].cross_sections[xs]._r)):
             if idx_list[i]:
-                w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i])**2
+                w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i]) ** 2
                 total += w * float(reduction_list[0].cross_sections[xs]._r[i])
                 weights += w
         if weights > 0 and total > 0:
@@ -140,9 +143,11 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
         n_total = len(reduction_list[i].cross_sections[xs].q)
         p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
         p_n = n_total - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points
-        ws = api.CreateWorkspace(DataX=reduction_list[i].cross_sections[xs].q[p_0:p_n],
-                                 DataY=reduction_list[i].cross_sections[xs]._r[p_0:p_n],
-                                 DataE=reduction_list[i].cross_sections[xs]._dr[p_0:p_n])
+        ws = api.CreateWorkspace(
+            DataX=reduction_list[i].cross_sections[xs].q[p_0:p_n],
+            DataY=reduction_list[i].cross_sections[xs]._r[p_0:p_n],
+            DataE=reduction_list[i].cross_sections[xs]._dr[p_0:p_n],
+        )
         ws.setDistribution(True)
         ws = api.ConvertToHistogram(ws)
         if _previous_ws is not None:
@@ -154,36 +159,40 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
 
     return scaling_factors
 
+
 def _prepare_workspace_for_stitching(cross_section, ws_name):
     """
-        Create a workspace from a CrossSectionData object that we
-        can call Stitch1D on.
-        :param CrossSectionData cross_section: cross section data object
+    Create a workspace from a CrossSectionData object that we
+    can call Stitch1D on.
+    :param CrossSectionData cross_section: cross section data object
     """
     n_total = len(cross_section.q)
     p_0 = cross_section.configuration.cut_first_n_points
     p_n = n_total - cross_section.configuration.cut_last_n_points
-    ws = api.CreateWorkspace(DataX=cross_section.q[p_0:p_n],
-                             DataY=cross_section._r[p_0:p_n],
-                             DataE=cross_section._dr[p_0:p_n],
-                             OutputWorkspace=ws_name)
+    ws = api.CreateWorkspace(
+        DataX=cross_section.q[p_0:p_n],
+        DataY=cross_section._r[p_0:p_n],
+        DataE=cross_section._dr[p_0:p_n],
+        OutputWorkspace=ws_name,
+    )
     ws.setDistribution(True)
     ws = api.ConvertToHistogram(ws, OutputWorkspace=ws_name)
     return ws
 
+
 def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01):
     """
-        Stitch and normalize data sets
+    Stitch and normalize data sets
 
-        :param string xs: name of the cross-section to use for the first data set
-        :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
+    :param string xs: name of the cross-section to use for the first data set
+    :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
     """
     if not reduction_list:
         return []
 
     # Select the cross-section we will use to determine the scaling factors
     if xs is None:
-        xs = reduction_list[0].cross_sections.keys()[0]
+        xs = list(reduction_list[0].cross_sections.keys())[0]
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
@@ -193,7 +202,7 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
         weights = 0
         for i in range(len(reduction_list[0].cross_sections[xs]._r)):
             if idx_list[i]:
-                w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i])**2
+                w = 1.0 / float(reduction_list[0].cross_sections[xs]._dr[i]) ** 2
                 total += w * float(reduction_list[0].cross_sections[xs]._r[i])
                 weights += w
         if weights > 0 and total > 0:
@@ -206,31 +215,30 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
     running_scale = scaling_factor
     scaling_factors = [running_scale]
 
-    for i in range(len(reduction_list)-1):
+    for i in range(len(reduction_list) - 1):
         # Pick the cross-section with the highest signal
-        xs = reduction_list[i+1].get_highest_cross_section()
+        xs = reduction_list[i + 1].get_highest_cross_section()
 
         # Low-Q data set
-        _previous_ws = _prepare_workspace_for_stitching(reduction_list[i].cross_sections[xs],
-                                                        "low_q_workspace")
+        _previous_ws = _prepare_workspace_for_stitching(reduction_list[i].cross_sections[xs], "low_q_workspace")
         # High-Q data set
-        ws = _prepare_workspace_for_stitching(reduction_list[i+1].cross_sections[xs],
-                                              "high_q_workspace")
+        ws = _prepare_workspace_for_stitching(reduction_list[i + 1].cross_sections[xs], "high_q_workspace")
 
         _, scale = api.Stitch1D(_previous_ws, ws)
         running_scale *= scale
         scaling_factors.append(running_scale)
-        reduction_list[i+1].set_parameter("scaling_factor", running_scale)
+        reduction_list[i + 1].set_parameter("scaling_factor", running_scale)
 
     return scaling_factors
 
+
 def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
     """
-        Combine the workspaces for a given cross-section into a single workspace.
+    Combine the workspaces for a given cross-section into a single workspace.
 
-        TODO: trim workspaces
-            trim_first = [item.cross_sections[pol_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
-            trim_last = [item.cross_sections[pol_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
+    TODO: trim workspaces
+        trim_first = [item.cross_sections[pol_state].configuration.cut_first_n_points for item in self.data_manager.reduction_list]
+        trim_last = [item.cross_sections[pol_state].configuration.cut_last_n_points for item in self.data_manager.reduction_list]
 
     """
     ws_list = []
@@ -247,22 +255,29 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
         ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
         # Stitch1DMany only scales workspaces relative to the first one
         if i == 0:
-            api.Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo',
-                      factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
-                      Operation='Multiply')
-            api.ConvertToHistogram(InputWorkspace=ws_name+'_histo', OutputWorkspace=ws_name+'_histo')
+            api.Scale(
+                InputWorkspace=ws_name,
+                OutputWorkspace=ws_name + "_histo",
+                factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
+                Operation="Multiply",
+            )
+            api.ConvertToHistogram(InputWorkspace=ws_name + "_histo", OutputWorkspace=ws_name + "_histo")
         else:
             scaling_factors.append(reduction_list[i].cross_sections[xs].configuration.scaling_factor)
-            api.ConvertToHistogram(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_histo')
-        ws_list.append(ws_name+'_histo')
+            api.ConvertToHistogram(InputWorkspace=ws_name, OutputWorkspace=ws_name + "_histo")
+        ws_list.append(ws_name + "_histo")
         params = "%s, %s, %s" % (q_min, q_step, q_max)
 
     if len(ws_list) > 1:
-        merged_ws, _ = api.Stitch1DMany(InputWorkspaces=ws_list, Params=params,
-                                        UseManualScaleFactors=True, ManualScaleFactors=scaling_factors,
-                                        OutputWorkspace=ws_name+"_merged")
+        merged_ws, _ = api.Stitch1DMany(
+            InputWorkspaces=ws_list,
+            Params=params,
+            UseManualScaleFactors=True,
+            ManualScaleFactors=scaling_factors,
+            OutputWorkspace=ws_name + "_merged",
+        )
     elif len(ws_list) == 1:
-        merged_ws = api.CloneWorkspace(ws_list[0], OutputWorkspace=ws_name+"_merged")
+        merged_ws = api.CloneWorkspace(ws_list[0], OutputWorkspace=ws_name + "_merged")
     else:
         return None
 
@@ -273,11 +288,12 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
     api.SaveAscii(InputWorkspace=merged_ws, Filename="/tmp/test.txt")
     return merged_ws
 
+
 def get_scaled_workspaces(reduction_list, xs):
     """
-        Return a list of scaled workspaces
-        :param list reduction_list: list of NexusData objects
-        :param str xs: cross-section name
+    Return a list of scaled workspaces
+    :param list reduction_list: list of NexusData objects
+    :param str xs: cross-section name
     """
     ws_list = []
 
@@ -287,20 +303,28 @@ def get_scaled_workspaces(reduction_list, xs):
             continue
 
         ws_name = str(reduction_list[i].cross_sections[xs].reflectivity_workspace)
-        ws_tmp = api.Scale(InputWorkspace=ws_name, OutputWorkspace=ws_name+'_scaled',
-                           factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
-                           Operation='Multiply')
-        api.AddSampleLog(Workspace=ws_tmp, LogName='scaling_factor',
-                         LogText=str(reduction_list[i].cross_sections[xs].configuration.scaling_factor),
-                         LogType='Number', LogUnit='')
+        ws_tmp = api.Scale(
+            InputWorkspace=ws_name,
+            OutputWorkspace=ws_name + "_scaled",
+            factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
+            Operation="Multiply",
+        )
+        api.AddSampleLog(
+            Workspace=ws_tmp,
+            LogName="scaling_factor",
+            LogText=str(reduction_list[i].cross_sections[xs].configuration.scaling_factor),
+            LogType="Number",
+            LogUnit="",
+        )
         ws_list.append(ws_tmp)
 
     return ws_list
 
+
 def extract_meta_data(file_path=None, cross_section_data=None, configuration=None):
     """
-        Get mid Q-value from meta data
-        :param str file_path: name of the file to read
+    Get mid Q-value from meta data
+    :param str file_path: name of the file to read
     """
     meta_data = NexusMetaData()
 
@@ -311,8 +335,8 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
     elif file_path is None:
         raise RuntimeError("Either a file path or a data object must be supplied")
 
-    nxs = h5py.File(file_path, mode='r')
-    keys = nxs.keys()
+    nxs = h5py.File(file_path, mode="r")
+    keys = list(nxs.keys())
     keys.sort()
     nxs.close()
 
@@ -321,31 +345,39 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         return meta_data
 
     try:
-        ws = api.LoadEventNexus(str(file_path),
-                                MetaDataOnly=True,
-                                NXentryName=str(keys[0]))
+        ws = api.LoadEventNexus(str(file_path), MetaDataOnly=True, NXentryName=str(keys[0]))
         meta_data.mid_q = Instrument.mid_q_value(ws)
         meta_data.is_direct_beam = Instrument.check_direct_beam(ws)
     except:
-        logging.error(sys.exc_value)
+        logging.exception("Exception extracting metadata")
         raise RuntimeError("Could not load file %s [%s]" % (file_path, keys[0]))
 
     return meta_data
 
-def read_log(ws, name, target_units='', assumed_units=''):
+
+def read_log(ws, name, target_units="", assumed_units=""):
     """
-        Read a log value, taking care of units.
-        If the log entry has no units, the target units are assumed.
-        :param ws: workspace
-        :param str name: name of the property to read
-        :param str target_units: units to convert to
-        :param str assumed_units: units of origin, if not specified in the log itself
+    Read a log value, taking care of units.
+    If the log entry has no units, the target units are assumed.
+    :param ws: workspace
+    :param str name: name of the property to read
+    :param str target_units: units to convert to
+    :param str assumed_units: units of origin, if not specified in the log itself
     """
-    _units = {'m': {'mm': 1000.0,},
-              'mm': {'m': 0.001,},
-              'deg': {'rad': math.pi/180.,},
-              'rad': {'deg': 180./math.pi,},
-             }
+    _units = {
+        "m": {
+            "mm": 1000.0,
+        },
+        "mm": {
+            "m": 0.001,
+        },
+        "deg": {
+            "rad": math.pi / 180.0,
+        },
+        "rad": {
+            "deg": 180.0 / math.pi,
+        },
+    }
     prop = ws.getRun().getProperty(name)
     value = prop.getStatistics().mean
 

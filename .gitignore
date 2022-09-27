@@ -24,6 +24,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+conda.recipe/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -102,3 +103,6 @@ ENV/
 
 # PyCharm IDE
 .idea
+
+# versiongit
+_version.py

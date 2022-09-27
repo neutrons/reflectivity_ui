@@ -1,17 +1,18 @@
-
-#pylint: disable=invalid-name, line-too-long, too-few-public-methods, too-many-instance-attributes, wrong-import-order, bare-except
+# pylint: disable=invalid-name, line-too-long, too-few-public-methods, too-many-instance-attributes, wrong-import-order, bare-except
 """
     Application configuration, including reduction options
 """
-from __future__ import absolute_import, division, print_function
+
 import sys
 import logging
 from .data_handling.instrument import Instrument
 
+
 class Configuration(object):
     """
-        Hold reduction options
+    Hold reduction options
     """
+
     # Choice of axes for off-specular binning
     QX_VS_QZ = 0
     KZI_VS_KZF = 1
@@ -21,7 +22,7 @@ class Configuration(object):
         self.instrument = Instrument()
         # Number of TOF bins
         self.tof_bins = 400
-        self.tof_range = [0,0]
+        self.tof_range = [0, 0]
         # Bin type:
         #    0 = Constant bin width
         #    1 = Constant Q bin width
@@ -127,12 +128,12 @@ class Configuration(object):
             try:
                 self.from_q_settings(settings)
             except:
-                logging.error("Could not process application settings\n  %s", sys.exc_value)
+                logging.exception("Could not process application settings")
 
     @property
     def peak_roi(self):
-        peak_min = int(round(float(self.peak_position) - float(self.peak_width)/2.0))
-        peak_max = int(round(float(self.peak_position) + float(self.peak_width)/2.0+1.0))
+        peak_min = int(round(float(self.peak_position) - float(self.peak_width) / 2.0))
+        peak_max = int(round(float(self.peak_position) + float(self.peak_width) / 2.0 + 1.0))
         return [peak_min, peak_max]
 
     @peak_roi.setter
@@ -142,8 +143,8 @@ class Configuration(object):
 
     @property
     def low_res_roi(self):
-        peak_min = int(round(float(self.low_res_position) - float(self.low_res_width)/2.0))
-        peak_max = int(round(float(self.low_res_position) + float(self.low_res_width)/2.0+1.0))
+        peak_min = int(round(float(self.low_res_position) - float(self.low_res_width) / 2.0))
+        peak_max = int(round(float(self.low_res_position) + float(self.low_res_width) / 2.0 + 1.0))
         return [peak_min, peak_max]
 
     @low_res_roi.setter
@@ -153,8 +154,8 @@ class Configuration(object):
 
     @property
     def bck_roi(self):
-        peak_min = int(round(float(self.bck_position) - float(self.bck_width)/2.0))
-        peak_max = int(round(float(self.bck_position) + float(self.bck_width)/2.0+1.0))
+        peak_min = int(round(float(self.bck_position) - float(self.bck_width) / 2.0))
+        peak_max = int(round(float(self.bck_position) + float(self.bck_width) / 2.0 + 1.0))
         return [peak_min, peak_max]
 
     @bck_roi.setter
@@ -164,70 +165,70 @@ class Configuration(object):
 
     def to_q_settings(self, settings):
         """
-            Save configuration to QSettings
-            :param settings QSettings: QSettings object
+        Save configuration to QSettings
+        :param settings QSettings: QSettings object
         """
-        settings.setValue('use_roi', self.use_roi)
-        settings.setValue('tof_bins', self.tof_bins)
-        settings.setValue('tof_range', ','.join([str(x) for x in self.tof_range]))
-        settings.setValue('tof_bin_type', self.tof_bin_type)
-        settings.setValue('update_peak_range', self.update_peak_range)
-        settings.setValue('use_roi_bck', self.use_roi_bck)
-        settings.setValue('use_tight_bck', self.use_tight_bck)
-        settings.setValue('bck_offset', self.bck_offset)
-        settings.setValue('wl_bandwidth', self.wl_bandwidth)
+        settings.setValue("use_roi", self.use_roi)
+        settings.setValue("tof_bins", self.tof_bins)
+        settings.setValue("tof_range", ",".join([str(x) for x in self.tof_range]))
+        settings.setValue("tof_bin_type", self.tof_bin_type)
+        settings.setValue("update_peak_range", self.update_peak_range)
+        settings.setValue("use_roi_bck", self.use_roi_bck)
+        settings.setValue("use_tight_bck", self.use_tight_bck)
+        settings.setValue("bck_offset", self.bck_offset)
+        settings.setValue("wl_bandwidth", self.wl_bandwidth)
 
-        settings.setValue('force_peak_roi', self.force_peak_roi)
-        settings.setValue('peak_roi', ','.join([str(x) for x in self.peak_roi]))
-        settings.setValue('force_low_res_roi', self.force_low_res_roi)
-        settings.setValue('low_res_roi', ','.join([str(x) for x in self.low_res_roi]))
-        settings.setValue('force_bck_roi', self.force_bck_roi)
-        settings.setValue('bck_roi', ','.join([str(x) for x in self.bck_roi]))
+        settings.setValue("force_peak_roi", self.force_peak_roi)
+        settings.setValue("peak_roi", ",".join([str(x) for x in self.peak_roi]))
+        settings.setValue("force_low_res_roi", self.force_low_res_roi)
+        settings.setValue("low_res_roi", ",".join([str(x) for x in self.low_res_roi]))
+        settings.setValue("force_bck_roi", self.force_bck_roi)
+        settings.setValue("bck_roi", ",".join([str(x) for x in self.bck_roi]))
 
-        settings.setValue('subtract_background', self.subtract_background)
-        settings.setValue('scaling_factor', self.scaling_factor)
-        settings.setValue('cut_first_n_points', self.cut_first_n_points)
-        settings.setValue('cut_last_n_points', self.cut_last_n_points)
+        settings.setValue("subtract_background", self.subtract_background)
+        settings.setValue("scaling_factor", self.scaling_factor)
+        settings.setValue("cut_first_n_points", self.cut_first_n_points)
+        settings.setValue("cut_last_n_points", self.cut_last_n_points)
 
         # Normalize to unity when stitching
-        settings.setValue('normalize_to_unity', self.normalize_to_unity)
-        settings.setValue('total_reflectivity_q_cutoff', self.total_reflectivity_q_cutoff)
+        settings.setValue("normalize_to_unity", self.normalize_to_unity)
+        settings.setValue("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
 
-        settings.setValue('normalize_x_tof', self.normalize_x_tof)
-        settings.setValue('x_wl_map', self.x_wl_map)
-        settings.setValue('angle_map', self.angle_map)
-        settings.setValue('log_1d', self.log_1d)
-        settings.setValue('log_2d', self.log_2d)
+        settings.setValue("normalize_x_tof", self.normalize_x_tof)
+        settings.setValue("x_wl_map", self.x_wl_map)
+        settings.setValue("angle_map", self.angle_map)
+        settings.setValue("log_1d", self.log_1d)
+        settings.setValue("log_2d", self.log_2d)
 
-        settings.setValue('use_constant_q', self.use_constant_q)
-        settings.setValue('use_dangle', self.use_dangle)
-        settings.setValue('set_direct_pixel', self.set_direct_pixel)
-        settings.setValue('direct_pixel_overwrite', self.direct_pixel_overwrite)
-        settings.setValue('set_direct_angle_offset', self.set_direct_angle_offset)
-        settings.setValue('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite)
-        settings.setValue('sample_size', self.sample_size)
-        settings.setValue('do_final_rebin', self.do_final_rebin)
-        settings.setValue('final_rebin_step', self.final_rebin_step)
+        settings.setValue("use_constant_q", self.use_constant_q)
+        settings.setValue("use_dangle", self.use_dangle)
+        settings.setValue("set_direct_pixel", self.set_direct_pixel)
+        settings.setValue("direct_pixel_overwrite", self.direct_pixel_overwrite)
+        settings.setValue("set_direct_angle_offset", self.set_direct_angle_offset)
+        settings.setValue("direct_angle_offset_overwrite", self.direct_angle_offset_overwrite)
+        settings.setValue("sample_size", self.sample_size)
+        settings.setValue("do_final_rebin", self.do_final_rebin)
+        settings.setValue("final_rebin_step", self.final_rebin_step)
 
         # Off-specular options
-        settings.setValue('off_spec_x_axis', self.off_spec_x_axis)
-        settings.setValue('off_spec_slice', self.off_spec_slice)
-        settings.setValue('off_spec_qz_list', ','.join([str(x) for x in self.off_spec_qz_list]))
-        settings.setValue('off_spec_err_weight', self.off_spec_err_weight)
-        settings.setValue('off_spec_nxbins', self.off_spec_nxbins)
-        settings.setValue('off_spec_nybins', self.off_spec_nybins)
-        settings.setValue('off_spec_slice_qz_min', self.off_spec_slice_qz_min)
-        settings.setValue('off_spec_slice_qz_max', self.off_spec_slice_qz_max)
+        settings.setValue("off_spec_x_axis", self.off_spec_x_axis)
+        settings.setValue("off_spec_slice", self.off_spec_slice)
+        settings.setValue("off_spec_qz_list", ",".join([str(x) for x in self.off_spec_qz_list]))
+        settings.setValue("off_spec_err_weight", self.off_spec_err_weight)
+        settings.setValue("off_spec_nxbins", self.off_spec_nxbins)
+        settings.setValue("off_spec_nybins", self.off_spec_nybins)
+        settings.setValue("off_spec_slice_qz_min", self.off_spec_slice_qz_min)
+        settings.setValue("off_spec_slice_qz_max", self.off_spec_slice_qz_max)
 
         # Off-specular smoothing
-        settings.setValue('apply_smoothing', self.apply_smoothing)
-        settings.setValue('off_spec_sigmas', self.off_spec_sigmas)
-        settings.setValue('off_spec_sigmax', self.off_spec_sigmax)
-        settings.setValue('off_spec_sigmay', self.off_spec_sigmay)
-        settings.setValue('off_spec_x_min', self.off_spec_x_min)
-        settings.setValue('off_spec_x_max', self.off_spec_x_max)
-        settings.setValue('off_spec_y_min', self.off_spec_y_min)
-        settings.setValue('off_spec_y_max', self.off_spec_y_max)
+        settings.setValue("apply_smoothing", self.apply_smoothing)
+        settings.setValue("off_spec_sigmas", self.off_spec_sigmas)
+        settings.setValue("off_spec_sigmax", self.off_spec_sigmax)
+        settings.setValue("off_spec_sigmay", self.off_spec_sigmay)
+        settings.setValue("off_spec_x_min", self.off_spec_x_min)
+        settings.setValue("off_spec_x_max", self.off_spec_x_max)
+        settings.setValue("off_spec_y_min", self.off_spec_y_min)
+        settings.setValue("off_spec_y_max", self.off_spec_y_max)
 
         # GISANS options
         settings.setValue('gisans_wl_min', self.gisans_wl_min)
@@ -241,82 +242,86 @@ class Configuration(object):
         settings.setValue('gisans_slice_qz_max', self.gisans_slice_qz_max)
 
     def from_q_settings(self, settings):
-        """ Retrieve configuration from QSettings """
+        """Retrieve configuration from QSettings"""
 
         def _verify_true(parameter, default):
-            """ Utility function to read a bool """
+            """Utility function to read a bool"""
             _value = settings.value(parameter, str(default))
-            return str(_value).lower() == 'true'
+            return str(_value).lower() == "true"
 
-        self.use_roi = _verify_true('use_roi', self.use_roi)
-        #self.tof_bins = int(settings.value('tof_bins', self.tof_bins))
-        self.tof_range = [float(x) for x in settings.value('tof_range', [0,0]).split(',')]
-        self.tof_bin_type = int(settings.value('tof_bin_type', self.tof_bin_type))
-        self.update_peak_range = _verify_true('update_peak_range', self.update_peak_range)
-        self.use_roi_bck = _verify_true('use_roi_bck', self.use_roi_bck)
-        self.use_tight_bck = _verify_true('use_tight_bck', self.use_tight_bck)
-        self.bck_offset = int(settings.value('bck_offset', self.bck_offset))
-        self.wl_bandwidth = float(settings.value('wl_bandwidth', self.wl_bandwidth))
+        self.use_roi = _verify_true("use_roi", self.use_roi)
+        # self.tof_bins = int(settings.value('tof_bins', self.tof_bins))
+        self.tof_range = [float(x) for x in settings.value("tof_range", [0, 0]).split(",")]
+        self.tof_bin_type = int(settings.value("tof_bin_type", self.tof_bin_type))
+        self.update_peak_range = _verify_true("update_peak_range", self.update_peak_range)
+        self.use_roi_bck = _verify_true("use_roi_bck", self.use_roi_bck)
+        self.use_tight_bck = _verify_true("use_tight_bck", self.use_tight_bck)
+        self.bck_offset = int(settings.value("bck_offset", self.bck_offset))
+        self.wl_bandwidth = float(settings.value("wl_bandwidth", self.wl_bandwidth))
 
-        self.force_peak_roi = _verify_true('force_peak_roi', self.force_peak_roi)
-        self.force_low_res_roi = _verify_true('force_low_res_roi', self.force_low_res_roi)
-        self.force_bck_roi = _verify_true('force_bck_roi', self.force_bck_roi)
+        self.force_peak_roi = _verify_true("force_peak_roi", self.force_peak_roi)
+        self.force_low_res_roi = _verify_true("force_low_res_roi", self.force_low_res_roi)
+        self.force_bck_roi = _verify_true("force_bck_roi", self.force_bck_roi)
 
-        default = ','.join([str(x) for x in self.peak_roi])
-        self.peak_roi = [int(x) for x in settings.value('peak_roi', default).split(',')]
-        default = ','.join([str(x) for x in self.low_res_roi])
-        self.low_res_roi = [int(x) for x in settings.value('low_res_roi', default).split(',')]
-        default = ','.join([str(x) for x in self.bck_roi])
-        self.bck_roi = [int(x) for x in settings.value('bck_roi', default).split(',')]
+        default = ",".join([str(x) for x in self.peak_roi])
+        self.peak_roi = [int(x) for x in settings.value("peak_roi", default).split(",")]
+        default = ",".join([str(x) for x in self.low_res_roi])
+        self.low_res_roi = [int(x) for x in settings.value("low_res_roi", default).split(",")]
+        default = ",".join([str(x) for x in self.bck_roi])
+        self.bck_roi = [int(x) for x in settings.value("bck_roi", default).split(",")]
 
-        self.subtract_background = _verify_true('subtract_background', self.subtract_background)
-        self.scaling_factor = float(settings.value('scaling_factor', self.scaling_factor))
-        self.cut_first_n_points = int(settings.value('cut_first_n_points', self.cut_first_n_points))
-        self.cut_last_n_points = int(settings.value('cut_last_n_points', self.cut_last_n_points))
+        self.subtract_background = _verify_true("subtract_background", self.subtract_background)
+        self.scaling_factor = float(settings.value("scaling_factor", self.scaling_factor))
+        self.cut_first_n_points = int(settings.value("cut_first_n_points", self.cut_first_n_points))
+        self.cut_last_n_points = int(settings.value("cut_last_n_points", self.cut_last_n_points))
 
         # Normalize to unity when stitching
-        self.normalize_to_unity = _verify_true('normalize_to_unity', self.normalize_to_unity)
-        self.total_reflectivity_q_cutoff = float(settings.value('total_reflectivity_q_cutoff', self.total_reflectivity_q_cutoff))
+        self.normalize_to_unity = _verify_true("normalize_to_unity", self.normalize_to_unity)
+        self.total_reflectivity_q_cutoff = float(
+            settings.value("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
+        )
 
-        self.normalize_x_tof = _verify_true('normalize_x_tof', self.normalize_x_tof)
-        self.x_wl_map = _verify_true('x_wl_map', self.x_wl_map)
-        self.angle_map = _verify_true('angle_map', self.angle_map)
-        self.log_1d = _verify_true('log_1d', self.log_1d)
-        self.log_2d = _verify_true('log_2d', self.log_2d)
+        self.normalize_x_tof = _verify_true("normalize_x_tof", self.normalize_x_tof)
+        self.x_wl_map = _verify_true("x_wl_map", self.x_wl_map)
+        self.angle_map = _verify_true("angle_map", self.angle_map)
+        self.log_1d = _verify_true("log_1d", self.log_1d)
+        self.log_2d = _verify_true("log_2d", self.log_2d)
 
-        self.use_constant_q = _verify_true('use_constant_q', self.use_constant_q)
-        self.use_dangle = _verify_true('use_dangle', self.use_dangle)
-        self.set_direct_pixel = _verify_true('set_direct_pixel', self.set_direct_pixel)
-        self.direct_pixel_overwrite = float(settings.value('direct_pixel_overwrite', self.direct_pixel_overwrite))
-        self.set_direct_angle_offset = _verify_true('set_direct_angle_offset', self.set_direct_angle_offset)
-        self.direct_angle_offset_overwrite = float(settings.value('direct_angle_offset_overwrite', self.direct_angle_offset_overwrite))
-        self.sample_size = float(settings.value('sample_size', self.sample_size))
-        self.do_final_rebin = _verify_true('do_final_rebin', self.do_final_rebin)
-        self.final_rebin_step = float(settings.value('final_rebin_step', self.final_rebin_step))
+        self.use_constant_q = _verify_true("use_constant_q", self.use_constant_q)
+        self.use_dangle = _verify_true("use_dangle", self.use_dangle)
+        self.set_direct_pixel = _verify_true("set_direct_pixel", self.set_direct_pixel)
+        self.direct_pixel_overwrite = float(settings.value("direct_pixel_overwrite", self.direct_pixel_overwrite))
+        self.set_direct_angle_offset = _verify_true("set_direct_angle_offset", self.set_direct_angle_offset)
+        self.direct_angle_offset_overwrite = float(
+            settings.value("direct_angle_offset_overwrite", self.direct_angle_offset_overwrite)
+        )
+        self.sample_size = float(settings.value("sample_size", self.sample_size))
+        self.do_final_rebin = _verify_true("do_final_rebin", self.do_final_rebin)
+        self.final_rebin_step = float(settings.value("final_rebin_step", self.final_rebin_step))
 
         # Off-specular options
-        self.off_spec_x_axis = int(settings.value('off_spec_x_axis', self.off_spec_x_axis))
-        self.off_spec_slice = _verify_true('off_spec_slice', self.off_spec_slice)
-        default = ','.join([str(x) for x in self.off_spec_qz_list])
+        self.off_spec_x_axis = int(settings.value("off_spec_x_axis", self.off_spec_x_axis))
+        self.off_spec_slice = _verify_true("off_spec_slice", self.off_spec_slice)
+        default = ",".join([str(x) for x in self.off_spec_qz_list])
         try:
-            self.off_spec_qz_list = [float(x) for x in settings.value('off_spec_qz_list', default).split(',')]
+            self.off_spec_qz_list = [float(x) for x in settings.value("off_spec_qz_list", default).split(",")]
         except:
             self.off_spec_qz_list = []
-        self.off_spec_err_weight = _verify_true('off_spec_err_weight', self.off_spec_err_weight)
-        self.off_spec_nxbins = int(settings.value('off_spec_nxbins', self.off_spec_nxbins))
-        self.off_spec_nybins = int(settings.value('off_spec_nybins', self.off_spec_nybins))
-        self.off_spec_slice_qz_min = float(settings.value('off_spec_slice_qz_min', self.off_spec_slice_qz_min))
-        self.off_spec_slice_qz_max = float(settings.value('off_spec_slice_qz_max', self.off_spec_slice_qz_max))
+        self.off_spec_err_weight = _verify_true("off_spec_err_weight", self.off_spec_err_weight)
+        self.off_spec_nxbins = int(settings.value("off_spec_nxbins", self.off_spec_nxbins))
+        self.off_spec_nybins = int(settings.value("off_spec_nybins", self.off_spec_nybins))
+        self.off_spec_slice_qz_min = float(settings.value("off_spec_slice_qz_min", self.off_spec_slice_qz_min))
+        self.off_spec_slice_qz_max = float(settings.value("off_spec_slice_qz_max", self.off_spec_slice_qz_max))
 
         # Off-specular smoothing
-        self.apply_smoothing = _verify_true('apply_smoothing', self.apply_smoothing)
-        self.off_spec_sigmas = int(settings.value('off_spec_sigmas', self.off_spec_sigmas))
-        self.off_spec_sigmax = float(settings.value('off_spec_sigmax', self.off_spec_sigmax))
-        self.off_spec_sigmay = float(settings.value('off_spec_sigmay', self.off_spec_sigmay))
-        self.off_spec_x_min = float(settings.value('off_spec_x_min', self.off_spec_x_min))
-        self.off_spec_x_max = float(settings.value('off_spec_x_max', self.off_spec_x_max))
-        self.off_spec_y_min = float(settings.value('off_spec_y_min', self.off_spec_y_min))
-        self.off_spec_y_max = float(settings.value('off_spec_y_max', self.off_spec_y_max))
+        self.apply_smoothing = _verify_true("apply_smoothing", self.apply_smoothing)
+        self.off_spec_sigmas = int(settings.value("off_spec_sigmas", self.off_spec_sigmas))
+        self.off_spec_sigmax = float(settings.value("off_spec_sigmax", self.off_spec_sigmax))
+        self.off_spec_sigmay = float(settings.value("off_spec_sigmay", self.off_spec_sigmay))
+        self.off_spec_x_min = float(settings.value("off_spec_x_min", self.off_spec_x_min))
+        self.off_spec_x_max = float(settings.value("off_spec_x_max", self.off_spec_x_max))
+        self.off_spec_y_min = float(settings.value("off_spec_y_min", self.off_spec_y_min))
+        self.off_spec_y_max = float(settings.value("off_spec_y_max", self.off_spec_y_max))
 
         # GISANS options
         self.gisans_wl_min = float(settings.value('gisans_wl_min', self.gisans_wl_min))
@@ -329,3 +334,4 @@ class Configuration(object):
         self.gisans_slice = _verify_true('gisans_slice', self.gisans_slice)
         self.gisans_slice_qz_min = float(settings.value('gisans_slice_qz_min', self.gisans_slice_qz_min))
         self.gisans_slice_qz_max = float(settings.value('gisans_slice_qz_max', self.gisans_slice_qz_max))
+

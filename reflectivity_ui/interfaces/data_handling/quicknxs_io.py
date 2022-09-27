@@ -1,8 +1,8 @@
-#pylint: disable=bare-except, too-many-locals, too-many-statements, too-many-branches, wrong-import-order, too-many-arguments
+# pylint: disable=bare-except, too-many-locals, too-many-statements, too-many-branches, wrong-import-order, too-many-arguments
 """
     Read and write quicknxs reduced files
 """
-from __future__ import absolute_import, division, print_function
+
 import sys
 import os
 import time
@@ -13,6 +13,7 @@ import numpy as np
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
+
 APP_CONF = ApplicationConfiguration()
 if APP_CONF.mantid_path is not None:
     sys.path.insert(0, APP_CONF.mantid_path)
@@ -24,48 +25,77 @@ from ..configuration import Configuration
 
 def _find_h5_data(filename):
     """
-        Because we have legacy data and new data re-processed for QuickNXS, we have to
-        ensure that we get the proper data file.
+    Because we have legacy data and new data re-processed for QuickNXS, we have to
+    ensure that we get the proper data file.
     """
-    if filename.endswith('.nxs'):
-        _new_filename = filename.replace('_histo.nxs', '.nxs.h5')
-        _new_filename = _new_filename.replace('_event.nxs', '.nxs.h5')
-        _new_filename = _new_filename.replace('data', 'nexus')
+    if filename.endswith(".nxs"):
+        _new_filename = filename.replace("_histo.nxs", ".nxs.h5")
+        _new_filename = _new_filename.replace("_event.nxs", ".nxs.h5")
+        _new_filename = _new_filename.replace("data", "nexus")
         if os.path.isfile(_new_filename):
             logging.warning("Using %s" % _new_filename)
             return _new_filename
     return filename
 
+
 def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol_states):
     """
-        Write out reflectivity header in a format readable by QuickNXS
-        :param str output_path: output file path
-        :param str pol_states: descriptor for the polarization state
+    Write out reflectivity header in a format readable by QuickNXS
+    :param str output_path: output file path
+    :param str pol_states: descriptor for the polarization state
     """
     # Sanity check
     if not reduction_list:
         return
 
-    direct_beam_options = ['DB_ID', 'P0', 'PN', 'x_pos', 'x_width', 'y_pos', 'y_width',
-                           'bg_pos', 'bg_width', 'dpix', 'tth', 'number', 'File']
-    dataset_options = ['scale', 'P0', 'PN', 'x_pos', 'x_width', 'y_pos', 'y_width',
-                       'bg_pos', 'bg_width', 'fan', 'dpix', 'tth', 'number', 'DB_ID', 'File']
+    direct_beam_options = [
+        "DB_ID",
+        "P0",
+        "PN",
+        "x_pos",
+        "x_width",
+        "y_pos",
+        "y_width",
+        "bg_pos",
+        "bg_width",
+        "dpix",
+        "tth",
+        "number",
+        "File",
+    ]
+    dataset_options = [
+        "scale",
+        "P0",
+        "PN",
+        "x_pos",
+        "x_width",
+        "y_pos",
+        "y_width",
+        "bg_pos",
+        "bg_width",
+        "fan",
+        "dpix",
+        "tth",
+        "number",
+        "DB_ID",
+        "File",
+    ]
 
-    fd = open(output_path, 'w')
+    fd = open(output_path, "w")
     fd.write("# Datafile created by QuickNXS %s\n" % __version__)
     fd.write("# Datafile created using Mantid %s\n" % mantid.__version__)
-    fd.write("# Date: %s\n" % time.strftime(u"%Y-%m-%d %H:%M:%S"))
+    fd.write("# Date: %s\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     fd.write("# Type: Specular\n")
     run_list = [str(item.number) for item in reduction_list]
-    fd.write("# Input file indices: %s\n" % ','.join(run_list))
+    fd.write("# Input file indices: %s\n" % ",".join(run_list))
     fd.write("# Extracted states: %s\n" % pol_states)
     fd.write("#\n")
     fd.write("# [Direct Beam Runs]\n")
-    toks = ['%8s' % item for item in direct_beam_options]
-    fd.write("# %s\n" % '  '.join(toks))
+    toks = ["%8s" % item for item in direct_beam_options]
+    fd.write("# %s\n" % "  ".join(toks))
 
     # Get the list of cross-sections
-    pol_list = reduction_list[0].cross_sections.keys()
+    pol_list = list(reduction_list[0].cross_sections.keys())
     if not pol_list:
         logging.error("No data found in run %s", reduction_list[0].number)
         return
@@ -83,25 +113,30 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
                 direct_beam = db_i
         if direct_beam is None:
             continue
-        db_pol = direct_beam.cross_sections.keys()[0]
+        db_pol = list(direct_beam.cross_sections.keys())[0]
         conf = direct_beam.cross_sections[db_pol].configuration
         i_direct_beam += 1
         dpix = run_object.getProperty("normalization_dirpix").value
         filename = run_object.getProperty("normalization_file_path").value
 
-        item = dict(DB_ID=i_direct_beam, tth=0, P0=0, PN=0,
-                    x_pos=conf.peak_position,
-                    x_width=conf.peak_width,
-                    y_pos=conf.low_res_position,
-                    y_width=conf.low_res_width,
-                    bg_pos=conf.bck_position,
-                    bg_width=conf.bck_width,
-                    dpix=dpix,
-                    number=normalization_run,
-                    File=filename)
+        item = dict(
+            DB_ID=i_direct_beam,
+            tth=0,
+            P0=0,
+            PN=0,
+            x_pos=conf.peak_position,
+            x_width=conf.peak_width,
+            y_pos=conf.low_res_position,
+            y_width=conf.low_res_width,
+            bg_pos=conf.bck_position,
+            bg_width=conf.bck_width,
+            dpix=dpix,
+            number=normalization_run,
+            File=filename,
+        )
 
-        par_list = ['{%s}' % p for p in direct_beam_options]
-        template = "# %s\n" % '  '.join(par_list)
+        par_list = ["{%s}" % p for p in direct_beam_options]
+        template = "# %s\n" % "  ".join(par_list)
         _clean_dict = {}
         for key in item:
             if isinstance(item[key], (bool, str)):
@@ -113,8 +148,8 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
     # Scattering data
     fd.write("#\n")
     fd.write("# [Data Runs]\n")
-    toks = ['%8s' % item for item in dataset_options]
-    fd.write("# %s\n" % '  '.join(toks))
+    toks = ["%8s" % item for item in dataset_options]
+    fd.write("# %s\n" % "  ".join(toks))
     i_direct_beam = 0
 
     conf = None
@@ -132,8 +167,8 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
         # It seems to be because that same offset is applied later in the QuickNXS calculation.
         # Correct tth here so that it can load properly in QuickNXS and produce the same result.
         tth = run_object.getProperty("two_theta").value
-        det_distance = run_object['SampleDetDis'].getStatistics().mean / 1000.0
-        direct_beam_pix = run_object['DIRPIX'].getStatistics().mean
+        det_distance = run_object["SampleDetDis"].getStatistics().mean / 1000.0
+        direct_beam_pix = run_object["DIRPIX"].getStatistics().mean
 
         # Get pixel size from instrument properties
         if ws.getInstrument().hasParameter("pixel-width"):
@@ -149,21 +184,26 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
             i_direct_beam += 1
             db_id = i_direct_beam
 
-        item = dict(scale=scaling_factor, DB_ID=db_id,
-                    P0=conf.cut_first_n_points, PN=conf.cut_last_n_points, tth=tth,
-                    fan=constant_q_binning,
-                    x_pos=conf.peak_position,
-                    x_width=conf.peak_width,
-                    y_pos=conf.low_res_position,
-                    y_width=conf.low_res_width,
-                    bg_pos=conf.bck_position,
-                    bg_width=conf.bck_width,
-                    dpix=dpix,
-                    number=str(ws.getRunNumber()),
-                    File=filename)
+        item = dict(
+            scale=scaling_factor,
+            DB_ID=db_id,
+            P0=conf.cut_first_n_points,
+            PN=conf.cut_last_n_points,
+            tth=tth,
+            fan=constant_q_binning,
+            x_pos=conf.peak_position,
+            x_width=conf.peak_width,
+            y_pos=conf.low_res_position,
+            y_width=conf.low_res_width,
+            bg_pos=conf.bck_position,
+            bg_width=conf.bck_width,
+            dpix=dpix,
+            number=str(ws.getRunNumber()),
+            File=filename,
+        )
 
-        par_list = ['{%s}' % p for p in dataset_options]
-        template = "# %s\n" % '  '.join(par_list)
+        par_list = ["{%s}" % p for p in dataset_options]
+        template = "# %s\n" % "  ".join(par_list)
         _clean_dict = {}
         for key in item:
             if isinstance(item[key], str):
@@ -180,15 +220,16 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
     fd.write("#\n")
     fd.close()
 
+
 def write_reflectivity_data(output_path, data, col_names, as_5col=True):
     """
-        Write out reflectivity header in a format readable by QuickNXS
-        :param str output_path: output file path
-        :param ndarray or list data: data to be written
-        :param list col_names: list of column names
-        :param bool as_5col: if True, a 5-column ascii will be written (theta is the last column)
+    Write out reflectivity header in a format readable by QuickNXS
+    :param str output_path: output file path
+    :param ndarray or list data: data to be written
+    :param list col_names: list of column names
+    :param bool as_5col: if True, a 5-column ascii will be written (theta is the last column)
     """
-    with open(output_path, 'a') as fd:
+    with open(output_path, "a") as fd:
         # Determine how many columns to write
         if isinstance(data, list):
             four_cols = True
@@ -197,32 +238,33 @@ def write_reflectivity_data(output_path, data, col_names, as_5col=True):
 
         fd.write("# [Data]\n")
         if four_cols:
-            toks = [u'%12s' % item for item in col_names[:4]]
+            toks = ["%12s" % item for item in col_names[:4]]
         else:
-            toks = [u'%12s' % item for item in col_names]
-        fd.write(u"# %s\n" % '\t'.join(toks))
+            toks = ["%12s" % item for item in col_names]
+        fd.write("# %s\n" % "\t".join(toks))
 
         if isinstance(data, list):
             # [TOF][pixel][parameter]
             for tof_item in data:
                 for pixel_item in tof_item:
-                    np.savetxt(fd, pixel_item, delimiter='\t', fmt='%-18e')
-                    fd.write(u'\n'.encode('utf8'))
+                    np.savetxt(fd, pixel_item, delimiter="\t", fmt="%-18e")
+                    fd.write("\n".encode("utf8"))
         else:
             if four_cols:
-                np.savetxt(fd, data[:, :4], delimiter=' ', fmt='%-18e')
+                np.savetxt(fd, data[:, :4], delimiter=" ", fmt="%-18e")
             else:
-                np.savetxt(fd, data, delimiter='\t', fmt='%-18e')
+                np.savetxt(fd, data, delimiter="\t", fmt="%-18e")
+
 
 def read_reduced_file(file_path, configuration=None):
     """
-        Read in configurations from a reduced data file.
-        :param str file_path: reduced data file
+    Read in configurations from a reduced data file.
+    :param str file_path: reduced data file
     """
     direct_beam_runs = []
     data_runs = []
 
-    with open(file_path, 'r') as file_content:
+    with open(file_path, "r") as file_content:
         # Section identifier
         #   0: None
         #   1: direct beams
@@ -244,7 +286,7 @@ def read_reduced_file(file_path, configuration=None):
             # Process direct beam runs
             if _in_section == 1:
                 toks = line.split()
-                if len(toks) < 14 or 'DB_ID' in line:
+                if len(toks) < 14 or "DB_ID" in line:
                     continue
                 try:
                     if configuration is not None:
@@ -267,10 +309,10 @@ def read_reduced_file(file_path, configuration=None):
                     # use the corresponding event file instead.
                     # Similarly, the number of points cut on each side probably
                     # doesn't make sense, so reset those options.
-                    if run_file.endswith('histo.nxs'):
-                        run_file = run_file.replace('histo.', 'event.')
-                        #conf.cut_first_n_points = 0
-                        #conf.cut_last_n_points = 0
+                    if run_file.endswith("histo.nxs"):
+                        run_file = run_file.replace("histo.", "event.")
+                        # conf.cut_first_n_points = 0
+                        # conf.cut_last_n_points = 0
                     # Catch data files meant for QuickNXS and use the raw file instead
                     run_file = _find_h5_data(run_file)
                     direct_beam_runs.append([run_number, run_file, conf])
@@ -281,7 +323,7 @@ def read_reduced_file(file_path, configuration=None):
             # Process data runs
             if _in_section == 2:
                 toks = line.split()
-                if len(toks) < 16 or 'DB_ID' in line:
+                if len(toks) < 16 or "DB_ID" in line:
                     continue
                 try:
                     if configuration is not None:
@@ -297,16 +339,16 @@ def read_reduced_file(file_path, configuration=None):
                     conf.low_res_width = float(toks[7])
                     conf.bck_position = float(toks[8])
                     conf.bck_width = float(toks[9])
-                    conf.use_constant_q = toks[10].strip().lower() == 'true'
+                    conf.use_constant_q = toks[10].strip().lower() == "true"
                     conf.direct_pixel_overwrite = float(toks[11])
-                    if int(toks[14]) > 0 and len(direct_beam_runs) > int(toks[14])-1:
-                        conf.normalization = direct_beam_runs[int(toks[14])-1][0]
+                    if int(toks[14]) > 0 and len(direct_beam_runs) > int(toks[14]) - 1:
+                        conf.normalization = direct_beam_runs[int(toks[14]) - 1][0]
                     run_number = int(toks[13])
                     run_file = toks[-1]
-                    if run_file.endswith('histo.nxs'):
-                        run_file = run_file.replace('histo.', 'event.')
-                        #conf.cut_first_n_points = 0
-                        #conf.cut_last_n_points = 0
+                    if run_file.endswith("histo.nxs"):
+                        run_file = run_file.replace("histo.", "event.")
+                        # conf.cut_first_n_points = 0
+                        # conf.cut_last_n_points = 0
                     run_file = _find_h5_data(run_file)
                     data_runs.append([run_number, run_file, conf])
                 except:
@@ -317,7 +359,7 @@ def read_reduced_file(file_path, configuration=None):
             if _in_section == 3:
                 if line.startswith("# sample_length"):
                     try:
-                        conf.sample_size = float((line[len("# sample_length"):]).strip())
+                        conf.sample_size = float((line[len("# sample_length") :]).strip())
                     except:
                         logging.error("Could not extract sample size: %s" % line)
 

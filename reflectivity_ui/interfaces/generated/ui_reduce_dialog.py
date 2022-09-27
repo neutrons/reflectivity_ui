@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'designer/ui_reduce_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -222,6 +223,3 @@ class Ui_Dialog(object):
         self.label_3.setText(_translate("Dialog", "Subject:"))
         self.label_6.setText(_translate("Dialog", "Message Text:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Email Results"))
-
-
-import icons_rc

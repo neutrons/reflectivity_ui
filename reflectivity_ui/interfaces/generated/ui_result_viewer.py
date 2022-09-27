@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'designer/ui_result_viewer.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -222,7 +223,5 @@ class Ui_Dialog(object):
         self.gisans_apply_crop_button.setText(_translate("Dialog", "Apply cropping to all"))
         self.gisans_reset_crop_button.setText(_translate("Dialog", "Refresh"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.gisans_tab), _translate("Dialog", "GISANS"))
-
-
 from .compare_plots import CompareWidget
 from .mplwidget import MPLWidget
