@@ -6,11 +6,11 @@
 import logging
 import numpy as np
 from PyQt5 import QtCore, QtWidgets
-import reflectivity_ui.interfaces.generated.ui_result_viewer
-import reflectivity_ui.interfaces.generated.mplwidget as mpl
+import reflectivity_ui.ui.mplwidget as mpl
+from reflectivity_ui.interfaces import load_ui
 
 
-class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_result_viewer.Ui_Dialog):
+class ResultViewer(QtWidgets.QDialog):
     """
     Reduction dialog
     """
@@ -19,24 +19,24 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
 
     def __init__(self, parent, data_manager):
         super(ResultViewer, self).__init__(parent)
-        self.setupUi(self)
-        self.resize(1024, 1024)
+        self.ui = load_ui("ui_result_viewer.ui", baseinstance=self)
+        self.ui.resize(1024, 1024)
         self.settings = QtCore.QSettings(".refredm")
         self.data_manager = data_manager
-        self.main_window = parent
-        self.specular_compare_widget.data_manager = self.data_manager
+        self.ui.main_window = parent
+        self.ui.specular_compare_widget.data_manager = self.data_manager
         self._gisans_reference = None
 
     def update_active_tab(self):
-        if self.tabWidget.currentIndex() == 0:
+        if self.ui.tabWidget.currentIndex() == 0:
             self.update_specular()
-        elif self.tabWidget.currentIndex() == 1:
+        elif self.ui.tabWidget.currentIndex() == 1:
             self.update_off_specular()
-        elif self.tabWidget.currentIndex() == 2:
+        elif self.ui.tabWidget.currentIndex() == 2:
             self.update_gisans()
 
     def update_specular(self):
-        self.specular_compare_widget.refl_preview()
+        self.ui.specular_compare_widget.refl_preview()
 
     def update_off_specular(self, crop=False):
         """
@@ -49,16 +49,16 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
 
         xlim = None
         ylim = None
-        if crop and self.offspec_pp_plot.cplot is not None:
-            xlim = self.offspec_pp_plot.canvas.ax.get_xlim()
-            ylim = self.offspec_pp_plot.canvas.ax.get_ylim()
+        if crop and self.ui.offspec_pp_plot.cplot is not None:
+            xlim = self.ui.offspec_pp_plot.canvas.ax.get_xlim()
+            ylim = self.ui.offspec_pp_plot.canvas.ax.get_ylim()
 
         data_set_keys = list(self.data_manager.data_sets.keys())
 
         if len(data_set_keys) > 4:
             logging.error("Too many cross-sections for plotting: %s", str(len(data_set_keys)))
 
-        plots = [self.offspec_pp_plot, self.offspec_mm_plot, self.offspec_pm_plot, self.offspec_mp_plot]
+        plots = [self.ui.offspec_pp_plot, self.ui.offspec_mm_plot, self.ui.offspec_pm_plot, self.ui.offspec_mp_plot]
         for plot in plots:
             plot.clear()
 
@@ -67,8 +67,8 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
                 plots[i].draw()
             plots[i].hide()
 
-        i_min = 10 ** self.offspec_intensity_min.value()
-        i_max = 10 ** self.offspec_intensity_max.value()
+        i_min = 10 ** self.ui.offspec_intensity_min.value()
+        i_max = 10 ** self.ui.offspec_intensity_max.value()
 
         for i, channel in enumerate(data_set_keys):
             plot = plots[i]
@@ -141,10 +141,15 @@ class ResultViewer(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_re
         if len(data_set_keys) > 4:
             logging.error("Too many cross-sections for plotting: %s", str(len(data_set_keys)))
 
-        layouts = [self.gisans_pp_layout, self.gisans_mm_layout, self.gisans_pm_layout, self.gisans_mp_layout]
+        layouts = [
+            self.ui.gisans_pp_layout,
+            self.ui.gisans_mm_layout,
+            self.ui.gisans_pm_layout,
+            self.ui.gisans_mp_layout,
+        ]
 
-        i_min = 10 ** self.gisans_intensity_min.value()
-        i_max = 10 ** self.gisans_intensity_max.value()
+        i_min = 10 ** self.ui.gisans_intensity_min.value()
+        i_max = 10 ** self.ui.gisans_intensity_max.value()
 
         for i, pol_state in enumerate(data_set_keys):
             clear_layout(layouts[i])

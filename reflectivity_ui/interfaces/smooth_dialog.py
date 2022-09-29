@@ -11,7 +11,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse
 
 from .configuration import Configuration
-from reflectivity_ui.interfaces.generated.ui_smooth_dialog import Ui_Dialog as UiSmooth
+from reflectivity_ui.interfaces import load_ui
 
 
 class SmoothDialog(QtWidgets.QDialog):
@@ -23,8 +23,7 @@ class SmoothDialog(QtWidgets.QDialog):
 
     def __init__(self, parent, data_manager):
         QtWidgets.QDialog.__init__(self, parent)
-        self.ui = UiSmooth()
-        self.ui.setupUi(self)
+        self.ui = load_ui("ui_smooth_dialog.ui", baseinstance=self)
         self.data_manager = data_manager
         self.ui.plot.canvas.mpl_connect("motion_notify_event", self.plotSelect)
         self.ui.plot.canvas.mpl_connect("button_press_event", self.plotSelect)

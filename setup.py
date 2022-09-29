@@ -8,35 +8,6 @@ from setuptools import setup, find_packages
 import os
 from versioningit import get_cmdclasses
 
-if "pyuic" in sys.argv[:]:
-    indir = "designer"
-    outdir = "reflectivity_ui/interfaces/generated"
-    files = os.listdir(indir)
-    files = [os.path.join("designer", item) for item in files]
-    files = [item for item in files if item.endswith(".ui")]
-
-    done = 0
-    for inname in files:
-        outname = inname.replace(".ui", ".py")
-        outname = outname.replace(indir, outdir)
-        print("Converting '%s' to '%s'" % (inname, outname))
-        command = "pyuic5 %s -o %s" % (inname, outname)
-        os.system(command)
-        done += 1
-    if not done:
-        print("Did not convert any '.ui' files")
-    sys.exit(0)
-
-if "pyrcc" in sys.argv[:]:
-    infile = "./icons/icons.qrc"
-    assert os.path.isfile(infile)
-    outfile = "./reflectivity_ui/interfaces/generated/icons_rc.py"
-    print("Converting icons_rc file:")
-    command = "pyrcc5  %s -o %s" % (infile, outfile)
-    print("> %s" % command)
-    os.system(command)
-    sys.exit(0)
-
 package_data = {
     "reflectivity_ui.interfaces.data_handling": [
         "genx_templates/*.gx",
