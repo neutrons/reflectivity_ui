@@ -43,17 +43,16 @@ def data_server():
             run_numbers = RunNumbers(number)
 
             file_list = list()
-    
+
             for run_number in run_numbers.numbers:
                 search_string = instrument.file_search_template % run_number
                 matches = glob.glob(search_string + ".nxs.h5")  # type: Optional[List[str]]
                 if not matches:  # Look for old-style nexus file name
                     search_string = instrument.legacy_search_template % run_number
                     matches = glob.glob(search_string + "_event.nxs")
-                if(len(matches) >= 1):
+                if len(matches) >= 1:
                     file_list.append(matches[0])  # there should be only one match, since we query with one run number
 
             return file_list
-
 
     return _DataServe()

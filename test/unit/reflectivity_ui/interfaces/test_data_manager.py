@@ -58,7 +58,7 @@ class TestDataManagerTest(object):
             ws = manager.reduction_list[i].get_reflectivity_workspace_group()[0]
             theta = ws.getRun().getProperty("two_theta").value
 
-            _ws = manager.reduction_list[i+1].get_reflectivity_workspace_group()[0]
+            _ws = manager.reduction_list[i + 1].get_reflectivity_workspace_group()[0]
             _theta = _ws.getRun().getProperty("two_theta").value
             assert theta <= _theta
 

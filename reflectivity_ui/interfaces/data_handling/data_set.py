@@ -130,7 +130,7 @@ class NexusData(object):
                     q_min = min(q_min, self.cross_sections[xs].q.min())
                     q_max = max(q_max, self.cross_sections[xs].q.max())
         return q_min, q_max
-    
+
     def get_reflectivity_workspace_group(self):
         ws_list = [self.cross_sections[xs]._reflectivity_workspace for xs in self.cross_sections]
         wsg = api.GroupWorkspaces(InputWorkspaces=ws_list)
