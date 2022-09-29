@@ -6,10 +6,10 @@
 
 import os
 from PyQt5 import QtCore, QtWidgets
-import reflectivity_ui.interfaces.generated.ui_reduce_dialog
+from reflectivity_ui.interfaces import load_ui
 
 
-class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui_reduce_dialog.Ui_Dialog):
+class ReductionDialog(QtWidgets.QDialog):
     """
     Reduction dialog
     """
@@ -19,36 +19,36 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
     def __init__(self, parent):
         super(ReductionDialog, self).__init__(parent)
 
-        self.setupUi(self)
+        self.ui = load_ui("ui_reduce_dialog.ui", baseinstance=self)
 
         self.settings = QtCore.QSettings(".refredm")
 
-        self.directoryEntry.setText(self.settings.value("output_directory", os.path.expanduser("~")))
-        self.fileNameEntry.setText(self.settings.value("output_file_template", ReductionDialog.default_template))
+        self.ui.directoryEntry.setText(self.settings.value("output_directory", os.path.expanduser("~")))
+        self.ui.fileNameEntry.setText(self.settings.value("output_file_template", ReductionDialog.default_template))
 
         # Outputs
-        self.exportSpecular.setChecked(self._verify_true("export_specular", True))
-        self.export_SA.setChecked(self._verify_true("export_asym", True))
-        self.exportGISANS.setChecked(self._verify_true("export_gisans", False))
-        self.exportOffSpecular.setChecked(self._verify_true("export_offspec", False))
-        self.exportOffSpecularSmoothed.setChecked(self._verify_true("export_offspec_smooth", False))
+        self.ui.exportSpecular.setChecked(self._verify_true("export_specular", True))
+        self.ui.export_SA.setChecked(self._verify_true("export_asym", True))
+        self.ui.exportGISANS.setChecked(self._verify_true("export_gisans", False))
+        self.ui.exportOffSpecular.setChecked(self._verify_true("export_offspec", False))
+        self.ui.exportOffSpecularSmoothed.setChecked(self._verify_true("export_offspec_smooth", False))
 
         # Formats
-        self.genx.setChecked(self._verify_true("format_genx", False))
-        self.matlab.setChecked(self._verify_true("format_matlab", False))
-        self.multiAscii.setChecked(self._verify_true("format_multi", False))
-        self.numpy.setChecked(self._verify_true("format_numpy", False))
-        self.mantid_script_checkbox.setChecked(self._verify_true("format_mantid", False))
-        self.five_cols_checkbox.setChecked(self._verify_true("format_5cols", True))
+        self.ui.genx.setChecked(self._verify_true("format_genx", False))
+        self.ui.matlab.setChecked(self._verify_true("format_matlab", False))
+        self.ui.multiAscii.setChecked(self._verify_true("format_multi", False))
+        self.ui.numpy.setChecked(self._verify_true("format_numpy", False))
+        self.ui.mantid_script_checkbox.setChecked(self._verify_true("format_mantid", False))
+        self.ui.five_cols_checkbox.setChecked(self._verify_true("format_5cols", True))
 
         # Emails
-        self.emailSend.setChecked(self._verify_true("email_send", False))
-        self.emailZIPData.setChecked(self._verify_true("email_zip_data", True))
-        self.emailSendPlots.setChecked(self._verify_true("email_send_plots", False))
-        self.emailSendData.setChecked(self._verify_true("email_send_data", True))
-        self.emailTo.setText(self.settings.value("email_to", ""))
-        self.emailCc.setText(self.settings.value("email_cc", ""))
-        self.emailSubject.setText(self.settings.value("email_subject", ""))
+        self.ui.emailSend.setChecked(self._verify_true("email_send", False))
+        self.ui.emailZIPData.setChecked(self._verify_true("email_zip_data", True))
+        self.ui.emailSendPlots.setChecked(self._verify_true("email_send_plots", False))
+        self.ui.emailSendData.setChecked(self._verify_true("email_send_data", True))
+        self.ui.emailTo.setText(self.settings.value("email_to", ""))
+        self.ui.emailCc.setText(self.settings.value("email_cc", ""))
+        self.ui.emailSubject.setText(self.settings.value("email_subject", ""))
 
         self.is_accepted = False
 
@@ -70,64 +70,64 @@ class ReductionDialog(QtWidgets.QDialog, reflectivity_ui.interfaces.generated.ui
         if self.is_accepted is False:
             return None
         return dict(
-            export_specular=self.exportSpecular.isChecked(),
-            export_asym=self.export_SA.isChecked(),
-            export_gisans=self.exportGISANS.isChecked(),
-            export_offspec=self.exportOffSpecular.isChecked(),
-            export_offspec_smooth=self.exportOffSpecularSmoothed.isChecked(),
-            format_genx=self.genx.isChecked(),
-            format_matlab=self.matlab.isChecked(),
-            format_mantid=self.mantid_script_checkbox.isChecked(),
-            format_multi=self.multiAscii.isChecked(),
-            format_numpy=self.numpy.isChecked(),
-            format_5cols=self.five_cols_checkbox.isChecked(),
-            output_directory=self.directoryEntry.text(),
-            output_file_template=self.fileNameEntry.text(),
-            email_send=self.emailSend.isChecked(),
-            email_zip_data=self.emailZIPData.isChecked(),
-            email_send_plots=self.emailSendPlots.isChecked(),
-            email_send_data=self.emailSendData.isChecked(),
-            email_to=self.emailTo.text(),
-            email_cc=self.emailCc.text(),
-            email_subject=self.emailSubject.text(),
-            email_text=self.emailText.toPlainText(),
+            export_specular=self.ui.exportSpecular.isChecked(),
+            export_asym=self.ui.export_SA.isChecked(),
+            export_gisans=self.ui.exportGISANS.isChecked(),
+            export_offspec=self.ui.exportOffSpecular.isChecked(),
+            export_offspec_smooth=self.ui.exportOffSpecularSmoothed.isChecked(),
+            format_genx=self.ui.genx.isChecked(),
+            format_matlab=self.ui.matlab.isChecked(),
+            format_mantid=self.ui.mantid_script_checkbox.isChecked(),
+            format_multi=self.ui.multiAscii.isChecked(),
+            format_numpy=self.ui.numpy.isChecked(),
+            format_5cols=self.ui.five_cols_checkbox.isChecked(),
+            output_directory=self.ui.directoryEntry.text(),
+            output_file_template=self.ui.fileNameEntry.text(),
+            email_send=self.ui.emailSend.isChecked(),
+            email_zip_data=self.ui.emailZIPData.isChecked(),
+            email_send_plots=self.ui.emailSendPlots.isChecked(),
+            email_send_data=self.ui.emailSendData.isChecked(),
+            email_to=self.ui.emailTo.text(),
+            email_cc=self.ui.emailCc.text(),
+            email_subject=self.ui.emailSubject.text(),
+            email_text=self.ui.emailText.toPlainText(),
         )
 
     def change_directory(self):
         """
         Change the output directory
         """
-        old_d = self.directoryEntry.text()
+        old_d = self.ui.directoryEntry.text()
         new_d = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self, caption="Select new directory", directory=old_d
         )
         if new_d is not None:
-            self.directoryEntry.setText(new_d)
+            self.ui.directoryEntry.setText(new_d)
 
     def save_settings(self):
         """
         Save reduction options in QSettings
         """
-        self.settings.setValue("output_directory", self.directoryEntry.text())
-        self.settings.setValue("output_file_template", self.fileNameEntry.text())
+        self.settings.setValue("output_directory", self.ui.directoryEntry.text())
+        self.settings.setValue("output_file_template", self.ui.fileNameEntry.text())
 
-        self.settings.setValue("export_specular", self.exportSpecular.isChecked())
-        self.settings.setValue("export_asym", self.export_SA.isChecked())
-        self.settings.setValue("export_gisans", self.exportGISANS.isChecked())
-        self.settings.setValue("export_offspec", self.exportOffSpecular.isChecked())
-        self.settings.setValue("export_offspec_smooth", self.exportOffSpecularSmoothed.isChecked())
+        self.settings.setValue("export_specular", self.ui.exportSpecular.isChecked())
+        self.settings.setValue("export_asym", self.ui.export_SA.isChecked())
+        self.settings.setValue("export_gisans", self.ui.exportGISANS.isChecked())
+        self.settings.setValue("export_offspec", self.ui.exportOffSpecular.isChecked())
+        self.settings.setValue("export_offspec_smooth", self.ui.exportOffSpecularSmoothed.isChecked())
 
-        self.settings.setValue("format_genx", self.genx.isChecked())
-        self.settings.setValue("format_matlab", self.matlab.isChecked())
-        self.settings.setValue("format_multi", self.multiAscii.isChecked())
-        self.settings.setValue("format_numpy", self.numpy.isChecked())
-        self.settings.setValue("format_mantid", self.mantid_script_checkbox.isChecked())
-        self.settings.setValue("format_5cols", self.five_cols_checkbox.isChecked())
+        self.settings.setValue("format_genx", self.ui.genx.isChecked())
+        self.settings.setValue("format_matlab", self.ui.matlab.isChecked())
+        self.settings.setValue("format_multi", self.ui.multiAscii.isChecked())
+        self.settings.setValue("format_numpy", self.ui.numpy.isChecked())
+        self.settings.setValue("format_mantid", self.ui.mantid_script_checkbox.isChecked())
+        self.settings.setValue("format_5cols", self.ui.five_cols_checkbox.isChecked())
 
-        self.settings.setValue("email_send", self.emailSend.isChecked())
-        self.settings.setValue("email_zip_data", self.emailZIPData.isChecked())
-        self.settings.setValue("email_send_plots", self.emailSendPlots.isChecked())
-        self.settings.setValue("email_send_data", self.emailSendData.isChecked())
-        self.settings.setValue("email_to", self.emailTo.text())
-        self.settings.setValue("email_cc", self.emailCc.text())
-        self.settings.setValue("email_subject", self.emailSubject.text())
+        self.settings.setValue("email_send", self.ui.emailSend.isChecked())
+        self.settings.setValue("email_zip_data", self.ui.emailZIPData.isChecked())
+        self.settings.setValue("email_send_plots", self.ui.emailSendPlots.isChecked())
+        self.settings.setValue("email_send_data", self.ui.emailSendData.isChecked())
+        self.settings.setValue("email_to", self.ui.emailTo.text())
+        self.settings.setValue("email_cc", self.ui.emailCc.text())
+        self.settings.setValue("email_subject", self.ui.emailSubject.text())

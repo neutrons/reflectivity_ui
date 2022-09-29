@@ -428,13 +428,14 @@
   <customwidget>
    <class>CompareWidget</class>
    <extends>QWidget</extends>
-   <header location="global">.compare_plots.h</header>
+   <header>reflectivity_ui/ui/compare_plots.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MPLWidget</class>
    <extends>QWidget</extends>
-   <header location="global">.mplwidget.h</header>
+   <extends>QWidget</extends>
+   <header>reflectivity_ui/ui/mplwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
