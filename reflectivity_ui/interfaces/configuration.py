@@ -116,6 +116,9 @@ class Configuration(object):
         self.gisans_qy_npts = 50
         self.gisans_qz_npts = 50
         self.gisans_use_pf = False
+        self.gisans_slice = False
+        self.gisans_slice_qz_min = 0.015
+        self.gisans_slice_qz_max = 0.035
 
         # Reduction options
         self.match_direct_beam = False
@@ -234,6 +237,9 @@ class Configuration(object):
         settings.setValue("gisans_qy_npts", self.gisans_qy_npts)
         settings.setValue("gisans_qz_npts", self.gisans_qz_npts)
         settings.setValue("gisans_use_pf", self.gisans_use_pf)
+        settings.setValue("gisans_slice", self.gisans_slice)
+        settings.setValue("gisans_slice_qz_min", self.gisans_slice_qz_min)
+        settings.setValue("gisans_slice_qz_max", self.gisans_slice_qz_max)
 
     def from_q_settings(self, settings):
         """Retrieve configuration from QSettings"""
@@ -324,3 +330,7 @@ class Configuration(object):
         self.gisans_qy_npts = int(settings.value("gisans_qy_npts", self.gisans_qy_npts))
         self.gisans_qz_npts = int(settings.value("gisans_qz_npts", self.gisans_qz_npts))
         self.gisans_use_pf = _verify_true("gisans_use_pf", self.gisans_use_pf)
+
+        self.gisans_slice = _verify_true("gisans_slice", self.gisans_slice)
+        self.gisans_slice_qz_min = float(settings.value("gisans_slice_qz_min", self.gisans_slice_qz_min))
+        self.gisans_slice_qz_max = float(settings.value("gisans_slice_qz_max", self.gisans_slice_qz_max))
