@@ -41,10 +41,10 @@ class TestDataManagerTest(object):
         manager = DataManager(data_server.directory)
         try:
             file_paths = data_server.get_file_paths("39743")
+            if len(file_paths) < 1:
+                raise IOError("Files missing.")
             file_paths.append(data_server.get_file_paths("39744")[0])
             file_paths.append(data_server.get_file_paths("39745")[0])
-            if len(file_paths) < 3:
-                raise IOError("Files missing.")
             config = Configuration()
             for file_path in file_paths:
                 manager.load(file_path, config)
