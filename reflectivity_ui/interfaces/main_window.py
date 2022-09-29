@@ -15,7 +15,7 @@ import reflectivity_ui
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
 from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
-import reflectivity_ui.interfaces.generated.ui_main_window
+from reflectivity_ui.interfaces import load_ui
 
 # 3rd-party
 from PyQt5 import QtCore, QtWidgets
@@ -26,7 +26,7 @@ import os
 import sys
 
 
-class MainWindow(QtWidgets.QMainWindow, reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     """
     Main application window
     """
@@ -47,8 +47,7 @@ class MainWindow(QtWidgets.QMainWindow, reflectivity_ui.interfaces.generated.ui_
         QtWidgets.QMainWindow.__init__(self)
 
         # Initialize the UI widgets
-        self.ui = reflectivity_ui.interfaces.generated.ui_main_window.Ui_MainWindow()
-        self.ui.setupUi(self)
+        self.ui = load_ui("ui_main_window.ui", baseinstance=self)
         self.setWindowTitle("QuickNXS %s" % reflectivity_ui.__version__)
 
         # Application settings

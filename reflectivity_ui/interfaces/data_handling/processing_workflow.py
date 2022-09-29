@@ -268,7 +268,7 @@ class ProcessingWorkflow(object):
         if progress is not None:
             progress(75, "Binning GISANS...")
 
-        data_dict = self.get_gisans_data(progress=None)
+        data_dict, slice_data_dict = self.get_gisans_data(progress=None)
         self.data_manager.cached_gisans = data_dict
 
         if progress is not None:
@@ -276,6 +276,11 @@ class ProcessingWorkflow(object):
 
         output_file_base = self.get_file_name(run_list, process_type="GISANS")
         self.write_quicknxs(data_dict, output_file_base, xs=data_dict["cross_sections"].keys())
+
+        # Write out slice data
+        if slice_data_dict is not None and "cross_sections" in slice_data_dict:
+            output_file_base = self.get_file_name(run_list, process_type="GISANSSlice")
+            self.write_quicknxs(slice_data_dict, output_file_base, xs=slice_data_dict["cross_sections"].keys())
 
         if progress is not None:
             progress(100, "GISANS complete")
@@ -402,6 +407,7 @@ class ProcessingWorkflow(object):
 
         t_0 = time.time()
         _parallel = False
+        slice_data_dict = {}
         for pol_state in self.data_manager.reduction_states:
             if _parallel:
                 binned_data = gisans.rebin_parallel(
@@ -440,8 +446,14 @@ class ProcessingWorkflow(object):
                 data_dict["cross_sections"][_pol_state] = _pol_state_clean
                 data_dict["cross_section_bins"][pol_state].append(_pol_state)
 
+                # Slices
+                label = "pf" if use_pf else "Qz"
+                slice_data_dict = self.get_gisans_slice_output_data(
+                    _qy, _qz_axis, _intensity.T, _intensity_err.T, _pol_state, label, **slice_data_dict
+                )
+
         logging.info("GISANS processing time: %s sec", (time.time() - t_0))
-        return data_dict
+        return data_dict, slice_data_dict
 
     def get_offspec_data(self):
         """
@@ -594,6 +606,29 @@ class ProcessingWorkflow(object):
             _to_save = np.asarray([qx, result, error]).T
         else:
             _to_save = np.asarray([qx, result]).T
+        slice_label = "%s_%s_%s-%s" % (pol_state, label, q_min, q_max)
+        slice_data_dict["cross_sections"][slice_label] = slice_label
+        slice_data_dict[slice_label] = _to_save
+        return slice_data_dict
+
+    def get_gisans_slice_output_data(self, qy, qz, r, dr, pol_state, label, **slice_data_dict):
+        """
+        Produce a data dictionary with a slice of the data.
+        """
+        if slice_data_dict == {}:
+            slice_data_dict = dict(units=["1/A", "a.u.", "a.u."], columns=[label, "I", "dI"], cross_sections={})
+
+        q_min = self.data_manager.active_channel.configuration.gisans_slice_qz_min
+        q_max = self.data_manager.active_channel.configuration.gisans_slice_qz_max
+
+        # We can use the off-specular get_slice() function because it's not specific to off-specular
+        result, error = off_specular.get_slice(qz, r, dr, q_min, q_max)
+
+        if error is not None:
+            # Is x what we need here, or the middle of the bin
+            _to_save = np.asarray([qy, result, error]).T
+        else:
+            _to_save = np.asarray([qy, result]).T
         slice_label = "%s_%s_%s-%s" % (pol_state, label, q_min, q_max)
         slice_data_dict["cross_sections"][slice_label] = slice_label
         slice_data_dict[slice_label] = _to_save

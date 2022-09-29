@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1803</width>
-    <height>756</height>
+    <width>1945</width>
+    <height>945</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -359,8 +359,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>361</width>
-             <height>207</height>
+             <width>403</width>
+             <height>244</height>
             </rect>
            </property>
            <attribute name="label">
@@ -675,8 +675,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>361</width>
-             <height>207</height>
+             <width>397</width>
+             <height>262</height>
             </rect>
            </property>
            <attribute name="label">
@@ -930,8 +930,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>361</width>
-             <height>207</height>
+             <width>282</width>
+             <height>152</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2069,11 +2069,11 @@
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
                       </attribute>
-                      <attribute name="horizontalHeaderMinimumSectionSize">
-                       <number>20</number>
-                      </attribute>
                       <attribute name="horizontalHeaderDefaultSectionSize">
                        <number>70</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderMinimumSectionSize">
+                       <number>20</number>
                       </attribute>
                       <attribute name="horizontalHeaderStretchLastSection">
                        <bool>true</bool>
@@ -2217,11 +2217,11 @@
                       <property name="editTriggers">
                        <set>QAbstractItemView::NoEditTriggers</set>
                       </property>
-                      <attribute name="horizontalHeaderMinimumSectionSize">
-                       <number>30</number>
-                      </attribute>
                       <attribute name="horizontalHeaderDefaultSectionSize">
                        <number>70</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderMinimumSectionSize">
+                       <number>30</number>
                       </attribute>
                       <attribute name="horizontalHeaderStretchLastSection">
                        <bool>true</bool>
@@ -3399,6 +3399,77 @@
               </layout>
              </item>
              <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QCheckBox" name="gisans_slice_checkbox">
+                 <property name="text">
+                  <string>Extract Qz slice</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_22">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_44">
+                 <property name="text">
+                  <string>Slice Qz range:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="gisans_qz_min_spinbox">
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_55">
+                 <property name="text">
+                  <string>to</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="gisans_qz_max_spinbox">
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_25">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
               <layout class="QHBoxLayout" name="horizontalLayout_20">
                <item>
                 <widget class="QLabel" name="label_46">
@@ -3880,8 +3951,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1803</width>
-     <height>22</height>
+     <width>1945</width>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuReduction">
@@ -4373,13 +4444,13 @@
   <customwidget>
    <class>MPLWidget</class>
    <extends>QWidget</extends>
-   <header location="global">.mplwidget.h</header>
+   <header>reflectivity_ui/ui/mplwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>CompareWidget</class>
    <extends>QWidget</extends>
-   <header location="global">.compare_plots.h</header>
+   <header>reflectivity_ui/ui/compare_plots.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

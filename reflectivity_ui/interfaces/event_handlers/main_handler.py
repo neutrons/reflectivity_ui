@@ -1130,6 +1130,9 @@ class MainHandler(object):
         configuration.gisans_qz_npts = self.ui.gisans_qz_npts_spinbox.value()
         configuration.gisans_qy_npts = self.ui.gisans_qy_npts_spinbox.value()
         configuration.gisans_use_pf = self.ui.gisans_pf_radio.isChecked()
+        configuration.gisans_slice = self.ui.gisans_slice_checkbox.isChecked()
+        configuration.gisans_slice_qz_min = self.ui.gisans_qz_min_spinbox.value()
+        configuration.gisans_slice_qz_max = self.ui.gisans_qz_max_spinbox.value()
 
         # Make the changes persistent
         configuration.to_q_settings(self.main_window.settings)
@@ -1227,6 +1230,9 @@ class MainHandler(object):
         self.ui.gisans_qz_npts_spinbox.setValue(configuration.gisans_qz_npts)
         self.ui.gisans_qy_npts_spinbox.setValue(configuration.gisans_qy_npts)
         self.ui.gisans_pf_radio.setChecked(configuration.gisans_use_pf)
+        self.ui.gisans_slice_checkbox.setChecked(configuration.gisans_slice)
+        self.ui.gisans_qz_min_spinbox.setValue(configuration.gisans_slice_qz_min)
+        self.ui.gisans_qz_max_spinbox.setValue(configuration.gisans_slice_qz_max)
 
     def stitch_reflectivity(self):
         """
