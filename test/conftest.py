@@ -50,7 +50,8 @@ def data_server():
                 if not matches:  # Look for old-style nexus file name
                     search_string = instrument.legacy_search_template % run_number
                     matches = glob.glob(search_string + "_event.nxs")
-                file_list.append(matches[0])  # there should be only one match, since we query with one run number
+                if(len(matches) >= 1):
+                    file_list.append(matches[0])  # there should be only one match, since we query with one run number
 
             return file_list
 
