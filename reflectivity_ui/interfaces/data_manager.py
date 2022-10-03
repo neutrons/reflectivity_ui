@@ -195,12 +195,14 @@ class DataManager(object):
             if self.is_active_data_compatible():
                 if len(self.reduction_list) == 0:
                     self.reduction_states = list(self.data_sets.keys())
-                # Append to the reduction list, but keep the run number ordering
-                q_min, _q_max = self._nexus_data.get_q_range()
+                ws = self._nexus_data.get_reflectivity_workspace_group()[0]
+                # Append to the reduction list, but keep the theta ordering
+                theta = ws.getRun().getProperty("two_theta").value
                 is_inserted = False
                 for i in range(len(self.reduction_list)):
-                    _q_min, _ = self.reduction_list[i].get_q_range()
-                    if q_min <= _q_min:
+                    _ws = self.reduction_list[i].get_reflectivity_workspace_group()[0]
+                    _theta = _ws.getRun().getProperty("two_theta").value
+                    if theta <= _theta:
                         self.reduction_list.insert(i, self._nexus_data)
                         is_inserted = True
                         break

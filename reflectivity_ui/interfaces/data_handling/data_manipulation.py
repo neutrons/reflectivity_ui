@@ -276,6 +276,8 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
             ManualScaleFactors=scaling_factors,
             OutputWorkspace=ws_name + "_merged",
         )
+        # sort WorkspaceGroup by theta
+        merged_ws = sorted(merged_ws, key=lambda ws: ws.getRun().getProperty("two_theta").value)
     elif len(ws_list) == 1:
         merged_ws = api.CloneWorkspace(ws_list[0], OutputWorkspace=ws_name + "_merged")
     else:
