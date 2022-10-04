@@ -197,13 +197,14 @@ class MainHandler(object):
             DeleteWorkspace(workspace)
 
         # Find the minimum and maximum values for each log, and compare to the tolerance
+        message = ""
         for log_name, values in log_values.items():
             if max(values) - min(values) > tolerances[log_name]:
                 runs = FilePath(file_paths).run_numbers(string_representation="statement")
                 message_template = "Runs {0} contain values for log {1} that differ above tolerance {2}"
-                return message_template.format(runs, log_name, tolerances[log_name])
+                message = message + message_template.format(runs, log_name, tolerances[log_name]) + "\n"
 
-        return ""  # no failures
+        return message  # empty string if no failures
 
     def update_tables(self):
         """
