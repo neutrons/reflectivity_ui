@@ -29,7 +29,7 @@ jobs:
         with:
           auto-update-conda: true
           mamba-version: "*"
-          environment-file: environment.yml          
+          environment-file: environment.yml
       - name: Unit test with code coverage
         run: xvfb-run -a python -m pytest -vv --cov=reflectivity_ui --cov-report=xml --cov-report=term
       - name: Upload coverage to Codecov
