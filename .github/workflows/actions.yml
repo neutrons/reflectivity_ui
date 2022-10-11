@@ -27,9 +27,6 @@ jobs:
           auto-update-conda: true
           mamba-version: "*"
           environment-file: environment.yml          
-      - name: Lint
-        shell: bash -l {0}
-        run: flake8 . --count
       - name: Unit test with code coverage
         run: xvfb-run -a python -m pytest -vv --cov=reflectivity_ui --cov-report=xml --cov-report=term
       - name: Upload coverage to Codecov
@@ -72,7 +69,7 @@ jobs:
         id: conda_env_name
         with:
           prefix: quicknxs
-          
+
       - name: Trigger deploy
         id: trigger
         uses: eic/trigger-gitlab-ci@v2
