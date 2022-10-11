@@ -13,15 +13,10 @@ on:
 jobs:
 
   linux:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
     defaults:
       run:
         shell: bash -l {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-20.04]
-        python-version: ["3.8"]
 
     steps:
       - uses: actions/checkout@v3
@@ -70,7 +65,7 @@ jobs:
         uses: neutrons/branch-mapper@main
         id: conda_env_name
         with:
-          prefix: quicknxs
+          prefix: quicknxs2
 
       - name: Trigger deploy
         id: trigger
