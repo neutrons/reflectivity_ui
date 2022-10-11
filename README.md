@@ -46,8 +46,8 @@ python3 -m pip install reflectivity_ui*.whl
 
 ## Run
 
-Work in progress
+Work in progress.
 
 ## Test
 
-Work in progress
+Work in progress.
