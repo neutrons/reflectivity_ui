@@ -13,6 +13,9 @@ package_data = {
         "genx_templates/*.gx",
     ],
     "reflectivity_ui.config": ["./settings.json"],
+    "reflectivity_ui.ui": [
+        "./*.ui",
+    ],
 }
 
 setup(
