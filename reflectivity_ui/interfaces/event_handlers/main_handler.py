@@ -527,7 +527,10 @@ class MainHandler(object):
         @returns absolute paths to the selected files, joined by the plus symbol '+'
         """
         file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(
-            self.main_window, "Select multiple NXS files to sum before data reduction.", directory=self._data_manager.current_directory, filter=filter_
+            self.main_window,
+            "Select multiple NXS files to sum before data reduction.",
+            directory=self._data_manager.current_directory,
+            filter=filter_,
         )
         # user cancel operation
         if len(file_paths) == 0:
@@ -585,7 +588,7 @@ class MainHandler(object):
         @brief Open a data file by typing a run number or a composite run number for merging data sets
         @details Example: 120:123+125+127:132 opens files with run numbers from 120 to 132 except 124 and 126
         """
-        #TODO - Fix file finding consistancy- This searches the /SNS/REF_M/*/nexus/ area not a users local area which
+        # TODO - Fix file finding consistancy- This searches the /SNS/REF_M/*/nexus/ area not a users local area which
         # is a different file location as opposed to the "refresh button on the ui and load ui dialogs
         self.main_window.auto_change_active = True
         if number is None:

@@ -587,12 +587,12 @@ class PlotManager(object):
         P0 = self.main_window.ui.rangeStart.value()
         PN = len(self.main_window.data_manager.active_channel.q) - self.main_window.ui.rangeEnd.value()
 
-#        if len(self.main_window.ui.refl.toolbar._views) > 0:
-#            spos = self.main_window.ui.refl.toolbar._views._pos
-#            view = self.main_window.ui.refl.toolbar._views[spos]
-#            position = self.main_window.ui.refl.toolbar._positions[spos]
-#        else:
-#            view = None
+        #        if len(self.main_window.ui.refl.toolbar._views) > 0:
+        #            spos = self.main_window.ui.refl.toolbar._views._pos
+        #            view = self.main_window.ui.refl.toolbar._views[spos]
+        #            position = self.main_window.ui.refl.toolbar._positions[spos]
+        #        else:
+        #            view = None
 
         self.main_window.ui.refl.clear()
         data = self.main_window.data_manager.active_channel
@@ -666,16 +666,16 @@ class PlotManager(object):
         else:
             self.main_window.ui.refl.set_yscale("linear")
         self.main_window.ui.refl.legend()
-#        if view is not None:
-#            self.main_window.ui.refl.toolbar.push_current()
-#            self.main_window.ui.refl.toolbar._views.push(view)
-#            self.main_window.ui.refl.toolbar._positions.push(position)
-#        if preserve_lim:
-#            # reset the last zoom position
-#            self.main_window.ui.refl.toolbar._update_view()
-#        else:
-#            self.main_window.ui.refl.toolbar._views._pos #= 0
-#            self.main_window.ui.refl.toolbar._positions._pos# = 0
+        #        if view is not None:
+        #            self.main_window.ui.refl.toolbar.push_current()
+        #            self.main_window.ui.refl.toolbar._views.push(view)
+        #            self.main_window.ui.refl.toolbar._positions.push(position)
+        #        if preserve_lim:
+        #            # reset the last zoom position
+        #            self.main_window.ui.refl.toolbar._update_view()
+        #        else:
+        #            self.main_window.ui.refl.toolbar._views._pos #= 0
+        #            self.main_window.ui.refl.toolbar._positions._pos# = 0
         self.main_window.ui.refl.toolbar.set_history_buttons()
         self.main_window.ui.refl.draw()
 
