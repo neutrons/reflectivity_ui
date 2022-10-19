@@ -393,8 +393,8 @@ class MPLWidget(QtWidgets.QWidget):
 
     def clear(self):
         self.cplot = None
-        self.toolbar._views.clear()
-        self.toolbar._positions.clear()
+        #self.toolbar._views.clear()
+        #self.toolbar._positions.clear()
         self.canvas.ax.clear()
         if self.canvas.ax2 is not None:
             self.canvas.ax2.clear()
@@ -403,17 +403,17 @@ class MPLWidget(QtWidgets.QWidget):
         self.cplot.set_data(*data)
         if "extent" in opts:
             self.cplot.set_extent(opts["extent"])
-            oldviews = self.toolbar._views
-            if self.toolbar._views:
+#            oldviews = self.toolbar._views
+#            if self.toolbar._views:
                 # set the new extent as home for the new data
-                newviews = Stack()
-                newviews.push([tuple(opts["extent"])])
-                for item in oldviews[1:]:
-                    newviews.push(item)
-                self.toolbar._views = newviews
-            if not oldviews or oldviews[oldviews._pos] == oldviews[0]:
-                self.canvas.ax.set_xlim(opts["extent"][0], opts["extent"][1])
-                self.canvas.ax.set_ylim(opts["extent"][2], opts["extent"][3])
+#                newviews = Stack()
+#                newviews.push([tuple(opts["extent"])])
+#                for item in oldviews[1:]:
+#                    newviews.push(item)
+#                self.toolbar._views = newviews
+#            if not oldviews or oldviews[oldviews._pos] == oldviews[0]:
+#                self.canvas.ax.set_xlim(opts["extent"][0], opts["extent"][1])
+#                self.canvas.ax.set_ylim(opts["extent"][2], opts["extent"][3])
 
     def legend(self, *args, **opts):
         return self.canvas.ax.legend(*args, **opts)

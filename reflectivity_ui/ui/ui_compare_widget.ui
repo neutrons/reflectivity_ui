@@ -140,7 +140,7 @@
              <string>Open a new file to plot</string>
             </property>
             <property name="text">
-             <string>Open</string>
+             <string>Open File</string>
             </property>
            </widget>
           </item>

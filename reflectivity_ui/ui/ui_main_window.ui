@@ -14,7 +14,7 @@
    <string>QuickNXS</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../icons/icons.qrc">
+   <iconset>
     <normaloff>:/General/logo.png</normaloff>:/General/logo.png</iconset>
   </property>
   <property name="toolButtonStyle">
@@ -360,7 +360,7 @@
              <x>0</x>
              <y>0</y>
              <width>403</width>
-             <height>244</height>
+             <height>246</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1264,6 +1264,19 @@
           <number>0</number>
          </property>
          <item>
+          <widget class="QLabel" name="label_17">
+           <property name="toolTip">
+            <string>Direct pixel value read from file, if overwrite is active, the read value is in brackets</string>
+           </property>
+           <property name="text">
+            <string>Direct Pixel</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="currentChannel">
            <property name="toolTip">
             <string>Displays information about the dataset selected at the moment</string>
@@ -1382,19 +1395,6 @@
                    <property name="bottomMargin">
                     <number>0</number>
                    </property>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_17">
-                     <property name="toolTip">
-                      <string>Direct pixel value read from file, if overwrite is active, the read value is in brackets</string>
-                     </property>
-                     <property name="text">
-                      <string>Direct Pixel</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_11">
                      <property name="toolTip">
@@ -2064,7 +2064,7 @@
                        <number>0</number>
                       </property>
                       <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </attribute>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>false</bool>
@@ -2702,8 +2702,8 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>0</width>
-               <height>50</height>
+               <width>1000</width>
+               <height>181</height>
               </size>
              </property>
              <property name="title">
@@ -2769,6 +2769,12 @@
                    </item>
                    <item>
                     <widget class="QDoubleSpinBox" name="offspec_x_min_spinbox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="toolTip">
                       <string>Minimum X-value of the rebinned output data</string>
                      </property>
@@ -2801,6 +2807,12 @@
                    </item>
                    <item>
                     <widget class="QDoubleSpinBox" name="offspec_x_max_spinbox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="toolTip">
                       <string>Maximum X-value of the rebinned output data</string>
                      </property>
@@ -2849,6 +2861,12 @@
                    </item>
                    <item>
                     <widget class="QDoubleSpinBox" name="offspec_y_min_spinbox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="toolTip">
                       <string>Minimum Y-value of the rebinned output data</string>
                      </property>
@@ -2878,6 +2896,12 @@
                    </item>
                    <item>
                     <widget class="QDoubleSpinBox" name="offspec_y_max_spinbox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="toolTip">
                       <string>Maximum Y-value of the rebinned output data</string>
                      </property>
@@ -2926,6 +2950,12 @@
                    </item>
                    <item>
                     <widget class="QSpinBox" name="offspec_rebin_x_bins_spinbox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="toolTip">
                       <string>Enter the number of bins in X</string>
                      </property>
@@ -2971,6 +3001,12 @@
                    </item>
                    <item>
                     <widget class="QSpinBox" name="offspec_rebin_y_bins_spinbox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="toolTip">
                       <string>Enter the number of bins in Y</string>
                      </property>
@@ -4046,11 +4082,11 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/document-open.png</normaloff>:/General/document-open.png</iconset>
+    <iconset>
+     <normaloff>../icons/document-open.png</normaloff>../icons/document-open.png</iconset>
    </property>
    <property name="text">
-    <string>Open...</string>
+    <string>Open File</string>
    </property>
    <property name="toolTip">
     <string>Open a data file</string>
@@ -4061,8 +4097,8 @@
   </action>
   <action name="actionNorm">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/extractNormalization.png</normaloff>:/General/extractNormalization.png</iconset>
+    <iconset>
+     <normaloff>../icons/extractNormalization.png</normaloff>../icons/extractNormalization.png</iconset>
    </property>
    <property name="text">
     <string>Set as normalization</string>
@@ -4076,8 +4112,8 @@
   </action>
   <action name="actionAddPlot">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/addRef.png</normaloff>:/General/addRef.png</iconset>
+    <iconset>
+     <normaloff>../icons/addRef.png</normaloff>../icons/addRef.png</iconset>
    </property>
    <property name="text">
     <string>Add to reduction list</string>
@@ -4091,8 +4127,8 @@
   </action>
   <action name="actionClear">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/clearRef.png</normaloff>:/General/clearRef.png</iconset>
+    <iconset>
+     <normaloff>../icons/clearRef.png</normaloff>../icons/clearRef.png</iconset>
    </property>
    <property name="text">
     <string>Clear reduction list</string>
@@ -4106,8 +4142,8 @@
   </action>
   <action name="actionAdjust_Dirct_Beam">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/tthZero.png</normaloff>:/General/tthZero.png</iconset>
+    <iconset>
+     <normaloff>../icons/tthZero.png</normaloff>../icons/tthZero.png</iconset>
    </property>
    <property name="text">
     <string>Adjust Dirct Beam</string>
@@ -4121,8 +4157,8 @@
   </action>
   <action name="actionNormalizeScaling">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/totalReflection.png</normaloff>:/General/totalReflection.png</iconset>
+    <iconset>
+     <normaloff>../icons/totalReflection.png</normaloff>../icons/totalReflection.png</iconset>
    </property>
    <property name="text">
     <string>Set Scaling</string>
@@ -4136,8 +4172,8 @@
   </action>
   <action name="actionRemove">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/delRef.png</normaloff>:/General/delRef.png</iconset>
+    <iconset>
+     <normaloff>../icons/delRef.png</normaloff>../icons/delRef.png</iconset>
    </property>
    <property name="text">
     <string>Remove from reduction list</string>
@@ -4148,8 +4184,8 @@
   </action>
   <action name="actionReduce">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/reduce.png</normaloff>:/General/reduce.png</iconset>
+    <iconset>
+     <normaloff>../icons/reduce.png</normaloff>../icons/reduce.png</iconset>
    </property>
    <property name="text">
     <string>Reduce...</string>
@@ -4169,8 +4205,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/limitYauto.png</normaloff>:/General/limitYauto.png</iconset>
+    <iconset>
+     <normaloff>../icons/limitYauto.png</normaloff>../icons/limitYauto.png</iconset>
    </property>
    <property name="text">
     <string>Automatic Y Limits</string>
@@ -4187,8 +4223,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/fitXPos.png</normaloff>:/General/fitXPos.png</iconset>
+    <iconset>
+     <normaloff>../icons/fitXPos.png</normaloff>../icons/fitXPos.png</iconset>
    </property>
    <property name="text">
     <string>Automatic Peak Finder</string>
@@ -4207,8 +4243,8 @@
   </action>
   <action name="actionLoad_Extraction">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/MPL Toolbar/document-open-reduced.png</normaloff>:/MPL Toolbar/document-open-reduced.png</iconset>
+    <iconset>
+     <normaloff>../icons/document-open-reduced.png</normaloff>../icons/document-open-reduced.png</iconset>
    </property>
    <property name="text">
     <string>Open Reduced File...</string>
@@ -4222,8 +4258,8 @@
   </action>
   <action name="actionClear_Normalizations">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/clearNorm.png</normaloff>:/General/clearNorm.png</iconset>
+    <iconset>
+     <normaloff>../icons/clearNorm.png</normaloff>../icons/clearNorm.png</iconset>
    </property>
    <property name="text">
     <string>Clear normalization list</string>
@@ -4253,11 +4289,14 @@
   </action>
   <action name="actionOpen_Sum">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/document-open.png</normaloff>:/General/document-open.png</iconset>
+    <iconset>
+     <normaloff>../icons/document-open.png</normaloff>../icons/document-open.png</iconset>
    </property>
    <property name="text">
-    <string>Open Sum...</string>
+    <string>Open &amp;&amp; Sum Multiple Files</string>
+   </property>
+   <property name="iconText">
+    <string>Open &amp;&amp; Sum Files</string>
    </property>
    <property name="toolTip">
     <string>Open and merge multiple runs</string>
@@ -4268,8 +4307,8 @@
   </action>
   <action name="actionCut_Points">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/cutPoints.png</normaloff>:/General/cutPoints.png</iconset>
+    <iconset>
+     <normaloff>../icons/cutPoints.png</normaloff>../icons/cutPoints.png</iconset>
    </property>
    <property name="text">
     <string>Cut Points (L/R)</string>
@@ -4283,8 +4322,8 @@
   </action>
   <action name="actionAuto_Reflectivity">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/autoRef.png</normaloff>:/General/autoRef.png</iconset>
+    <iconset>
+     <normaloff>../icons/autoRef.png</normaloff>../icons/autoRef.png</iconset>
    </property>
    <property name="text">
     <string>Auto Reflectivity</string>
@@ -4298,8 +4337,8 @@
   </action>
   <action name="actionStrip_Overlap">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/stripOverlap.png</normaloff>:/General/stripOverlap.png</iconset>
+    <iconset>
+     <normaloff>../icons/stripOverlap.png</normaloff>../icons/stripOverlap.png</iconset>
    </property>
    <property name="text">
     <string>Strip Overlap</string>
@@ -4375,8 +4414,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/autoNorm.png</normaloff>:/General/autoNorm.png</iconset>
+    <iconset>
+     <normaloff>../icons/autoNorm.png</normaloff>../icons/autoNorm.png</iconset>
    </property>
    <property name="text">
     <string>Auto select normalization</string>
@@ -4392,7 +4431,7 @@
   </action>
   <action name="actionExport_Raw_Data">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/General/exportRawData.png</normaloff>:/General/exportRawData.png</iconset>
    </property>
    <property name="text">
@@ -4421,8 +4460,8 @@
   </action>
   <action name="actionRemove_Normalization">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/General/delNormalization.png</normaloff>:/General/delNormalization.png</iconset>
+    <iconset>
+     <normaloff>../icons/delNormalization.png</normaloff>../icons/delNormalization.png</iconset>
    </property>
    <property name="text">
     <string>Remove from normalizations</string>
