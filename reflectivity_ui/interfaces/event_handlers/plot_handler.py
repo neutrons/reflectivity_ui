@@ -171,7 +171,8 @@ class PlotHandler(object):
         Plot for x-projection has been clicked.
         :param event: event object
         """
-        if event.button is not None and self.ui.x_project.toolbar._active is None and event.xdata is not None:
+
+        if event.button is not None and event.xdata is not None:
             self.main_window.auto_change_active = True
             if event.button == 1:
                 xcen = self.ui.refXPos.value()
@@ -213,7 +214,7 @@ class PlotHandler(object):
         :param event: event object
         """
         self.main_window.auto_change_active = True
-        if event.button == 1 and self.ui.y_project.toolbar._active is None and event.xdata is not None:
+        if event.button == 1 and event.xdata is not None:
             ypos = self.ui.refYPos.value()
             yw = self.ui.refYWidth.value()
             yl = ypos - yw / 2.0
@@ -239,9 +240,9 @@ class PlotHandler(object):
         :param event: event object
         """
         self.main_window.auto_change_active = True
-        if event.button == 1 and self.ui.xy_overview.toolbar._active is None and event.xdata is not None:
+        if event.button == 1 and event.xdata is not None:
             self.ui.refXPos.setValue(event.xdata)
-        elif event.button == 3 and self.ui.xy_overview.toolbar._active is None and event.ydata is not None:
+        elif event.button == 3 and event.ydata is not None:
             ypos = self.ui.refYPos.value()
             yw = self.ui.refYWidth.value()
             yl = ypos - yw / 2.0
@@ -265,7 +266,7 @@ class PlotHandler(object):
         :param event: event object
         """
         self.main_window.auto_change_active = True
-        if event.button == 1 and self.ui.xtof_overview.toolbar._active is None and event.ydata is not None:
+        if event.button == 1 and event.ydata is not None:
             xcen = self.ui.refXPos.value()
             bgc = self.ui.bgCenter.value()
             bgw = self.ui.bgWidth.value()
@@ -293,7 +294,7 @@ class PlotHandler(object):
             else:
                 self.ui.refXPos.setValue(event.ydata)
                 self._picked_line = "xpos"
-        elif event.button == 3 and self.ui.xtof_overview.toolbar._active is None and event.ydata is not None:
+        elif event.button == 3 and event.ydata is not None:
             xpos = self.ui.refXPos.value()
             self.ui.refXWidth.setValue(abs(xpos - event.ydata) * 2.0)
         self.main_window.auto_change_active = False

@@ -8,7 +8,7 @@ channels:
 dependencies:
 - python=3.8
 - matplotlib
-- mantid>=6.3,<6.4
+- mantid>=6.5
 - codecov
 - conda-build
 - conda-verify

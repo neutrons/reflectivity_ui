@@ -49,7 +49,7 @@ class MainHandler(object):
         button = QtWidgets.QPushButton("Empty Cache")
         self.ui.statusbar.addPermanentWidget(button)
         button.pressed.connect(self.empty_cache)
-        button.setFlat(True)
+        button.setFlat(False)
         button.setMaximumSize(150, 20)
 
         # Create progress bar in statusbar
@@ -527,7 +527,10 @@ class MainHandler(object):
         @returns absolute paths to the selected files, joined by the plus symbol '+'
         """
         file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(
-            self.main_window, "Open NXS file...", directory=self._data_manager.current_directory, filter=filter_
+            self.main_window,
+            "Select multiple NXS files to sum before data reduction.",
+            directory=self._data_manager.current_directory,
+            filter=filter_,
         )
         # user cancel operation
         if len(file_paths) == 0:
