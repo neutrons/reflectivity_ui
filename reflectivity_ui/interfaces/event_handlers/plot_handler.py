@@ -171,7 +171,7 @@ class PlotHandler(object):
         Plot for x-projection has been clicked.
         :param event: event object
         """
-        
+
         if event.button is not None and event.xdata is not None:
             self.main_window.auto_change_active = True
             if event.button == 1:
