@@ -587,7 +587,6 @@ class PlotManager(object):
         P0 = self.main_window.ui.rangeStart.value()
         PN = len(self.main_window.data_manager.active_channel.q) - self.main_window.ui.rangeEnd.value()
 
-
         self.main_window.ui.refl.clear()
         data = self.main_window.data_manager.active_channel
         if data.total_counts == 0:
