@@ -7,8 +7,6 @@ import sys
 import logging
 from .data_handling.instrument import Instrument
 
-# TODO extract to file based parameter setting
-
 
 class Configuration(object):
     """

@@ -588,8 +588,6 @@ class MainHandler(object):
         @brief Open a data file by typing a run number or a composite run number for merging data sets
         @details Example: 120:123+125+127:132 opens files with run numbers from 120 to 132 except 124 and 126
         """
-        # TODO - Fix file finding consistancy- This searches the /SNS/REF_M/*/nexus/ area not a users local area which
-        # is a different file location as opposed to the "refresh button on the ui and load ui dialogs
         self.main_window.auto_change_active = True
         if number is None:
             number = str(self.ui.numberSearchEntry.text())  # cast from unicode to string
