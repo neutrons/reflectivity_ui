@@ -61,40 +61,12 @@ class NavigationToolbar(NavigationToolbar2QT):
         NavigationToolbar2QT.__init__(self, canvas, parent, coordinates)
         self.setIconSize(QtCore.QSize(20, 20))
         self.calling_function = None
+        self._init_toolbar()
 
     def _init_toolbar(self):
+        #add the extra default toolbar functions for quicknxs print, & lines
         if not hasattr(self, "_actions"):
             self._actions = {}
-        self.basedir = os.path.join(matplotlib.rcParams["datapath"], "images")
-
-        icon = getIcon("go-home.png")
-        a = self.addAction(icon, "Home", self.home)
-        a.setToolTip("Reset original view")
-        icon = getIcon("zoom-previous.png")
-        a = self.addAction(icon, "Back", self.back)
-        a.setToolTip("Back to previous view")
-        icon = getIcon("zoom-next.png")
-        a = self.addAction(icon, "Forward", self.forward)
-        a.setToolTip("Forward to next view")
-        self.addSeparator()
-        icon = getIcon("transform-move.png")
-        a = self.addAction(icon, "Pan", self.pan)
-        a.setToolTip("Pan axes with left mouse, zoom with right")
-        a.setCheckable(True)
-        self._actions["pan"] = a
-        icon = getIcon("zoom-select.png")
-        a = self.addAction(icon, "Zoom", self.zoom)
-        a.setToolTip("Zoom to rectangle")
-        a.setCheckable(True)
-        self._actions["zoom"] = a
-        self.addSeparator()
-        icon = getIcon("edit-guides.png")
-        a = self.addAction(icon, "Subplots", self.configure_subplots)
-        a.setToolTip("Configure plot boundaries")
-
-        icon = getIcon("document-save.png")
-        a = self.addAction(icon, "Save", self.save_figure)
-        a.setToolTip("Save the figure")
 
         icon = getIcon("document-print.png")
         a = self.addAction(icon, "Print", self.print_figure)
@@ -137,8 +109,6 @@ class NavigationToolbar(NavigationToolbar2QT):
         Save the plot to a temporary png file and show a preview dialog also used for printing.
         """
         filetypes = self.canvas.get_supported_filetypes_grouped()
-        sorted_filetypes = filetypes.items()
-        sorted_filetypes.sort()
 
         filename = os.path.join(tempfile.gettempdir(), "quicknxs_print.png")
         self.canvas.print_figure(filename, dpi=600)
@@ -166,7 +136,6 @@ class NavigationToolbar(NavigationToolbar2QT):
     def save_figure(self, *args):
         filetypes = self.canvas.get_supported_filetypes_grouped()
         sorted_filetypes = filetypes.items()
-        sorted_filetypes.sort()
         default_filetype = self.canvas.get_default_filetype()
 
         start = "image." + default_filetype
@@ -183,7 +152,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Choose a filename to save to", start, filters)
         if fname:
             try:
-                self.canvas.print_figure(unicode(fname[0]))
+                self.canvas.print_figure((fname[0]))
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
                     self, "Error saving file", str(e), QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton
@@ -393,8 +362,6 @@ class MPLWidget(QtWidgets.QWidget):
 
     def clear(self):
         self.cplot = None
-        #self.toolbar._views.clear()
-        #self.toolbar._positions.clear()
         self.canvas.ax.clear()
         if self.canvas.ax2 is not None:
             self.canvas.ax2.clear()
@@ -403,17 +370,6 @@ class MPLWidget(QtWidgets.QWidget):
         self.cplot.set_data(*data)
         if "extent" in opts:
             self.cplot.set_extent(opts["extent"])
-#            oldviews = self.toolbar._views
-#            if self.toolbar._views:
-                # set the new extent as home for the new data
-#                newviews = Stack()
-#                newviews.push([tuple(opts["extent"])])
-#                for item in oldviews[1:]:
-#                    newviews.push(item)
-#                self.toolbar._views = newviews
-#            if not oldviews or oldviews[oldviews._pos] == oldviews[0]:
-#                self.canvas.ax.set_xlim(opts["extent"][0], opts["extent"][1])
-#                self.canvas.ax.set_ylim(opts["extent"][2], opts["extent"][3])
 
     def legend(self, *args, **opts):
         return self.canvas.ax.legend(*args, **opts)

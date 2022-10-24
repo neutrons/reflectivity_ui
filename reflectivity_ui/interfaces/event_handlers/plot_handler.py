@@ -171,7 +171,6 @@ class PlotHandler(object):
         Plot for x-projection has been clicked.
         :param event: event object
         """
-        #if event.button is not None and self.ui.x_project.toolbar._active is None and event.xdata is not None:
         if event.button is not None and event.xdata is not None:
             self.main_window.auto_change_active = True
             if event.button == 1:
@@ -214,7 +213,6 @@ class PlotHandler(object):
         :param event: event object
         """
         self.main_window.auto_change_active = True
-        #if event.button == 1 and self.ui.y_project.toolbar._active is None and event.xdata is not None:
         if event.button == 1 and event.xdata is not None:
             ypos = self.ui.refYPos.value()
             yw = self.ui.refYWidth.value()
