@@ -375,7 +375,7 @@ class NexusData(object):
             # Get rid of empty workspaces
             logging.info("Loading %s: %s events", str(channel), ws.getNumberEvents())
             if ws.getNumberEvents() < N_EVENTS_CUTOFF:
-                logging.warn("Too few events for %s: %s", channel, ws.getNumberEvents())
+                logging.warning("Too few events for %s: %s", channel, ws.getNumberEvents())
                 continue
 
             name = ws.getRun().getProperty("cross_section_id").value

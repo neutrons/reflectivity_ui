@@ -7,8 +7,8 @@ channels:
     - mantid/label/nightly
 dependencies:
 - python=3.8
-- matplotlib
-- mantid>=6.5
+- matplotlib>=3.6
+- mantid>=6.4
 - codecov
 - conda-build
 - conda-verify

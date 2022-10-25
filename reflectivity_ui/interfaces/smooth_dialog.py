@@ -171,7 +171,8 @@ class SmoothDialog(QtWidgets.QDialog):
         """
         Plot for y-projection has been clicked.
         """
-        if event.button == 1 and self.ui.plot.toolbar._active is None and event.xdata is not None:
+        # if event.button == 1 and self.ui.plot.toolbar._active is None and event.xdata is not None:
+        if event.button == 1 and event.xdata is not None:
             x = event.xdata
             y = event.ydata
             x1 = self.ui.gridXmin.value()
