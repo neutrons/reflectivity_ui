@@ -19,6 +19,7 @@ dependencies:
 - pytest-xvfb
 - build
 - toml
+- pip
 - pip:
     - versioningit
     - check-wheel-contents
