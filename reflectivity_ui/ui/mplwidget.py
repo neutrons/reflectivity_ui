@@ -64,7 +64,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         self._init_toolbar()
 
     def _init_toolbar(self):
-        #add the extra default toolbar functions for quicknxs print, & lines
+        # add the extra default toolbar functions for quicknxs print, & lines
         if not hasattr(self, "_actions"):
             self._actions = {}
 
