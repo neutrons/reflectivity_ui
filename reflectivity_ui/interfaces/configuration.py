@@ -157,7 +157,7 @@ class Configuration(object):
     @property
     def bck_roi(self):
         peak_min = int(round(float(self.bck_position) - (float(self.bck_width) / 2.0)))
-        peak_max = int(round(float(self.bck_position) + (float(self.bck_width) / 2.0 )))
+        peak_max = int(round(float(self.bck_position) + (float(self.bck_width) / 2.0)))
         return [peak_min, peak_max]
 
     @bck_roi.setter
