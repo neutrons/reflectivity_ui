@@ -131,7 +131,7 @@ class DataInfo(object):
         """
         roi_peak = [0, 0]
         roi_low_res = [0, 0]
-        roi_background = [0, 0]
+
 
         # Read ROI 1
         roi1_valid = True
@@ -201,20 +201,28 @@ class DataInfo(object):
             if peak1[0] >= peak2[0] and peak1[1] <= peak2[1]:
                 roi_peak = peak1
                 roi_low_res = low_res1
-                roi_background = peak2
+
             elif peak2[0] >= peak1[0] and peak2[1] <= peak1[1]:
                 roi_peak = peak2
                 roi_low_res = low_res2
-                roi_background = peak1
+
             else:
                 roi_peak = peak1
                 roi_low_res = low_res1
-                roi_background = [0, 0]
+                #roi_background = [0, 0]
+
+
+
 
         # After all this, update the ROI according to reduction options
         self.roi_peak = roi_peak
         self.roi_low_res = roi_low_res
-        self.roi_background = roi_background
+        self.meta_data_peak2 = peak2
+
+        if self.force_bck_roi == True:
+            self.background = peak2
+            self.roi_background = peak2
+
 
     def determine_data_type(self, ws):
         """
@@ -255,18 +263,18 @@ class DataInfo(object):
             peak = copy.copy(self.roi_peak)
             if not self.roi_low_res == [0, 0]:
                 low_res = copy.copy(self.roi_low_res)
-            if not self.roi_background == [0, 0]:
-                bck_range = copy.copy(self.roi_background)
+            #if not self.roi_background == [0, 0]:
+            #    bck_range = copy.copy(self.roi_background)
         elif self.use_roi and self.update_peak_range and not self.roi_peak == [0, 0]:
             logging.info("Using fit peak range: [%s %s]" % (peak[0], peak[1]))
-            if not self.roi_background == [0, 0]:
-                bck_range = copy.copy(self.roi_background)
+            #if not self.roi_background == [0, 0]:
+            #    bck_range = copy.copy(self.roi_background)
 
         # Background
         if self.use_tight_bck:
             bck_range = [int(max(0.0, peak[0] - self.bck_offset)), int(min(NX_PIXELS, peak[1] + self.bck_offset))]
-        elif self.use_roi_bck:
-            bck_range = [int(max(0.0, peak[0] - 2 * self.bck_offset)), int(max(0.0, peak[0] - self.bck_offset))]
+        #elif self.use_roi_bck:
+        #    bck_range = [int(max(0.0, peak2[0] )), int(max(0.0, peak2[1] ))]
         else:
             bck_range = self.background
 

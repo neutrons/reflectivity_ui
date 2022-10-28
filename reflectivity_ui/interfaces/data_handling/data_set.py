@@ -736,6 +736,7 @@ class CrossSectionData(object):
 
             if self.configuration.force_bck_roi:
                 self.configuration.bck_roi = data_info.background
+        self.configuration.bck_roi = data_info.background
         self.process_configuration()
 
     def get_counts_vs_TOF(self):

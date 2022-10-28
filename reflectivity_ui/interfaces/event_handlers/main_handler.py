@@ -298,6 +298,7 @@ class MainHandler(object):
         # Update the calculated data
         self.update_calculated_data()
 
+
         self.ui.roi_used_label.setText("%s" % d.use_roi_actual)
         self.ui.roi_peak_label.setText("%s" % str(d.meta_data_roi_peak))
         self.ui.roi_bck_label.setText("%s" % str(d.meta_data_roi_bck))
@@ -1064,6 +1065,7 @@ class MainHandler(object):
 
         configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
         configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()
+        configuration.force_bck_roi = self.ui.use_bck_roi_checkbox.isChecked()
         configuration.match_direct_beam = self.ui.actionAutoNorm.isChecked()
 
         # Use background on each side of the peak
