@@ -112,7 +112,6 @@ class DataInfo(object):
         tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - half_width * 60.0 / chopper_speed) * 1e-4
         tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + half_width * 60.0 / chopper_speed) * 1e-4
 
-
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]
 
@@ -256,7 +255,6 @@ class DataInfo(object):
 
         elif self.use_roi and self.update_peak_range and not self.roi_peak == [0, 0]:
             logging.info("Using fit peak range: [%s %s]" % (peak[0], peak[1]))
-
 
         # Background
         if self.use_tight_bck:
