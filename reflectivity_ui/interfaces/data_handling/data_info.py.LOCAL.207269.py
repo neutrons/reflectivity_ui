@@ -129,6 +129,7 @@ class DataInfo(object):
         roi_peak = [0, 0]
         roi_low_res = [0, 0]
 
+
         # Read ROI 1
         roi1_valid = True
         if "ROI1StartX" in ws.getRun():
@@ -213,6 +214,7 @@ class DataInfo(object):
         if self.force_bck_roi == True:
             self.background = peak2
             self.roi_background = peak2
+
 
     def determine_data_type(self, ws):
         """

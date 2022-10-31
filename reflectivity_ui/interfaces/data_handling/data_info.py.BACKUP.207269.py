@@ -204,6 +204,10 @@ class DataInfo(object):
             else:
                 roi_peak = peak1
                 roi_low_res = low_res1
+<<<<<<< HEAD
+=======
+                # roi_background = [0, 0]
+>>>>>>> 392d9baaccc30bc6b68d15c3d1aa36ad5dce2223
 
         # After all this, update the ROI according to reduction options
         self.roi_peak = roi_peak
@@ -253,15 +257,29 @@ class DataInfo(object):
             peak = copy.copy(self.roi_peak)
             if not self.roi_low_res == [0, 0]:
                 low_res = copy.copy(self.roi_low_res)
+<<<<<<< HEAD
 
         elif self.use_roi and self.update_peak_range and not self.roi_peak == [0, 0]:
             logging.info("Using fit peak range: [%s %s]" % (peak[0], peak[1]))
 
+=======
+            # if not self.roi_background == [0, 0]:
+            #    bck_range = copy.copy(self.roi_background)
+        elif self.use_roi and self.update_peak_range and not self.roi_peak == [0, 0]:
+            logging.info("Using fit peak range: [%s %s]" % (peak[0], peak[1]))
+            # if not self.roi_background == [0, 0]:
+            #    bck_range = copy.copy(self.roi_background)
+>>>>>>> 392d9baaccc30bc6b68d15c3d1aa36ad5dce2223
 
         # Background
         if self.use_tight_bck:
             bck_range = [int(max(0.0, peak[0] - self.bck_offset)), int(min(NX_PIXELS, peak[1] + self.bck_offset))]
+<<<<<<< HEAD
 
+=======
+        # elif self.use_roi_bck:
+        #    bck_range = [int(max(0.0, peak2[0] )), int(max(0.0, peak2[1] ))]
+>>>>>>> 392d9baaccc30bc6b68d15c3d1aa36ad5dce2223
         else:
             bck_range = self.background
 
