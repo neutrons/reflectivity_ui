@@ -110,15 +110,15 @@ class PlotManager(object):
             main_window.ui.xy_overview.cplot.set_clim([xy_imin, xy_imax])
 
             if self.xy_x1 is None:
-                self.xy_x1 = main_window.ui.xy_overview.canvas.ax.axvline(x_peak - x_width / 2.0, color="#aa0000")
-                self.xy_x2 = main_window.ui.xy_overview.canvas.ax.axvline(x_peak + x_width / 2.0, color="#aa0000")
-                self.xy_y1 = main_window.ui.xy_overview.canvas.ax.axhline(y_pos - y_width / 2.0, color="#00aa00")
-                self.xy_y2 = main_window.ui.xy_overview.canvas.ax.axhline(y_pos + y_width / 2.0, color="#00aa00")
+                self.xy_x1 = main_window.ui.xy_overview.canvas.ax.axvline(x_peak - (x_width / 2.0), color="#aa0000")
+                self.xy_x2 = main_window.ui.xy_overview.canvas.ax.axvline(x_peak + (x_width / 2.0), color="#aa0000")
+                self.xy_y1 = main_window.ui.xy_overview.canvas.ax.axhline(y_pos - (y_width / 2.0), color="#00aa00")
+                self.xy_y2 = main_window.ui.xy_overview.canvas.ax.axhline(y_pos + (y_width / 2.0), color="#00aa00")
             else:
-                self.xy_x1.set_xdata([x_peak - x_width / 2.0, x_peak - x_width / 2.0])
-                self.xy_x2.set_xdata([x_peak + x_width / 2.0, x_peak + x_width / 2.0])
-                self.xy_y1.set_ydata([y_pos - y_width / 2.0, y_pos - y_width / 2.0])
-                self.xy_y2.set_ydata([y_pos + y_width / 2.0, y_pos + y_width / 2.0])
+                self.xy_x1.set_xdata([x_peak - (x_width / 2.0), x_peak - (x_width / 2.0)])
+                self.xy_x2.set_xdata([x_peak + (x_width / 2.0), x_peak + (x_width / 2.0)])
+                self.xy_y1.set_ydata([y_pos - (y_width / 2.0), y_pos - (y_width / 2.0)])
+                self.xy_y2.set_ydata([y_pos + (y_width / 2.0), y_pos + (y_width / 2.0)])
 
         # XToF plot
         if main_window.ui.xLamda.isChecked():
@@ -142,15 +142,15 @@ class PlotManager(object):
         main_window.ui.xtof_overview.set_ylabel("x [pix]")
 
         if self.xtof_x1 is None:
-            self.xtof_x1 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak - x_width / 2.0, color="#aa0000")
-            self.xtof_x2 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak + x_width / 2.0, color="#aa0000")
-            self.xtof_bck1 = main_window.ui.xtof_overview.canvas.ax.axhline(bg_pos - bg_width / 2.0, color="black")
-            self.xtof_bck2 = main_window.ui.xtof_overview.canvas.ax.axhline(bg_pos + bg_width / 2.0, color="black")
+            self.xtof_x1 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak - (x_width / 2.0), color="#aa0000")
+            self.xtof_x2 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak + (x_width / 2.0), color="#aa0000")
+            self.xtof_bck1 = main_window.ui.xtof_overview.canvas.ax.axhline(bg_pos - (bg_width / 2.0), color="black")
+            self.xtof_bck2 = main_window.ui.xtof_overview.canvas.ax.axhline(bg_pos + (bg_width / 2.0), color="black")
         else:
-            self.xtof_x1.set_ydata([x_peak - x_width / 2.0, x_peak - x_width / 2.0])
-            self.xtof_x2.set_ydata([x_peak + x_width / 2.0, x_peak + x_width / 2.0])
-            self.xtof_bck1.set_ydata([bg_pos - bg_width / 2.0, bg_pos - bg_width / 2.0])
-            self.xtof_bck2.set_ydata([bg_pos + bg_width / 2.0, bg_pos + bg_width / 2.0])
+            self.xtof_x1.set_ydata([x_peak - (x_width / 2.0), x_peak - (x_width / 2.0)])
+            self.xtof_x2.set_ydata([x_peak + (x_width / 2.0), x_peak + (x_width / 2.0)])
+            self.xtof_bck1.set_ydata([bg_pos - (bg_width / 2.0), bg_pos - (bg_width / 2.0)])
+            self.xtof_bck2.set_ydata([bg_pos + (bg_width / 2.0), bg_pos + (bg_width / 2.0)])
 
         main_window.ui.xtof_overview.cplot.set_clim([tof_imin, tof_imax])
 

@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -930,8 +933,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>282</width>
-             <height>152</height>
+             <width>403</width>
+             <height>198</height>
             </rect>
            </property>
            <attribute name="label">
@@ -956,7 +959,7 @@
             <item row="10" column="0">
              <widget class="QLabel" name="label_26">
               <property name="text">
-               <string>ROI bck</string>
+               <string>Meta data background ROI</string>
               </property>
              </widget>
             </item>
@@ -972,7 +975,7 @@
                <string>Fit peak within ROI</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -989,7 +992,7 @@
             <item row="6" column="0">
              <widget class="QLabel" name="label_25">
               <property name="text">
-               <string>ROI peak</string>
+               <string>Meta data ROI peak</string>
               </property>
              </widget>
             </item>
@@ -1016,7 +1019,7 @@
             <item row="5" column="0">
              <widget class="QLabel" name="label_7">
               <property name="text">
-               <string>Was ROI used?</string>
+               <string>Was meta ROI used?</string>
               </property>
              </widget>
             </item>
@@ -1039,7 +1042,14 @@
                <string>Use meta-data ROI</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QSpinBox" name="side_bck_width">
+              <property name="value">
+               <number>5</number>
               </property>
              </widget>
             </item>
@@ -1049,17 +1059,10 @@
                <string>A second ROI is available in the data file and can be used to define the background. Check the following box if you want to use the 2nd ROI for your background, otherwise a default region will be used.</string>
               </property>
               <property name="text">
-               <string>Bck?</string>
+               <string>Use alternate bkgd ROI?</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QSpinBox" name="side_bck_width">
-              <property name="value">
-               <number>5</number>
+               <bool>false</bool>
               </property>
              </widget>
             </item>

@@ -1064,6 +1064,7 @@ class MainHandler(object):
 
         configuration.force_peak_roi = not self.ui.actionAutomaticXPeak.isChecked()
         configuration.force_low_res_roi = not self.ui.actionAutoYLimits.isChecked()
+        configuration.force_bck_roi = self.ui.use_bck_roi_checkbox.isChecked()
         configuration.match_direct_beam = self.ui.actionAutoNorm.isChecked()
 
         # Use background on each side of the peak

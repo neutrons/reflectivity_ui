@@ -65,7 +65,7 @@ class Configuration(object):
         self.low_res_position = 130
         self.low_res_width = 20
 
-        self.force_bck_roi = False
+        self.force_bck_roi = True
         self.bck_position = 30
         self.bck_width = 20
 
@@ -134,36 +134,36 @@ class Configuration(object):
 
     @property
     def peak_roi(self):
-        peak_min = int(round(float(self.peak_position) - float(self.peak_width) / 2.0))
-        peak_max = int(round(float(self.peak_position) + float(self.peak_width) / 2.0 + 1.0))
+        peak_min = int(round(float(self.peak_position) - (float(self.peak_width) / 2.0)))
+        peak_max = int(round(float(self.peak_position) + (float(self.peak_width) / 2.0)))
         return [peak_min, peak_max]
 
     @peak_roi.setter
     def peak_roi(self, value):
-        self.peak_position = (value[1] + value[0] - 1.0) / 2.0
-        self.peak_width = value[1] - value[0] - 1.0
+        self.peak_position = (value[1] + value[0]) / 2.0
+        self.peak_width = value[1] - value[0]
 
     @property
     def low_res_roi(self):
-        peak_min = int(round(float(self.low_res_position) - float(self.low_res_width) / 2.0))
-        peak_max = int(round(float(self.low_res_position) + float(self.low_res_width) / 2.0 + 1.0))
+        peak_min = int(round(float(self.low_res_position) - (float(self.low_res_width) / 2.0)))
+        peak_max = int(round(float(self.low_res_position) + (float(self.low_res_width) / 2.0)))
         return [peak_min, peak_max]
 
     @low_res_roi.setter
     def low_res_roi(self, value):
-        self.low_res_position = (value[1] + value[0] - 1.0) / 2.0
-        self.low_res_width = value[1] - value[0] - 1.0
+        self.low_res_position = (value[1] + value[0]) / 2.0
+        self.low_res_width = value[1] - value[0]
 
     @property
     def bck_roi(self):
-        peak_min = int(round(float(self.bck_position) - float(self.bck_width) / 2.0))
-        peak_max = int(round(float(self.bck_position) + float(self.bck_width) / 2.0 + 1.0))
+        peak_min = int(round(float(self.bck_position) - (float(self.bck_width) / 2.0)))
+        peak_max = int(round(float(self.bck_position) + (float(self.bck_width) / 2.0)))
         return [peak_min, peak_max]
 
     @bck_roi.setter
     def bck_roi(self, value):
         self.bck_position = (value[1] + value[0]) / 2.0
-        self.bck_width = value[1] - value[0] + 1
+        self.bck_width = value[1] - value[0]
 
     def to_q_settings(self, settings):
         """
