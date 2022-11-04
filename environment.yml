@@ -19,8 +19,8 @@ dependencies:
 - pytest-qt
 - pytest-cov
 - pytest-xvfb
-- qtpy
-- qt>=5.12,<6
+- qtpy<2
+- qt=5.12
 - toml
 - pip
 - pip:
