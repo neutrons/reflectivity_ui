@@ -29,7 +29,7 @@ except ImportError:
 cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
     "default", ["#0000ff", "#00ff00", "#ffff00", "#ff0000", "#bd7efc", "#000000"], N=256
 )
-matplotlib.cm.register_cmap("default", cmap=cmap)
+matplotlib.colormaps.register(cmap, name="default")
 
 
 def _set_default_rc():
