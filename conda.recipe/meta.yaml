@@ -27,11 +27,16 @@ requirements:
 
   build:
     - mantid
+    - matplotlib
     - setuptools
+    - qtpy
     - versioningit
 
   run:
-    - mantidworkbench
+    - mantid>=6.4
+    - matplotlib
+    - qtpy
+    - qt>=5.12,<6
 
 test:
   imports:
@@ -40,7 +45,7 @@ test:
 about:
   home: {{ url }}
   license: {{ license }}
-  license_family: Apache
+  license_family: APACHE
   license_file: ../LICENSE
   summary: {{ description }}
 

@@ -7,6 +7,7 @@ channels:
     - mantid/label/nightly
 dependencies:
 - python=3.8
+- build
 - matplotlib>=3.6
 - mantid>=6.4
 - codecov
@@ -17,7 +18,8 @@ dependencies:
 - pytest-qt
 - pytest-cov
 - pytest-xvfb
-- build
+- qtpy
+- qt>=5.12,<6
 - toml
 - pip
 - pip:
