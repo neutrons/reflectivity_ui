@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Conda package
         run: |
-          conda build --output-folder . . -c mantid
+          conda mambabuild --output-folder . . -c mantid
           conda verify noarch/reflectivity_ui-*.tar.bz2
       - name: Deploy to Anaconda
         if: startsWith(github.ref, 'refs/tags/v')
