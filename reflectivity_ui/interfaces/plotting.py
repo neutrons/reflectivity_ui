@@ -612,6 +612,7 @@ class PlotManager(object):
                     yerr=self.main_window.data_manager.active_channel.dr[P0:PN],
                     label="Active",
                     lw=2,
+                    capsize =1,
                     color="black",
                 )
             else:
@@ -648,6 +649,7 @@ class PlotManager(object):
                     ynormed,
                     yerr=refli.cross_sections[channel_name].dr[P0i:PNi],
                     label=str(refli.number),
+                    capsize =1,
                     color=self._refl_color_list[i % len(self._refl_color_list)],
                 )
             self.main_window.ui.refl.canvas.ax.set_ylim((ymin * 0.9, ymax * 1.1))
