@@ -86,16 +86,6 @@ class NexusData(object):
         self.cross_sections = {}
         self.main_cross_section = None
 
- #   @property
- #   def nbytes(self):
- #       """
-   #     Approximate data size
-  #      """
-   ##     total_size = 0
-   #     for d in self.cross_sections.keys():
-    #        total_size += self.cross_sections[d].nbytes
-    #    return total_size
-
     def get_highest_cross_section(self, n_points=10):
         """
         Get the cross-section with the largest signal at the
@@ -513,10 +503,6 @@ class CrossSectionData(object):
     @angle_offset.setter
     def angle_offset(self, value):
         self._angle_offset = value
-
- #   @property
- #   def nbytes(self):
- #       return self.data.nbytes
 
     @property
     def xdata(self):
