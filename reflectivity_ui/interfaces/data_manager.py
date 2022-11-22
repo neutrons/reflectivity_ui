@@ -712,7 +712,11 @@ class DataManager(object):
 
         for r_id, run_file, conf in data_files:
             t_i = time.time()
-            if os.path.isfile(run_file):
+            do_files_exist = []
+            for name in run_file.split('+'):
+                do_files_exist.append((os.path.isfile(name)))
+
+            if all(do_files_exist):
                 is_from_cache = self.load(run_file, conf, update_parameters=False)
                 if is_from_cache:
                     configuration.normalization = None
