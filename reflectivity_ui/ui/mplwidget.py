@@ -21,6 +21,7 @@ from matplotlib.cbook import Stack
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.figure import Figure
 import numpy as np
+
 try:
     import matplotlib.backends.qt5_editor.figureoptions as figureoptions
 except ImportError:
@@ -82,7 +83,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         a = self.addAction(icon, "SaveData", self.save_data)
         a.setToolTip("Save XYE data to file")
 
-        #TODO find appropriate icon
+        # TODO find appropriate icon
         icon = QtGui.QIcon()
         self.addSeparator()
         a = self.addAction(icon, "Lines", self.toggle_lines)
@@ -182,26 +183,26 @@ class NavigationToolbar(NavigationToolbar2QT):
     def save_data(self):
         ax = self.canvas.ax
 
-
-        if hasattr(ax,'get_array') == False:
-            if np.mod(len(ax.lines),3) == 1:
+        if hasattr(ax, "get_array") == False:
+            if np.mod(len(ax.lines), 3) == 1:
                 data_to_save = ax.lines[0].get_xydata()
-            if np.mod(len(ax.lines),3) == 0:
-                data_to_save = np.empty((0,3),float)
-                for i in range (0,int(len(ax.lines)),3):
+            if np.mod(len(ax.lines), 3) == 0:
+                data_to_save = np.empty((0, 3), float)
+                for i in range(0, int(len(ax.lines)), 3):
                     xdata_from_plot = ax.lines[i].get_xdata()
                     ydata_from_plot = ax.lines[i].get_ydata()
-                    err_from_plot = (ax.lines[i+2].get_ydata() - ax.lines[i+1].get_ydata()) / 2.0
-                    data_to_save = np.append(data_to_save,np.array([xdata_from_plot, ydata_from_plot, err_from_plot]).transpose(),axis= 0)
+                    err_from_plot = (ax.lines[i + 2].get_ydata() - ax.lines[i + 1].get_ydata()) / 2.0
+                    data_to_save = np.append(
+                        data_to_save, np.array([xdata_from_plot, ydata_from_plot, err_from_plot]).transpose(), axis=0
+                    )
         else:
             data_to_save = ax.get_array()
 
-
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Choose a filename to save to")
 
-        if type(fname[0])==str:
+        if type(fname[0]) == str:
             try:
-                np.savetxt(fname[0],data_to_save)
+                np.savetxt(fname[0], data_to_save)
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
                     self, "Error saving file", str(e), QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton
