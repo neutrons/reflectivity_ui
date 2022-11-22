@@ -376,15 +376,15 @@ def determine_which_files_to_sum(run_file, data_file_indicies):
     # the way the file is read ignores any files that were summed in the processing from which the
     # saved file was created.
 
-    runs = str.split(str.split(data_file_indicies)[-1], ',')
+    runs = str.split(str.split(data_file_indicies)[-1], ",")
     for run in runs:
-        numors = str.split(run, ':')
-        if len(numors) > 1 and (str.split(run, ':')[0] in run_file):
-            outfile = ''
+        numors = str.split(run, ":")
+        if len(numors) > 1 and (str.split(run, ":")[0] in run_file):
+            outfile = ""
             for i in range(int(numors[0]), int(numors[-1]) + 1):
-                outfile = outfile + '+' + run_file.replace(numors[0], str(i))
+                outfile = outfile + "+" + run_file.replace(numors[0], str(i))
             outfile = outfile[1:]
-        if len(numors) == 1 and (str.split(run, ':')[0] in run_file):
+        if len(numors) == 1 and (str.split(run, ":")[0] in run_file):
             outfile = run_file
 
     return outfile

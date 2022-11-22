@@ -713,7 +713,7 @@ class DataManager(object):
         for r_id, run_file, conf in data_files:
             t_i = time.time()
             do_files_exist = []
-            for name in run_file.split('+'):
+            for name in run_file.split("+"):
                 do_files_exist.append((os.path.isfile(name)))
 
             if all(do_files_exist):
