@@ -276,6 +276,8 @@ def read_reduced_file(file_path, configuration=None):
             if _file_start and not line.startswith("# Datafile created by QuickNXS"):
                 raise RuntimeError("The selected file does not conform to the QuickNXS format")
             _file_start = False
+            if "Input file indices" in line:
+                data_file_indicies = line
             if "[Direct Beam Runs]" in line:
                 _in_section = 1
             elif "[Data Runs]" in line:
@@ -350,6 +352,7 @@ def read_reduced_file(file_path, configuration=None):
                         # conf.cut_first_n_points = 0
                         # conf.cut_last_n_points = 0
                     run_file = _find_h5_data(run_file)
+                    run_file = determine_which_files_to_sum(run_file, data_file_indicies)
                     data_runs.append([run_number, run_file, conf])
                 except:
                     logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
@@ -364,3 +367,28 @@ def read_reduced_file(file_path, configuration=None):
                         logging.error("Could not extract sample size: %s" % line)
 
     return direct_beam_runs, data_runs
+
+
+def determine_which_files_to_sum(run_file, data_file_indicies):
+    # Determeine which files are summed when reading a saved reduction file
+    # The saved file has the correct run numbers (numors) in the line
+    # that begins # Input file indices, however the file does not contain the corect paths
+    # the way the file is read ignores any files that were summed in the processing from which the
+    # saved file was created.
+
+    if "+" in data_file_indicies:
+        runs = str.split(str.split(data_file_indicies)[-1], "+")
+    else:
+        runs = str.split(str.split(data_file_indicies)[-1], ",")
+
+    for run in runs:
+        numors = str.split(run, ":")
+        if len(numors) > 1 and (str.split(run, ":")[0] in run_file):
+            outfile = ""
+            for i in range(int(numors[0]), int(numors[-1]) + 1):
+                outfile = outfile + "+" + run_file.replace(numors[0], str(i))
+            outfile = outfile[1:]
+        if len(numors) == 1 and (str.split(run, ":")[0] in run_file):
+            outfile = run_file
+
+    return outfile

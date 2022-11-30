@@ -140,7 +140,7 @@ class CompareWidget(QtWidgets.QWidget):
                 for key in pol_states:
                     _data = self.refl_data[key]
                     data = _data.T
-                    self.ui.comparePlot.errorbar(data[0], data[1], data[2], label=key)
+                    self.ui.comparePlot.errorbar(data[0], data[1], data[2], capsize=1, label=key)
             header = self.ui.compareList.verticalHeader()
             for i in range(self.ui.compareList.rowCount()):
                 idx = header.logicalIndex(i)
@@ -151,7 +151,7 @@ class CompareWidget(QtWidgets.QWidget):
                 if len(data) == 0:
                     logging.error("No data for %s", name)
                     continue
-                self.ui.comparePlot.errorbar(data[0], data[1], data[2], label=label, color=color)
+                self.ui.comparePlot.errorbar(data[0], data[1], data[2], capsize=1, label=label, color=color)
             if self.refl_data or self.ui.compareList.rowCount() > 0:
                 self.ui.comparePlot.legend(frameon=False)
                 self.ui.comparePlot.canvas.ax.set_yscale("log")
