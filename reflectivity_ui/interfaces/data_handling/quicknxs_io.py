@@ -379,7 +379,7 @@ def determine_which_files_to_sum(run_file, data_file_indicies):
     if '+' in data_file_indicies:
         runs = str.split(str.split(data_file_indicies)[-1], '+')
     else:
-        runs = str.split(str.split(data_file_indicies)[-1], ',')
+        runs = str.split(str.split(data_file_indicies)[-1], ",")
 
     for run in runs:
         numors = str.split(run, ":")
