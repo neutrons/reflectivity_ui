@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2096</width>
-    <height>1028</height>
+    <width>1920</width>
+    <height>1590</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,16 +37,7 @@
     </sizepolicy>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -86,16 +77,7 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -186,16 +168,7 @@
            </sizepolicy>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -319,6 +292,12 @@
             <verstretch>1</verstretch>
            </sizepolicy>
           </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
          </widget>
         </item>
         <item>
@@ -401,28 +380,19 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>403</width>
-             <height>244</height>
+             <width>458</width>
+             <height>232</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Reflectivity Extraction (Basic)</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_3">
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <property name="verticalSpacing">
              <number>1</number>
+            </property>
+            <property name="margin">
+             <number>2</number>
             </property>
             <item row="1" column="2">
              <widget class="QDoubleSpinBox" name="refYPos">
@@ -717,28 +687,19 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>397</width>
-             <height>262</height>
+             <width>458</width>
+             <height>239</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Reflectivity Extraction (Advanced)</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_15">
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <property name="verticalSpacing">
              <number>0</number>
+            </property>
+            <property name="margin">
+             <number>2</number>
             </property>
             <item row="0" column="2" colspan="2">
              <widget class="QDoubleSpinBox" name="directPixelOverwrite">
@@ -970,30 +931,21 @@
           <widget class="QWidget" name="page_3">
            <property name="geometry">
             <rect>
-             <x>-6</x>
+             <x>0</x>
              <y>0</y>
-             <width>373</width>
-             <height>184</height>
+             <width>458</width>
+             <height>198</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Peak Finder</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_17">
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <property name="verticalSpacing">
              <number>0</number>
+            </property>
+            <property name="margin">
+             <number>2</number>
             </property>
             <item row="10" column="0">
              <widget class="QLabel" name="label_26">
@@ -1121,19 +1073,10 @@
            <string>Plot Options</string>
           </property>
           <property name="flat">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <layout class="QGridLayout" name="gridLayout_16">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1200,7 +1143,7 @@
              <property name="toolTip">
               <string>Select the color scale from a list of presets</string>
              </property>
-             <property name="currentText">
+             <property name="currentText" stdset="0">
               <string>jet</string>
              </property>
              <property name="currentIndex">
@@ -1273,1593 +1216,1451 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="Overview_Tab">
+       <property name="movable">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="Overview_Tab_old">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <attribute name="title">
          <string>Overview</string>
         </attribute>
         <attribute name="toolTip">
          <string>Show the active dataset and information about the datasets selected for normalization and reduction</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_13">
-         <property name="leftMargin">
-          <number>0</number>
+        <layout class="QGridLayout" name="gridLayout_14"/>
+       </widget>
+       <widget class="QWidget" name="OverView_Tab">
+        <attribute name="title">
+         <string>Page</string>
+        </attribute>
+        <widget class="QFrame" name="frame">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>1000</width>
+           <height>411</height>
+          </rect>
          </property>
-         <property name="topMargin">
-          <number>2</number>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="rightMargin">
-          <number>0</number>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>300</height>
+          </size>
          </property>
-         <property name="bottomMargin">
-          <number>0</number>
+         <property name="maximumSize">
+          <size>
+           <width>1000</width>
+           <height>16777215</height>
+          </size>
          </property>
-         <item>
-          <widget class="QSplitter" name="overviewSplitter">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <widget class="QFrame" name="frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="MPLWidget" name="xy_overview" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>300</height>
+             </size>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>2</number>
-             </property>
-             <property name="topMargin">
-              <number>2</number>
-             </property>
-             <property name="rightMargin">
-              <number>2</number>
-             </property>
-             <property name="bottomMargin">
-              <number>2</number>
-             </property>
-             <item>
-              <widget class="MPLWidget" name="xy_overview" native="true">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>150</width>
-                 <height>300</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="MPLWidget" name="xtof_overview" native="true">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>300</width>
-                 <height>150</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </widget>
-           <widget class="QWidget" name="widget_3" native="true">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
+          </item>
+          <item>
+           <widget class="MPLWidget" name="xtof_overview" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>0</height>
+              <width>300</width>
+              <height>200</height>
              </size>
             </property>
-            <property name="maximumSize">
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>1090</x>
+           <y>590</y>
+           <width>351</width>
+           <height>361</height>
+          </rect>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_22">
+          <item>
+           <widget class="QLabel" name="label_33">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Reflectivity</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="MPLWidget" name="refl" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
              <size>
-              <width>16777215</width>
-              <height>16777215</height>
+              <width>150</width>
+              <height>150</height>
              </size>
             </property>
-            <property name="baseSize">
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="widget_4" native="true">
+         <property name="geometry">
+          <rect>
+           <x>1090</x>
+           <y>320</y>
+           <width>351</width>
+           <height>251</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_24">
+          <item>
+           <widget class="QLabel" name="label_35">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>X-Projection</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="MPLWidget" name="x_project" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>0</height>
+              <width>150</width>
+              <height>150</height>
              </size>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_11">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
-               <property name="spacing">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_54">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>30</height>
-                  </size>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="widget_2" native="true">
+         <property name="geometry">
+          <rect>
+           <x>1090</x>
+           <y>10</y>
+           <width>341</width>
+           <height>301</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_23">
+          <item>
+           <widget class="QLabel" name="label_34">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Y-Projection</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="MPLWidget" name="y_project" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>150</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QFrame" name="frame_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>590</y>
+           <width>1061</width>
+           <height>378</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>2</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_16">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="sizeConstraint">
+             <enum>QLayout::SetNoConstraint</enum>
+            </property>
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_19">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Matched direct beam:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="matched_direct_beam_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>None</string>
+              </property>
+              <property name="indent">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="is_direct_beam_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
+              </property>
+              <property name="statusTip">
+               <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetNoConstraint</enum>
+            </property>
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="direct_beam_runs_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>A list of files selected fro normalization</string>
+              </property>
+              <property name="text">
+               <string>Direct beam runs:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="normalization_list_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>A list of files selected fro normalization</string>
+              </property>
+              <property name="text">
+               <string>None</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <property name="indent">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_18">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Cross sections:   </string>
+              </property>
+              <property name="margin">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout_7">
+              <item row="0" column="0">
+               <widget class="QRadioButton" name="selectedChannel0">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>++</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QRadioButton" name="selectedChannel5">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QRadioButton" name="selectedChannel7">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>-+</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QRadioButton" name="selectedChannel1">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QRadioButton" name="selectedChannel4">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>++</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QRadioButton" name="selectedChannel2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>+-</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3">
+               <widget class="QRadioButton" name="selectedChannel3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>-+</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QRadioButton" name="selectedChannel6">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>+-</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QRadioButton" name="selectedChannel8">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>++</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QRadioButton" name="selectedChannel9">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QRadioButton" name="selectedChannel10">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>+-</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QRadioButton" name="selectedChannel11">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>-+</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTabWidget" name="tabWidget">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <attribute name="title">
+              <string>Data</string>
+             </attribute>
+             <attribute name="toolTip">
+              <string>A list of datasets that will be used for reduction</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_16">
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QTableWidget" name="reductionTable">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="editTriggers">
+                 <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+                </property>
+                <property name="showDropIndicator" stdset="0">
+                 <bool>false</bool>
+                </property>
+                <property name="horizontalScrollMode">
+                 <enum>QAbstractItemView::ScrollPerPixel</enum>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+                <property name="rowCount">
+                 <number>0</number>
+                </property>
+                <attribute name="horizontalHeaderVisible">
+                 <bool>false</bool>
+                </attribute>
+                <attribute name="horizontalHeaderCascadingSectionResizes">
+                 <bool>true</bool>
+                </attribute>
+                <attribute name="horizontalHeaderDefaultSectionSize">
+                 <number>50</number>
+                </attribute>
+                <attribute name="horizontalHeaderMinimumSectionSize">
+                 <number>20</number>
+                </attribute>
+                <attribute name="horizontalHeaderStretchLastSection">
+                 <bool>true</bool>
+                </attribute>
+                <attribute name="verticalHeaderVisible">
+                 <bool>false</bool>
+                </attribute>
+                <attribute name="verticalHeaderDefaultSectionSize">
+                 <number>21</number>
+                </attribute>
+                <column>
+                 <property name="text">
+                  <string>Run No.</string>
                  </property>
                  <property name="toolTip">
-                  <string extracomment="Meta data for currently plotted data"/>
+                  <string>File Number</string>
                  </property>
+                </column>
+                <column>
                  <property name="text">
-                  <string>Run Information:  </string>
+                  <string>I0</string>
                  </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="currentChannel">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+                 <property name="toolTip">
+                  <string>Scaling Factor</string>
                  </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>30</height>
-                  </size>
-                 </property>
+                </column>
+                <column>
                  <property name="text">
-                  <string/>
+                  <string>NL</string>
                  </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QFrame" name="runDataFrame">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>100</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_13">
-                <property name="leftMargin">
-                 <number>0</number>
+                 <property name="toolTip">
+                  <string>Points cut from low Q side</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>NR</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Points cut from high Q side</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>x0</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Center X-Pixel of Window for Reflectivity</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>xw</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Width in X-Pixels of Window for Reflectivity</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>y0</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Center Y-Pixel of Window for Reflectivity</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>yw</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Width in Y-Pixels of Window for Reflectivity</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>bg0</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Background Region Center</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>bgw</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Background Region Width</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>DPix</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>DirectPixel</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Theta</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Scattering angle (degrees)</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Dir. Run</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>The normalization file used for this dataset</string>
+                 </property>
+                </column>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <attribute name="title">
+              <string>Direct Beam</string>
+             </attribute>
+             <attribute name="toolTip">
+              <string>A list of datasets available for wavelength normalization</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_17">
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QTableWidget" name="normalizeTable">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-                <property name="topMargin">
-                 <number>0</number>
+                <property name="editTriggers">
+                 <set>QAbstractItemView::NoEditTriggers</set>
                 </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QFrame" name="frame_5">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_4">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="horizontalSpacing">
-                    <number>6</number>
-                   </property>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="label_15">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>50</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Two theta value calculated from file, if DANGLE0 overwrite is active, the read value is in brackets</string>
-                     </property>
-                     <property name="text">
-                      <string>DANGLE0</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLabel" name="datasetDirectPixel">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>50</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Direct pixel value read from file, if overwrite is active, the read value is in brackets</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="datasetDangle">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>50</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Detector Angle value read from file</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="margin">
-                      <number>2</number>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLabel" name="datasetDangle0">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>50</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Two theta value calculated from file, if DANGLE0 overwrite is active, the read value is in brackets</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="margin">
-                      <number>2</number>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_11">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>50</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Detector Angle value read from file</string>
-                     </property>
-                     <property name="text">
-                      <string>DANGLE</string>
-                     </property>
-                     <property name="margin">
-                      <number>1</number>
-                     </property>
-                     <property name="openExternalLinks">
-                      <bool>true</bool>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_17">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>50</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Direct pixel value read from file, if overwrite is active, the read value is in brackets</string>
-                     </property>
-                     <property name="text">
-                      <string>Direct Pixel</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QWidget" name="widget_8" native="true">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_11">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_8">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Read from file</string>
-                     </property>
-                     <property name="text">
-                      <string>λ</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0" colspan="2">
-                    <widget class="QFrame" name="frame_6">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::StyledPanel</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_9">
-                      <property name="leftMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>1</number>
-                      </property>
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_12">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="toolTip">
-                         <string>Sample angle read from file</string>
-                        </property>
-                        <property name="text">
-                         <string>SANGLE</string>
-                        </property>
-                        <property name="textInteractionFlags">
-                         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="QLabel" name="datasetSangle">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="toolTip">
-                         <string>Sample angle read from file</string>
-                        </property>
-                        <property name="text">
-                         <string/>
-                        </property>
-                        <property name="margin">
-                         <number>2</number>
-                        </property>
-                        <property name="textInteractionFlags">
-                         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_13">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="toolTip">
-                         <string>Sample angle calculated from 2Θ and X-center position</string>
-                        </property>
-                        <property name="text">
-                         <string>SANGLE-calc</string>
-                        </property>
-                        <property name="textInteractionFlags">
-                         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QLabel" name="datasetAi">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="toolTip">
-                         <string>Sample angle calculated from 2Θ and X-center position</string>
-                        </property>
-                        <property name="text">
-                         <string/>
-                        </property>
-                        <property name="margin">
-                         <number>2</number>
-                        </property>
-                        <property name="textInteractionFlags">
-                         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_9">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Read from file</string>
-                     </property>
-                     <property name="text">
-                      <string>Proton Charge</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLabel" name="datasetPCharge">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Read from file</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="margin">
-                      <number>2</number>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="datasetLambda">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Read from file</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="margin">
-                      <number>2</number>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QWidget" name="widget_7" native="true">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_10">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_10">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Read from file</string>
-                     </property>
-                     <property name="text">
-                      <string>Total Counts</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLabel" name="datasetTotCounts">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Read from file</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="margin">
-                      <number>2</number>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLabel" name="datasetRate">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="datasetTime">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_6">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>Counting Time</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="label_37">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>Count Rate</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QLabel" name="datasetROI">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Counts in the window selected for X and Y</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="margin">
-                      <number>2</number>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="counts_roi_label">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Counts in the window selected for X and Y</string>
-                     </property>
-                     <property name="text">
-                      <string>Counts ROI</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="frame_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_12">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>2</number>
-                </property>
-                <property name="topMargin">
-                 <number>2</number>
-                </property>
-                <property name="rightMargin">
-                 <number>2</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>2</number>
-                </property>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_16">
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <property name="sizeConstraint">
-                   <enum>QLayout::SetNoConstraint</enum>
-                  </property>
-                  <property name="leftMargin">
-                   <number>4</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>4</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_19">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>Matched direct beam:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="matched_direct_beam_label">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>None</string>
-                    </property>
-                    <property name="indent">
-                     <number>10</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="is_direct_beam_label">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="toolTip">
-                     <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
-                    </property>
-                    <property name="statusTip">
-                     <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_7">
-                  <property name="sizeConstraint">
-                   <enum>QLayout::SetNoConstraint</enum>
-                  </property>
-                  <property name="leftMargin">
-                   <number>4</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>4</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="direct_beam_runs_label">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="toolTip">
-                     <string>A list of files selected fro normalization</string>
-                    </property>
-                    <property name="text">
-                     <string>Direct beam runs:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="normalization_list_label">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="toolTip">
-                     <string>A list of files selected fro normalization</string>
-                    </property>
-                    <property name="text">
-                     <string>None</string>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                    </property>
-                    <property name="margin">
-                     <number>0</number>
-                    </property>
-                    <property name="indent">
-                     <number>10</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="label_18">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>Cross sections:   </string>
-                    </property>
-                    <property name="margin">
-                     <number>10</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <layout class="QGridLayout" name="gridLayout_7">
-                    <item row="0" column="0">
-                     <widget class="QRadioButton" name="selectedChannel0">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>++</string>
-                      </property>
-                      <property name="checked">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QRadioButton" name="selectedChannel5">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>--</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="3">
-                     <widget class="QRadioButton" name="selectedChannel7">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>-+</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QRadioButton" name="selectedChannel1">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>--</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QRadioButton" name="selectedChannel4">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>++</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="2">
-                     <widget class="QRadioButton" name="selectedChannel2">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>+-</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="3">
-                     <widget class="QRadioButton" name="selectedChannel3">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>-+</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="QRadioButton" name="selectedChannel6">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>+-</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QRadioButton" name="selectedChannel8">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>++</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QRadioButton" name="selectedChannel9">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>--</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="QRadioButton" name="selectedChannel10">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>+-</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="3">
-                     <widget class="QRadioButton" name="selectedChannel11">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>-+</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <widget class="QTabWidget" name="tabWidget">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="toolTip">
-                   <string extracomment="Meta data for the complied data set that will be reduced &amp; stitched"/>
-                  </property>
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <widget class="QWidget" name="tab">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <attribute name="title">
-                    <string>Data</string>
-                   </attribute>
-                   <attribute name="toolTip">
-                    <string>A list of datasets that will be used for reduction</string>
-                   </attribute>
-                   <layout class="QVBoxLayout" name="verticalLayout_16">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>0</number>
-                    </property>
-                    <item>
-                     <widget class="QTableWidget" name="reductionTable">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="editTriggers">
-                       <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
-                      </property>
-                      <property name="showDropIndicator" stdset="0">
-                       <bool>false</bool>
-                      </property>
-                      <property name="horizontalScrollMode">
-                       <enum>QAbstractItemView::ScrollPerPixel</enum>
-                      </property>
-                      <property name="wordWrap">
-                       <bool>false</bool>
-                      </property>
-                      <property name="rowCount">
-                       <number>0</number>
-                      </property>
-                      <attribute name="horizontalHeaderVisible">
-                       <bool>true</bool>
-                      </attribute>
-                      <attribute name="horizontalHeaderCascadingSectionResizes">
-                       <bool>true</bool>
-                      </attribute>
-                      <attribute name="horizontalHeaderDefaultSectionSize">
-                       <number>50</number>
-                      </attribute>
-                      <attribute name="horizontalHeaderMinimumSectionSize">
-                       <number>20</number>
-                      </attribute>
-                      <attribute name="horizontalHeaderStretchLastSection">
-                       <bool>true</bool>
-                      </attribute>
-                      <attribute name="verticalHeaderVisible">
-                       <bool>false</bool>
-                      </attribute>
-                      <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>21</number>
-                      </attribute>
-                      <column>
-                       <property name="text">
-                        <string>Run No.</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>File Number</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>I0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Scaling Factor</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>NL</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Points cut from low Q side</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>NR</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Points cut from high Q side</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>x0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Center X-Pixel of Window for Reflectivity</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>xw</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Width in X-Pixels of Window for Reflectivity</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>y0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Center Y-Pixel of Window for Reflectivity</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>yw</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Width in Y-Pixels of Window for Reflectivity</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>bg0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Background Region Center</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>bgw</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Background Region Width</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>DPix</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>DirectPixel</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>Theta</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Scattering angle (degrees)</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>Dir. Run</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>The normalization file used for this dataset</string>
-                       </property>
-                      </column>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QWidget" name="tab_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <attribute name="title">
-                    <string>Direct Beam</string>
-                   </attribute>
-                   <attribute name="toolTip">
-                    <string>A list of datasets available for wavelength normalization</string>
-                   </attribute>
-                   <layout class="QVBoxLayout" name="verticalLayout_17">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>0</number>
-                    </property>
-                    <item>
-                     <widget class="QTableWidget" name="normalizeTable">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="editTriggers">
-                       <set>QAbstractItemView::NoEditTriggers</set>
-                      </property>
-                      <attribute name="horizontalHeaderCascadingSectionResizes">
-                       <bool>true</bool>
-                      </attribute>
-                      <attribute name="verticalHeaderVisible">
-                       <bool>false</bool>
-                      </attribute>
-                      <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>21</number>
-                      </attribute>
-                      <column>
-                       <property name="text">
-                        <string>Run No.</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Dataset number</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>x0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>X-Center of extraction window</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>xw</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>X-Width of extraction window</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>y0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Y-Center of extraction window</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>yw</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Y-Width of extraction window</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>bg0</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Background X-Center</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>bgw</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Background X-width</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>λ</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>Central Wavelength</string>
-                       </property>
-                      </column>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                 </widget>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_5">
-                  <item>
-                   <widget class="QPushButton" name="reduceButton">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string>Reduce...</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-               </layout>
-              </widget>
-             </item>
-            </layout>
+                <attribute name="horizontalHeaderCascadingSectionResizes">
+                 <bool>true</bool>
+                </attribute>
+                <attribute name="verticalHeaderVisible">
+                 <bool>false</bool>
+                </attribute>
+                <attribute name="verticalHeaderDefaultSectionSize">
+                 <number>21</number>
+                </attribute>
+                <column>
+                 <property name="text">
+                  <string>Run No.</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Dataset number</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>x0</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>X-Center of extraction window</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>xw</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>X-Width of extraction window</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>y0</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Y-Center of extraction window</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>yw</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Y-Width of extraction window</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>bg0</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Background X-Center</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>bgw</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Background X-width</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>λ</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Central Wavelength</string>
+                 </property>
+                </column>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </widget>
-          </widget>
-         </item>
-        </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QPushButton" name="reduceButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Reduce...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="widget_5" native="true">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>430</y>
+           <width>771</width>
+           <height>150</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
+         <widget class="QFrame" name="frame_5">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>221</width>
+            <height>110</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <property name="horizontalSpacing">
+            <number>6</number>
+           </property>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_15">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Two theta value calculated from file, if DANGLE0 overwrite is active, the read value is in brackets</string>
+             </property>
+             <property name="text">
+              <string>DANGLE0</string>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="datasetDirectPixel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Direct pixel value read from file, if overwrite is active, the read value is in brackets</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="datasetDangle">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Detector Angle value read from file</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLabel" name="datasetDangle0">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Two theta value calculated from file, if DANGLE0 overwrite is active, the read value is in brackets</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_11">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Detector Angle value read from file</string>
+             </property>
+             <property name="text">
+              <string>DANGLE</string>
+             </property>
+             <property name="margin">
+              <number>1</number>
+             </property>
+             <property name="openExternalLinks">
+              <bool>true</bool>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_17">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Direct pixel value read from file, if overwrite is active, the read value is in brackets</string>
+             </property>
+             <property name="text">
+              <string>Direct Pixel</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="widget_8" native="true">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>10</y>
+            <width>241</width>
+            <height>110</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_11">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_8">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Read from file</string>
+             </property>
+             <property name="text">
+              <string>λ</string>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QFrame" name="frame_6">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>1</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>1</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_12">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Sample angle read from file</string>
+                </property>
+                <property name="text">
+                 <string>SANGLE</string>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="datasetSangle">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Sample angle read from file</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="margin">
+                 <number>2</number>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_13">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Sample angle calculated from 2Θ and X-center position</string>
+                </property>
+                <property name="text">
+                 <string>SANGLE-calc</string>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="datasetAi">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Sample angle calculated from 2Θ and X-center position</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="margin">
+                 <number>2</number>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Read from file</string>
+             </property>
+             <property name="text">
+              <string>Proton Charge</string>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="datasetPCharge">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Read from file</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="datasetLambda">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Read from file</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="widget_7" native="true">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>490</x>
+            <y>10</y>
+            <width>271</width>
+            <height>102</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_10">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Read from file</string>
+             </property>
+             <property name="text">
+              <string>Total Counts</string>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="datasetTotCounts">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Read from file</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLabel" name="datasetRate">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="datasetTime">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Counting Time</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_37">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Count Rate</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLabel" name="datasetROI">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Counts in the window selected for X and Y</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="counts_roi_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Counts in the window selected for X and Y</string>
+             </property>
+             <property name="text">
+              <string>Counts ROI</string>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
        </widget>
        <widget class="QWidget" name="XY_Tab">
         <attribute name="title">
@@ -2869,16 +2670,7 @@
          <string>X-Y intensity maps for all channels in this file</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -2970,16 +2762,7 @@
          <string>X-ToF intensity maps for all channels in this file</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_2">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -3043,16 +2826,7 @@
          <string>Off-Specular scattering intensity preview for all files in the reduction list</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_5">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -3786,16 +3560,7 @@
          <string>GISANS</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_13">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -4243,16 +4008,7 @@
          <string>Motor and parameter log read from the file</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_8">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -4264,16 +4020,7 @@
             <string>Recorded values for all Motors/Devices:</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_19">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>0</number>
             </property>
             <item>
@@ -4323,16 +4070,7 @@
          <string>Compare</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_9">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <item>
@@ -4340,170 +4078,6 @@
          </item>
         </layout>
        </widget>
-      </widget>
-      <widget class="QFrame" name="rightPlots">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>400</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>350</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <property name="leftMargin">
-         <number>2</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
-        </property>
-        <property name="rightMargin">
-         <number>2</number>
-        </property>
-        <property name="bottomMargin">
-         <number>2</number>
-        </property>
-        <item>
-         <widget class="QSplitter" name="plotSplitter">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="childrenCollapsible">
-           <bool>false</bool>
-          </property>
-          <widget class="QWidget" name="widget_4" native="true">
-           <layout class="QVBoxLayout" name="verticalLayout_24">
-            <item>
-             <widget class="QLabel" name="label_35">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>X-Projection</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="MPLWidget" name="x_project" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>150</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="widget_2" native="true">
-           <layout class="QVBoxLayout" name="verticalLayout_23">
-            <item>
-             <widget class="QLabel" name="label_34">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Y-Projection</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="MPLWidget" name="y_project" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>150</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="widget" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_22">
-            <item>
-             <widget class="QLabel" name="label_33">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Reflectivity</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="MPLWidget" name="refl" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>150</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
       </widget>
      </widget>
     </item>
@@ -4514,7 +4088,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>2096</width>
+     <width>1920</width>
      <height>28</height>
     </rect>
    </property>
@@ -4559,18 +4133,16 @@
     <addaction name="actionOpen_Sum"/>
     <addaction name="actionLoad_Extraction"/>
    </widget>
-   <widget class="QMenu" name="menuGUI_Options">
+   <widget class="QMenu" name="menuWindow_Options">
     <property name="title">
-     <string>GUI Options</string>
+     <string>Window Options</string>
     </property>
-    <addaction name="actionHide_Sidebar"/>
-    <addaction name="actionHide_Run_Data"/>
-    <addaction name="actionHide_Data_Table"/>
+    <addaction name="actionMaximise_Space"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuReduction"/>
    <addaction name="menuAutomatics"/>
-   <addaction name="menuGUI_Options"/>
+   <addaction name="menuWindow_Options"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="mainToolbar">
@@ -5014,28 +4586,12 @@
     <string>Result Viewer</string>
    </property>
   </action>
-  <action name="actionHide_Sidebar">
+  <action name="actionMaximise_Space">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide Sidebar</string>
-   </property>
-  </action>
-  <action name="actionHide_Run_Data">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Run Data</string>
-   </property>
-  </action>
-  <action name="actionHide_Data_Table">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Data Table</string>
+    <string>Maximise Space</string>
    </property>
   </action>
  </widget>
@@ -5084,10 +4640,6 @@
   <tabstop>xLamda</tabstop>
   <tabstop>tthPhi</tabstop>
   <tabstop>plotTab</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>reductionTable</tabstop>
-  <tabstop>reduceButton</tabstop>
-  <tabstop>normalizeTable</tabstop>
   <tabstop>offspecImin</tabstop>
   <tabstop>offspecImax</tabstop>
   <tabstop>daslogTableBox</tabstop>
@@ -5213,8 +4765,8 @@
    <slot>plotActiveTab()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>364</x>
+     <y>93</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5229,8 +4781,8 @@
    <slot>plotActiveTab()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>329</x>
+     <y>93</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5245,8 +4797,8 @@
    <slot>plotActiveTab()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>294</x>
+     <y>93</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5287,38 +4839,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>reduceButton</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>reduceDatasets()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1064</x>
-     <y>989</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>435</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>reductionTable</sender>
-   <signal>itemChanged(QTableWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>reductionTableChanged(QTableWidgetItem*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>901</x>
-     <y>886</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>888</x>
-     <y>843</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionClear_Normalizations</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -5341,8 +4861,8 @@
    <slot>change_offspec_colorscale()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>152</y>
+     <x>301</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
      <x>510</x>
@@ -5357,8 +4877,8 @@
    <slot>change_offspec_colorscale()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>152</y>
+     <x>364</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
      <x>774</x>
@@ -5373,8 +4893,8 @@
    <slot>change_gisans_colorscale()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>312</x>
+     <y>95</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5389,8 +4909,8 @@
    <slot>change_gisans_colorscale()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>364</x>
+     <y>95</y>
     </hint>
     <hint type="destinationlabel">
      <x>739</x>
@@ -5421,8 +4941,8 @@
    <slot>refresh_offspec()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>152</y>
+     <x>323</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
      <x>862</x>
@@ -5453,8 +4973,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>275</x>
-     <y>691</y>
+     <x>251</x>
+     <y>630</y>
     </hint>
     <hint type="destinationlabel">
      <x>445</x>
@@ -5469,8 +4989,8 @@
    <slot>toggleColorbars()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>335</x>
-     <y>917</y>
+     <x>255</x>
+     <y>768</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>
@@ -5485,8 +5005,8 @@
    <slot>toggleColorbars()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>158</x>
-     <y>912</y>
+     <x>129</x>
+     <y>772</y>
     </hint>
     <hint type="destinationlabel">
      <x>134</x>
@@ -5533,8 +5053,8 @@
    <slot>file_open_from_list()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>258</x>
-     <y>474</y>
+     <x>257</x>
+     <y>486</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5565,8 +5085,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>171</x>
-     <y>671</y>
+     <x>169</x>
+     <y>628</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5597,8 +5117,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>671</y>
+     <x>255</x>
+     <y>628</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5613,8 +5133,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>181</x>
-     <y>724</y>
+     <x>169</x>
+     <y>654</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5629,8 +5149,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>275</x>
-     <y>724</y>
+     <x>251</x>
+     <y>654</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5645,8 +5165,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>168</x>
-     <y>727</y>
+     <x>166</x>
+     <y>640</y>
     </hint>
     <hint type="destinationlabel">
      <x>85</x>
@@ -5661,8 +5181,8 @@
    <slot>toggleColorbars()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>158</x>
-     <y>971</y>
+     <x>129</x>
+     <y>836</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5677,8 +5197,8 @@
    <slot>toggleColorbars()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>158</x>
-     <y>944</y>
+     <x>129</x>
+     <y>794</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5693,8 +5213,8 @@
    <slot>replotProjections()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>335</x>
-     <y>944</y>
+     <x>255</x>
+     <y>790</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5725,8 +5245,8 @@
    <slot>toggleColorbars()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>335</x>
-     <y>971</y>
+     <x>255</x>
+     <y>812</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5741,8 +5261,8 @@
    <slot>toggleColorbars()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>335</x>
-     <y>998</y>
+     <x>255</x>
+     <y>834</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5757,8 +5277,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>168</x>
-     <y>643</y>
+     <x>166</x>
+     <y>578</y>
     </hint>
     <hint type="destinationlabel">
      <x>543</x>
@@ -5773,8 +5293,8 @@
    <slot>reload_file()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>117</x>
-     <y>550</y>
+     <x>110</x>
+     <y>512</y>
     </hint>
     <hint type="destinationlabel">
      <x>3</x>
@@ -5831,70 +5351,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>selectedChannel0</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1430</x>
-     <y>648</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>797</x>
-     <y>839</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel1</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1512</x>
-     <y>648</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>765</x>
-     <y>861</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel2</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1595</x>
-     <y>648</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>782</x>
-     <y>0</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel3</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1677</x>
-     <y>648</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>762</x>
-     <y>0</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>bgActive</sender>
    <signal>released()</signal>
    <receiver>MainWindow</receiver>
@@ -5902,7 +5358,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>56</x>
-     <y>654</y>
+     <y>627</y>
     </hint>
     <hint type="destinationlabel">
      <x>494</x>
@@ -5943,145 +5399,17 @@
    </hints>
   </connection>
   <connection>
-   <sender>selectedChannel4</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1430</x>
-     <y>680</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel5</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1512</x>
-     <y>680</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel6</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1595</x>
-     <y>680</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel7</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1677</x>
-     <y>680</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel8</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1430</x>
-     <y>712</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel9</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1512</x>
-     <y>712</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel10</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1595</x>
-     <y>712</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>selectedChannel11</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1677</x>
-     <y>712</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>refresh_list</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>refresh_file_list()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>213</x>
-     <y>550</y>
+     <x>205</x>
+     <y>501</y>
     </hint>
     <hint type="destinationlabel">
-     <x>0</x>
+     <x>-2</x>
      <y>505</y>
     </hint>
    </hints>
@@ -6093,40 +5421,8 @@
    <slot>match_direct_beam_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>334</x>
-     <y>550</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>786</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>reductionTable</sender>
-   <signal>cellActivated(int,int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>reduction_cell_activated(int,int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1268</x>
-     <y>886</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>786</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>normalizeTable</sender>
-   <signal>cellActivated(int,int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>direct_beam_cell_activated(int,int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>456</x>
-     <y>785</y>
+     <x>266</x>
+     <y>500</y>
     </hint>
     <hint type="destinationlabel">
      <x>786</x>
@@ -6157,8 +5453,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>65</x>
-     <y>582</y>
+     <x>63</x>
+     <y>675</y>
     </hint>
     <hint type="destinationlabel">
      <x>921</x>
@@ -6173,8 +5469,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>65</x>
-     <y>614</y>
+     <x>63</x>
+     <y>705</y>
     </hint>
     <hint type="destinationlabel">
      <x>921</x>
@@ -6189,8 +5485,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>240</x>
-     <y>617</y>
+     <x>238</x>
+     <y>705</y>
     </hint>
     <hint type="destinationlabel">
      <x>921</x>
@@ -6205,8 +5501,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>240</x>
-     <y>585</y>
+     <x>238</x>
+     <y>675</y>
     </hint>
     <hint type="destinationlabel">
      <x>921</x>
@@ -6222,7 +5518,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>58</x>
-     <y>753</y>
+     <y>795</y>
     </hint>
     <hint type="destinationlabel">
      <x>934</x>
@@ -6237,8 +5533,8 @@
    <slot>changeRegionValues()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>315</x>
-     <y>757</y>
+     <x>291</x>
+     <y>795</y>
     </hint>
     <hint type="destinationlabel">
      <x>934</x>
@@ -6269,8 +5565,8 @@
    <slot>apply_offspec_crop()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>152</y>
+     <x>1385</x>
+     <y>293</y>
     </hint>
     <hint type="destinationlabel">
      <x>948</x>
@@ -6285,8 +5581,8 @@
    <slot>toggle_smoothing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>473</x>
+     <y>175</y>
     </hint>
     <hint type="destinationlabel">
      <x>948</x>
@@ -6301,8 +5597,8 @@
    <slot>update_offspec_qz_bin_width()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>1505</x>
+     <y>217</y>
     </hint>
     <hint type="destinationlabel">
      <x>842</x>
@@ -6317,8 +5613,8 @@
    <slot>update_offspec_qz_bin_width()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>1102</x>
+     <y>217</y>
     </hint>
     <hint type="destinationlabel">
      <x>842</x>
@@ -6333,60 +5629,12 @@
    <slot>update_offspec_qz_bin_width()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>142</y>
+     <x>962</x>
+     <y>217</y>
     </hint>
     <hint type="destinationlabel">
      <x>842</x>
      <y>377</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionHide_Sidebar</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>hide_sidebar()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>959</x>
-     <y>477</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionHide_Run_Data</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>hide_run_data()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1047</x>
-     <y>513</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionHide_Data_Table</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>hide_data_table()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1047</x>
-     <y>513</y>
     </hint>
    </hints>
   </connection>
@@ -6437,8 +5685,5 @@
   <slot>apply_offspec_crop()</slot>
   <slot>toggle_smoothing()</slot>
   <slot>update_offspec_qz_bin_width()</slot>
-  <slot>hide_sidebar()</slot>
-  <slot>hide_run_data()</slot>
-  <slot>hide_data_table()</slot>
  </slots>
 </ui>
