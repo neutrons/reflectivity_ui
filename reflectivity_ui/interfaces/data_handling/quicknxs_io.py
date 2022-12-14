@@ -376,8 +376,8 @@ def determine_which_files_to_sum(run_file, data_file_indicies):
     # the way the file is read ignores any files that were summed in the processing from which the
     # saved file was created.
 
-    if '+' in data_file_indicies:
-        runs = str.split(str.split(data_file_indicies)[-1], '+')
+    if "+" in data_file_indicies:
+        runs = str.split(str.split(data_file_indicies)[-1], "+")
     else:
         runs = str.split(str.split(data_file_indicies)[-1], ",")
 

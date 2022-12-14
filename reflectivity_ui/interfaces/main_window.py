@@ -110,10 +110,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def hide_sidebar(self):
         self.file_handler.hide_sidebar()
+
     def hide_run_data(self):
         self.file_handler.hide_run_data()
+
     def hide_data_table(self):
         self.file_handler.hide_data_table()
+
     def hide_unsupported(self):
         """
         Hide what we don't support
