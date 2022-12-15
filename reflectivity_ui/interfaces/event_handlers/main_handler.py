@@ -74,6 +74,24 @@ class MainHandler(object):
         self._data_manager.clear_cache()
         self.cache_indicator.setText("Files loaded: 0")
 
+    def hide_sidebar(self):
+        if self.main_window.leftEntries.isHidden():
+            self.main_window.leftEntries.show()
+        else:
+            self.main_window.leftEntries.hide()
+
+    def hide_run_data(self):
+        if self.main_window.runDataFrame.isHidden():
+            self.main_window.runDataFrame.show()
+        else:
+            self.main_window.runDataFrame.hide()
+
+    def hide_data_table(self):
+        if self.main_window.frame_2.isHidden():
+            self.main_window.frame_2.show()
+        else:
+            self.main_window.frame_2.hide()
+
     def open_file(self, file_path, force=False, silent=False):
         # type: (str, Optional[bool], Optional[bool]) -> None
         r"""
