@@ -62,7 +62,7 @@ jobs:
     if: ${{ github.ref_protected || github.ref_type == 'tag' }}
     steps:
       - name: Determine Environment
-        uses: neutrons/branch-mapper@v2
+        uses: neutrons/branch-mapper@main
         id: conda_env_name
         with:
           prefix: quicknxs2
