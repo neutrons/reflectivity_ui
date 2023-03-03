@@ -10,7 +10,7 @@ dependencies:
 - boa
 - build
 - matplotlib>=3.6
-- mantid=6.5
+- mantid=6.5.0
 - codecov
 - conda-build
 - conda-verify
