@@ -6,6 +6,7 @@ channels:
     - default
 dependencies:
 - mantidworkbench>=6.6,<6.7
+- setuptools>=48
 - boa
 - build
 - codecov
