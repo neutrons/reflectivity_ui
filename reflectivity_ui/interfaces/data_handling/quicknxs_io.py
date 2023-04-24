@@ -248,7 +248,7 @@ def write_reflectivity_data(output_path, data, col_names, as_5col=True):
             for tof_item in data:
                 for pixel_item in tof_item:
                     np.savetxt(fd, pixel_item, delimiter="\t", fmt="%-18e")
-                    fd.write("\n".encode("utf8"))
+                    fd.write("\n")
         else:
             if four_cols:
                 np.savetxt(fd, data[:, :4], delimiter=" ", fmt="%-18e")
