@@ -777,14 +777,14 @@ class ProcessingWorkflow(object):
             for item in exported_files:
                 try:
                     if item.endswith(".png"):
-                        mitem = MIMEImage(open(item, "rb").read(), "png")
+                        mitem = MIMEImage(open(item, "r").read(), "png")
                     elif item.endswith(".pdf"):
-                        mitem = MIMEText(open(item, "rb").read(), "pdf")
+                        mitem = MIMEText(open(item, "r").read(), "pdf")
                     elif item.endswith(".dat") or item.endswith(".gp"):
-                        mitem = MIMEText(open(item, "rb").read())
+                        mitem = MIMEText(open(item, "r").read())
                     else:
                         mitem = MIMEBase("application", item[-3:])
-                        mitem.set_payload(open(item, "rb").read())
+                        mitem.set_payload(open(item, "r").read())
                         encoders.encode_base64(mitem)
                 except:
                     logging.error("Could not package files for email: %s", sys.exc_info()[1])
@@ -793,7 +793,8 @@ class ProcessingWorkflow(object):
 
         try:
             smtp = smtplib.SMTP(SMTP_SERVER, timeout=10)
-            smtp.sendmail(msg["From"], map(str.strip, msg["To"].split(",") + msg["CC"].split(",")), msg.as_string())
+            to_addr = msg["To"].replace(",", ";") + ";" + msg["CC"].replace(",", ";")
+            smtp.sendmail(msg["From"], to_addr, msg.as_string())
             smtp.quit()
         except:
             logging.error("Could not send email: %s", sys.exc_info()[1])
