@@ -793,7 +793,7 @@ class ProcessingWorkflow(object):
 
         try:
             smtp = smtplib.SMTP(SMTP_SERVER, timeout=10)
-            to_addr = msg["To"].replace(',',';')+';'+msg["CC"].replace(',',';')
+            to_addr = msg["To"].replace(",", ";") + ";" + msg["CC"].replace(",", ";")
             smtp.sendmail(msg["From"], to_addr, msg.as_string())
             smtp.quit()
         except:
