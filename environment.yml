@@ -6,6 +6,7 @@ channels:
     - default
 dependencies:
 - mantidworkbench>=6.6,<6.7
+- anaconda-client
 - boa
 - build
 - codecov
