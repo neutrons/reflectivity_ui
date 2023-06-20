@@ -28,7 +28,7 @@ if application_conf.mantid_path is not None:
 import mantid.simpleapi as api
 
 # Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
-USE_SLOW_FLIPPER_LOG = True
+USE_SLOW_FLIPPER_LOG = False
 
 # Constants
 h = 6.626e-34  # m^2 kg s^-1
