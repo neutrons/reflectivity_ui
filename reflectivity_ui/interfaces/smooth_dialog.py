@@ -83,10 +83,10 @@ class SmoothDialog(QtWidgets.QDialog):
                 plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
 
         if self.ui.kizmkfzVSqz.isChecked():
-            qz_max = max(Qz.max(), qz_max)
-            qz_min = min(Qz.min(), qz_min)
-            k_diff_min = min(k_diff_min, (ki_z - kf_z).min())
-            k_diff_max = max(k_diff_max, (ki_z - kf_z).max())
+            qz_max = max(Qz[I > 0].max(), qz_max)
+            qz_min = min(Qz[I > 0].min(), qz_min)
+            k_diff_min = min(k_diff_min, (ki_z - kf_z)[I > 0].min())
+            k_diff_max = max(k_diff_max, (ki_z - kf_z)[I > 0].max())
             plot.canvas.ax.set_xlim([k_diff_min, k_diff_max])
             plot.canvas.ax.set_ylim([qz_min, qz_max])
             plot.set_xlabel("k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]")
@@ -114,10 +114,10 @@ class SmoothDialog(QtWidgets.QDialog):
 
         elif self.ui.qxVSqz.isChecked():
 
-            qz_max = max(Qz.max(), qz_max)
-            qz_min = min(Qz.min(), qz_min)
-            qx_min = min(qx_min, Qx.min())
-            qx_max = max(qx_max, Qx.max())
+            qz_max = max(Qz[I > 0].max(), qz_max)
+            qz_min = min(Qz[I > 0].min(), qz_min)
+            qx_min = min(qx_min, Qx[I > 0].min())
+            qx_max = max(qx_max, Qx[I > 0].max())
 
             plot.canvas.ax.set_xlim([qx_min, qx_max])
             plot.canvas.ax.set_ylim([qz_min, qz_max])
@@ -144,10 +144,10 @@ class SmoothDialog(QtWidgets.QDialog):
             self.ui.sigmaX.setValue(sigma_x)
             self.ui.sigmaY.setValue(sigma_y)
         else:
-            ki_z_min = min(ki_z_min, ki_z.min())
-            ki_z_max = max(ki_z_max, ki_z.max())
-            kf_z_min = min(kf_z_min, kf_z.min())
-            kf_z_max = max(kf_z_max, kf_z.max())
+            ki_z_min = min(ki_z_min, ki_z[I > 0].min())
+            ki_z_max = max(ki_z_max, ki_z[I > 0].max())
+            kf_z_min = min(kf_z_min, kf_z[I > 0].min())
+            kf_z_max = max(kf_z_max, kf_z[I > 0].max())
 
             plot.canvas.ax.set_xlim([ki_z_min, ki_z_max])
             plot.canvas.ax.set_ylim([kf_z_min, kf_z_max])
