@@ -37,20 +37,20 @@ class SmoothDialog(QtWidgets.QDialog):
         plot = self.ui.plot
         plot.clear()
 
-        #initialization of the min/max for the plots
+        # initialization of the min/max for the plots
         Qzmax = 0.001
-        #percentage offset of the grid area inside the whole plot area
+        # percentage offset of the grid area inside the whole plot area
         grid_percentage = 0.05
-        #percentage of the sigma spot from the whole plot area
+        # percentage of the sigma spot from the whole plot area
         sigma_percentage = 0.015
-        #default-minimum sigma x,y size        
+        # default-minimum sigma x,y size
         min_sigma_size = 0.0001
         k_diff_min = 0.01
         k_diff_max = -0.01
         qz_min = 0.5
         qz_max = -0.1
         qx_min = -0.001
-        qx_max = 0.001        
+        qx_max = 0.001
         ki_z_min = 0.1
         ki_z_max = -0.1
         kf_z_min = 0.1
@@ -80,11 +80,11 @@ class SmoothDialog(QtWidgets.QDialog):
             elif self.ui.qxVSqz.isChecked():
                 plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
             else:
-                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")        
-        
+                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+
         if self.ui.kizmkfzVSqz.isChecked():
             qz_max = max(Qz.max(), qz_max)
-            qz_min = min(Qz.min(), qz_min)            
+            qz_min = min(Qz.min(), qz_min)
             k_diff_min = min(k_diff_min, (ki_z - kf_z).min())
             k_diff_max = max(k_diff_max, (ki_z - kf_z).max())
             plot.canvas.ax.set_xlim([k_diff_min, k_diff_max])
@@ -92,20 +92,20 @@ class SmoothDialog(QtWidgets.QDialog):
             plot.set_xlabel("k$_{i,z}$-k$_{f,z}$ [Å$^{-1}$]")
             plot.set_ylabel("Q$_z$ [Å$^{-1}$]")
 
-            #draw the blue box 5% inside the plot area
-            x1 = k_diff_min + (k_diff_max-k_diff_min)*grid_percentage
-            x2 = k_diff_max - (k_diff_max-k_diff_min)*grid_percentage
-            y1 = qz_min + (qz_max - qz_min)*grid_percentage
-            y2 = qz_max - (qz_max - qz_min)*grid_percentage
-            
-            #sigma properties
+            # draw the blue box 5% inside the plot area
+            x1 = k_diff_min + (k_diff_max - k_diff_min) * grid_percentage
+            x2 = k_diff_max - (k_diff_max - k_diff_min) * grid_percentage
+            y1 = qz_min + (qz_max - qz_min) * grid_percentage
+            y2 = qz_max - (qz_max - qz_min) * grid_percentage
+
+            # sigma properties
             sigma_pos = (0.0, Qzmax / 3.0)
             sigma_ang = 0.0
 
-            #calculation of the sigma spot in the plot to be proportional of the difference between axis
-            #in case difference is very small we default to the min_sigma_size value
-            sigma_x = max((x2-x1)*sigma_percentage,min_sigma_size)
-            sigma_y = max((y2-y1)*sigma_percentage,min_sigma_size)
+            # calculation of the sigma spot in the plot to be proportional of the difference between axis
+            # in case difference is very small we default to the min_sigma_size value
+            sigma_x = max((x2 - x1) * sigma_percentage, min_sigma_size)
+            sigma_y = max((y2 - y1) * sigma_percentage, min_sigma_size)
 
             self.ui.sigmasCoupled.setChecked(True)
             self.ui.sigmaY.setEnabled(False)
@@ -124,20 +124,20 @@ class SmoothDialog(QtWidgets.QDialog):
             plot.set_xlabel("Q$_x$ [Å$^{-1}$]")
             plot.set_ylabel("Q$_z$ [Å$^{-1}$]")
 
-            #draw the blue box 5% inside the plot area
-            x1 = qx_min + (qx_max-qx_min)*grid_percentage
-            x2 = qx_max - (qx_max-qx_min)*grid_percentage
-            y1 = qz_min + (qz_max - qz_min)*grid_percentage
-            y2 = qz_max - (qz_max - qz_min)*grid_percentage
-            
-            #sigma properties
+            # draw the blue box 5% inside the plot area
+            x1 = qx_min + (qx_max - qx_min) * grid_percentage
+            x2 = qx_max - (qx_max - qx_min) * grid_percentage
+            y1 = qz_min + (qz_max - qz_min) * grid_percentage
+            y2 = qz_max - (qz_max - qz_min) * grid_percentage
+
+            # sigma properties
             sigma_pos = (0.0, Qzmax / 3.0)
             sigma_ang = 0.0
 
-            #calculation of the sigma spot in the plot to be proportional of the smallest difference between axis
-            #in case difference is very small we default to the min_sigma_size value
-            sigma_x = max((x2-x1)*sigma_percentage,min_sigma_size)
-            sigma_y = max((y2-y1)*sigma_percentage,min_sigma_size)
+            # calculation of the sigma spot in the plot to be proportional of the smallest difference between axis
+            # in case difference is very small we default to the min_sigma_size value
+            sigma_x = max((x2 - x1) * sigma_percentage, min_sigma_size)
+            sigma_y = max((y2 - y1) * sigma_percentage, min_sigma_size)
 
             self.ui.sigmasCoupled.setChecked(False)
             self.ui.sigmaY.setEnabled(True)
@@ -148,27 +148,27 @@ class SmoothDialog(QtWidgets.QDialog):
             ki_z_max = max(ki_z_max, ki_z.max())
             kf_z_min = min(kf_z_min, kf_z.min())
             kf_z_max = max(kf_z_max, kf_z.max())
-        
+
             plot.canvas.ax.set_xlim([ki_z_min, ki_z_max])
             plot.canvas.ax.set_ylim([kf_z_min, kf_z_max])
             plot.set_xlabel("k$_{i,z}$ [Å$^{-1}$]")
             plot.set_ylabel("k$_{f,z}$ [Å$^{-1}$]")
-            
-            #draw the blue box 5% inside the plot area
-            x1 = ki_z_min + (ki_z_max-ki_z_min)*grid_percentage
-            x2 = ki_z_max - (ki_z_max-ki_z_min)*grid_percentage
-            y1 = kf_z_min + (kf_z_max - kf_z_min)*grid_percentage
-            y2 = kf_z_max - (kf_z_max - kf_z_min)*grid_percentage
 
-            #sigma properties
+            # draw the blue box 5% inside the plot area
+            x1 = ki_z_min + (ki_z_max - ki_z_min) * grid_percentage
+            x2 = ki_z_max - (ki_z_max - ki_z_min) * grid_percentage
+            y1 = kf_z_min + (kf_z_max - kf_z_min) * grid_percentage
+            y2 = kf_z_max - (kf_z_max - kf_z_min) * grid_percentage
+
+            # sigma properties
             sigma_pos = (Qzmax / 6.0, Qzmax / 6.0)
             sigma_ang = 0.0  # -45.
-            
-            #calculation of the sigma spot in the plot to be proportional of the smallest difference between axis
-            #in case difference is very small we default to the min_sigma_size value
-            sigma_x = max((x2-x1)*sigma_percentage,min_sigma_size)
-            sigma_y = max((y2-y1)*sigma_percentage,min_sigma_size)
-            
+
+            # calculation of the sigma spot in the plot to be proportional of the smallest difference between axis
+            # in case difference is very small we default to the min_sigma_size value
+            sigma_x = max((x2 - x1) * sigma_percentage, min_sigma_size)
+            sigma_y = max((y2 - y1) * sigma_percentage, min_sigma_size)
+
             self.ui.sigmasCoupled.setChecked(True)
             self.ui.sigmaX.setValue(sigma_x)
             self.ui.sigmaY.setValue(sigma_y)
@@ -196,7 +196,7 @@ class SmoothDialog(QtWidgets.QDialog):
         self.ui.gridYmax.setValue(y2)
         self.updateGrid()
         self.drawing = False
-        
+
     def updateSettings(self):
         if self.drawing:
             return
