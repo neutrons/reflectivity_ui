@@ -212,8 +212,16 @@ class NexusData(object):
             SampleLength=conf.sample_size,
             DAngle0Overwrite=_dangle0,
             DirectPixelOverwrite=_dirpix,
+            AcceptNullReflectivity=True,  # return empty reflectivity curves (all intensities are zero)
             OutputWorkspace=output_ws,
         )
+
+        # If there's an empty reflectivity curve, add a small value to it so that it can be plotted.
+        REFLECTIVITY_THRESHOLD_VALUE = 1e-6
+        for i in range(len(ws_list)):
+            if np.all(ws[i].readY(0) < REFLECTIVITY_THRESHOLD_VALUE):
+                ws[i].dataY(0)[:] += REFLECTIVITY_THRESHOLD_VALUE
+                ws[i].dataE(0)[:] += REFLECTIVITY_THRESHOLD_VALUE**2  # arbitrary small error
 
         # FOR COMPATIBILITY WITH QUICKNXS #
         _ws = ws[0] if len(ws_list) > 1 else ws
@@ -229,17 +237,12 @@ class NexusData(object):
         tth = run_object.getProperty("two_theta").value * math.pi / 360.0
         quicknxs_scale = (float(norm_x_max) - float(norm_x_min)) * (float(norm_y_max) - float(norm_y_min))
         quicknxs_scale /= (float(peak_max) - float(peak_min)) * (float(low_res_max) - float(low_res_min))
-        logging.warning(
-            "Scale size = %s", str((float(peak_max) - float(peak_min)) * (float(low_res_max) - float(low_res_min)))
-        )
+        logging.warning("Scale size = %s", str(quicknxs_scale))
         logging.warning("Alpha_i = %s", str(tth))
         _scale = 0.005 / math.sin(tth) if tth > 0.0002 else 1.0
         quicknxs_scale *= _scale
 
-        ws = api.Scale(
-            InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
-        )
-        #
+        ws = api.Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply")
         _ws = ws if len(ws_list) > 1 else [ws]
         for xs in _ws:
             xs_id = xs.getRun().getProperty("cross_section_id").value

@@ -1,8 +1,7 @@
 name: quicknxs
 channels:
-    - mantid/label/main
+    - mantid/label/nightly
     - conda-forge
-    - neutrons
     - default
 dependencies:
 - mantidworkbench>=6.6,<6.7

@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 # pylint: bare-except
-import sys
-import logging
+
+# local imports
+from reflectivity_ui.interfaces.data_handling.data_set import CrossSectionData
+
+# third-party imports
 import numpy as np
+
+# standard imports
+import logging
+import sys
 
 
 class PlotManager(object):
@@ -44,7 +51,7 @@ class PlotManager(object):
         main_window.ui.xy_overview.clear()
         main_window.ui.xtof_overview.clear()
 
-        data = main_window.data_manager.active_channel
+        data: CrossSectionData = main_window.data_manager.active_channel
         # Initialize data as needed
         data.prepare_plot_data()
 
@@ -54,7 +61,11 @@ class PlotManager(object):
             return
 
         xy = data.xydata
-        xtof = data.xtofdata / data.proton_charge
+        if data.proton_charge > 0.0:
+            xtof = data.xtofdata / data.proton_charge
+        else:
+            logging.error("Empty reflectivity curve has no proton charge")
+            xtof = data.xtofdata
 
         if len(xtof[xtof > 0]) == 0:
             logging.error("No positive data found")
