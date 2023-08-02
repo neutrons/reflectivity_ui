@@ -42,12 +42,12 @@ def mocker_file_open(mocker):
 @pytest.fixture
 def stitching_config():
     settings = {
-        'use_dangle': True,
-        'normalize_to_unity': False,
-        'total_reflectivity_q_cutoff': 0.008,
-        'do_final_rebin': False,
-        'final_rebin_step': -0.01,
-        'match_direct_beam': True
+        "use_dangle": True,
+        "normalize_to_unity": False,
+        "total_reflectivity_q_cutoff": 0.008,
+        "do_final_rebin": False,
+        "final_rebin_step": -0.01,
+        "match_direct_beam": True,
     }
     config = Configuration()
     for key in settings:
