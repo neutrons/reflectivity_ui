@@ -15,6 +15,7 @@ dependencies:
 - pytest
 - pytest-qt
 - pytest-cov
+- pytest-mock
 - pytest-xvfb
 - toml
 - pip

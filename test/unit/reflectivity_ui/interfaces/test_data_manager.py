@@ -55,12 +55,9 @@ class TestDataManagerTest(object):
         assert len(manager.reduction_list) == 3
 
         for i in range(len(manager.reduction_list) - 1):
-            ws = manager.reduction_list[i].get_reflectivity_workspace_group()[0]
-            theta = ws.getRun().getProperty("two_theta").value
-
-            _ws = manager.reduction_list[i + 1].get_reflectivity_workspace_group()[0]
-            _theta = _ws.getRun().getProperty("two_theta").value
-            assert theta <= _theta
+            q_min, _ = manager.reduction_list[i].get_q_range()
+            _q_min, _ = manager.reduction_list[i + 1].get_q_range()
+            assert q_min <= _q_min
 
     def test_load_reduced(self, data_server):
         manager = DataManager(data_server.directory)
