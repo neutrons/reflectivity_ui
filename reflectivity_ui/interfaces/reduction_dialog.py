@@ -36,7 +36,7 @@ class ReductionDialog(QtWidgets.QDialog):
         # Formats
         self.ui.genx.setChecked(self._verify_true("format_genx", False))
         self.ui.matlab.setChecked(self._verify_true("format_matlab", False))
-        self.ui.multiAscii.setChecked(self._verify_true("format_multi", False))
+        self.ui.multiAscii.setChecked(self._verify_true("format_multi", True))
         self.ui.numpy.setChecked(self._verify_true("format_numpy", False))
         self.ui.mantid_script_checkbox.setChecked(self._verify_true("format_mantid", False))
         self.ui.five_cols_checkbox.setChecked(self._verify_true("format_5cols", True))
