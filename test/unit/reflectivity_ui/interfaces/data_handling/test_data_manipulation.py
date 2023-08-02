@@ -4,33 +4,33 @@ from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import smart_stitch_reflectivity
 from reflectivity_ui.interfaces.data_manager import DataManager
 
-
-mock_reduced_file_str = """# Datafile created by QuickNXS 3.1.0.dev2
-# Datafile created using Mantid 6.6.0
-# Date: 2023-07-05 13:31:21
-# Type: Specular
-# Input file indices: 42112,42116,42113
-# Extracted states: -+
-#
-# [Direct Beam Runs]
-#    DB_ID        P0        PN     x_pos   x_width     y_pos   y_width    bg_pos  bg_width      dpix       tth    number      File
-#        1         0         0       195        12     126.5       155        55        24       194         0     42099  /SNS/REF_M/IPTS-30794/nexus/REF_M_42099.nxs.h5
-#        2         0         0       195        12       127       154        55        24       194         0     42100  /SNS/REF_M/IPTS-30794/nexus/REF_M_42100.nxs.h5
-#        3         0         0       195        12       127       154        55        24       194         0     42100  /SNS/REF_M/IPTS-30794/nexus/REF_M_42100.nxs.h5
-#
-# [Data Runs]
-#    scale        P0        PN     x_pos   x_width     y_pos   y_width    bg_pos  bg_width       fan      dpix       tth    number     DB_ID      File
-#        1        15        10       167        12     163.5      72.9        55        24     False       194  0.00653668     42112         1  /SNS/REF_M/IPTS-30794/nexus/REF_M_42112.nxs.h5
-# 0.183654        15        10     189.3        12     162.2      68.3        55        24     False       194  0.799577     42116         2  /SNS/REF_M/IPTS-30794/nexus/REF_M_42116.nxs.h5
-#   0.1375        15        10     167.5        12     159.9      67.4        55        24     False       194  0.798876     42113         3  /SNS/REF_M/IPTS-30794/nexus/REF_M_42113.nxs.h5
-#
-# [Global Options]
-# name           value
-# sample_length  10.0
-#
-# [Data]
-#     Qz [1/A]	    R [a.u.]	   dR [a.u.]	   dQz [1/A]
-"""
+mock_reduced_file_str = (
+    "# Datafile created by QuickNXS 3.1.0.dev2\n"
+    "# Datafile created using Mantid 6.6.0\n"
+    "# Date: 2023-07-05 13:31:21\n"
+    "# Type: Specular\n"
+    "# Input file indices: 42112,42116,42113\n"
+    "# Extracted states: -+\n"
+    "#\n"
+    "# [Direct Beam Runs]\n"
+    "#    DB_ID        P0        PN     x_pos   x_width     y_pos   y_width    bg_pos  bg_width      dpix       tth    number      File\n"  # noqa: E501
+    "#        1         0         0       195        12     126.5       155        55        24       194         0     42099  /SNS/REF_M/IPTS-30794/nexus/REF_M_42099.nxs.h5\n"  # noqa: E501
+    "#        2         0         0       195        12       127       154        55        24       194         0     42100  /SNS/REF_M/IPTS-30794/nexus/REF_M_42100.nxs.h5\n"  # noqa: E501
+    "#        3         0         0       195        12       127       154        55        24       194         0     42100  /SNS/REF_M/IPTS-30794/nexus/REF_M_42100.nxs.h5\n"  # noqa: E501
+    "#\n"
+    "# [Data Runs]\n"
+    "#    scale        P0        PN     x_pos   x_width     y_pos   y_width    bg_pos  bg_width       fan      dpix       tth    number     DB_ID      File\n"  # noqa: E501
+    "#        1        15        10       167        12     163.5      72.9        55        24     False       194  0.00653668     42112         1  /SNS/REF_M/IPTS-30794/nexus/REF_M_42112.nxs.h5\n"  # noqa: E501
+    "# 0.183654        15        10     189.3        12     162.2      68.3        55        24     False       194  0.799577     42116         2  /SNS/REF_M/IPTS-30794/nexus/REF_M_42116.nxs.h5\n"  # noqa: E501
+    "#   0.1375        15        10     167.5        12     159.9      67.4        55        24     False       194  0.798876     42113         3  /SNS/REF_M/IPTS-30794/nexus/REF_M_42113.nxs.h5\n"  # noqa: E501
+    "#\n"
+    "# [Global Options]\n"
+    "# name           value\n"
+    "# sample_length  10.0\n"
+    "#\n"
+    "# [Data]\n"
+    "#     Qz [1/A]	    R [a.u.]	   dR [a.u.]	   dQz [1/A]"
+)
 
 
 @pytest.fixture
