@@ -60,7 +60,7 @@ def _is_empty_reflectivity_curve(input_workspace: Union[str, Workspace2D]) -> bo
 
     Returns
     -------
-
+    True if all reflectivity values are zero, False otherwise.
     """
     workspace = api.mtd[str(input_workspace)]
     return np.all(workspace.readY(0) < REFLECTIVITY_THRESHOLD_VALUE)
