@@ -23,7 +23,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: '3.8'
-          miniconda-version: '4.10.3'
+          miniconda-version: latest
           mamba-version: "*"
           environment-file: environment.yml
 
