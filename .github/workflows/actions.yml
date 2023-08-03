@@ -44,7 +44,7 @@ jobs:
           conda --version
           conda list | grep anaconda-client
           conda list | grep boa
-          conda install -c conda install -c conda-forge boa[mambabuild]
+          conda install -c conda-forge boa[mambabuild]
           conda mambabuild --output-folder . . -c mantid
           conda verify noarch/reflectivity_ui-*.tar.bz2
 
