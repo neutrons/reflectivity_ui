@@ -66,8 +66,9 @@ def _is_empty_reflectivity_curve(input_workspace: Union[str, Workspace2D]) -> bo
     return np.all(workspace.readY(0) < REFLECTIVITY_THRESHOLD_VALUE)
 
 
-def _shift_empty_reflectivity_curve(input_workspace: Union[str, Workspace2D],
-                                    shift=REFLECTIVITY_THRESHOLD_VALUE) -> None:
+def _shift_empty_reflectivity_curve(
+    input_workspace: Union[str, Workspace2D], shift=REFLECTIVITY_THRESHOLD_VALUE
+) -> None:
     r"""
     Shift the reflectivity values by a small amount so that it can be plotted.
 
@@ -78,7 +79,7 @@ def _shift_empty_reflectivity_curve(input_workspace: Union[str, Workspace2D],
     """
     workspace = api.mtd[str(input_workspace)]
     workspace.dataY(0)[:] += shift
-    workspace.dataE(0)[:] += shift ** 2  # arbitrary small error
+    workspace.dataE(0)[:] += shift**2  # arbitrary small error
 
 
 def getIxyt(nxs_data):
@@ -277,7 +278,9 @@ class NexusData(object):
         _scale = 0.005 / math.sin(tth) if tth > 0.0002 else 1.0
         quicknxs_scale *= _scale
 
-        ws = api.Scale(InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply")
+        ws = api.Scale(
+            InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
+        )
         _ws = ws if len(ws_list) > 1 else [ws]
         for xs in _ws:
             xs_id = xs.getRun().getProperty("cross_section_id").value
