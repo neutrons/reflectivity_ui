@@ -42,9 +42,6 @@ jobs:
 
       - name: Build Conda package
         run: |
-          conda --version
-          conda list | grep anaconda-client
-          conda list | grep boa
           conda mambabuild --output-folder . . -c mantid
           conda verify noarch/reflectivity_ui-*.tar.bz2
 
