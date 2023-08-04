@@ -20,6 +20,7 @@ import math
 import sys
 import traceback
 import time
+from typing import Union
 
 # Import mantid according to the application configuration
 from . import ApplicationConfiguration
@@ -28,6 +29,7 @@ application_conf = ApplicationConfiguration()
 if application_conf.mantid_path is not None:
     sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
+from mantid.dataobjects import Workspace2D
 
 # Set Mantid logging level to warnings
 api.ConfigService.setLogLevel(3)
@@ -42,6 +44,42 @@ H_OVER_M_NEUTRON = 3.956034e-7  # h/m_n [m^2/s]
 # Number of events under which we throw away a workspace
 # TODO: This should be a parameter
 N_EVENTS_CUTOFF = 100
+
+# If there's an empty reflectivity curve, add a small value to it so that it can be plotted.
+REFLECTIVITY_THRESHOLD_VALUE = 1e-6
+
+
+def _is_empty_reflectivity_curve(input_workspace: Union[str, Workspace2D]) -> bool:
+    r"""
+    Check that the reflectivity values are not all zero.
+
+    Parameters
+    ----------
+    input_workspace
+        Reflectivity workspace with only one spectrum.
+
+    Returns
+    -------
+    True if all reflectivity values are zero, False otherwise.
+    """
+    workspace = api.mtd[str(input_workspace)]
+    return np.all(workspace.readY(0) < REFLECTIVITY_THRESHOLD_VALUE)
+
+
+def _shift_empty_reflectivity_curve(
+    input_workspace: Union[str, Workspace2D], shift=REFLECTIVITY_THRESHOLD_VALUE
+) -> None:
+    r"""
+    Shift the reflectivity values by a small amount so that it can be plotted.
+
+    Parameters
+    ----------
+    input_workspace
+        Reflectivity workspace with only one spectrum.
+    """
+    workspace = api.mtd[str(input_workspace)]
+    workspace.dataY(0)[:] += shift
+    workspace.dataE(0)[:] += shift**2  # arbitrary small error
 
 
 def getIxyt(nxs_data):
@@ -208,12 +246,18 @@ class NexusData(object):
             ConstQTrim=0.1,
             CropFirstAndLastPoints=False,
             CleanupBadData=conf.do_final_rebin,
+            AcceptNullReflectivity=True,  # return empty reflectivity curves (all intensities are zero)
             ErrorWeightedBackground=False,
             SampleLength=conf.sample_size,
             DAngle0Overwrite=_dangle0,
             DirectPixelOverwrite=_dirpix,
             OutputWorkspace=output_ws,
         )
+
+        # If there's an empty reflectivity curve, add a small value to it so that it can be plotted.
+        for i in range(len(ws_list)):
+            if _is_empty_reflectivity_curve(ws[i]):
+                _shift_empty_reflectivity_curve(ws[i])
 
         # FOR COMPATIBILITY WITH QUICKNXS #
         _ws = ws[0] if len(ws_list) > 1 else ws
@@ -229,9 +273,7 @@ class NexusData(object):
         tth = run_object.getProperty("two_theta").value * math.pi / 360.0
         quicknxs_scale = (float(norm_x_max) - float(norm_x_min)) * (float(norm_y_max) - float(norm_y_min))
         quicknxs_scale /= (float(peak_max) - float(peak_min)) * (float(low_res_max) - float(low_res_min))
-        logging.warning(
-            "Scale size = %s", str((float(peak_max) - float(peak_min)) * (float(low_res_max) - float(low_res_min)))
-        )
+        logging.warning("Scale size = %s", str(quicknxs_scale))
         logging.warning("Alpha_i = %s", str(tth))
         _scale = 0.005 / math.sin(tth) if tth > 0.0002 else 1.0
         quicknxs_scale *= _scale
@@ -239,7 +281,6 @@ class NexusData(object):
         ws = api.Scale(
             InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
         )
-        #
         _ws = ws if len(ws_list) > 1 else [ws]
         for xs in _ws:
             xs_id = xs.getRun().getProperty("cross_section_id").value
@@ -860,12 +901,17 @@ class CrossSectionData(object):
             ConstantQBinning=self.configuration.use_constant_q,
             # EntryName=str(self.entry_name),
             ConstQTrim=0.1,
+            AcceptNullReflectivity=True,  # return empty reflectivity curves (all intensities are zero)
             ErrorWeightedBackground=False,
             SampleLength=self.configuration.sample_size,
             DAngle0Overwrite=_dangle0,
             DirectPixelOverwrite=_dirpix,
             OutputWorkspace=output_ws,
         )
+
+        # If there's an empty reflectivity curve, add a small value to it so that it can be plotted.
+        if _is_empty_reflectivity_curve(ws):
+            _shift_empty_reflectivity_curve(ws)
 
         # FOR COMPATIBILITY WITH QUICKNXS #
         run_object = ws.getRun()
