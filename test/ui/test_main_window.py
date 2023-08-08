@@ -10,7 +10,6 @@ import pytest
 
 
 class TestMainGui:
-
     def test_init(self, qtbot):
         window_main = MainWindow()
         qtbot.addWidget(window_main)
@@ -23,5 +22,5 @@ class TestMainGui:
         ui_utilities.setText(window_main.numberSearchEntry, "42100", press_enter=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

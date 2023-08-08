@@ -31,5 +31,5 @@ def test_missing_cross_section(qtbot):
     np.testing.assert_almost_equal(intensity_off_on / intensity_on_on, 279, decimal=0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])
