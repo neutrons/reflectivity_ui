@@ -48,7 +48,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Initialize the UI widgets
         self.ui = load_ui("ui_main_window.ui", baseinstance=self)
-        self.setWindowTitle("QuickNXS %s" % reflectivity_ui.__version__)
+        version = reflectivity_ui.__version__ if reflectivity_ui.__version__.lower() != "unknown" else ""
+        self.setWindowTitle(f"QuickNXS Magnetic Reflectivity {version}")
 
         # Application settings
         self.settings = QtCore.QSettings(".refredm")
