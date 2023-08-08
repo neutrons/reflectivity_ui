@@ -22,7 +22,7 @@ def test_missing_cross_section(qtbot):
     ui_utilities.setText(main_window.numberSearchEntry, "42100", press_enter=True)
     intensity_off_on = np.sum(ui_utilities.data_from_plot2D(main_window.xtof_overview))
     # select the On-On spin combination
-    qtbot.mouseClick(main_window.selectedChannel1, QtCore.Qt.LeftButton)
+    main_window.selectedChannel1.click()
     # check that the reflectivity curve is empty
     _, data_y = ui_utilities.data_from_plot1D(main_window.refl)
     assert np.all(data_y <= REFLECTIVITY_THRESHOLD_VALUE)
