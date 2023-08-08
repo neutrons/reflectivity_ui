@@ -14,4 +14,3 @@ The reviewer should check for the discussed software practices
 - [ ] need more comments in meat of code explaining intent
 - [ ] clearly named variables (better to be verbose in variable names)
 - [ ] does the code follow the other [coding standards](https://scse.ornl.gov/drtsans/developer/index.html)?
- 
