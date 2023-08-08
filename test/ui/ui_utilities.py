@@ -18,7 +18,7 @@ def setText(widget, text, press_enter=True):
 
 
 def data_from_plot1D(widget: "MplWidget", line_number=0) -> tuple:
-    r"""Get the data from an MplWidget representing showing a 1D plot
+    r"""Get the data from an MplWidget representing a 1D plot
     Returns
     -------
     X and Y data as a tuple of numpy arrays
@@ -29,7 +29,7 @@ def data_from_plot1D(widget: "MplWidget", line_number=0) -> tuple:
 
 
 def data_from_plot2D(widget: "MplWidget") -> MaskedArray:
-    r"""Get the data from an MplWidget representing showing a 1D plot
+    r"""Get the data from an MplWidget representing a 1D plot
     Returns
     -------
     2D data as a masked numpy array
