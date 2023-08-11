@@ -14,11 +14,6 @@ from scipy import ndimage
 import scipy.optimize as opt
 from .peak_finding import find_peaks, peak_prominences, peak_widths
 
-# Import mantid according to the application configuration
-from . import ApplicationConfiguration
-
-if ApplicationConfiguration().mantid_path is not None:
-    sys.path.insert(0, ApplicationConfiguration().mantid_path)
 import mantid.simpleapi as api
 
 NX_PIXELS = 304

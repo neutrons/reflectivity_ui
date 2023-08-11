@@ -22,12 +22,6 @@ import traceback
 import time
 from typing import Union
 
-# Import mantid according to the application configuration
-from . import ApplicationConfiguration
-
-application_conf = ApplicationConfiguration()
-if application_conf.mantid_path is not None:
-    sys.path.insert(0, application_conf.mantid_path)
 import mantid.simpleapi as api
 from mantid.dataobjects import Workspace2D
 

@@ -11,12 +11,6 @@ import math
 import logging
 import numpy as np
 
-# Import mantid according to the application configuration
-from . import ApplicationConfiguration
-
-APP_CONF = ApplicationConfiguration()
-if APP_CONF.mantid_path is not None:
-    sys.path.insert(0, APP_CONF.mantid_path)
 import mantid
 
 from ... import __version__

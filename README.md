@@ -25,10 +25,10 @@ activate quicknxs
 ### Install via source
 
 ```bash
-python setup.py install
+python -m pip install -e .
 ```
 
-> The dependency `mantid` must be installed via `conda install -c mantid mantid` before running the install command.
+This installs the code in [editable mode](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-e>).
 
 ### Build the wheel
 
