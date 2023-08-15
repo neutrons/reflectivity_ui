@@ -160,33 +160,49 @@ def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cuto
     return scaling_factors
 
 
-def _prepare_workspace_for_stitching(cross_section, ws_name):
+def _prepare_workspace_for_stitching(cross_sections, xs_input, global_fit, ws_name):
     """
     Create a workspace from a CrossSectionData object that we
     can call Stitch1D on.
-    :param CrossSectionData cross_section: cross section data object
+    :param dict cross_sections: dictionary with cross-section name and CrossSectionData objects
+    :param str xs: cross-section to use
+    :param bool global_fit: if True, merge data from all cross-sections
+    :param str ws_name: output workspace name
     """
-    n_total = len(cross_section.q)
-    p_0 = cross_section.configuration.cut_first_n_points
-    p_n = n_total - cross_section.configuration.cut_last_n_points
-    ws = api.CreateWorkspace(
-        DataX=cross_section.q[p_0:p_n],
-        DataY=cross_section._r[p_0:p_n],
-        DataE=cross_section._dr[p_0:p_n],
-        OutputWorkspace=ws_name,
-    )
+    if global_fit:
+        xs_names = cross_sections.keys()
+    else:
+        xs_names = [xs_input]
+
+    ws_list = []
+    for xs in xs_names:
+        cross_section = cross_sections[xs]
+        n_total = len(cross_section.q)
+        p_0 = cross_section.configuration.cut_first_n_points
+        p_n = n_total - cross_section.configuration.cut_last_n_points
+        ws_xs = api.CreateWorkspace(
+            DataX=cross_section.q[p_0:p_n],
+            DataY=cross_section._r[p_0:p_n],
+            DataE=cross_section._dr[p_0:p_n],
+            OutputWorkspace=xs,
+        )
+        ws_list.append(str(ws_xs))
+
+    ws = api.MergeRuns(ws_list)
     ws.setDistribution(True)
     ws = api.ConvertToHistogram(ws, OutputWorkspace=ws_name)
     return ws
 
 
-def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01):
+def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01, global_fit=False):
     """
     Stitch and normalize data sets
 
     :param list[NexusData] reduction_list: list of data sets to stitch
     :param string xs: name of the cross-section to use for the first data set
     :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
+    :param float q_cutoff: used if normalize_to_unity = True, data with q < q_cutoff are part of the specular ridge
+    :param bool global_fit: if True, use data from all cross-sections to calculate scaling factors
     """
     if not reduction_list:
         return []
@@ -217,13 +233,13 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
     scaling_factors = [running_scale]
 
     for i in range(len(reduction_list) - 1):
-        # Pick the cross-section with the highest signal
-        xs = reduction_list[i + 1].get_highest_cross_section()
 
         # Low-Q data set
-        _previous_ws = _prepare_workspace_for_stitching(reduction_list[i].cross_sections[xs], "low_q_workspace")
+        _previous_ws = _prepare_workspace_for_stitching(
+            reduction_list[i].cross_sections, xs, global_fit, "low_q_workspace"
+        )
         # High-Q data set
-        ws = _prepare_workspace_for_stitching(reduction_list[i + 1].cross_sections[xs], "high_q_workspace")
+        ws = _prepare_workspace_for_stitching(reduction_list[i + 1].cross_sections, xs, global_fit, "high_q_workspace")
 
         _, scale = api.Stitch1D(_previous_ws, ws)
         running_scale *= scale
