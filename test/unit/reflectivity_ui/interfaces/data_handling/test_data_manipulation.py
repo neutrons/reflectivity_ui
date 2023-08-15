@@ -59,7 +59,6 @@ def stitching_config():
 
 
 class TestDataManipulation(object):
-
     @pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
     def test_smart_stitch_reflectivity(self, data_server, mocker_file_open, stitching_config):
         manager = DataManager(data_server.directory)
