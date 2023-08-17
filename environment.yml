@@ -11,12 +11,15 @@ dependencies:
 - codecov
 - conda-build
 - conda-verify
+- pre-commit
 - pylint
 - pytest
 - pytest-qt
 - pytest-cov
 - pytest-mock
 - pytest-xvfb
+- sphinx
+- sphinx_rtd_theme
 - toml
 - pip
 - pip:
