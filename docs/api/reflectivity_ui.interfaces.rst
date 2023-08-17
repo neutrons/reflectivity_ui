@@ -75,4 +75,3 @@ reflectivity\_ui.interfaces.smooth\_dialog module
    :members:
    :undoc-members:
    :show-inheritance:
-
