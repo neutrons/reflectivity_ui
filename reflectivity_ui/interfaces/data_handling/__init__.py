@@ -6,13 +6,16 @@ import os
 
 
 class ApplicationConfiguration(object):
-    r"""Application-level configuration
-    1. Selection of the mantid version and installation location:
-        - Version is preferred in the following order, from most to least preferred: ['4.2.0', '4.1.0', '4.0.0']
-        - Preferred installation location is under /opt, e.g. "/opt/mantid42". If no preferred installation is found,
-          then a mantid installation is searched in the locations specified by `sys.path`.
-          NOTE: the preferred installation is not tested for integrity. Only the existence of the location is tested,
-          but not its contents.
+    r"""Selection of the mantid version and installation location
+
+    Notes:
+
+    - Version is preferred in the following order, from most to least preferred: ['4.2.0', '4.1.0', '4.0.0']
+    - Preferred installation location is under /opt, e.g. "/opt/mantid42". If no preferred installation is found,
+      then a mantid installation is searched in the locations specified by `sys.path`.
+    - NOTE: the preferred installation is not tested for integrity. Only the existence of the location is tested,
+      but not its contents.
+
     """
     # Polarization states
     POL_STATE = "PolarizerState"

@@ -103,25 +103,26 @@ class RunNumbers(object):
 
 
 class FilePath(object):
-    r"""
-    Helper class to deal with string representation of one or more absolute file paths.
+    r"""Helper class to deal with string representation of one or more absolute file paths.
+
     Example:
-        file_path = '/SNS/REF_M/IPTS-25531/nexus/REF_M_38202.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38201.nxs.h5'
+    file_path = '/SNS/REF_M/IPTS-25531/nexus/REF_M_38202.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38201.nxs.h5'
+
     NOTE: Paths are sorted
     """
     merge_symbol = "+"
 
     @classmethod
-    def join(cls, dirname, basename, sort=True):
-        # type: (unicode, unicode, Optional[bool]) -> unicode
-        r"""
-        @brief Create the file path for a single file or a set of files using one directory
+    def join(cls, dirname: str, basename: str, sort: bool = True) -> str:
+        r"""Create the file path for a single file or a set of files using one directory
+
+        Example: u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38198.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38199.nxs.h5'
+
         @param dirname: absolute path to a directory
-        @param basename: name of one or more files. If more than one file, they're concatenated with the
-          merge symbol '+'. Example: u'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        @param basename: name of one or more files. If more than one file, they're concatenated with the merge symbol '+'. Example: u'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
         @param sort: if True, sort the basenames according to increasing run number when more than one file.
+
         @returns string representing the absolute path to the files.
-          Example: u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38198.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38199.nxs.h5'
         """
         base_names = basename.split(cls.merge_symbol)
         file_paths = [os.path.join(dirname, name) for name in base_names]
