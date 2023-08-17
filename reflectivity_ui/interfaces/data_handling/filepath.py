@@ -119,7 +119,8 @@ class FilePath(object):
         Example: u'/SNS/REF_M/IPTS-25531/nexus/REF_M_38198.nxs.h5+/SNS/REF_M/IPTS-25531/nexus/REF_M_38199.nxs.h5'
 
         @param dirname: absolute path to a directory
-        @param basename: name of one or more files. If more than one file, they're concatenated with the merge symbol '+'. Example: u'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        @param basename: name of one or more files. If more than one file, they're concatenated with the merge
+        symbol '+'. Example: u'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
         @param sort: if True, sort the basenames according to increasing run number when more than one file.
 
         @returns string representing the absolute path to the files.
