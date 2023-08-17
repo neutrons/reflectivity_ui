@@ -1,5 +1,5 @@
-==========================
-Beginners Guide to iMars3D
-==========================
+============================
+Beginner's Guide to QuickNXS
+============================
 
 Tutorials will be added later.

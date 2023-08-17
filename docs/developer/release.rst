@@ -9,15 +9,15 @@ How to Make a Release
 Overview
 --------
 
-The release of reflectivity_ui is configured to be done by an automated pipeline via Github action.
+The release of ``reflectivity_ui`` is configured to be done by an automated pipeline via GitHub action.
 However, developers might have to create manual releases in case the automated system fails, the process of which requires a working local development.
-For reflectivity_ui, there are three official release channels, and this document will provide necessary information on how to release reflectivity_ui to all three.
+For ``reflectivity_ui`` there are three official release channels, and this document will provide necessary information on how to release ``reflectivity_ui`` to all three.
 
 
 Release to Conda
 ----------------
 
-Release candidate and stable versions of reflectivity_ui are automatically released to the project channel, `neutrons`_
+Release candidate and stable versions of ``reflectivity_ui`` are automatically released to the project channel, `neutrons`_
 whenever a new tag is pushed to the repository.
 
 To manually build a conda package (for testing puruposes only), the following steps are required:

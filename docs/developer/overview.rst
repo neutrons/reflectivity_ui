@@ -9,7 +9,7 @@ Overview
 Developer Account
 -----------------
 
-All the development work is done via Github, and the developers working on reflectivity_ui must have a valid Github account with 2-step authentication enabled.
+All the development work is done via GitHub, and the developers working on ``reflectivity_ui`` must have a valid GitHub account with 2-step authentication enabled.
 For developers who are part of SAE@ORNL, please contact a senior developer to add you to the project.
 
 
