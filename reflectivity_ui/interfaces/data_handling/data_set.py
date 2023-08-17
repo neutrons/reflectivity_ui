@@ -105,7 +105,7 @@ class NexusData(object):
     """
 
     def __init__(self, file_path, configuration):
-        # type: (unicode, Configurati0n) -> None
+        # type: (unicode, Configuration) -> None
         """
         @brief Structure to read in one or more Nexus data files
         @param file_path: absolute path to one or more files. If more than one, paths are concatenated with the

@@ -1,8 +1,6 @@
 <!-- Badges -->
 
-![Build Status](https://github.com/neutrons/reflectivity_ui/actions/workflows/ornl-prod.yml/badge.svg)
-![Unittest Status](https://github.com/neutrons/reflectivity_ui/actions/workflows/unittest.yml/badge.svg?branch=next)
-[![TRAVISCI](https://travis-ci.org/neutrons/reflectivity_ui.svg?branch=master)](https://travis-ci.org/neutrons/reflectivity_ui)
+![Build Status](https://github.com/neutrons/reflectivity_ui/actions/workflows/actions.yml/badge.svg)
 [![codecov](https://codecov.io/gh/neutrons/reflectivity_ui/branch/master/graph/badge.svg)](https://codecov.io/gh/neutrons/reflectivity_ui)
 
 <!-- End Badges -->

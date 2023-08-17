@@ -178,6 +178,7 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
     """
     Stitch and normalize data sets
 
+    :param list[NexusData] reduction_list: list of data sets to stitch
     :param string xs: name of the cross-section to use for the first data set
     :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
     """
