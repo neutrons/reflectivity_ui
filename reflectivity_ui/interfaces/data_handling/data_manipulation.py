@@ -178,13 +178,16 @@ def _prepare_workspace_for_stitching(cross_sections, xs_input, global_fit, ws_na
             DataX=cross_section.q[p_0:p_n],
             DataY=cross_section._r[p_0:p_n],
             DataE=cross_section._dr[p_0:p_n],
-            OutputWorkspace=xs,
+            OutputWorkspace="tmp_prepare_stitching_" + xs,
         )
         ws_list.append(str(ws_xs))
 
-    ws = api.MergeRuns(ws_list)
-    ws.setDistribution(True)
-    ws = api.ConvertToHistogram(ws, OutputWorkspace=ws_name)
+    ws_merge = api.MergeRuns(ws_list)
+    ws_merge.setDistribution(True)
+    ws = api.ConvertToHistogram(ws_merge, OutputWorkspace=ws_name)
+    # Delete temporary workspaces
+    api.DeleteWorkspaces(ws_list)
+    api.DeleteWorkspace(ws_merge)
     return ws
 
 
