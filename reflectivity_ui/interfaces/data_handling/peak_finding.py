@@ -21,15 +21,15 @@ __all__ = ["peak_prominences", "peak_widths", "find_peaks"]
 
 
 def peak_prominences(x, peaks, wlen=None):
-    """
-    Calculate the prominence of each peak in a signal.
+    """Calculate the prominence of each peak in a signal.
 
     .. versionadded:: 1.1.0
 
     References
     ----------
-    .. [1] Wikipedia Article for Topographic Prominence:
-       https://en.wikipedia.org/wiki/Topographic_prominence
+
+    Wikipedia Article for Topographic Prominence:
+    https://en.wikipedia.org/wiki/Topographic_prominence
     """
     # Inner function expects `x` to be C-contiguous
     x = np.asarray(x, order="C", dtype=np.float64)

@@ -8,10 +8,12 @@
 
 # local
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
-from . import ApplicationConfiguration
 
 # 3rd party
+from mantid.api import WorkspaceGroup
+from mantid.dataobjects import EventWorkspace
 import numpy as np
+import mantid.simpleapi as api
 
 # standard
 import logging
@@ -21,11 +23,6 @@ import random
 import sys
 import string
 
-# Import mantid according to the application configuration
-application_conf = ApplicationConfiguration()
-if application_conf.mantid_path is not None:
-    sys.path.insert(0, application_conf.mantid_path)
-import mantid.simpleapi as api
 
 # Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
 USE_SLOW_FLIPPER_LOG = False
@@ -90,24 +87,26 @@ class Instrument(object):
 
     def __init__(self):
         # Filtering
-        self.pol_state = application_conf.POL_STATE
-        self.pol_veto = application_conf.POL_VETO
-        self.ana_state = application_conf.ANA_STATE
-        self.ana_veto = application_conf.ANA_VETO
+        self.pol_state = "PolarizerState"
+        self.pol_veto = "PolarizerVeto"
+        self.ana_state = "AnalyzerState"
+        self.ana_veto = "AnalyzerVeto"
 
     @staticmethod
-    def dummy_filter_cross_sections(ws, name_prefix=None):
-        # type: (EventWorkspace, Optional[str]) -> WorkspaceGroup
-        r"""
-        @brief Filter events according to an aggregated state log.
-        @details  BL4A:SF:ICP:getDI
-          015 (0000 1111): SF1=OFF, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
-          047 (0010 1111): SF1=ON, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
-          031 (0001 1111): SF1=OFF, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
-          063 (0011 1111): SF1=ON, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+    def dummy_filter_cross_sections(ws: EventWorkspace, name_prefix: str = None) -> WorkspaceGroup:
+        r"""Filter events according to an aggregated state log.
+
+        Examples:
+        BL4A:SF:ICP:getDI
+        015 (0000 1111): SF1=OFF, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
+        047 (0010 1111): SF1=ON, SF2=OFF, SF1Veto=OFF, SF2Veto=OFF
+        031 (0001 1111): SF1=OFF, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+        063 (0011 1111): SF1=ON, SF2=ON, SF1Veto=OFF, SF2Veto=OFF
+
         @param ws: workspace containing the unfiltered events
         @param name_prefix: root name of the output WorkspaceGroup. If None, the run number of the workspace is chosen
         as the root name.
+
         @return a group workspace for each of the four different filter/analyzer conbinations
         """
         state_log = "BL4A:SF:ICP:getDI"

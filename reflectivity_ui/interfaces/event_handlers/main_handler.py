@@ -1053,7 +1053,7 @@ class MainHandler(object):
         r"""
         @brief Gather the reduction options.
         @details Retrieve the reduction options either from the active channel or from the current settings
-         in the graphical interface.
+        in the graphical interface.
         """
         if self._data_manager.active_channel is not None:
             configuration = self._data_manager.active_channel.configuration

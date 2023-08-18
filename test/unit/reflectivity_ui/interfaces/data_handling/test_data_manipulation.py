@@ -9,6 +9,7 @@ import copy
 import mantid.simpleapi as api
 import numpy as np
 import pytest
+from test import SNS_REFM_MOUNTED
 
 
 mock_reduced_file_str = (
@@ -108,15 +109,12 @@ def stitching_reduction_list():
 
 
 class TestDataManipulation(object):
+    @pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
     def test_smart_stitch_reflectivity(self, data_server, mocker_file_open, stitching_config):
         manager = DataManager(data_server.directory)
-        try:
-            manager.load_data_from_reduced_file("note: file read is mocked", stitching_config)
-            if len(manager.reduction_list) < 1:
-                raise IOError("Files missing.")
-        except IOError:
-            pytest.skip("Cannot find required datafiles, probably not being run on the cluster.")
-
+        manager.load_data_from_reduced_file("note: file read is mocked", stitching_config)
+        if len(manager.reduction_list) < 1:
+            raise IOError("Files missing.")
         scaling_factors = smart_stitch_reflectivity(manager.reduction_list, None, False, 0.008)
         assert scaling_factors == pytest.approx([1.0, 0.1809, 0.1354], abs=0.001)
 
