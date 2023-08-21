@@ -1100,6 +1100,7 @@ class MainHandler(object):
         configuration.cut_last_n_points = self.ui.rangeEnd.value()
         configuration.normalize_to_unity = self.ui.normalize_to_unity_checkbox.isChecked()
         configuration.total_reflectivity_q_cutoff = self.ui.normalization_q_cutoff_spinbox.value()
+        configuration.global_stitching = self.ui.global_fit_checkbox.isChecked()
         configuration.wl_bandwidth = self.ui.bandwidth_spinbox.value()
 
         configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
@@ -1205,6 +1206,7 @@ class MainHandler(object):
         self.ui.rangeEnd.setValue(configuration.cut_last_n_points)
         self.ui.normalize_to_unity_checkbox.setChecked(configuration.normalize_to_unity)
         self.ui.normalization_q_cutoff_spinbox.setValue(configuration.total_reflectivity_q_cutoff)
+        self.ui.global_fit_checkbox.setChecked(configuration.global_stitching)
         self.ui.bandwidth_spinbox.setValue(configuration.wl_bandwidth)
 
         self.ui.fanReflectivity.setChecked(configuration.use_constant_q)
@@ -1267,6 +1269,7 @@ class MainHandler(object):
         self._data_manager.stitch_data_sets(
             normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked(),
             q_cutoff=self.ui.normalization_q_cutoff_spinbox.value(),
+            global_stitching=self.ui.global_fit_checkbox.isChecked(),
         )
 
         for i in range(len(self._data_manager.reduction_list)):

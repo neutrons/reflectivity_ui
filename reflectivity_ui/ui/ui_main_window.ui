@@ -17,7 +17,7 @@
    <string>QuickNXS</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../icons/icons.qrc">
     <normaloff>:/General/logo.png</normaloff>:/General/logo.png</iconset>
   </property>
   <property name="toolButtonStyle">
@@ -394,7 +394,7 @@
            <number>0</number>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
@@ -718,7 +718,7 @@
              <x>0</x>
              <y>0</y>
              <width>397</width>
-             <height>262</height>
+             <height>288</height>
             </rect>
            </property>
            <attribute name="label">
@@ -813,7 +813,7 @@
               </property>
              </widget>
             </item>
-            <item row="8" column="1" colspan="2">
+            <item row="9" column="1" colspan="2">
              <widget class="QCheckBox" name="fanReflectivity">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Evaluate Q for each X line of the reflectivity and combine these measurements.&lt;/p&gt;&lt;p&gt;Can be used with a large X-width of e.g. 15 for samples scattering to a large 2θ area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -895,7 +895,7 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="1">
+            <item row="10" column="1">
              <widget class="QLabel" name="label_31">
               <property name="minimumSize">
                <size>
@@ -908,7 +908,7 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="2">
+            <item row="10" column="2">
              <widget class="QDoubleSpinBox" name="sample_size_spinbox">
               <property name="suffix">
                <string> mm</string>
@@ -924,14 +924,14 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="1">
+            <item row="11" column="1">
              <widget class="QLabel" name="label_53">
               <property name="text">
                <string>Bandwidth:</string>
               </property>
              </widget>
             </item>
-            <item row="10" column="2">
+            <item row="11" column="2">
              <widget class="QDoubleSpinBox" name="bandwidth_spinbox">
               <property name="toolTip">
                <string>Bandwidth to use to select the TOF range when loading data.</string>
@@ -947,6 +947,13 @@
               </property>
               <property name="value">
                <double>3.200000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1" colspan="2">
+             <widget class="QCheckBox" name="global_fit_checkbox">
+              <property name="text">
+               <string>Global fit when stitching</string>
               </property>
              </widget>
             </item>
@@ -966,11 +973,12 @@
            <zorder>sample_size_spinbox</zorder>
            <zorder>label_53</zorder>
            <zorder>bandwidth_spinbox</zorder>
+           <zorder>global_fit_checkbox</zorder>
           </widget>
           <widget class="QWidget" name="page_3">
            <property name="geometry">
             <rect>
-             <x>-6</x>
+             <x>0</x>
              <y>0</y>
              <width>373</width>
              <height>184</height>
@@ -4967,7 +4975,7 @@
   </action>
   <action name="actionExport_Raw_Data">
    <property name="icon">
-    <iconset>
+    <iconset resource="../icons/icons.qrc">
      <normaloff>:/General/exportRawData.png</normaloff>:/General/exportRawData.png</iconset>
    </property>
    <property name="text">
@@ -5092,7 +5100,9 @@
   <tabstop>offspecImax</tabstop>
   <tabstop>daslogTableBox</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../icons/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionOpen</sender>

@@ -76,6 +76,8 @@ class Configuration(object):
         # Normalize to unity when stitching
         self.normalize_to_unity = True
         self.total_reflectivity_q_cutoff = 0.01
+        # Use all cross-sections when stitching
+        self.global_stitching = False
 
         # Cut first and last N points
         self.cut_first_n_points = 1
@@ -195,6 +197,7 @@ class Configuration(object):
         # Normalize to unity when stitching
         settings.setValue("normalize_to_unity", self.normalize_to_unity)
         settings.setValue("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
+        settings.setValue("global_stitching", self.global_stitching)
 
         settings.setValue("normalize_x_tof", self.normalize_x_tof)
         settings.setValue("x_wl_map", self.x_wl_map)
@@ -282,6 +285,7 @@ class Configuration(object):
         self.total_reflectivity_q_cutoff = float(
             settings.value("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
         )
+        self.global_stitching = _verify_true("global_stitching", self.global_stitching)
 
         self.normalize_x_tof = _verify_true("normalize_x_tof", self.normalize_x_tof)
         self.x_wl_map = _verify_true("x_wl_map", self.x_wl_map)

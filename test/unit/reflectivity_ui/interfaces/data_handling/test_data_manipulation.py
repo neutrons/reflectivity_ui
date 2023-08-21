@@ -1,9 +1,14 @@
-import pytest
-
+# package imports
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import smart_stitch_reflectivity
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from reflectivity_ui.interfaces.data_manager import DataManager
 
+# 3rd-party imports
+import copy
+import mantid.simpleapi as api
+import numpy as np
+import pytest
 from test import SNS_REFM_MOUNTED
 
 
@@ -58,6 +63,51 @@ def stitching_config():
     return config
 
 
+@pytest.fixture
+def stitching_reduction_list():
+    """List of NexusData objects for testing of stitching"""
+
+    class _MockCrossSectionData(object):
+        """Test class to use instead of CrossSectionData, which requires EventWorkspaces"""
+
+        def __init__(self, xs: str, config: Configuration, data_x: list, data_y: list, ws_name: str):
+            self.name = xs
+            self.configuration = copy.deepcopy(config)
+            data_e = [0.1 * y for y in data_y]
+            workspace = api.CreateWorkspace(DataX=data_x, DataY=data_y, DataE=data_e, OutputWorkspace=ws_name)
+            self.ws = workspace
+            self.q = self.ws.readX(0)[:].copy()
+            self._r = np.ma.masked_equal(self.ws.readY(0)[:].copy(), 0)
+            self._dr = self.ws.readE(0)[:].copy()
+
+    configuration = Configuration()
+    configuration.cut_first_n_points = 0
+    configuration.cut_last_n_points = 0
+
+    # create curve 1
+    data_x = [1.0, 2.0, 3.0, 4.0]
+    xs1_on_on = _MockCrossSectionData("On_On", configuration, data_x, [5.0, 5.0, 5.0, 5.0], "run1_on_on")
+    xs1_on_off = _MockCrossSectionData("On_Off", configuration, data_x, [7.0, 7.0, 7.0, 7.0], "run1_on_off")
+    curve1 = NexusData("path", configuration)
+    curve1.cross_sections = {"On_On": xs1_on_on, "On_Off": xs1_on_off}
+
+    # create curve 2
+    data_x = [4.0, 5.0, 6.0, 7.0]
+    xs2_on_on = _MockCrossSectionData("On_On", configuration, data_x, [3.0, 3.0, 3.0, 3.0], "run2_on_on")
+    xs2_on_off = _MockCrossSectionData("On_Off", configuration, data_x, [2.0, 2.0, 2.0, 2.0], "run2_on_off")
+    curve2 = NexusData("path", configuration)
+    curve2.cross_sections = {"On_On": xs2_on_on, "On_Off": xs2_on_off}
+
+    # create curve 3
+    data_x = [7.0, 8.0, 9.0, 10.0]
+    xs3_on_on = _MockCrossSectionData("On_On", configuration, data_x, [1.0, 1.0, 1.0, 1.0], "run3_on_on")
+    xs3_on_off = _MockCrossSectionData("On_Off", configuration, data_x, [1.0, 1.0, 1.0, 1.0], "run3_on_off")
+    curve3 = NexusData("path", configuration)
+    curve3.cross_sections = {"On_On": xs3_on_on, "On_Off": xs3_on_off}
+
+    return [curve1, curve2, curve3]
+
+
 class TestDataManipulation(object):
     @pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
     def test_smart_stitch_reflectivity(self, data_server, mocker_file_open, stitching_config):
@@ -67,6 +117,30 @@ class TestDataManipulation(object):
             raise IOError("Files missing.")
         scaling_factors = smart_stitch_reflectivity(manager.reduction_list, None, False, 0.008)
         assert scaling_factors == pytest.approx([1.0, 0.1809, 0.1354], abs=0.001)
+
+    @pytest.mark.parametrize(
+        "normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors",
+        [
+            (False, None, False, [1.0, 1.66667, 5.0]),
+            (True, 1.5, False, [0.2, 0.33333, 1.0]),
+            (False, None, True, [1.0, 2.4, 6.0]),
+            (True, 1.5, True, [0.2, 0.48, 1.2]),
+        ],
+    )
+    def test_smart_stitch_parameters(
+        self, stitching_reduction_list, normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors
+    ):
+        """Test all combinations of the smart_stitch_reflectivity parameters `normalize_to_unity` and `global_fit`
+
+        The fixture stitching_reduction_list has three runs with two cross-sections each: `On_On` and `On_Off`.
+        When `global_fit` is True, both cross-sections are used to calculate the scaling factors.
+        """
+        scaling_factors = smart_stitch_reflectivity(
+            stitching_reduction_list, "On_On", normalize_to_unity, q_cutoff, global_fit
+        )
+        assert scaling_factors == pytest.approx(expected_scaling_factors, abs=0.001)
+        # Delete workspaces
+        api.mtd.clear()
 
 
 if __name__ == "__main__":

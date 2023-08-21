@@ -21,6 +21,15 @@ class TestMainGui:
         qtbot.addWidget(window_main)
         ui_utilities.setText(window_main.numberSearchEntry, "42100", press_enter=True)
 
+    def test_set_global_stitching(self, qtbot):
+        """Test that the configuration is updated based on the checkbox value"""
+        window_main = MainWindow()
+        qtbot.addWidget(window_main)
+        window_main.global_fit_checkbox.setChecked(True)
+        assert window_main.file_handler.get_configuration().global_stitching is True
+        window_main.global_fit_checkbox.setChecked(False)
+        assert window_main.file_handler.get_configuration().global_stitching is False
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
