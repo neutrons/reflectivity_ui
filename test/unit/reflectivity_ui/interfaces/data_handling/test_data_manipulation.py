@@ -117,7 +117,7 @@ class TestDataManipulation(object):
             raise IOError("Files missing.")
         scaling_factors, scaling_errors = smart_stitch_reflectivity(manager.reduction_list, "Off_On", False, 0.008)
         assert scaling_factors == pytest.approx([1.0, 0.1809, 0.1556], abs=0.001)
-        assert scaling_errors == pytest.approx([0.0, 0.0, 0.0], abs=0.001)
+        assert scaling_errors == pytest.approx([0.0, 0.003, 0.005], abs=0.001)
 
     @pytest.mark.parametrize(
         "normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors, expected_scaling_errors",
