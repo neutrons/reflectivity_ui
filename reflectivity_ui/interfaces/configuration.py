@@ -73,6 +73,8 @@ class Configuration(object):
         self.subtract_background = True
         # Overall scaling factor
         self.scaling_factor = 1.0
+        # Error in the scaling factor
+        self.scaling_error = 0.0
         # Normalize to unity when stitching
         self.normalize_to_unity = True
         self.total_reflectivity_q_cutoff = 0.01
@@ -191,6 +193,7 @@ class Configuration(object):
 
         settings.setValue("subtract_background", self.subtract_background)
         settings.setValue("scaling_factor", self.scaling_factor)
+        settings.setValue("scaling_error", self.scaling_error)
         settings.setValue("cut_first_n_points", self.cut_first_n_points)
         settings.setValue("cut_last_n_points", self.cut_last_n_points)
 
@@ -277,6 +280,7 @@ class Configuration(object):
 
         self.subtract_background = _verify_true("subtract_background", self.subtract_background)
         self.scaling_factor = float(settings.value("scaling_factor", self.scaling_factor))
+        self.scaling_error = float(settings.value("scaling_error", self.scaling_error))
         self.cut_first_n_points = int(settings.value("cut_first_n_points", self.cut_first_n_points))
         self.cut_last_n_points = int(settings.value("cut_last_n_points", self.cut_last_n_points))
 

@@ -115,30 +115,38 @@ class TestDataManipulation(object):
         manager.load_data_from_reduced_file("note: file read is mocked", stitching_config)
         if len(manager.reduction_list) < 1:
             raise IOError("Files missing.")
-        scaling_factors = smart_stitch_reflectivity(manager.reduction_list, None, False, 0.008)
-        assert scaling_factors == pytest.approx([1.0, 0.1809, 0.1354], abs=0.001)
+        scaling_factors, scaling_errors = smart_stitch_reflectivity(manager.reduction_list, "Off_On", False, 0.008)
+        assert scaling_factors == pytest.approx([1.0, 0.1809, 0.1556], abs=0.001)
+        assert scaling_errors == pytest.approx([0.0, 0.0, 0.0], abs=0.001)
 
     @pytest.mark.parametrize(
-        "normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors",
+        "normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors, expected_scaling_errors",
         [
-            (False, None, False, [1.0, 1.66667, 5.0]),
-            (True, 1.5, False, [0.2, 0.33333, 1.0]),
-            (False, None, True, [1.0, 2.4, 6.0]),
-            (True, 1.5, True, [0.2, 0.48, 1.2]),
+            (False, None, False, [1.0, 1.66667, 5.0], [0.0, 0.23570, 1.00000]),
+            (True, 1.5, False, [0.2, 0.33333, 1.0], [0.02, 0.057735, 0.22361]),
+            (False, None, True, [1.0, 2.4, 6.0], [0.0, 0.24403, 0.85988]),
+            (True, 1.5, True, [0.2, 0.48, 1.2], [0.02, 0.068455, 0.20970]),
         ],
     )
     def test_smart_stitch_parameters(
-        self, stitching_reduction_list, normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors
+        self,
+        stitching_reduction_list,
+        normalize_to_unity,
+        q_cutoff,
+        global_fit,
+        expected_scaling_factors,
+        expected_scaling_errors,
     ):
         """Test all combinations of the smart_stitch_reflectivity parameters `normalize_to_unity` and `global_fit`
 
         The fixture stitching_reduction_list has three runs with two cross-sections each: `On_On` and `On_Off`.
         When `global_fit` is True, both cross-sections are used to calculate the scaling factors.
         """
-        scaling_factors = smart_stitch_reflectivity(
+        scaling_factors, scaling_errors = smart_stitch_reflectivity(
             stitching_reduction_list, "On_On", normalize_to_unity, q_cutoff, global_fit
         )
         assert scaling_factors == pytest.approx(expected_scaling_factors, abs=0.001)
+        assert scaling_errors == pytest.approx(expected_scaling_errors, abs=0.001)
         # Delete workspaces
         api.mtd.clear()
 
