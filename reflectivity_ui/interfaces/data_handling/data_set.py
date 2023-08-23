@@ -590,7 +590,9 @@ class CrossSectionData(object):
     def dr(self):
         if self._dr is None:
             return None
-        return self._dr * self.configuration.scaling_factor
+        return np.sqrt(
+            (self._dr * self.configuration.scaling_factor) ** 2 + (self.configuration.scaling_error * self._r) ** 2
+        )
 
     @property
     def wavelength_range(self):

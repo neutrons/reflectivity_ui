@@ -11,6 +11,8 @@ import time
 
 import mantid.simpleapi as api
 import mantid
+import numpy as np
+
 from .instrument import Instrument
 from .data_set import NexusMetaData
 
@@ -210,7 +212,9 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
 
     # First, determine the overall scaling factor as needed
     scaling_factor = 1.0
+    scaling_error = 0.0
     if normalize_to_unity:
+        # Calculate scaling factor for normalizing the specular ridge to 1
         idx_list = reduction_list[0].cross_sections[xs].q < q_cutoff
         total = 0
         weights = 0
@@ -220,14 +224,23 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
                 total += w * float(reduction_list[0].cross_sections[xs]._r[i])
                 weights += w
         if weights > 0 and total > 0:
-            scaling_factor = weights / total
+            # Since weighted_average = \sum{ r_i / dr_i^2 } / \sum{ 1 / dr_i^2 }, the error is
+            # weighted_average_error = 1 / \sqrt{ \sum{ 1 / dr_i^2 } } = 1 / \sqrt{weights}
+            weighted_average = total / weights
+            weighted_average_error = 1.0 / np.sqrt(weights)
+            # Scaling factor S = 1 / u, error dS = du / u^2
+            scaling_factor = 1 / weighted_average
+            scaling_error = weighted_average_error / weighted_average**2
         reduction_list[0].set_parameter("scaling_factor", scaling_factor)
+        reduction_list[0].set_parameter("scaling_error", scaling_error)
     else:
         scaling_factor = reduction_list[0].cross_sections[xs].configuration.scaling_factor
 
     # Stitch the data sets together
     running_scale = scaling_factor
+    running_error = scaling_error
     scaling_factors = [running_scale]
+    scaling_errors = [running_error]
 
     for i in range(len(reduction_list) - 1):
 
@@ -238,12 +251,17 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
         # High-Q data set
         ws = _prepare_workspace_for_stitching(reduction_list[i + 1].cross_sections, xs, global_fit, "high_q_workspace")
 
-        _, scale = api.Stitch1D(_previous_ws, ws)
+        _, scale = api.Stitch1D(_previous_ws, ws, OutputScalingWorkspace="ws_stitching_scale")
+        scale_error = api.mtd["ws_stitching_scale"].readE(0)[0]
+        # Calculate the error in the product of two scaling factors, f1 * f2, as \sqrt{(df2 * f1)^2 + (df1 * f2)^2}
+        running_error = np.sqrt((scale_error * running_scale) ** 2 + (running_error * scale) ** 2)
+        scaling_errors.append(running_error)
+        reduction_list[i + 1].set_parameter("scaling_error", running_error)
         running_scale *= scale
         scaling_factors.append(running_scale)
         reduction_list[i + 1].set_parameter("scaling_factor", running_scale)
 
-    return scaling_factors
+    return scaling_factors, scaling_errors
 
 
 def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
