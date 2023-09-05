@@ -286,7 +286,6 @@ class DataManager(object):
 
         # If we don't have the data, load it
         if nexus_data is None:
-            configuration.normalization = None
             nexus_data = NexusData(file_path, configuration)
             sub_task = progress.create_sub_task(max_value=70) if progress else None
             nexus_data.load(progress=sub_task, update_parameters=update_parameters)
@@ -307,8 +306,7 @@ class DataManager(object):
             # If we didn't get this data set from our cache, add it and compute its reflectivity.
             if not is_from_cache:
                 # Find suitable direct beam
-                logging.info("Direct beam from loader: %s", configuration.normalization)
-                if configuration.normalization is None and configuration.match_direct_beam:
+                if configuration.match_direct_beam:
                     self.find_best_direct_beam()
 
                 # Replace reduction and normalization entries as needed

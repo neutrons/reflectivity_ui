@@ -37,3 +37,9 @@ def data_from_plot2D(widget: "MplWidget") -> MaskedArray:
     figure = widget.canvas.fig
     axes = figure.get_axes()[0]
     return axes.get_images()[0].get_array()
+
+
+def set_current_file_by_run_number(widget, run_number):
+    r"""Set the selected file in the main window file list by the given run number"""
+    list_item = widget.file_list.findItems(str(run_number), QtCore.Qt.MatchContains)[0]
+    widget.file_list.setCurrentItem(list_item)
