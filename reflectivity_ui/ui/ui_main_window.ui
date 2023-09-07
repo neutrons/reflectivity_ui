@@ -717,8 +717,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>397</width>
-             <height>288</height>
+             <width>484</width>
+             <height>350</height>
             </rect>
            </property>
            <attribute name="label">
@@ -813,7 +813,7 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="1" colspan="2">
+            <item row="11" column="1" colspan="2">
              <widget class="QCheckBox" name="fanReflectivity">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Evaluate Q for each X line of the reflectivity and combine these measurements.&lt;/p&gt;&lt;p&gt;Can be used with a large X-width of e.g. 15 for samples scattering to a large 2θ area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -895,7 +895,7 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="1">
+            <item row="13" column="1">
              <widget class="QLabel" name="label_31">
               <property name="minimumSize">
                <size>
@@ -908,7 +908,7 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="2">
+            <item row="13" column="2">
              <widget class="QDoubleSpinBox" name="sample_size_spinbox">
               <property name="suffix">
                <string> mm</string>
@@ -924,14 +924,14 @@
               </property>
              </widget>
             </item>
-            <item row="11" column="1">
+            <item row="14" column="1">
              <widget class="QLabel" name="label_53">
               <property name="text">
                <string>Bandwidth:</string>
               </property>
              </widget>
             </item>
-            <item row="11" column="2">
+            <item row="14" column="2">
              <widget class="QDoubleSpinBox" name="bandwidth_spinbox">
               <property name="toolTip">
                <string>Bandwidth to use to select the TOF range when loading data.</string>
@@ -957,6 +957,26 @@
               </property>
              </widget>
             </item>
+            <item row="9" column="1">
+             <widget class="QCheckBox" name="polynomial_stitching_checkbox">
+              <property name="text">
+               <string>Polynomial fit when stitching</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="1">
+             <widget class="QLabel" name="label_56">
+              <property name="text">
+               <string>Polynomial degree</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="2">
+             <widget class="QSpinBox" name="polynomial_stitching_degree_spinbox"/>
+            </item>
            </layout>
            <zorder>trustSANGLE</zorder>
            <zorder>trustDANGLE</zorder>
@@ -974,6 +994,9 @@
            <zorder>label_53</zorder>
            <zorder>bandwidth_spinbox</zorder>
            <zorder>global_fit_checkbox</zorder>
+           <zorder>polynomial_stitching_checkbox</zorder>
+           <zorder>label_56</zorder>
+           <zorder>polynomial_stitching_degree_spinbox</zorder>
           </widget>
           <widget class="QWidget" name="page_3">
            <property name="geometry">
