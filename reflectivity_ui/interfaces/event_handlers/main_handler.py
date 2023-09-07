@@ -1266,10 +1266,15 @@ class MainHandler(object):
         # Update the configuration so we can remember the cutoff value
         # later if it was changed
         self.get_configuration()
+        if self.ui.polynomial_stitching_checkbox.isChecked():
+            polynomial_degree = self.ui.polynomial_stitching_degree_spinbox.value()
+        else:
+            polynomial_degree = None
         self._data_manager.stitch_data_sets(
             normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked(),
             q_cutoff=self.ui.normalization_q_cutoff_spinbox.value(),
             global_stitching=self.ui.global_fit_checkbox.isChecked(),
+            polynomial=polynomial_degree,
         )
 
         for i in range(len(self._data_manager.reduction_list)):

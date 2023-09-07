@@ -1,6 +1,9 @@
 # package imports
 from reflectivity_ui.interfaces.configuration import Configuration
-from reflectivity_ui.interfaces.data_handling.data_manipulation import smart_stitch_reflectivity
+from reflectivity_ui.interfaces.data_handling.data_manipulation import (
+    _get_stitching_overlap_region,
+    smart_stitch_reflectivity,
+)
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from reflectivity_ui.interfaces.data_manager import DataManager
 
@@ -148,6 +151,59 @@ class TestDataManipulation(object):
         assert scaling_factors == pytest.approx(expected_scaling_factors, abs=0.001)
         assert scaling_errors == pytest.approx(expected_scaling_errors, abs=0.001)
         # Delete workspaces
+        api.mtd.clear()
+
+    @pytest.mark.parametrize(
+        "normalize_to_unity, global_fit, polynom_degree, expected_scaling_factors, expected_scaling_errors",
+        [
+            (False, False, 3, [1.0, 1.66667, 5.0], [0.0, 0.22754, 0.95711]),
+            (True, False, 3, [0.2, 0.33333, 1.0], [0.02, 0.056410, 0.21597]),
+            (False, True, 3, [1.0, 2.4, 6.0], [0.0, 0.23164, 0.83919]),
+            (True, True, 3, [0.2, 0.48, 1.2], [0.02, 0.066711, 0.20632]),
+        ],
+    )
+    def test_smart_stitch_polynom(
+        self,
+        stitching_reduction_list,
+        normalize_to_unity,
+        global_fit,
+        polynom_degree,
+        expected_scaling_factors,
+        expected_scaling_errors,
+    ):
+        q_cutoff = 1.5
+        scaling_factors, scaling_errors = smart_stitch_reflectivity(
+            stitching_reduction_list, "On_On", normalize_to_unity, q_cutoff, global_fit, polynom_degree
+        )
+        assert scaling_factors == pytest.approx(expected_scaling_factors, abs=0.001)
+        assert scaling_errors == pytest.approx(expected_scaling_errors, abs=0.001)
+        # Delete workspaces
+        api.mtd.clear()
+
+    def test_get_stitching_overlap_region(self):
+        """Test of helper function _get_stitching_overlap_region"""
+        x1 = [1, 2, 3, 4, 5]
+        x2 = [3, 4, 5, 6, 7]
+        x3 = [7, 8, 9, 10, 11]
+        y = [1, 1, 1, 1]
+        ws1 = api.CreateWorkspace(x1, y)
+        ws2 = api.CreateWorkspace(x2, y)
+        ws3 = api.CreateWorkspace(x3, y)
+
+        # with overlap
+        xmin, xmax = _get_stitching_overlap_region(ws1, ws2, 1)
+        assert (xmin, xmax) == pytest.approx((2, 6))
+
+        # without overlap
+        xmin, xmax = _get_stitching_overlap_region(ws1, ws3, 1)
+        assert (xmin, xmax) == pytest.approx((5, 7))
+
+        # wrong order
+        with pytest.raises(ValueError) as error_info:
+            xmin, xmax = _get_stitching_overlap_region(ws2, ws1, 1)
+        assert str(error_info.value) == "x-range for ws_lo must not be higher than x-range for ws_hi"
+
+        # delete workspaces
         api.mtd.clear()
 
 

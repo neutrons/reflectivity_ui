@@ -193,7 +193,90 @@ def _prepare_workspace_for_stitching(cross_sections, xs_input, global_fit, ws_na
     return ws
 
 
-def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01, global_fit=False):
+def _get_stitching_overlap_region(ws_lo, ws_hi, n_points_outside_overlap=3):
+    """Get the x boundary values of the overlap region between two workspaces
+
+    :param Workspace ws_lo: the low-Q reflectivity curve
+    :param Workspace ws_hi: the high-Q reflectivity curve
+    :param int n_points_outside_overlap: extra points to include on each end of the overlap region
+    """
+    if ws_lo.readX(0)[0] > ws_hi.readX(0)[0] or ws_lo.readX(0)[-1] > ws_hi.readX(0)[-1]:
+        raise ValueError("x-range for ws_lo must not be higher than x-range for ws_hi")
+
+    # get initial boundaries from lowest Q of the high-Q curve and highest Q of the low-Q curve
+    x_lo_max = ws_lo.readX(0)[-1]
+    x_hi_min = ws_hi.readX(0)[0]
+
+    if x_hi_min > x_lo_max:
+        # no overlap, use only extra points
+        min_idx_lo = -n_points_outside_overlap
+        max_idx_hi = n_points_outside_overlap - 1
+    else:
+        # use overlap plus extra points
+        min_idx_lo = np.where(ws_lo.readX(0) >= x_hi_min)[0][0]
+        min_idx_lo = max(min_idx_lo - n_points_outside_overlap, 0)
+        max_idx_hi = np.where(ws_hi.readX(0) <= x_lo_max)[0][-1]
+        max_idx_hi = min(max_idx_hi + n_points_outside_overlap, ws_hi.readX(0).size - 1)
+
+    # get x values corresponding to the found indices
+    xmin = ws_lo.readX(0)[min_idx_lo]
+    xmax = ws_hi.readX(0)[max_idx_hi]
+
+    return xmin, xmax
+
+
+def _get_polynomial_fit_stitching_scaling_factor(ws_lo, ws_hi, n_polynom, n_points_outside_overlap=3):
+    """Get the scaling factor for scaling the high-Q curve to match the low-Q curve
+
+    :param Workspace ws_lo: the low-Q reflectivity curve
+    :param Workspace ws_hi: the high-Q reflectivity curve
+    :param int n: the degree of the polynomial to fit the curves to
+    """
+    # crop to the overlap region of the curves plus extra points
+    xmin, xmax = _get_stitching_overlap_region(ws_lo, ws_hi, n_points_outside_overlap)
+    ws_lo_crop = api.CropWorkspace(InputWorkspace=ws_lo, XMin=xmin, XMax=xmax)
+    ws_hi_crop = api.CropWorkspace(InputWorkspace=ws_hi, XMin=xmin, XMax=xmax)
+
+    # build the strings to represent the polynomial, initial values and ties in the Mantid function definition
+    formula_str = "A0"
+    initial_val_str = "A0=1"
+    ties_str = "f1.A0=f0.A0"
+    for i in range(1, n_polynom + 1):
+        formula_str += f"+A{i}*x^{i}"  # "A0 + A1*x + A2*x^2 + ..."
+        initial_val_str += f", A{i}=1"  # "A0=1, A1=1, ..."
+        ties_str += f",f1.A{i}=f0.A{i}"  # "f1.A0=f0.A0, f1.A1=f0.A1, ..."
+
+    poly_func = f";name=UserFunction, Formula={formula_str}, {initial_val_str}, $domains=0"
+    scaled_poly_func = (
+        f";name=UserFunction, Formula=poly_scale*({formula_str}), poly_scale=1, {initial_val_str}, $domains=1"
+    )
+    ties = f";ties=({ties_str})"
+    multi_func = "composite=MultiDomainFunction, NumDeriv=1" + poly_func + scaled_poly_func + ties
+
+    # fit MultiDomain function to the low-Q and high-Q workspaces
+    fit = api.Fit(
+        Function=multi_func,
+        InputWorkspace=ws_lo_crop,
+        WorkspaceIndex=0,
+        InputWorkspace_1=ws_hi_crop,
+        WorkspaceIndex_1=0,
+        Output="fit",
+    )
+
+    # the scaling factor poly_scale scaled the polynomial to match the high-Q reflectivity curve, therefore, take the
+    # inverse to get the scaling factor for matching the high-Q reflectivity curve with the low-Q curve
+    i_scale = n_polynom + 1
+    poly_scale = fit.Function.function.getParameterValue(i_scale)
+    poly_scale_error = fit.Function.function.getError(i_scale)
+    scale = 1 / poly_scale
+    scale_error = poly_scale_error / poly_scale**2
+
+    return scale, scale_error
+
+
+def smart_stitch_reflectivity(
+    reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01, global_fit=False, polynom_degree=None
+):
     """
     Stitch and normalize data sets
 
@@ -202,6 +285,7 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
     :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
     :param float q_cutoff: used if normalize_to_unity = True, data with q < q_cutoff are part of the specular ridge
     :param bool global_fit: if True, use data from all cross-sections to calculate scaling factors
+    :param int polynom_degree: if not None, find the scaling factor by simultaneously fitting a polynomial and scaling factor to the two curves
     """
     if not reduction_list:
         return []
@@ -251,8 +335,12 @@ def smart_stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, 
         # High-Q data set
         ws = _prepare_workspace_for_stitching(reduction_list[i + 1].cross_sections, xs, global_fit, "high_q_workspace")
 
-        _, scale = api.Stitch1D(_previous_ws, ws, OutputScalingWorkspace="ws_stitching_scale")
-        scale_error = api.mtd["ws_stitching_scale"].readE(0)[0]
+        if isinstance(polynom_degree, int) and polynom_degree > 0:
+            scale, scale_error = _get_polynomial_fit_stitching_scaling_factor(_previous_ws, ws, polynom_degree)
+        else:
+            _, scale = api.Stitch1D(_previous_ws, ws, OutputScalingWorkspace="ws_stitching_scale")
+            scale_error = api.mtd["ws_stitching_scale"].readE(0)[0]
+
         # Calculate the error in the product of two scaling factors, f1 * f2, as \sqrt{(df2 * f1)^2 + (df1 * f2)^2}
         running_error = np.sqrt((scale_error * running_scale) ** 2 + (running_error * scale) ** 2)
         scaling_errors.append(running_error)
