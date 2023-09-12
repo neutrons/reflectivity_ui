@@ -190,20 +190,22 @@ class TestDataManipulation(object):
 
         Tests stitching of two parts of a parabola x^2 with no overlap in the x-range
         """
+        rng = np.random.default_rng(745841)
+
         x1 = np.arange(0, 10)
-        y1 = x1**2
+        y1 = x1**2 + rng.normal(0.0, 0.001)
         ws1 = api.CreateWorkspace(x1, y1)
 
         expected_scale_factor = 3.2
         x2 = np.arange(12, 20)
-        y2 = x2**2 / expected_scale_factor
+        y2 = x2**2 / expected_scale_factor + rng.normal(0.0, 0.001)
         ws2 = api.CreateWorkspace(x2, y2)
 
         # test expected output
         fit_output = _get_polynomial_fit_stitching_scaling_factor(ws1, ws2, 3, 3)
-        assert fit_output["scale_factor_value"] == pytest.approx(expected_scale_factor)
-        assert fit_output["scale_factor_error"] == pytest.approx(0.172152)
-        assert fit_output["polynomial_coeff"] == pytest.approx([0.0, 0.0, 1.0, 0.0], abs=1e-6)
+        assert fit_output["scale_factor_value"] == pytest.approx(expected_scale_factor, abs=1e-3)
+        assert fit_output["scale_factor_error"] == pytest.approx(0.26968, abs=1e-3)
+        assert fit_output["polynomial_coeff"] == pytest.approx([0.0, 0.0, 1.0, 0.0], abs=1e-2)
 
         # test exception due to not enough points
         with pytest.raises(RuntimeError) as error_info:
