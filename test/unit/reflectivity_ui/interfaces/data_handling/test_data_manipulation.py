@@ -1,6 +1,7 @@
 # package imports
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import (
+    _get_polynomial_fit_stitching_scaling_factor,
     _get_stitching_overlap_region,
     smart_stitch_reflectivity,
 )
@@ -123,46 +124,19 @@ class TestDataManipulation(object):
         assert scaling_errors == pytest.approx([0.0, 0.003, 0.005], abs=0.001)
 
     @pytest.mark.parametrize(
-        "normalize_to_unity, q_cutoff, global_fit, expected_scaling_factors, expected_scaling_errors",
-        [
-            (False, None, False, [1.0, 1.66667, 5.0], [0.0, 0.23570, 1.00000]),
-            (True, 1.5, False, [0.2, 0.33333, 1.0], [0.02, 0.057735, 0.22361]),
-            (False, None, True, [1.0, 2.4, 6.0], [0.0, 0.24403, 0.85988]),
-            (True, 1.5, True, [0.2, 0.48, 1.2], [0.02, 0.068455, 0.20970]),
-        ],
-    )
-    def test_smart_stitch_parameters(
-        self,
-        stitching_reduction_list,
-        normalize_to_unity,
-        q_cutoff,
-        global_fit,
-        expected_scaling_factors,
-        expected_scaling_errors,
-    ):
-        """Test all combinations of the smart_stitch_reflectivity parameters `normalize_to_unity` and `global_fit`
-
-        The fixture stitching_reduction_list has three runs with two cross-sections each: `On_On` and `On_Off`.
-        When `global_fit` is True, both cross-sections are used to calculate the scaling factors.
-        """
-        scaling_factors, scaling_errors = smart_stitch_reflectivity(
-            stitching_reduction_list, "On_On", normalize_to_unity, q_cutoff, global_fit
-        )
-        assert scaling_factors == pytest.approx(expected_scaling_factors, abs=0.001)
-        assert scaling_errors == pytest.approx(expected_scaling_errors, abs=0.001)
-        # Delete workspaces
-        api.mtd.clear()
-
-    @pytest.mark.parametrize(
         "normalize_to_unity, global_fit, polynom_degree, expected_scaling_factors, expected_scaling_errors",
         [
+            (False, False, None, [1.0, 1.66667, 5.0], [0.0, 0.23570, 1.00000]),
+            (True, False, None, [0.2, 0.33333, 1.0], [0.02, 0.057735, 0.22361]),
+            (False, True, None, [1.0, 2.4, 6.0], [0.0, 0.24403, 0.85988]),
+            (True, True, None, [0.2, 0.48, 1.2], [0.02, 0.068455, 0.20970]),
             (False, False, 3, [1.0, 1.66667, 5.0], [0.0, 0.22754, 0.95711]),
             (True, False, 3, [0.2, 0.33333, 1.0], [0.02, 0.056410, 0.21597]),
             (False, True, 3, [1.0, 2.4, 6.0], [0.0, 0.23164, 0.83919]),
             (True, True, 3, [0.2, 0.48, 1.2], [0.02, 0.066711, 0.20632]),
         ],
     )
-    def test_smart_stitch_polynom(
+    def test_smart_stitch_parameters(
         self,
         stitching_reduction_list,
         normalize_to_unity,
@@ -171,6 +145,11 @@ class TestDataManipulation(object):
         expected_scaling_factors,
         expected_scaling_errors,
     ):
+        """Test all combinations of the smart_stitch_reflectivity parameters `normalize_to_unity` and `global_fit`
+
+        The fixture stitching_reduction_list has three runs with two cross-sections each: `On_On` and `On_Off`.
+        When `global_fit` is True, both cross-sections are used to calculate the scaling factors.
+        """
         q_cutoff = 1.5
         scaling_factors, scaling_errors = smart_stitch_reflectivity(
             stitching_reduction_list, "On_On", normalize_to_unity, q_cutoff, global_fit, polynom_degree
@@ -205,6 +184,31 @@ class TestDataManipulation(object):
 
         # delete workspaces
         api.mtd.clear()
+
+    def test_get_polynomial_fit_stitching_scaling_factor(self):
+        """Test of helper function _get_polynomial_fit_stitching_scaling_factor
+
+        Tests stitching of two parts of a parabola x^2 with no overlap in the x-range
+        """
+        x1 = np.arange(0, 10)
+        y1 = x1**2
+        ws1 = api.CreateWorkspace(x1, y1)
+
+        expected_scale_factor = 3.2
+        x2 = np.arange(12, 20)
+        y2 = x2**2 / expected_scale_factor
+        ws2 = api.CreateWorkspace(x2, y2)
+
+        # test expected output
+        fit_output = _get_polynomial_fit_stitching_scaling_factor(ws1, ws2, 3, 3)
+        assert fit_output["scale_factor_value"] == pytest.approx(expected_scale_factor)
+        assert fit_output["scale_factor_error"] == pytest.approx(0.172152)
+        assert fit_output["polynomial_coeff"] == pytest.approx([0.0, 0.0, 1.0, 0.0], abs=1e-6)
+
+        # test exception due to not enough points
+        with pytest.raises(RuntimeError) as error_info:
+            _get_polynomial_fit_stitching_scaling_factor(ws1, ws2, 5, 3)
+        assert "Levenberg-Marquardt minimizer failed to initialize" in str(error_info.value)
 
 
 if __name__ == "__main__":

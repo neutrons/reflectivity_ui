@@ -80,6 +80,10 @@ class Configuration(object):
         self.total_reflectivity_q_cutoff = 0.01
         # Use all cross-sections when stitching
         self.global_stitching = False
+        # Use a polynomial curve fit when stitching
+        self.polynomial_stitching = False
+        self.polynomial_stitching_degree = 3
+        self.polynomial_stitching_points = 3
 
         # Cut first and last N points
         self.cut_first_n_points = 1
@@ -201,6 +205,9 @@ class Configuration(object):
         settings.setValue("normalize_to_unity", self.normalize_to_unity)
         settings.setValue("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
         settings.setValue("global_stitching", self.global_stitching)
+        settings.setValue("polynomial_stitching", self.polynomial_stitching)
+        settings.setValue("polynomial_stitching_degree", self.polynomial_stitching_degree)
+        settings.setValue("polynomial_stitching_points", self.polynomial_stitching_points)
 
         settings.setValue("normalize_x_tof", self.normalize_x_tof)
         settings.setValue("x_wl_map", self.x_wl_map)
@@ -290,6 +297,13 @@ class Configuration(object):
             settings.value("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
         )
         self.global_stitching = _verify_true("global_stitching", self.global_stitching)
+        self.polynomial_stitching = _verify_true("polynomial_stitching", self.polynomial_stitching)
+        self.polynomial_stitching_degree = int(
+            settings.value("polynomial_stitching_degree", self.polynomial_stitching_degree)
+        )
+        self.polynomial_stitching_points = int(
+            settings.value("polynomial_stitching_points", self.polynomial_stitching_points)
+        )
 
         self.normalize_x_tof = _verify_true("normalize_x_tof", self.normalize_x_tof)
         self.x_wl_map = _verify_true("x_wl_map", self.x_wl_map)

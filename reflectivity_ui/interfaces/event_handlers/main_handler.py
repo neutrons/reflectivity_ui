@@ -1101,6 +1101,9 @@ class MainHandler(object):
         configuration.normalize_to_unity = self.ui.normalize_to_unity_checkbox.isChecked()
         configuration.total_reflectivity_q_cutoff = self.ui.normalization_q_cutoff_spinbox.value()
         configuration.global_stitching = self.ui.global_fit_checkbox.isChecked()
+        configuration.polynomial_stitching = self.ui.polynomial_stitching_checkbox.isChecked()
+        configuration.polynomial_stitching_degree = self.ui.polynomial_stitching_degree_spinbox.value()
+        configuration.polynomial_stitching_points = self.ui.polynomial_stitching_points_spinbox.value()
         configuration.wl_bandwidth = self.ui.bandwidth_spinbox.value()
 
         configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
@@ -1207,6 +1210,9 @@ class MainHandler(object):
         self.ui.normalize_to_unity_checkbox.setChecked(configuration.normalize_to_unity)
         self.ui.normalization_q_cutoff_spinbox.setValue(configuration.total_reflectivity_q_cutoff)
         self.ui.global_fit_checkbox.setChecked(configuration.global_stitching)
+        self.ui.polynomial_stitching_checkbox.setChecked(configuration.polynomial_stitching)
+        self.ui.polynomial_stitching_degree_spinbox.setValue(configuration.polynomial_stitching_degree)
+        self.ui.polynomial_stitching_points_spinbox.setValue(configuration.polynomial_stitching_points)
         self.ui.bandwidth_spinbox.setValue(configuration.wl_bandwidth)
 
         self.ui.fanReflectivity.setChecked(configuration.use_constant_q)
@@ -1267,22 +1273,34 @@ class MainHandler(object):
         # later if it was changed
         self.get_configuration()
         if self.ui.polynomial_stitching_checkbox.isChecked():
-            polynomial_degree = self.ui.polynomial_stitching_degree_spinbox.value()
+            poly_degree = self.ui.polynomial_stitching_degree_spinbox.value()
         else:
-            polynomial_degree = None
-        self._data_manager.stitch_data_sets(
-            normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked(),
-            q_cutoff=self.ui.normalization_q_cutoff_spinbox.value(),
-            global_stitching=self.ui.global_fit_checkbox.isChecked(),
-            polynomial=polynomial_degree,
-        )
+            poly_degree = None
 
-        for i in range(len(self._data_manager.reduction_list)):
-            xs = self._data_manager.active_channel.name
-            d = self._data_manager.reduction_list[i].cross_sections[xs]
-            self.ui.reductionTable.setItem(i, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor)))
+        try:
+            self._data_manager.stitch_data_sets(
+                normalize_to_unity=self.ui.normalize_to_unity_checkbox.isChecked(),
+                q_cutoff=self.ui.normalization_q_cutoff_spinbox.value(),
+                global_stitching=self.ui.global_fit_checkbox.isChecked(),
+                poly_degree=poly_degree,
+                poly_points=self.ui.polynomial_stitching_points_spinbox.value(),
+            )
+        except RuntimeError as err:
+            self.report_message(
+                f"Error in stitching:\n{str(err)}",
+                detailed_message=str(traceback.format_exc()),
+                pop_up=True,
+                is_error=True,
+            )
+        else:
+            for i in range(len(self._data_manager.reduction_list)):
+                xs = self._data_manager.active_channel.name
+                d = self._data_manager.reduction_list[i].cross_sections[xs]
+                self.ui.reductionTable.setItem(
+                    i, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor))
+                )
 
-        self.main_window.initiate_reflectivity_plot.emit(False)
+            self.main_window.initiate_reflectivity_plot.emit(False)
 
     def trim_data_to_normalization(self):
         """
