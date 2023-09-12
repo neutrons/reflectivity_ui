@@ -580,15 +580,25 @@ class DataManager(object):
                 n_points = len(item.cross_sections[xs].q) - overlap_idx[0][0]
                 item.set_parameter("cut_last_n_points", n_points)
 
-    def stitch_data_sets(self, normalize_to_unity=True, q_cutoff=0.01, global_stitching=False):
+    def stitch_data_sets(
+        self, normalize_to_unity=True, q_cutoff=0.01, global_stitching=False, poly_degree=None, poly_points=3
+    ):
         """
         Determine scaling factors for each data set
         :param bool normalize_to_unity: If True, the reflectivity plateau will be normalized to 1.
         :param float q_cutoff: critical q-value below which we expect R=1
         :param bool global_stitching: If True, use data from all cross-sections to calculate scaling factors
+        :param int poly_degree: if not None, find the scaling factor by simultaneously fitting a polynomial and scaling factor to the curves
+        :param int poly_points: number of additional points on each end of the overlap region to include in the fit
         """
         data_manipulation.smart_stitch_reflectivity(
-            self.reduction_list, self.active_channel.name, normalize_to_unity, q_cutoff, global_stitching
+            self.reduction_list,
+            self.active_channel.name,
+            normalize_to_unity,
+            q_cutoff,
+            global_stitching,
+            poly_degree,
+            poly_points,
         )
 
     def merge_data_sets(self, asymmetry=True):
