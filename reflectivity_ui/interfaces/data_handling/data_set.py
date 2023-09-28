@@ -444,6 +444,7 @@ class CrossSectionData(object):
     dangle0 = 0
     det_size_x = 0.0007
     det_size_y = 0.0007
+    lambda_center = 0
 
     def __init__(self, name, configuration, entry_name="entry", workspace=None):
         self.name = name

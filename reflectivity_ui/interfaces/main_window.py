@@ -170,12 +170,18 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self.file_handler.open_file(self.data_manager.current_file, force=True)
 
-    def changeActiveChannel(self):
+    def change_active_channel(self, is_checked):
         """
-        The overview and reflectivity channel was changed. This
-        recalculates already extracted reflectivities.
+        The overview and reflectivity channel was changed. This updates the run
+        information and plots in the Overview area
+
+        The toggled() signal is emitted from both radio buttons whose states were changed,
+        therefore, use the bool value to only perform channel update actions once.
+
+        :param bool is_checked: the state of the radio button that emitted the signal
         """
-        return self.file_loaded()
+        if is_checked:
+            self.file_handler.active_channel_changed()
 
     def getNorm(self):
         """
