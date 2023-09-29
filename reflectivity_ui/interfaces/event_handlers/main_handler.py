@@ -145,14 +145,7 @@ class MainHandler(object):
         Update UI after a file is loaded
         """
         self.main_window.auto_change_active = True
-        current_channel = 0
-        for i in range(12):
-            if getattr(self.ui, "selectedChannel%i" % i).isChecked():
-                current_channel = i
-
-        success = self._data_manager.set_channel(current_channel)
-        if not success:
-            self.ui.selectedChannel0.setChecked(True)
+        self._set_data_manager_active_channel()
 
         channels = list(self._data_manager.data_sets.keys())
         for i, channel in enumerate(channels):
@@ -170,6 +163,32 @@ class MainHandler(object):
         self.main_window.initiate_projection_plot.emit(False)
 
         self.cache_indicator.setText("Files loaded: %s" % (self._data_manager.get_cachesize()))
+
+    def active_channel_changed(self):
+        """
+        Update UI metadata and plots after the active channel is changed
+        """
+        self._set_data_manager_active_channel()
+        self.update_channel_info()
+        self.main_window.plotActiveTab()
+        self.main_window.initiate_reflectivity_plot.emit(False)
+        self.main_window.initiate_projection_plot.emit(False)
+
+    def _set_data_manager_active_channel(self):
+        """
+        Set the data manager's active channel from the active channel in the UI
+        """
+        self.main_window.auto_change_active = True
+        current_channel = 0
+        for i in range(12):
+            if getattr(self.ui, "selectedChannel%i" % i).isChecked():
+                current_channel = i
+                break
+
+        success = self._data_manager.set_channel(current_channel)
+        if not success:
+            self.ui.selectedChannel0.setChecked(True)
+        self.main_window.auto_change_active = False
 
     def _congruency_fail_report(self, file_paths, log_names=None):
         r"""
@@ -248,7 +267,10 @@ class MainHandler(object):
         d = self._data_manager.active_channel
         self.ui.datasetAi.setText("%.3f°" % (d.scattering_angle))
 
-        wl_min, wl_max = d.wavelength_range
+        try:
+            wl_min, wl_max = d.wavelength_range
+        except ZeroDivisionError:
+            wl_min, wl_max = float("NaN"), float("NaN")
         self.ui.datasetLambda.setText("%.2f (%.2f-%.2f) Å" % (d.lambda_center, wl_min, wl_max))
 
         # DIRPIX and DANGLE0 overwrite
@@ -326,6 +348,27 @@ class MainHandler(object):
         self.active_data_changed()
 
         self.main_window.auto_change_active = False
+
+    def update_channel_info(self):
+        """
+        Update channel metadata shown in the overview tab.
+        """
+        # Update cross-section specific information in the overview tab
+        d = self._data_manager.active_channel
+        self.ui.datasetPCharge.setText("%.3e" % d.proton_charge)
+        self.ui.datasetTime.setText("%i s" % d.total_time)
+        self.ui.datasetTotCounts.setText("%.4e" % d.total_counts)
+        try:
+            self.ui.datasetRate.setText("%.1f cps" % (d.total_counts / d.total_time))
+        except ZeroDivisionError:
+            self.ui.datasetRate.setText("NaN")
+        self.ui.currentChannel.setText(
+            "<b>%s</b> (%s)&nbsp;&nbsp;&nbsp;Type: %s&nbsp;&nbsp;&nbsp;Current State: "
+            "<b>%s</b>" % (d.number, d.experiment, d.measurement_type, d.name)
+        )
+
+        # Update the calculated data
+        self.update_calculated_data()
 
     def update_file_list(self, query_path=None):
         # type: (Optional[str]) -> None

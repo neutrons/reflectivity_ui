@@ -5,8 +5,6 @@
 
     #TODO: refactor this or replace it with a standard solution
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import os
 import inspect
 import tempfile

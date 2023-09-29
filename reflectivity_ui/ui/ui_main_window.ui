@@ -396,7 +396,7 @@
           <property name="currentIndex">
            <number>1</number>
           </property>
-          <widget class="QWidget" name="page">
+          <widget class="QWidget" name="reflectivity_extraction_basic">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -712,7 +712,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="page_2">
+          <widget class="QWidget" name="reflectivity_extraction_advanced">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -964,7 +964,7 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="1">
+            <item row="9" column="1" colspan="2">
              <widget class="QCheckBox" name="polynomial_stitching_checkbox">
               <property name="text">
                <string>Polynomial fit when stitching</string>
@@ -1021,7 +1021,7 @@
            <zorder>label_57</zorder>
            <zorder>polynomial_stitching_points_spinbox</zorder>
           </widget>
-          <widget class="QWidget" name="page_3">
+          <widget class="QWidget" name="peak_finder">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -5888,9 +5888,9 @@
   </connection>
   <connection>
    <sender>selectedChannel0</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1430</x>
@@ -5904,9 +5904,9 @@
   </connection>
   <connection>
    <sender>selectedChannel1</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1512</x>
@@ -5920,9 +5920,9 @@
   </connection>
   <connection>
    <sender>selectedChannel2</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1595</x>
@@ -5936,9 +5936,9 @@
   </connection>
   <connection>
    <sender>selectedChannel3</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1677</x>
@@ -6000,9 +6000,9 @@
   </connection>
   <connection>
    <sender>selectedChannel4</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1430</x>
@@ -6016,9 +6016,9 @@
   </connection>
   <connection>
    <sender>selectedChannel5</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1512</x>
@@ -6032,9 +6032,9 @@
   </connection>
   <connection>
    <sender>selectedChannel6</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1595</x>
@@ -6048,9 +6048,9 @@
   </connection>
   <connection>
    <sender>selectedChannel7</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1677</x>
@@ -6064,9 +6064,9 @@
   </connection>
   <connection>
    <sender>selectedChannel8</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1430</x>
@@ -6080,9 +6080,9 @@
   </connection>
   <connection>
    <sender>selectedChannel9</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1512</x>
@@ -6096,9 +6096,9 @@
   </connection>
   <connection>
    <sender>selectedChannel10</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1595</x>
@@ -6112,9 +6112,9 @@
   </connection>
   <connection>
    <sender>selectedChannel11</sender>
-   <signal>released()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>file_loaded()</slot>
+   <slot>change_active_channel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1677</x>
@@ -6462,7 +6462,7 @@
   <slot>reduceDatasets()</slot>
   <slot>normalizeTotalReflection()</slot>
   <slot>reductionTableChanged(QTableWidgetItem*)</slot>
-  <slot>file_loaded()</slot>
+  <slot>change_active_channel()</slot>
   <slot>removeRefList()</slot>
   <slot>changeRegionValues()</slot>
   <slot>refineXpos()</slot>
