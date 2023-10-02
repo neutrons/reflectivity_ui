@@ -17,6 +17,12 @@ from .instrument import Instrument
 from .data_set import NexusMetaData
 
 
+class NormalizeToUnityQCutoffError(Exception):
+    """When normalizing to unity fails due to no data below Q cutoff"""
+
+    pass
+
+
 def generate_short_script(reduction_list):
     """
     Generate a simple reduction script for Mantid
@@ -301,12 +307,13 @@ def smart_stitch_reflectivity(
 
     :param list[NexusData] reduction_list: list of data sets to stitch
     :param string xs: name of the cross-section to use for the first data set
-    :param bool normalize_to_unity: if True, the specular ridge will be normalized to 1
-    :param float q_cutoff: used if normalize_to_unity = True, data with q < q_cutoff are part of the specular ridge
-    :param bool global_fit: if True, use data from all cross-sections to calculate scaling factors
-    :param int poly_degree: if not None, find the scaling factor by simultaneously fitting a polynomial and scaling factor to the two curves
+    :param bool normalize_to_unity: if `True`, the specular ridge will be normalized to 1
+    :param float q_cutoff: used if `normalize_to_unity` = `True`, data with q < `q_cutoff` are part of the specular ridge
+    :param bool global_fit: if `True`, use data from all cross-sections to calculate scaling factors
+    :param int poly_degree: if not `None`, find the scaling factor by simultaneously fitting a polynomial and scaling factor to the two curves
     :param int poly_points: number of additional points on each end of the overlap region to include in the fit
     :returns: tuple (list of scaling factors, list of scaling factor errors)
+    :raises: NormalizeToUnityQCutoffError: if `normalize_to_unity` = `True`, but there is no data below `q_cutoff`
     """
     if not reduction_list:
         return []
@@ -321,6 +328,12 @@ def smart_stitch_reflectivity(
     if normalize_to_unity:
         # Calculate scaling factor for normalizing the specular ridge to 1
         idx_list = reduction_list[0].cross_sections[xs].q < q_cutoff
+        if not any(idx_list):
+            raise NormalizeToUnityQCutoffError(
+                f"No data below Q cutoff.\n"
+                f"Critical Q cutoff: {q_cutoff}\n"
+                f"Smallest Q value: {reduction_list[0].cross_sections[xs].q.min():.5f}"
+            )
         total = 0
         weights = 0
         for i in range(len(reduction_list[0].cross_sections[xs]._r)):

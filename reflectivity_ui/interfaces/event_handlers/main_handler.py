@@ -7,6 +7,7 @@
 
 
 # package imports
+from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
 from .widgets import AcceptRejectDialog
@@ -1328,9 +1329,16 @@ class MainHandler(object):
                 poly_degree=poly_degree,
                 poly_points=self.ui.polynomial_stitching_points_spinbox.value(),
             )
-        except RuntimeError as err:
+        except (RuntimeError, ValueError) as err:
             self.report_message(
                 f"Error in stitching:\n{str(err)}",
+                detailed_message=str(traceback.format_exc()),
+                pop_up=True,
+                is_error=True,
+            )
+        except NormalizeToUnityQCutoffError as err:
+            self.report_message(
+                f"Error in normalize to unity when stitching:\n{str(err)}",
                 detailed_message=str(traceback.format_exc()),
                 pop_up=True,
                 is_error=True,
