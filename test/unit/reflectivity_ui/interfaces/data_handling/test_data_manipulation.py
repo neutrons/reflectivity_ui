@@ -1,6 +1,7 @@
 # package imports
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import (
+    NormalizeToUnityQCutoffError,
     _get_polynomial_fit_stitching_scaling_factor,
     _get_stitching_overlap_region,
     smart_stitch_reflectivity,
@@ -212,6 +213,12 @@ class TestDataManipulation(object):
         with pytest.raises(RuntimeError) as error_info:
             _get_polynomial_fit_stitching_scaling_factor(ws1, ws2, 5, 3)
         assert "Levenberg-Marquardt minimizer failed to initialize" in str(error_info.value)
+
+    def test_smart_stitch_normalize_to_unity_error(self, stitching_reduction_list):
+        """Test that error is raised when the normalize to unity Q cutoff is too low"""
+        q_cutoff = 0.5
+        with pytest.raises(NormalizeToUnityQCutoffError):
+            smart_stitch_reflectivity(stitching_reduction_list, "On_On", True, q_cutoff)
 
 
 if __name__ == "__main__":
