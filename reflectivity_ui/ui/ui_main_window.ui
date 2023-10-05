@@ -869,7 +869,7 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="1">
+            <item row="7" column="1" colspan="2">
              <widget class="QLabel" name="label_29">
               <property name="text">
                <string>Critical Q cutoff</string>
@@ -879,7 +879,7 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="2">
+            <item row="7" column="3">
              <widget class="QDoubleSpinBox" name="normalization_q_cutoff_spinbox">
               <property name="toolTip">
                <string>Q-value below which the reflectivity should be 1.</string>
@@ -957,7 +957,7 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="2">
+            <item row="10" column="3">
              <widget class="QSpinBox" name="polynomial_stitching_degree_spinbox">
               <property name="value">
                <number>3</number>
@@ -971,7 +971,7 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="1">
+            <item row="10" column="1" colspan="2">
              <widget class="QLabel" name="label_56">
               <property name="text">
                <string>Polynomial degree</string>
@@ -981,7 +981,7 @@
               </property>
              </widget>
             </item>
-            <item row="11" column="1">
+            <item row="11" column="1" colspan="2">
              <widget class="QLabel" name="label_57">
               <property name="text">
                <string>Points outside overlap</string>
@@ -991,7 +991,7 @@
               </property>
              </widget>
             </item>
-            <item row="11" column="2">
+            <item row="11" column="3">
              <widget class="QSpinBox" name="polynomial_stitching_points_spinbox">
               <property name="value">
                <number>3</number>
@@ -2651,7 +2651,7 @@
                        <bool>true</bool>
                       </attribute>
                       <attribute name="horizontalHeaderDefaultSectionSize">
-                       <number>50</number>
+                       <number>70</number>
                       </attribute>
                       <attribute name="horizontalHeaderMinimumSectionSize">
                        <number>20</number>
