@@ -767,7 +767,7 @@
                </size>
               </property>
               <property name="text">
-               <string>SANGLE</string>
+               <string>SampleAngle</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -2358,7 +2358,7 @@
                  <string>Sample angle read from file</string>
                 </property>
                 <property name="text">
-                 <string>SANGLE</string>
+                 <string>SampleAngle</string>
                 </property>
                 <property name="textInteractionFlags">
                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
@@ -2399,7 +2399,7 @@
                  <string>Sample angle calculated from 2Θ and X-center position</string>
                 </property>
                 <property name="text">
-                 <string>SANGLE-calc</string>
+                 <string>SampleAngle-calc</string>
                 </property>
                 <property name="textInteractionFlags">
                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
