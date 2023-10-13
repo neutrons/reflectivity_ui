@@ -268,7 +268,10 @@ class Instrument(object):
             data_object.slit3_width = data["S3HWidth"].value[0]
         data_object.huber_x = data["HuberX"].getStatistics().mean
 
-        data_object.sangle = data["SANGLE"].getStatistics().mean
+        if "SampleAngle" in data:
+            data_object.sangle = data["SampleAngle"].getStatistics().mean
+        else:
+            data_object.sangle = data["SANGLE"].getStatistics().mean
 
         data_object.dist_sam_det = data["SampleDetDis"].value[0] * 1e-3
         data_object.dist_mod_det = data["ModeratorSamDis"].value[0] * 1e-3 + data_object.dist_sam_det
