@@ -1,10 +1,10 @@
 name: quicknxs
 channels:
-    - mantid/label/nightly
+    - mantid/label/main
     - conda-forge
     - default
 dependencies:
-- mantidworkbench>=6.7.20230822,<6.8
+- mantidworkbench=6.8
 - anaconda-client
 - boa
 - build
