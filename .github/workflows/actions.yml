@@ -74,10 +74,7 @@ jobs:
         id: conda_env_name
         with:
           prefix: quicknxs2
-
       - name: Trigger deploy
-    # Disable automatic deployments until DevOps resolves the automatic Conda deployments
-
         id: trigger
         uses: eic/trigger-gitlab-ci@v2
         with:
