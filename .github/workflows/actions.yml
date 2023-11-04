@@ -62,8 +62,11 @@ jobs:
   trigger-deploy:
     runs-on: ubuntu-22.04
     needs: [linux]
+    # Disable automatic deployments until DevOps resolves the automatic Conda deployments
+    variables:
+      ENABLE_DEPLOY: "false"
     # only trigger deploys from protected branches
-    if: ${{ github.ref_protected || github.ref_type == 'tag' }}
+    if: ${{ (ENABLE_DEPLOY == "true") && (github.ref_protected || github.ref_type == 'tag')}}
     steps:
       - name: Determine Environment
         uses: neutrons/branch-mapper@v2
