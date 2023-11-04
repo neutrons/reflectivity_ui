@@ -17,7 +17,8 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-
+    outputs:
+      deploy_enabled: 'false'
     steps:
       - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
@@ -62,11 +63,11 @@ jobs:
   trigger-deploy:
     runs-on: ubuntu-22.04
     needs: [linux]
-    # Disable automatic deployments until DevOps resolves the automatic Conda deployments
-    variables:
-      ENABLE_DEPLOY: "false"
+    env:
+      ENABLE_DEPLOY: 'false'
     # only trigger deploys from protected branches
-    if: ${{ (ENABLE_DEPLOY == "true") && (github.ref_protected || github.ref_type == 'tag')}}
+    # Disable automatic deployments until DevOps resolves the automatic Conda deployments
+    if: ${{ (needs.linux.outputs.deploy_enabled == 'true') && (github.ref_protected || github.ref_type == 'tag') }}
     steps:
       - name: Determine Environment
         uses: neutrons/branch-mapper@v2
@@ -75,6 +76,8 @@ jobs:
           prefix: quicknxs2
 
       - name: Trigger deploy
+    # Disable automatic deployments until DevOps resolves the automatic Conda deployments
+
         id: trigger
         uses: eic/trigger-gitlab-ci@v2
         with:
