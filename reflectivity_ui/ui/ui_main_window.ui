@@ -955,6 +955,9 @@
               <property name="text">
                <string>Global fit when stitching</string>
               </property>
+              <property name="toolTip">
+               <string>Perform stitching fit using all cross-sections</string>
+              </property>
              </widget>
             </item>
             <item row="10" column="3">
@@ -968,6 +971,9 @@
              <widget class="QCheckBox" name="polynomial_stitching_checkbox">
               <property name="text">
                <string>Polynomial fit when stitching</string>
+              </property>
+              <property name="toolTip">
+               <string>Use polynomial function to determine scaling factors</string>
               </property>
              </widget>
             </item>
@@ -1060,9 +1066,6 @@
              <widget class="QCheckBox" name="fit_within_roi_checkbox">
               <property name="toolTip">
                <string>Once the reflected peak ROI is selected, you can try to fine tune this ROI by fitting for a peak within that region and updating the ROI according to the location found. Check the following box if you want to find a peak within the ROI and redefine the ROI afterwards.</string>
-              </property>
-              <property name="statusTip">
-               <string/>
               </property>
               <property name="text">
                <string>Fit peak within ROI</string>
@@ -2320,9 +2323,6 @@
                     <property name="toolTip">
                      <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
                     </property>
-                    <property name="statusTip">
-                     <string>Direct beam indicator to let you know whether the application thinks this might be a direct beam.</string>
-                    </property>
                     <property name="text">
                      <string/>
                     </property>
@@ -3237,9 +3237,6 @@
               </sizepolicy>
              </property>
              <property name="toolTip">
-              <string>Recalculate the offspecular data</string>
-             </property>
-             <property name="statusTip">
               <string>Recalculate the offspecular data</string>
              </property>
              <property name="text">
@@ -5042,9 +5039,6 @@
     <string>Use common ranges</string>
    </property>
    <property name="toolTip">
-    <string>Apply identical ranges to all cross-sections</string>
-   </property>
-   <property name="statusTip">
     <string>Apply identical ranges to all cross-sections</string>
    </property>
   </action>
