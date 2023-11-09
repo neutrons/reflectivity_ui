@@ -8,6 +8,7 @@
 
 # package imports
 from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
+from .status_bar_handler import StatusBarHandler
 from ..configuration import Configuration
 from .progress_reporter import ProgressReporter
 from .widgets import AcceptRejectDialog
@@ -59,14 +60,11 @@ class MainHandler(object):
         self.progress_bar.setMaximumSize(140, 100)
         self.ui.statusbar.addPermanentWidget(self.progress_bar)
 
-        self.status_message = QtWidgets.QLabel("")
-        self.status_message.setMinimumWidth(1000)
-        self.status_message.setMargin(5)
-        self.ui.statusbar.insertWidget(0, self.status_message)
+        self.status_bar_handler = StatusBarHandler(self.ui.statusbar)
 
     def new_progress_reporter(self):
         """Return a progress reporter"""
-        return ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
+        return ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_bar_handler)
 
     def empty_cache(self):
         """
@@ -123,7 +121,7 @@ class MainHandler(object):
         self.main_window.auto_change_active = True
         try:
             self.report_message("Loading file(s) %s" % file_path)
-            prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_message)
+            prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_bar_handler)
             configuration = self.get_configuration()
             self._data_manager.load(file_path, configuration, force=force, progress=prog)
             self.report_message("Loaded file(s) %s" % self._data_manager.current_file_name)
@@ -1390,7 +1388,7 @@ class MainHandler(object):
         :param bool pop_up: if True, a dialog will pop up
         :param bool is_error: if True, the message is logged on the error channel
         """
-        self.status_message.setText(message)
+        self.status_bar_handler.show_message(message)
         if is_error:
             logging.error(message)
             if detailed_message is not None:

@@ -78,7 +78,7 @@ class ProgressReporter(object):
             self.progress_bar.setValue(_value)
 
         if message and self.status_bar:
-            self.status_bar.setText(message)
+            self.status_bar.show_message(message)
 
     def create_sub_task(self, max_value):
         """
