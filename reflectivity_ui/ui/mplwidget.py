@@ -61,6 +61,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.setIconSize(QtCore.QSize(20, 20))
         self.calling_function = None
         self._init_toolbar()
+        self._add_buttons()
 
     def _init_toolbar(self):
         # add the extra default toolbar functions for quicknxs print, & lines
@@ -71,26 +72,10 @@ class NavigationToolbar(NavigationToolbar2QT):
         a = self.addAction(icon, "Print", self.print_figure)
         a.setToolTip("Print the figure with the default printer")
 
-        icon = getIcon("toggle-log.png")
-        self.addSeparator()
-        a = self.addAction(icon, "Log", self.toggle_log)
-        a.setToolTip("Toggle logarithmic scale")
-
-        icon = QtGui.QIcon()
+        icon = getIcon("saveData.png")
         self.addSeparator()
         a = self.addAction(icon, "SaveData", self.save_data)
         a.setToolTip("Save XYE data to file")
-
-        # TODO find appropriate icon
-        icon = QtGui.QIcon()
-        self.addSeparator()
-        a = self.addAction(icon, "Lines", self.toggle_lines)
-        a.setToolTip("Toggle lines between points")
-        for action in self.findChildren(QtWidgets.QAction):
-            if action.text() == "Lines":
-                action.setVisible(False)
-                break
-        self.buttons = {}
 
         # Add the x,y location widget at the right side of the toolbar
         # The stretch factor is 1 which means any resizing of the toolbar
@@ -108,6 +93,12 @@ class NavigationToolbar(NavigationToolbar2QT):
 
         # reference holder for subplots_adjust window
         self.adj_window = None
+
+    def _add_buttons(self):
+        """
+        Function for derived classes to add buttons to the toolbar.
+        """
+        pass
 
     def print_figure(self):
         """
@@ -163,21 +154,6 @@ class NavigationToolbar(NavigationToolbar2QT):
                     self, "Error saving file", str(e), QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton
                 )
 
-    def toggle_lines(self, *args):
-        ax = self.canvas.ax
-        if len(ax.lines) < 3:
-            return
-        linestyle = ax.lines[0].get_linestyle()
-        if linestyle == "-":
-            new_linestyle = ""
-        else:
-            new_linestyle = "-"
-        for i in range(0, len(ax.lines), 3):
-            ax.lines[i].set_linestyle(new_linestyle)
-        settings = QtCore.QSettings(".refredm")
-        settings.setValue(self.calling_function + "/linestyle", new_linestyle)
-        self.canvas.draw()
-
     def save_data(self):
         ax = self.canvas.ax
 
@@ -206,6 +182,19 @@ class NavigationToolbar(NavigationToolbar2QT):
                     self, "Error saving file", str(e), QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.NoButton
                 )
 
+
+class NavigationToolbarGeneric(NavigationToolbar):
+    """
+    A navigation toolbar for a generic plot.
+    """
+
+    def _add_buttons(self):
+        """Add buttons specific to this navigation toolbar."""
+        icon = getIcon("toggle-log.png")
+        self.addSeparator()
+        a = self.addAction(icon, "Log", self.toggle_log)
+        a.setToolTip("Toggle logarithmic scale")
+
     def toggle_log(self, *args):
         ax = self.canvas.ax
         if len(ax.images) == 0 and all([c.__class__.__name__ != "QuadMesh" for c in ax.collections]):
@@ -224,6 +213,123 @@ class NavigationToolbar(NavigationToolbar2QT):
             else:
                 for img in imgs:
                     img.set_norm(LogNorm(norm.vmin, norm.vmax))
+        self.canvas.draw()
+
+
+class NavigationToolbarReflectivity(NavigationToolbar):
+    """
+    A navigation toolbar for reflectivity plots created using matplotlib's errorbar function.
+    """
+
+    def __init__(self, canvas, parent, coordinates=False):
+        self.q_pow_4_button = None
+        super().__init__(canvas, parent, coordinates)
+
+    def _add_buttons(self):
+        """Add buttons specific to the reflectivity navigation toolbar."""
+        self.addSeparator()
+        icon = getIcon("toggle-x-log.png")
+        a = self.addAction(icon, "XLog", self.toggle_xlog)
+        a.setToolTip("Toggle logarithmic x-scale")
+
+        icon = getIcon("toggle-y-log.png")
+        a = self.addAction(icon, "YLog", self.toggle_ylog)
+        a.setToolTip("Toggle logarithmic y-scale")
+
+        icon = getIcon("toggle-r-q4.png")
+        a = self.addAction(icon, "RQ4", self.toggle_rq4_scale)
+        a.setToolTip("Toggle plotting R(Q)*Q$^4$")
+        a.setCheckable(True)
+        self.q_pow_4_button = a
+
+        icon = getIcon("plotLines.png")
+        self.addSeparator()
+        a = self.addAction(icon, "Lines", self.toggle_lines)
+        a.setToolTip("Toggle lines between points")
+
+    def toggle_xlog(self, *args):
+        """
+        Toggle between linear and logarithmic x-axis.
+        """
+        ax = self.canvas.ax
+        logstate = ax.get_xscale()
+        if logstate == "linear":
+            ax.set_xscale("log")
+        else:
+            ax.set_xscale("linear")
+        self.canvas.draw()
+
+    def toggle_ylog(self, *args):
+        """
+        Toggle between linear and logarithmic y-axis.
+        """
+        ax = self.canvas.ax
+        logstate = ax.get_yscale()
+        if logstate == "linear":
+            ax.set_yscale("log")
+        else:
+            ax.set_yscale("linear")
+        self.canvas.draw()
+
+    def toggle_rq4_scale(self, *args):
+        """
+        Toggle between plotting R and R * Q^4
+        """
+        # should the y data be scaled by Q^4?
+        is_yaxis_q_pow_4 = self.q_pow_4_button.isChecked()
+
+        # scale the line data
+        ax = self.canvas.ax
+        for line in ax.get_lines():
+            x = line.get_xdata()
+            y = line.get_ydata()
+            if is_yaxis_q_pow_4:
+                line.set_ydata(y * x**4)
+            else:
+                line.set_ydata(y / x**4)
+
+        # scale the error bar data
+        for c in ax.collections:
+            segments = c.get_segments()
+            scaled_segments = []
+            for segment in segments:
+                if is_yaxis_q_pow_4:
+                    segment[0][1] = segment[0][1] * segment[0][0] ** 4
+                    segment[1][1] = segment[1][1] * segment[1][0] ** 4
+                else:
+                    segment[0][1] = segment[0][1] / segment[0][0] ** 4
+                    segment[1][1] = segment[1][1] / segment[1][0] ** 4
+                scaled_segments.append(segment)
+            c.set_segments(scaled_segments)
+
+        # update the axis labels
+        if is_yaxis_q_pow_4:
+            ax.set_ylabel("R $\\cdot$ Q$^4$")
+        else:
+            ax.set_ylabel("R")
+
+        # update the axis limits
+        ax.relim(visible_only=True)
+        ax.autoscale_view(True, True, True)  # to autoscale error bars
+        ax.autoscale()  # to autoscale lines
+        self.canvas.draw()
+
+    def toggle_lines(self, *args):
+        """
+        Toggle lines between points in the plot
+        """
+        ax = self.canvas.ax
+        if len(ax.lines) < 3:
+            return
+        linestyle = ax.lines[0].get_linestyle()
+        if linestyle == "-":
+            new_linestyle = ""
+        else:
+            new_linestyle = "-"
+        for i in range(0, len(ax.lines), 3):
+            ax.lines[i].set_linestyle(new_linestyle)
+        settings = QtCore.QSettings(".refredm")
+        settings.setValue(self.calling_function + "/linestyle", new_linestyle)
         self.canvas.draw()
 
 
@@ -270,9 +376,16 @@ class MPLWidget(QtWidgets.QWidget):
         self.vbox = QtWidgets.QVBoxLayout()
         self.vbox.addWidget(self.canvas)
         if with_toolbar:
-            self.toolbar = NavigationToolbar(self.canvas, self)
-            self.toolbar.coordinates = coordinates
-            self.vbox.addWidget(self.toolbar)
+            self.stacked_toolbars = QtWidgets.QStackedWidget(self.canvas)
+            self.stacked_toolbars.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+            toolbar_generic = NavigationToolbarGeneric(self.canvas, self)
+            toolbar_generic.coordinates = coordinates
+            toolbar_refl = NavigationToolbarReflectivity(self.canvas, self)
+            toolbar_refl.coordinates = coordinates
+            self.stacked_toolbars.addWidget(toolbar_generic)
+            self.stacked_toolbars.addWidget(toolbar_refl)
+            self.toolbar = self.stacked_toolbars.currentWidget()
+            self.vbox.addWidget(self.stacked_toolbars)
         else:
             self.toolbar = None
         self.setLayout(self.vbox)
@@ -316,12 +429,12 @@ class MPLWidget(QtWidgets.QWidget):
 
     def errorbar(self, *args, **opts):
         """
-        Convenience wrapper for self.canvas.ax.semilogy
+        Convenience wrapper for self.canvas.ax.errorbar
         """
-        for action in self.toolbar.findChildren(QtWidgets.QAction):
-            if action.text() == "Lines":
-                action.setVisible(True)
-                break
+        if self.toolbar:
+            # change to toolbar with reflectivity-specific options
+            self.stacked_toolbars.setCurrentIndex(1)
+            self.toolbar = self.stacked_toolbars.currentWidget()
 
         if "fmt" in opts:
             set_linestyle = False
