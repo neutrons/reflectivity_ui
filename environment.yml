@@ -11,6 +11,8 @@ dependencies:
 - codecov
 - conda-build
 - conda-verify
+- libarchive
+- libmamba
 - pre-commit
 - pylint
 - pytest
