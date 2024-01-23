@@ -1,5 +1,10 @@
 # package imports
+import numpy as np
+from qtpy import QtWidgets, QtCore
+
+from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData, CrossSectionData
 from reflectivity_ui.interfaces.main_window import MainWindow
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 
@@ -77,6 +82,75 @@ class TestMainHandler(object):
         )
         self.handler.stitch_reflectivity()
         assert error_msg in mock_report_message.call_args[0][0]
+
+
+def test_save_run_data(tmp_path, qtbot, mocker):
+    """Test of method save_run_data"""
+    mocker.patch(
+        "reflectivity_ui.interfaces.event_handlers.main_handler.QtWidgets.QFileDialog.getExistingDirectory",
+        return_value=tmp_path,
+    )
+    mocker.patch(
+        "reflectivity_ui.interfaces.event_handlers.main_handler.QtWidgets.QInputDialog.getText",
+        return_value=("test_save_run_data", True),
+    )
+    header = "col1 col2"
+    mocker.patch(
+        "reflectivity_ui.interfaces.data_handling.data_set.CrossSectionData.get_tof_counts_table",
+        return_value=(np.ones((5, 5)), header),
+    )
+
+    main_window = MainWindow()
+    handler = MainHandler(main_window)
+    qtbot.addWidget(main_window)
+
+    nexus_data = _get_nexus_data()
+    handler.save_run_data(nexus_data)
+
+    for xs in nexus_data.cross_sections.keys():
+        save_file_path = tmp_path / f"test_save_run_data_{xs}.dat"
+        assert os.path.exists(save_file_path)
+        with open(save_file_path) as f:
+            first_line = f.readline()
+            assert header in first_line
+            second_line = f.readline()
+            assert len(second_line.split()) == 5
+
+
+def test_ask_question(qtbot):
+    """Test of helper function ask_question"""
+    main_window = MainWindow()
+    handler = MainHandler(main_window)
+    qtbot.addWidget(main_window)
+
+    def dialog_click_button(button_type):
+        # click button in the popup dialog
+        dialog = QApplication.activeModalWidget()
+        button = dialog.button(button_type)
+        qtbot.mouseClick(button, QtCore.Qt.LeftButton, delay=1)
+
+    QTimer.singleShot(200, lambda: dialog_click_button(QtWidgets.QMessageBox.Ok))
+    answer = handler.ask_question("OK or Cancel?")
+    assert answer is True
+
+    QTimer.singleShot(200, lambda: dialog_click_button(QtWidgets.QMessageBox.Cancel))
+    answer = handler.ask_question("OK or Cancel?")
+    assert answer is False
+
+
+def _get_nexus_data():
+    """Data for testing"""
+    config = Configuration()
+    nexus_data = NexusData("file/path", config)
+    off_off = CrossSectionData("Off_Off", config)
+    off_off.tof_edges = np.arange(0.1, 0.4, 20)
+    off_off.dist_mod_det = 1.0
+    on_off = CrossSectionData("On_Off", config)
+    on_off.tof_edges = np.arange(0.1, 0.4, 20)
+    on_off.dist_mod_det = 1.0
+    nexus_data.cross_sections["Off_Off"] = off_off
+    nexus_data.cross_sections["On_Off"] = on_off
+    return nexus_data
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@
 """
     Manage file-related and UI events
 """
-
+import numpy as np
 
 # package imports
 from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
@@ -27,6 +27,8 @@ import os
 import sys
 import time
 import traceback
+
+from ..data_handling.data_set import NexusData, CrossSectionData
 
 
 class MainHandler(object):
@@ -970,6 +972,62 @@ class MainHandler(object):
                     item.setBackground(QtGui.QColor(255, 255, 255))
         self.main_window.auto_change_active = False
 
+    def reduction_table_right_click(self, pos, is_reduction_table=True):
+        """
+        Handle right-click on the reduction table.
+        :param QPoint pos: mouse position
+        :param bool is_reduction_table: True if the reduction table is active, False if the direct beam table is active
+        """
+        if is_reduction_table:
+            table_widget = self.ui.reductionTable
+            data_table = self._data_manager.reduction_list
+        else:
+            table_widget = self.ui.normalizeTable
+            data_table = self._data_manager.direct_beam_list
+
+        def _export_data(_pos):
+            """callback function to right-click action: Export data"""
+            row = table_widget.rowAt(pos.y())
+            if 0 <= row < len(data_table):
+                nexus_data = data_table[row]
+                self.save_run_data(nexus_data)
+
+        reduction_table_menu = QtWidgets.QMenu(table_widget)
+        export_data_action = QtWidgets.QAction("Export data")
+        export_data_action.triggered.connect(lambda: _export_data(pos))
+        reduction_table_menu.addAction(export_data_action)
+        reduction_table_menu.exec_(table_widget.mapToGlobal(pos))
+
+    def save_run_data(self, nexus_data: NexusData):
+        """
+        Save run data to file
+        :param NexusData nexus_data: run data object
+        """
+        path = QtWidgets.QFileDialog.getExistingDirectory(self.main_window, "Select directory")
+        if not path:
+            return
+        # ask user for base name for files (one file for each cross-section, e.g. "REF_M_1234_data_Off-Off.dat")
+        basename, ok = QtWidgets.QInputDialog.getText(
+            self.main_window,
+            "Base name",
+            "Save file base name:",
+            text=f"REF_M_{nexus_data.number}_data",  # default name
+        )
+        if not (ok and basename):
+            return
+        # save one file per cross-section
+        for xs in nexus_data.cross_sections.keys():
+            filename = f"{basename}_{xs}.dat"
+            filepath = os.path.join(path, filename)
+            # check if file exists
+            if os.path.isfile(filepath):
+                if not self.ask_question(f"Overwrite existing file {filename}?"):
+                    return
+            # save file
+            cross_section = nexus_data.cross_sections[xs]
+            data_to_save, header = cross_section.get_tof_counts_table()
+            np.savetxt(filepath, data_to_save, header=header)
+
     def compute_offspec_on_change(self, force=False):
         """
         Compute off-specular as needed
@@ -1410,6 +1468,23 @@ class MainHandler(object):
                 msg.setDetailedText(detailed_message)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
+
+    def ask_question(self, message):
+        """
+        Display a popup dialog with a message and choices "Ok" and "Cancel"
+        :param str message: question to ask
+        :returns: bool
+        """
+        ret = QtWidgets.QMessageBox.warning(
+            self.main_window,
+            "Warning",
+            message,
+            buttons=QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
+            defaultButton=QtWidgets.QMessageBox.Ok,
+        )
+        if ret == QtWidgets.QMessageBox.Cancel:
+            return False
+        return True
 
     def show_results(self):
         """

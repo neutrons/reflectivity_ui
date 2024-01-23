@@ -5,7 +5,6 @@ r"""
     Main application window
 """
 
-
 # package imports
 from .data_manager import DataManager
 from .plotting import PlotManager
@@ -47,6 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self)
 
         # Initialize the UI widgets
+        self.reduction_table_menu = None
         self.ui = load_ui("ui_main_window.ui", baseinstance=self)
         version = reflectivity_ui.__version__ if reflectivity_ui.__version__.lower() != "unknown" else ""
         self.setWindowTitle(f"QuickNXS Magnetic Reflectivity {version}")
@@ -303,6 +303,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.data_manager.set_active_data_from_reduction_list(row)
             self.file_loaded()
             self.file_handler.active_data_changed()
+
+    def reduction_table_right_click(self, pos):
+        """
+        Handle right-click on the reduction table.
+        :param QPoint pos: mouse position
+        """
+        self.file_handler.reduction_table_right_click(pos, True)
+
+    def direct_beam_table_right_click(self, pos):
+        """
+        Handle right-click on the direct beam table.
+        :param QPoint pos: mouse position
+        """
+        self.file_handler.reduction_table_right_click(pos, False)
 
     def direct_beam_cell_activated(self, row, col):
         """

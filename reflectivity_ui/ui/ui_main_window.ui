@@ -2644,6 +2644,9 @@
                       <property name="rowCount">
                        <number>0</number>
                       </property>
+                      <property name="contextMenuPolicy">
+                       <enum>Qt::CustomContextMenu</enum>
+                      </property>
                       <attribute name="horizontalHeaderVisible">
                        <bool>true</bool>
                       </attribute>
@@ -2809,6 +2812,9 @@
                       </property>
                       <property name="editTriggers">
                        <set>QAbstractItemView::NoEditTriggers</set>
+                      </property>
+                      <property name="contextMenuPolicy">
+                       <enum>Qt::CustomContextMenu</enum>
                       </property>
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>true</bool>
@@ -6440,6 +6446,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>reductionTable</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>reduction_table_right_click(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1508</x>
+     <y>1348</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>778</x>
+     <y>551</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>normalizeTable</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>direct_beam_table_right_click(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1508</x>
+     <y>1348</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>778</x>
+     <y>551</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>file_open_dialog()</slot>
@@ -6490,5 +6528,6 @@
   <slot>hide_sidebar()</slot>
   <slot>hide_run_data()</slot>
   <slot>hide_data_table()</slot>
+  <slot>reduction_table_right_click()</slot>
  </slots>
 </ui>
