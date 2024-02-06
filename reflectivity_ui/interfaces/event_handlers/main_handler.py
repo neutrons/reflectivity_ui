@@ -7,12 +7,13 @@
 import numpy as np
 
 # package imports
+from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
-from .status_bar_handler import StatusBarHandler
-from ..configuration import Configuration
-from .progress_reporter import ProgressReporter
-from .widgets import AcceptRejectDialog
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData, CrossSectionData
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
+from reflectivity_ui.interfaces.event_handlers.progress_reporter import ProgressReporter
+from reflectivity_ui.interfaces.event_handlers.status_bar_handler import StatusBarHandler
+from reflectivity_ui.interfaces.event_handlers.widgets import AcceptRejectDialog
 from reflectivity_ui.config import Settings
 
 # 3rd-party imports
@@ -27,8 +28,6 @@ import os
 import sys
 import time
 import traceback
-
-from ..data_handling.data_set import NexusData, CrossSectionData
 
 
 class MainHandler(object):
@@ -1022,7 +1021,7 @@ class MainHandler(object):
             # check if file exists
             if os.path.isfile(filepath):
                 if not self.ask_question(f"Overwrite existing file {filename}?"):
-                    return
+                    continue
             # save file
             cross_section = nexus_data.cross_sections[xs]
             data_to_save, header = cross_section.get_tof_counts_table()

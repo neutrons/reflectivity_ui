@@ -93,10 +93,8 @@ def getIxyt(nxs_data):
     for x in range(sz_x_axis):
         for y in range(sz_y_axis):
             _index = int(sz_y_axis * x + y)
-            _tmp_data = nxs_data.readY(_index)[:]
-            _y_axis[x, y, :] = _tmp_data
-            _tmp_error = nxs_data.readE(_index)[:]
-            _y_error_axis[x, y, :] = _tmp_error
+            _y_axis[x, y, :] = nxs_data.readY(_index)[:]
+            _y_error_axis[x, y, :] = nxs_data.readE(_index)[:]
 
     return _y_axis, _y_error_axis
 
