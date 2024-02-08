@@ -1006,23 +1006,29 @@ class MainHandler(object):
         if not path:
             return
         # ask user for base name for files (one file for each cross-section, e.g. "REF_M_1234_data_Off-Off.dat")
-        basename, ok = QtWidgets.QInputDialog.getText(
-            self.main_window,
-            "Base name",
-            "Save file base name:",
-            text=f"REF_M_{nexus_data.number}_data",  # default name
-        )
-        if not (ok and basename):
-            return
+        default_basename = f"REF_M_{nexus_data.number}_data"
+        while True:  # to ask again for new basename if the user does not want to overwrite existing files
+            basename, ok = QtWidgets.QInputDialog.getText(
+                self.main_window, "Base name", "Save file base name:", text=default_basename
+            )
+            if not (ok and basename):
+                # user cancels
+                return
+            save_filepaths = {}
+            existing_filenames = []
+            for xs in nexus_data.cross_sections.keys():
+                filename = f"{basename}_{xs}.dat"
+                filepath = os.path.join(path, filename)
+                save_filepaths[xs] = filepath
+                if os.path.isfile(filepath):
+                    existing_filenames.append(filename)
+            newline = "\n"
+            if len(existing_filenames) == 0 or self.ask_question(
+                f"Overwrite existing file(s):\n{newline.join(existing_filenames)}?"
+            ):
+                break
         # save one file per cross-section
-        for xs in nexus_data.cross_sections.keys():
-            filename = f"{basename}_{xs}.dat"
-            filepath = os.path.join(path, filename)
-            # check if file exists
-            if os.path.isfile(filepath):
-                if not self.ask_question(f"Overwrite existing file {filename}?"):
-                    continue
-            # save file
+        for xs, filepath in save_filepaths.items():
             cross_section = nexus_data.cross_sections[xs]
             data_to_save, header = cross_section.get_tof_counts_table()
             np.savetxt(filepath, data_to_save, header=header)
