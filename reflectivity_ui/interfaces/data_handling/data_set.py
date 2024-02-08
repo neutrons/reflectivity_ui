@@ -88,15 +88,15 @@ def getIxyt(nxs_data):
     sz_x_axis = int(nxs_data.getInstrument().getNumberParameter("number-of-x-pixels")[0])  # 304
 
     _y_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof - 1))
-    # _y_error_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof-1))
+    _y_error_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof - 1))
 
     for x in range(sz_x_axis):
         for y in range(sz_y_axis):
             _index = int(sz_y_axis * x + y)
-            _tmp_data = nxs_data.readY(_index)[:]
-            _y_axis[x, y, :] = _tmp_data
+            _y_axis[x, y, :] = nxs_data.readY(_index)[:]
+            _y_error_axis[x, y, :] = nxs_data.readE(_index)[:]
 
-    return _y_axis
+    return _y_axis, _y_error_axis
 
 
 class NexusData(object):
@@ -478,6 +478,7 @@ class CrossSectionData(object):
         self.data = None
         self.xydata = None
         self.xtofdata = None
+        self.raw_error = None
 
         self.meta_data_roi_peak = None
         self.meta_data_roi_bck = None
@@ -725,13 +726,14 @@ class CrossSectionData(object):
             t_0 = time.time()
             binning_ws = api.CreateWorkspace(DataX=self.tof_edges, DataY=np.zeros(len(self.tof_edges) - 1))
             data_rebinned = api.RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
-            Ixyt = getIxyt(data_rebinned)
+            Ixyt, Ixyt_error = getIxyt(data_rebinned)
 
             # Create projections for the 2D datasets
             Ixy = Ixyt.sum(axis=2)
             Ixt = Ixyt.sum(axis=1)
             # Store the data
             self.data = Ixyt.astype(float)  # 3D dataset
+            self.raw_error = Ixyt_error.astype(float)  # 3D dataset
             self.xydata = Ixy.transpose().astype(float)  # 2D dataset
             self.xtofdata = Ixt.astype(float)  # 2D dataset
             logging.info("Plot data generated: %s sec", time.time() - t_0)
@@ -784,6 +786,59 @@ class CrossSectionData(object):
         bck = self.get_background_vs_TOF()
 
         return (summed_raw / math.fabs(size_roi) - bck) / self.proton_charge
+
+    def get_tof_counts_table(self):
+        """
+        Get a table of TOF vs counts in the region-of-interest (ROI)
+
+        The table columns are:
+        - TOF
+        - wavelength
+        - counts normalized by proton charge
+        - error in counts normalized by proton charge
+        - counts
+        - error in counts
+        - size of the ROI
+        """
+        self.prepare_plot_data()
+        # Calculate ROI intensities and normalize by number of points
+        data_roi = self.data[
+            self.configuration.peak_roi[0] : self.configuration.peak_roi[1],
+            self.configuration.low_res_roi[0] : self.configuration.low_res_roi[1],
+            :,
+        ]
+        counts_roi = data_roi.sum(axis=(0, 1))
+        raw_error_roi = self.raw_error[
+            self.configuration.peak_roi[0] : self.configuration.peak_roi[1],
+            self.configuration.low_res_roi[0] : self.configuration.low_res_roi[1],
+            :,
+        ]
+        counts_roi_error = np.linalg.norm(raw_error_roi, axis=(0, 1))  # square root of sum of squares
+        if self.proton_charge > 0.0:
+            counts_roi_normalized = counts_roi / self.proton_charge
+            counts_roi_normalized_error = counts_roi_error / self.proton_charge
+        else:
+            counts_roi_normalized = counts_roi
+            counts_roi_normalized_error = counts_roi_error
+        size_roi = len(counts_roi) * [
+            float(
+                (self.configuration.low_res_roi[1] - self.configuration.low_res_roi[0])
+                * (self.configuration.peak_roi[1] - self.configuration.peak_roi[0])
+            )
+        ]
+        data_table = np.vstack(
+            (
+                self.tof,
+                self.wavelength,
+                counts_roi_normalized,
+                counts_roi_normalized_error,
+                counts_roi,
+                counts_roi_error,
+                size_roi,
+            )
+        ).T
+        header = "tof wavelength counts_normalized counts_normalized_error counts counts_error size_roi"
+        return data_table, header
 
     def get_background_vs_TOF(self):
         """
