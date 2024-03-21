@@ -33,7 +33,6 @@ DEFAULT_OPTIONS = dict(
     format_genx=False,
     format_matlab=False,
     format_mantid=True,
-    format_multi=True,
     format_numpy=False,
     format_5cols=False,
     output_sample_size=10,
@@ -219,9 +218,8 @@ class ProcessingWorkflow(object):
         output_data = self.get_output_data()
 
         # QuickNXS format
-        if self.output_options["format_multi"]:
-            output_file_base = self.get_file_name(run_list)
-            self.write_quicknxs(output_data, output_file_base)
+        output_file_base = self.get_file_name(run_list)
+        self.write_quicknxs(output_data, output_file_base)
 
         # Numpy arrays
         if self.output_options["format_numpy"]:

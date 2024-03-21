@@ -106,21 +106,9 @@
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
-           <widget class="QCheckBox" name="multiAscii">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="mouseTracking">
-             <bool>true</bool>
-            </property>
+           <widget class="QLabel" name="label_7">
             <property name="text">
              <string>ASCII</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -251,6 +239,19 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QLabel" name="label_8">
+         <property name="styleSheet">
+          <string notr="true">color: red;</string>
+         </property>
+         <property name="text">
+          <string>Email can only be sent to @ornl addresses.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="2">
           <widget class="QCheckBox" name="emailZIPData">
@@ -376,7 +377,6 @@
   <tabstop>exportOffSpecular</tabstop>
   <tabstop>exportOffSpecularSmoothed</tabstop>
   <tabstop>exportGISANS</tabstop>
-  <tabstop>multiAscii</tabstop>
   <tabstop>toolButton</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>
