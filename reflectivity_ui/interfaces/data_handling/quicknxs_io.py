@@ -335,7 +335,7 @@ def read_reduced_file(file_path, configuration=None):
                     conf.low_res_width = float(toks[7])
                     conf.bck_position = float(toks[8])
                     conf.bck_width = float(toks[9])
-                    conf.use_constant_q = toks[10].strip().lower() == "true"
+                    Configuration.use_constant_q = toks[10].strip().lower() == "true"
                     conf.direct_pixel_overwrite = float(toks[11])
                     if int(toks[14]) > 0 and len(direct_beam_runs) > int(toks[14]) - 1:
                         conf.normalization = direct_beam_runs[int(toks[14]) - 1][0]

@@ -20,6 +20,24 @@ class Configuration(object):
     KZI_VS_KZF = 1
     DELTA_KZ_VS_QZ = 3
 
+    # Global variables
+
+    wl_bandwidth = 3.2
+    use_constant_q = False
+    sample_size = 10
+    # Final Q rebin
+    do_final_rebin = True
+    final_rebin_step = -0.01
+    # Normalize to unity when stitching
+    normalize_to_unity = True
+    total_reflectivity_q_cutoff = 0.01
+    # Use all cross-sections when stitching
+    global_stitching = False
+    # Use a polynomial curve fit when stitching
+    polynomial_stitching = False
+    polynomial_stitching_degree = 3
+    polynomial_stitching_points = 3
+
     def __init__(self, settings=None):
         self.instrument = Instrument()
         # Number of TOF bins
@@ -30,7 +48,6 @@ class Configuration(object):
         #    1 = Constant Q bin width
         #    2 = Constant 1/wavelength bin width
         self.tof_bin_type = 0
-        self.wl_bandwidth = 3.2
 
         # Threshold under which we skip a cross-section, as fraction of the max count
         self.count_threshold = 0.01
@@ -44,8 +61,6 @@ class Configuration(object):
         self.set_direct_angle_offset = False
         self.direct_angle_offset_overwrite = 0
         self.use_dangle = False
-        self.use_constant_q = False
-        self.sample_size = 10
 
         # Update the specular peak range after finding the peak
         # within the ROI
@@ -75,23 +90,10 @@ class Configuration(object):
         self.scaling_factor = 1.0
         # Error in the scaling factor
         self.scaling_error = 0.0
-        # Normalize to unity when stitching
-        self.normalize_to_unity = True
-        self.total_reflectivity_q_cutoff = 0.01
-        # Use all cross-sections when stitching
-        self.global_stitching = False
-        # Use a polynomial curve fit when stitching
-        self.polynomial_stitching = False
-        self.polynomial_stitching_degree = 3
-        self.polynomial_stitching_points = 3
 
         # Cut first and last N points
         self.cut_first_n_points = 1
         self.cut_last_n_points = 1
-
-        # Final Q rebin
-        self.do_final_rebin = True
-        self.final_rebin_step = -0.01
 
         # UI elements
         self.normalize_x_tof = False
@@ -272,7 +274,7 @@ class Configuration(object):
         self.use_roi_bck = _verify_true("use_roi_bck", self.use_roi_bck)
         self.use_tight_bck = _verify_true("use_tight_bck", self.use_tight_bck)
         self.bck_offset = int(settings.value("bck_offset", self.bck_offset))
-        self.wl_bandwidth = float(settings.value("wl_bandwidth", self.wl_bandwidth))
+        Configuration.wl_bandwidth = float(settings.value("wl_bandwidth", self.wl_bandwidth))
 
         self.force_peak_roi = _verify_true("force_peak_roi", self.force_peak_roi)
         self.force_low_res_roi = _verify_true("force_low_res_roi", self.force_low_res_roi)
@@ -292,16 +294,16 @@ class Configuration(object):
         self.cut_last_n_points = int(settings.value("cut_last_n_points", self.cut_last_n_points))
 
         # Normalize to unity when stitching
-        self.normalize_to_unity = _verify_true("normalize_to_unity", self.normalize_to_unity)
-        self.total_reflectivity_q_cutoff = float(
+        Configuration.normalize_to_unity = _verify_true("normalize_to_unity", self.normalize_to_unity)
+        Configuration.total_reflectivity_q_cutoff = float(
             settings.value("total_reflectivity_q_cutoff", self.total_reflectivity_q_cutoff)
         )
-        self.global_stitching = _verify_true("global_stitching", self.global_stitching)
-        self.polynomial_stitching = _verify_true("polynomial_stitching", self.polynomial_stitching)
-        self.polynomial_stitching_degree = int(
+        Configuration.global_stitching = _verify_true("global_stitching", self.global_stitching)
+        Configuration.polynomial_stitching = _verify_true("polynomial_stitching", self.polynomial_stitching)
+        Configuration.polynomial_stitching_degree = int(
             settings.value("polynomial_stitching_degree", self.polynomial_stitching_degree)
         )
-        self.polynomial_stitching_points = int(
+        Configuration.polynomial_stitching_points = int(
             settings.value("polynomial_stitching_points", self.polynomial_stitching_points)
         )
 
@@ -311,7 +313,7 @@ class Configuration(object):
         self.log_1d = _verify_true("log_1d", self.log_1d)
         self.log_2d = _verify_true("log_2d", self.log_2d)
 
-        self.use_constant_q = _verify_true("use_constant_q", self.use_constant_q)
+        Configuration.use_constant_q = _verify_true("use_constant_q", self.use_constant_q)
         self.use_dangle = _verify_true("use_dangle", self.use_dangle)
         self.set_direct_pixel = _verify_true("set_direct_pixel", self.set_direct_pixel)
         self.direct_pixel_overwrite = float(settings.value("direct_pixel_overwrite", self.direct_pixel_overwrite))
@@ -319,9 +321,9 @@ class Configuration(object):
         self.direct_angle_offset_overwrite = float(
             settings.value("direct_angle_offset_overwrite", self.direct_angle_offset_overwrite)
         )
-        self.sample_size = float(settings.value("sample_size", self.sample_size))
-        self.do_final_rebin = _verify_true("do_final_rebin", self.do_final_rebin)
-        self.final_rebin_step = float(settings.value("final_rebin_step", self.final_rebin_step))
+        Configuration.sample_size = float(settings.value("sample_size", self.sample_size))
+        Configuration.do_final_rebin = _verify_true("do_final_rebin", self.do_final_rebin)
+        Configuration.final_rebin_step = float(settings.value("final_rebin_step", self.final_rebin_step))
 
         # Off-specular options
         self.off_spec_x_axis = int(settings.value("off_spec_x_axis", self.off_spec_x_axis))
