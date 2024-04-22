@@ -1,6 +1,5 @@
 # local imports
 from reflectivity_ui.interfaces.main_window import MainWindow
-from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
 
 # third party imports
@@ -9,7 +8,7 @@ import pytest
 # standard library imports
 
 
-@pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
+@pytest.mark.datarepo
 def test_losing_direct_beam(qtbot):
     r"""Test that reduction list runs do not lose their direct beam when the user clicks another run in the file list"""
     main_window = MainWindow()

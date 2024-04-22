@@ -1,7 +1,6 @@
 # local imports
 from reflectivity_ui.interfaces.main_window import MainWindow
 from reflectivity_ui.interfaces.data_handling.data_set import REFLECTIVITY_THRESHOLD_VALUE
-from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
 
 # third party imports
@@ -12,7 +11,7 @@ import pytest
 # standard library imports
 
 
-@pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
+@pytest.mark.datarepo
 def test_missing_cross_section(qtbot):
     r"""Test a run where the cross section corresponding to the On-On spin combination has no integrated
     proton charge. The application produces and empty reflectivity curve for On-On."""

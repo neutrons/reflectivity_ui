@@ -257,7 +257,7 @@ def read_reduced_file(file_path, configuration=None):
     """
     direct_beam_runs = []
     data_runs = []
-
+    # reading is mocked. The file_path is the prefix of the path. File name is obtained from the mocked data
     with open(file_path, "r") as file_content:
         # Section identifier
         #   0: None
@@ -299,7 +299,7 @@ def read_reduced_file(file_path, configuration=None):
                     conf.bck_width = float(toks[9])
                     conf.direct_pixel_overwrite = float(toks[10])
                     run_number = int(toks[12])
-                    run_file = toks[-1]
+                    run_file = os.path.join(file_path, toks[-1])
                     # This application only deals with event data, to be able to load
                     # reduced files created with histo nexus files, we have to
                     # use the corresponding event file instead.
@@ -340,7 +340,7 @@ def read_reduced_file(file_path, configuration=None):
                     if int(toks[14]) > 0 and len(direct_beam_runs) > int(toks[14]) - 1:
                         conf.normalization = direct_beam_runs[int(toks[14]) - 1][0]
                     run_number = int(toks[13])
-                    run_file = toks[-1]
+                    run_file = os.path.join(file_path, toks[-1])
                     if run_file.endswith("histo.nxs"):
                         run_file = run_file.replace("histo.", "event.")
                         # conf.cut_first_n_points = 0

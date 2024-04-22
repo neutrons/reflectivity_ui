@@ -2,7 +2,6 @@
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_set import CrossSectionData, NexusData
 from reflectivity_ui.interfaces.main_window import MainWindow
-from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
 
 # third party imports
@@ -19,7 +18,7 @@ class TestMainGui:
         qtbot.addWidget(window_main)
         assert "QuickNXS Magnetic Reflectivity" in window_main.windowTitle()
 
-    @pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
+    @pytest.mark.datarepo
     def test_enter_run_number(self, qtbot):
         window_main = MainWindow()
         qtbot.addWidget(window_main)
