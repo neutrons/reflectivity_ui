@@ -15,21 +15,24 @@ from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbe
 from reflectivity_ui.interfaces.data_handling.instrument import Instrument
 
 
-
 this_module_path = sys.modules[__name__].__file__
+
 
 @pytest.fixture(scope="session")
 def DATA_DIR():
     return Path(__file__).parent / "data"
 
+
 @pytest.fixture(scope="module")
 def data_server(DATA_DIR):
     r"""Object containing info and functionality for data files"""
+
     class _DataServe(object):
 
-#        _directory = os.path.join(os.path.dirname(this_module_path), "data")
+        #        _directory = os.path.join(os.path.dirname(this_module_path), "data")
         _directory = str(DATA_DIR)
         _h5_path = "reflectivity_ui-data"
+
         @property
         def directory(self):
             r"""Directory where to find the data es"""
