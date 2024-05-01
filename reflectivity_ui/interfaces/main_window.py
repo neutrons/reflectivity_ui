@@ -12,6 +12,7 @@ from .reduction_dialog import ReductionDialog
 from .smooth_dialog import SmoothDialog
 import reflectivity_ui
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.event_handlers.configuration_handler import ConfigurationHandler
 from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from reflectivity_ui.interfaces import load_ui
@@ -66,6 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Event handlers
         self.plot_handler = PlotHandler(self)
         self.file_handler = MainHandler(self)
+        self.config_handler = ConfigurationHandler(self)
         self.ui.compare_widget.data_manager = self.data_manager
 
         # Initialization for specific instrument
