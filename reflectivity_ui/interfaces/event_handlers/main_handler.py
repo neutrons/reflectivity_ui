@@ -1024,7 +1024,7 @@ class MainHandler(object):
                     existing_filenames.append(filename)
             newline = "\n"
             if len(existing_filenames) == 0 or self.ask_question(
-                f"Overwrite existing file(s):\n{newline.join(existing_filenames)}?"
+                "Overwrite existing file(s):\n{}?".format(newline.join(existing_filenames))
             ):
                 break
         # save one file per cross-section
@@ -1392,14 +1392,14 @@ class MainHandler(object):
             )
         except (RuntimeError, ValueError) as err:
             self.report_message(
-                f"Error in stitching:\n{str(err)}",
+                "Error in stitching:\n{}".format(str(err)),
                 detailed_message=str(traceback.format_exc()),
                 pop_up=True,
                 is_error=True,
             )
         except NormalizeToUnityQCutoffError as err:
             self.report_message(
-                f"Error in normalize to unity when stitching:\n{str(err)}",
+                "Error in normalize to unity when stitching:\n{}".format(str(err)),
                 detailed_message=str(traceback.format_exc()),
                 pop_up=True,
                 is_error=True,
