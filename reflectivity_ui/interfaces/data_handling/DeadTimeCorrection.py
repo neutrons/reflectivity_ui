@@ -1,9 +1,10 @@
 """
     Dead time correction algorithm for single-readout detectors.
 """
-from mantid.api import *
-from mantid.simpleapi import *
-from mantid.kernel import *
+from mantid.api import (AlgorithmFactory, PythonAlgorithm, PropertyMode,
+                        IEventWorkspaceProperty, MatrixWorkspaceProperty, mtd)
+from mantid.simpleapi import Rebin, logger, SumSpectra
+from mantid.kernel import Direction, FloatArrayProperty, FloatArrayLengthValidator
 import numpy as np
 import scipy
 
