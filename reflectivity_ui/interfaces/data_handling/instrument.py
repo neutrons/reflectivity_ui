@@ -77,48 +77,51 @@ def mantid_algorithm_exec(algorithm_class, **kwargs):
     for name, value in kwargs.items():
         algorithm_instance.setProperty(name, value)
     algorithm_instance.PyExec()
-    if 'OutputWorkspace' in kwargs:
-        return algorithm_instance.getProperty('OutputWorkspace').value
+    if "OutputWorkspace" in kwargs:
+        return algorithm_instance.getProperty("OutputWorkspace").value
 
 
 def get_dead_time_correction(ws, configuration, error_ws=None):
     """
-        Compute dead time correction to be applied to the reflectivity curve.
-        The method will also try to load the error events from each of the
-        data files to ensure that we properly estimate the dead time correction.
-        :param ws: workspace with raw data to compute correction for
-        :param configuration: reduction parameters
-        :param error_ws: workspace with error events
+    Compute dead time correction to be applied to the reflectivity curve.
+    The method will also try to load the error events from each of the
+    data files to ensure that we properly estimate the dead time correction.
+    :param ws: workspace with raw data to compute correction for
+    :param configuration: reduction parameters
+    :param error_ws: workspace with error events
     """
     tof_min = ws.getTofMin()
     tof_max = ws.getTofMax()
 
     run_number = ws.getRun().getProperty("run_number").value
-    corr_ws = mantid_algorithm_exec(DeadTimeCorrection.SingleReadoutDeadTimeCorrection,
-                                    InputWorkspace=ws,
-                                    InputErrorEventsWorkspace=error_ws,
-                                    Paralyzable=configuration.paralyzable_deadtime,
-                                    DeadTime=configuration.deadtime_value,
-                                    TOFStep=configuration.deadtime_tof_step,
-                                    TOFRange=[tof_min, tof_max],
-                                    OutputWorkspace="corr")
+    corr_ws = mantid_algorithm_exec(
+        DeadTimeCorrection.SingleReadoutDeadTimeCorrection,
+        InputWorkspace=ws,
+        InputErrorEventsWorkspace=error_ws,
+        Paralyzable=configuration.paralyzable_deadtime,
+        DeadTime=configuration.deadtime_value,
+        TOFStep=configuration.deadtime_tof_step,
+        TOFRange=[tof_min, tof_max],
+        OutputWorkspace="corr",
+    )
     corr_ws = api.Rebin(corr_ws, [tof_min, 10, tof_max])
     return corr_ws
 
+
 def apply_dead_time_correction(ws, configuration, error_ws=None):
     """
-        Apply dead time correction, and ensure that it is done only once
-        per workspace.
-        :param ws: workspace with raw data to compute correction for
-        :param template_data: reduction parameters
+    Apply dead time correction, and ensure that it is done only once
+    per workspace.
+    :param ws: workspace with raw data to compute correction for
+    :param template_data: reduction parameters
     """
     if not "dead_time_applied" in ws.getRun():
         corr_ws = get_dead_time_correction(ws, configuration)
         ws = api.Multiply(ws, corr_ws, OutputWorkspace=str(ws))
-        api.AddSampleLog(Workspace=ws, LogName="dead_time_applied", LogText='1', LogType="Number")
+        api.AddSampleLog(Workspace=ws, LogName="dead_time_applied", LogText="1", LogType="Number")
     return ws
-    
- 
+
+
 class Instrument(object):
     """
     Instrument class. Holds the data handling that is unique to a specific instrument.
