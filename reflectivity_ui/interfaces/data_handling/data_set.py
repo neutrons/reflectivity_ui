@@ -379,7 +379,7 @@ class NexusData(object):
             progress(5, "Filtering data...", out_of=100.0)
 
         try:
-            xs_list = self.configuration.instrument.load_data(self.file_path)
+            xs_list = self.configuration.instrument.load_data(self.file_path, self.configuration)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
         except RuntimeError as run_err:
             logging.exception("Could not load file(s) {}\n   {}".format(str(self.file_path), run_err))
@@ -983,7 +983,6 @@ class CrossSectionData(object):
         ws = api.Scale(
             InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
         )
-        #
 
         self.q = ws.readX(0)[:].copy()
         self._r = ws.readY(0)[:].copy()  # * self.configuration.scaling_factor

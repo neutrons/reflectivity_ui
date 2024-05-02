@@ -8,6 +8,7 @@
 
 # local
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.data_handling import DeadTimeCorrection
 
 # 3rd party
 from mantid.api import WorkspaceGroup
@@ -69,6 +70,55 @@ def get_cross_section_label(ws, entry_name):
         return "%s%s" % (pol_label, ana_label)
 
 
+def mantid_algorithm_exec(algorithm_class, **kwargs):
+    algorithm_instance = algorithm_class()
+    assert algorithm_instance.PyInit, "str(algorithm_class) is not a Mantid Python algorithm"
+    algorithm_instance.PyInit()
+    for name, value in kwargs.items():
+        algorithm_instance.setProperty(name, value)
+    algorithm_instance.PyExec()
+    if 'OutputWorkspace' in kwargs:
+        return algorithm_instance.getProperty('OutputWorkspace').value
+
+
+def get_dead_time_correction(ws, configuration, error_ws=None):
+    """
+        Compute dead time correction to be applied to the reflectivity curve.
+        The method will also try to load the error events from each of the
+        data files to ensure that we properly estimate the dead time correction.
+        :param ws: workspace with raw data to compute correction for
+        :param configuration: reduction parameters
+        :param error_ws: workspace with error events
+    """
+    tof_min = ws.getTofMin()
+    tof_max = ws.getTofMax()
+
+    run_number = ws.getRun().getProperty("run_number").value
+    corr_ws = mantid_algorithm_exec(DeadTimeCorrection.SingleReadoutDeadTimeCorrection,
+                                    InputWorkspace=ws,
+                                    InputErrorEventsWorkspace=error_ws,
+                                    Paralyzable=configuration.paralyzable_deadtime,
+                                    DeadTime=configuration.deadtime_value,
+                                    TOFStep=configuration.deadtime_tof_step,
+                                    TOFRange=[tof_min, tof_max],
+                                    OutputWorkspace="corr")
+    corr_ws = api.Rebin(corr_ws, [tof_min, 10, tof_max])
+    return corr_ws
+
+def apply_dead_time_correction(ws, configuration, error_ws=None):
+    """
+        Apply dead time correction, and ensure that it is done only once
+        per workspace.
+        :param ws: workspace with raw data to compute correction for
+        :param template_data: reduction parameters
+    """
+    if not "dead_time_applied" in ws.getRun():
+        corr_ws = get_dead_time_correction(ws, configuration)
+        ws = api.Multiply(ws, corr_ws, OutputWorkspace=str(ws))
+        api.AddSampleLog(Workspace=ws, LogName="dead_time_applied", LogText='1', LogType="Number")
+    return ws
+    
+ 
 class Instrument(object):
     """
     Instrument class. Holds the data handling that is unique to a specific instrument.
@@ -135,7 +185,7 @@ class Instrument(object):
 
         return cross_sections
 
-    def load_data(self, file_path):
+    def load_data(self, file_path, configuration=None):
         r"""
         # type: (unicode) -> WorkspaceGroup
         @brief Load one or more data sets according to the needs ot the instrument.
@@ -147,6 +197,7 @@ class Instrument(object):
         """
         fp_instance = FilePath(file_path)
         xs_list = list()
+        err_list = list()
         temp_workspace_root_name = "".join(random.sample(string.ascii_letters, 12))  # random string of 12 characters
         workspace_root_name = fp_instance.run_numbers(string_representation="short")
         for path in fp_instance.single_paths:
@@ -161,12 +212,34 @@ class Instrument(object):
                     CrossSectionWorkspaces="%s_entry" % temp_workspace_root_name,
                 )
                 # Only keep good workspaces, and get rid of the rejected events
-                path_xs_list = [
-                    ws for ws in _path_xs_list if not ws.getRun()["cross_section_id"].value == "unfiltered"
-                ]
+                if configuration is not None and configuration.apply_deadtime:
+                    err_ws = api.LoadErrorEventsNexus(path)
+                    _err_list = api.MRFilterCrossSections(
+                        InputWorkspace=err_ws,
+                        PolState=self.pol_state,
+                        AnaState=self.ana_state,
+                        PolVeto=self.pol_veto,
+                        AnaVeto=self.ana_veto,
+                        CrossSectionWorkspaces="%s_err_entry" % temp_workspace_root_name,
+                    )
+                    path_xs_list = []
+                    for ws in _path_xs_list:
+                        xs_name = ws.getRun()["cross_section_id"].value
+                        if not xs_name == "unfiltered":
+                            # Find the related workspace in with error events
+                            for err_ws in _err_list:
+                                if err_ws.getRun()["cross_section_id"].value == xs_name:
+                                    _ws = apply_dead_time_correction(ws, configuration, error_ws=err_ws)
+                                    path_xs_list.append(_ws)
+                else:
+                    path_xs_list = [
+                        ws for ws in _path_xs_list if not ws.getRun()["cross_section_id"].value == "unfiltered"
+                    ]
+
             else:
                 ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
                 path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
+
             if len(xs_list) == 0:  # initialize xs_list with the cross sections of the first data file
                 xs_list = path_xs_list
                 for ws in xs_list:  # replace the temporary names with the run number(s)
@@ -175,6 +248,7 @@ class Instrument(object):
             else:
                 for i, ws in enumerate(xs_list):
                     api.Plus(LHSWorkspace=str(ws), RHSWorkspace=str(path_xs_list[i]), OutputWorkspace=str(ws))
+
         # Insert a log indicating which run numbers contributed to this cross-section
         for ws in xs_list:
             api.AddSampleLog(

@@ -38,6 +38,12 @@ class Configuration(object):
     polynomial_stitching_degree = 3
     polynomial_stitching_points = 3
 
+    # Dead time options
+    apply_deadtime = True
+    paralyzable_deadtime = True
+    deadtime_value = 4.2
+    deadtime_tof_step = 150
+
     def __init__(self, settings=None):
         self.instrument = Instrument()
         # Number of TOF bins
