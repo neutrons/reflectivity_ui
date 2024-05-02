@@ -2,7 +2,6 @@ r"""
 General settings
 """
 
-
 # standard imports
 import json
 import os
@@ -13,6 +12,7 @@ this_module_path = sys.modules[__name__].__file__
 
 class Settings(object):
     r"""Singleton object containing the GUI settings as a dictionary"""
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -24,7 +24,9 @@ class Settings(object):
     def __init__(self):
         r"""Load default configuration"""
         if not self._settings:  # will load only once, since this is a singleton
-            self.update(os.path.join(os.path.dirname(this_module_path), "settings.json"))
+            self.update(
+                os.path.join(os.path.dirname(this_module_path), "settings.json")
+            )
 
     def __getitem__(self, item):
         return self._settings.get(item, None)

@@ -13,7 +13,6 @@ Copyright (c) 2003-2017 SciPy Developers.
 All rights reserved.
 """
 
-
 import math
 import numpy as np
 
@@ -142,7 +141,16 @@ def _select_by_peak_threshold(x, peaks, tmin, tmax):
     return keep, stacked_thresholds[0], stacked_thresholds[1]
 
 
-def find_peaks(x, height=None, threshold=None, distance=None, prominence=None, width=None, wlen=None, rel_height=0.5):
+def find_peaks(
+    x,
+    height=None,
+    threshold=None,
+    distance=None,
+    prominence=None,
+    width=None,
+    wlen=None,
+    rel_height=0.5,
+):
     """
     Find peaks inside a signal based on peak properties.
     .. versionadded:: 1.1.0
@@ -168,7 +176,9 @@ def find_peaks(x, height=None, threshold=None, distance=None, prominence=None, w
     if threshold is not None:
         # Evaluate threshold condition
         tmin, tmax = _unpack_condition_args(threshold, x, peaks)
-        keep, left_thresholds, right_thresholds = _select_by_peak_threshold(x, peaks, tmin, tmax)
+        keep, left_thresholds, right_thresholds = _select_by_peak_threshold(
+            x, peaks, tmin, tmax
+        )
         peaks = peaks[keep]
         properties["left_thresholds"] = left_thresholds
         properties["right_thresholds"] = right_thresholds
@@ -179,7 +189,12 @@ def find_peaks(x, height=None, threshold=None, distance=None, prominence=None, w
 
     if prominence is not None or width is not None:
         # Calculate prominence (required for both conditions)
-        properties.update(zip(["prominences", "left_bases", "right_bases"], peak_prominences(x, peaks, wlen=wlen)))
+        properties.update(
+            zip(
+                ["prominences", "left_bases", "right_bases"],
+                peak_prominences(x, peaks, wlen=wlen),
+            )
+        )
 
     if prominence is not None:
         # Evaluate prominence condition
@@ -197,7 +212,11 @@ def find_peaks(x, height=None, threshold=None, distance=None, prominence=None, w
                     x,
                     peaks,
                     rel_height,
-                    (properties["prominences"], properties["left_bases"], properties["right_bases"]),
+                    (
+                        properties["prominences"],
+                        properties["left_bases"],
+                        properties["right_bases"],
+                    ),
                 ),
             )
         )
@@ -311,8 +330,15 @@ def _peak_widths(x, peaks, rel_height, prominences, left_bases, right_bases):
 
     if rel_height < 0:
         raise ValueError("`rel_height` must be greater or equal to 0.0")
-    if not (peaks.shape[0] == prominences.shape[0] == left_bases.shape[0] == right_bases.shape[0]):
-        raise ValueError("arrays in `prominence_data` must have the same shape " "as `peaks`")
+    if not (
+        peaks.shape[0]
+        == prominences.shape[0]
+        == left_bases.shape[0]
+        == right_bases.shape[0]
+    ):
+        raise ValueError(
+            "arrays in `prominence_data` must have the same shape " "as `peaks`"
+        )
 
     show_warning = False
     widths = np.empty(peaks.shape[0], dtype=np.float64)

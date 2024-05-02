@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=bare-except
 """
-  Widget to compare different reflectivities.
+Widget to compare different reflectivities.
 """
+
 import sys
 import os
 import logging
@@ -56,7 +57,10 @@ class CompareWidget(QtWidgets.QWidget):
         """
         filter_ = "Reflectivity (*.dat *.txt);;All (*.*)"
         names, _ = QtWidgets.QFileDialog.getOpenFileNames(
-            self, "Open reflectivity file...", directory=self.active_folder, filter=filter_
+            self,
+            "Open reflectivity file...",
+            directory=self.active_folder,
+            filter=filter_,
         )
 
         if names:
@@ -82,7 +86,9 @@ class CompareWidget(QtWidgets.QWidget):
         color_skip = 30
         color_offset = int(idx / 255.0 * color_skip / 2.0)
         color_id = (color_skip * idx + color_offset) % 255
-        color = "#" + "".join([r"%02x" % int(f * 255) for f in self._refl_color_map(color_id)[:-1]])
+        color = "#" + "".join(
+            [r"%02x" % int(f * 255) for f in self._refl_color_map(color_id)[:-1]]
+        )
 
         self.changing_table = True
         self.ui.compareList.setRowCount(idx + 1)
@@ -96,7 +102,11 @@ class CompareWidget(QtWidgets.QWidget):
         else:
             try:
                 plotlabel = label.split("REF_M_", 1)[1]
-                plotlabel = plotlabel.split("_Specular")[0] + "  " + plotlabel.split("Specular_")[1].split(".")[0]
+                plotlabel = (
+                    plotlabel.split("_Specular")[0]
+                    + "  "
+                    + plotlabel.split("Specular_")[1].split(".")[0]
+                )
             except:
                 plotlabel = label
         self.ui.compareList.setItem(idx, 0, item)
@@ -139,7 +149,9 @@ class CompareWidget(QtWidgets.QWidget):
                 for key in pol_states:
                     _data = self.refl_data[key]
                     data = _data.T
-                    self.ui.comparePlot.errorbar(data[0], data[1], data[2], capsize=1, label=key)
+                    self.ui.comparePlot.errorbar(
+                        data[0], data[1], data[2], capsize=1, label=key
+                    )
             header = self.ui.compareList.verticalHeader()
             for i in range(self.ui.compareList.rowCount()):
                 idx = header.logicalIndex(i)
@@ -150,7 +162,9 @@ class CompareWidget(QtWidgets.QWidget):
                 if len(data) == 0:
                     logging.error("No data for %s", name)
                     continue
-                self.ui.comparePlot.errorbar(data[0], data[1], data[2], capsize=1, label=label, color=color)
+                self.ui.comparePlot.errorbar(
+                    data[0], data[1], data[2], capsize=1, label=label, color=color
+                )
             if self.refl_data or self.ui.compareList.rowCount() > 0:
                 self.ui.comparePlot.legend(frameon=False)
                 self.ui.comparePlot.canvas.ax.set_yscale("log")

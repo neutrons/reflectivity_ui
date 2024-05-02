@@ -5,7 +5,11 @@ from matplotlib.collections import LineCollection
 from matplotlib.lines import Line2D
 
 from reflectivity_ui.interfaces.main_window import MainWindow
-from reflectivity_ui.ui.mplwidget import NavigationToolbarGeneric, NavigationToolbarReflectivity, NavigationToolbar
+from reflectivity_ui.ui.mplwidget import (
+    NavigationToolbarGeneric,
+    NavigationToolbarReflectivity,
+    NavigationToolbar,
+)
 
 
 def _refl_data():
@@ -33,7 +37,9 @@ def _toggle_toolbar_button(toolbar: NavigationToolbar, button_text: str):
             break
 
 
-def _compare_lines_data(lines: np.ndarray[Line2D], gold_data: dict, is_q4_plot: bool = False):
+def _compare_lines_data(
+    lines: np.ndarray[Line2D], gold_data: dict, is_q4_plot: bool = False
+):
     """Assert that the data for the plotted line and upper and lower error bars are correct"""
     for ics, cross_section in enumerate(gold_data["cross_sections"].keys()):
         gold_x, gold_y, gold_yerr = gold_data[cross_section].T
@@ -53,7 +59,9 @@ def _compare_lines_data(lines: np.ndarray[Line2D], gold_data: dict, is_q4_plot: 
         assert_allclose(plot_err_hi.get_ydata(), (gold_y + gold_yerr) * y_factor)
 
 
-def _compare_error_bar_data(collections: np.ndarray[LineCollection], gold_data: dict, is_q4_plot: bool = False):
+def _compare_error_bar_data(
+    collections: np.ndarray[LineCollection], gold_data: dict, is_q4_plot: bool = False
+):
     """Assert that the data for the vertical error bars are correct"""
     for ics, cross_section in enumerate(gold_data["cross_sections"].keys()):
         gold_x, gold_y, gold_yerr = gold_data[cross_section].T
@@ -82,7 +90,9 @@ class TestNavigationToolbar:
         main_window = MainWindow()
         qtbot.addWidget(main_window)
         compare_widget = _initialize_compare_plot(main_window)
-        assert isinstance(compare_widget.comparePlot.toolbar, NavigationToolbarReflectivity)
+        assert isinstance(
+            compare_widget.comparePlot.toolbar, NavigationToolbarReflectivity
+        )
 
     def test_reflectivity_toolbar_xlog(self, qtbot):
         """Test the XLog button of the reflectivity navigation toolbar"""

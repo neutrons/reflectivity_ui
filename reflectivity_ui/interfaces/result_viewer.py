@@ -1,5 +1,5 @@
 """
-   Dialog to show final reduced data.
+Dialog to show final reduced data.
 """
 # pylint: disable=bare-except
 
@@ -55,9 +55,16 @@ class ResultViewer(QtWidgets.QDialog):
         data_set_keys = list(self.data_manager.data_sets.keys())
 
         if len(data_set_keys) > 4:
-            logging.error("Too many cross-sections for plotting: %s", str(len(data_set_keys)))
+            logging.error(
+                "Too many cross-sections for plotting: %s", str(len(data_set_keys))
+            )
 
-        plots = [self.ui.offspec_pp_plot, self.ui.offspec_mm_plot, self.ui.offspec_pm_plot, self.ui.offspec_mp_plot]
+        plots = [
+            self.ui.offspec_pp_plot,
+            self.ui.offspec_mm_plot,
+            self.ui.offspec_pm_plot,
+            self.ui.offspec_mp_plot,
+        ]
         for plot in plots:
             plot.clear()
 
@@ -74,9 +81,15 @@ class ResultViewer(QtWidgets.QDialog):
             plot.show()
             plots[i].clear_fig()
             _data = off_spec_data[channel][0].T
-            plots[i].pcolormesh(_data[0], _data[1], _data[2], log=True, imin=i_min, imax=i_max)
-            plots[i].set_xlabel("%s [%s]" % (off_spec_data["columns"][0], off_spec_data["units"][0]))
-            plots[i].set_ylabel("%s [%s]" % (off_spec_data["columns"][1], off_spec_data["units"][1]))
+            plots[i].pcolormesh(
+                _data[0], _data[1], _data[2], log=True, imin=i_min, imax=i_max
+            )
+            plots[i].set_xlabel(
+                "%s [%s]" % (off_spec_data["columns"][0], off_spec_data["units"][0])
+            )
+            plots[i].set_ylabel(
+                "%s [%s]" % (off_spec_data["columns"][1], off_spec_data["units"][1])
+            )
             plots[i].set_title(channel)
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([i_min, i_max])
@@ -97,7 +110,9 @@ class ResultViewer(QtWidgets.QDialog):
     def reset_gisans_crop(self):
         self.update_gisans(crop=False)
 
-    def _plot_gisans(self, gisans_data, channel, layout, i_min, i_max, xlim=None, ylim=None):
+    def _plot_gisans(
+        self, gisans_data, channel, layout, i_min, i_max, xlim=None, ylim=None
+    ):
         _data = gisans_data[channel][0].T
         gisans_plot = mpl.MPLWidget(self)
         gisans_plot.setMinimumSize(QtCore.QSize(0, 250))
@@ -105,9 +120,15 @@ class ResultViewer(QtWidgets.QDialog):
             self._gisans_reference = gisans_plot
         layout.addWidget(gisans_plot)  # , i_row, i_col)
 
-        gisans_plot.pcolormesh(_data[0], _data[1], _data[2], log=True, imin=i_min, imax=i_max)
-        gisans_plot.set_xlabel("%s [%s]" % (gisans_data["columns"][0], gisans_data["units"][0]))
-        gisans_plot.set_ylabel("%s [%s]" % (gisans_data["columns"][1], gisans_data["units"][1]))
+        gisans_plot.pcolormesh(
+            _data[0], _data[1], _data[2], log=True, imin=i_min, imax=i_max
+        )
+        gisans_plot.set_xlabel(
+            "%s [%s]" % (gisans_data["columns"][0], gisans_data["units"][0])
+        )
+        gisans_plot.set_ylabel(
+            "%s [%s]" % (gisans_data["columns"][1], gisans_data["units"][1])
+        )
         gisans_plot.set_title(channel)
         if xlim is not None and ylim is not None:
             gisans_plot.canvas.ax.set_xlim(*xlim)
@@ -130,7 +151,11 @@ class ResultViewer(QtWidgets.QDialog):
         # Clear everything
         xlim = None
         ylim = None
-        if crop and self._gisans_reference is not None and self._gisans_reference.cplot is not None:
+        if (
+            crop
+            and self._gisans_reference is not None
+            and self._gisans_reference.cplot is not None
+        ):
             xlim = self._gisans_reference.canvas.ax.get_xlim()
             ylim = self._gisans_reference.canvas.ax.get_ylim()
 
@@ -138,7 +163,9 @@ class ResultViewer(QtWidgets.QDialog):
 
         data_set_keys = list(self.data_manager.data_sets.keys())
         if len(data_set_keys) > 4:
-            logging.error("Too many cross-sections for plotting: %s", str(len(data_set_keys)))
+            logging.error(
+                "Too many cross-sections for plotting: %s", str(len(data_set_keys))
+            )
 
         layouts = [
             self.ui.gisans_pp_layout,
@@ -155,7 +182,9 @@ class ResultViewer(QtWidgets.QDialog):
             logging.info("State: %s" % pol_state)
             for j, channel in enumerate(gisans_data["cross_section_bins"][pol_state]):
                 logging.info("  channel: %s", channel)
-                _plot = self._plot_gisans(gisans_data, channel, layouts[i], i_min, i_max, xlim=xlim, ylim=ylim)
+                _plot = self._plot_gisans(
+                    gisans_data, channel, layouts[i], i_min, i_max, xlim=xlim, ylim=ylim
+                )
                 if i == 0 and j == 0:
                     self._gisans_reference = _plot
 

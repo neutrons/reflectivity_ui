@@ -1,10 +1,9 @@
 """
-    Loader for event nexus files.
-    Uses Mantid Framework
+Loader for event nexus files.
+Uses Mantid Framework
 """
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, \
 # too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
-
 
 # local imports
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
@@ -83,8 +82,12 @@ def getIxyt(nxs_data):
     _tof_axis = nxs_data.readX(0)[:].copy()
     nbr_tof = len(_tof_axis)
 
-    sz_y_axis = int(nxs_data.getInstrument().getNumberParameter("number-of-y-pixels")[0])  # 256
-    sz_x_axis = int(nxs_data.getInstrument().getNumberParameter("number-of-x-pixels")[0])  # 304
+    sz_y_axis = int(
+        nxs_data.getInstrument().getNumberParameter("number-of-y-pixels")[0]
+    )  # 256
+    sz_x_axis = int(
+        nxs_data.getInstrument().getNumberParameter("number-of-x-pixels")[0]
+    )  # 304
 
     _y_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof - 1))
     _y_error_axis = np.zeros((sz_x_axis, sz_y_axis, nbr_tof - 1))
@@ -130,7 +133,9 @@ class NexusData(object):
                 _r = self.cross_sections[xs].raw_r
                 _dr = self.cross_sections[xs].raw_dr
                 npts = min(len(_r), n_points)
-                _n_events = np.sum(_r[:npts] / _dr[:npts] ** 2) / np.sum(1 / _dr[:npts] ** 2)
+                _n_events = np.sum(_r[:npts] / _dr[:npts] ** 2) / np.sum(
+                    1 / _dr[:npts] ** 2
+                )
                 if _n_events > n_events:
                     n_events = _n_events
                     large_xs = xs
@@ -153,7 +158,10 @@ class NexusData(object):
         return q_min, q_max
 
     def get_reflectivity_workspace_group(self):
-        ws_list = [self.cross_sections[xs]._reflectivity_workspace for xs in self.cross_sections]
+        ws_list = [
+            self.cross_sections[xs]._reflectivity_workspace
+            for xs in self.cross_sections
+        ]
         wsg = api.GroupWorkspaces(InputWorkspaces=ws_list)
         return wsg
 
@@ -166,7 +174,10 @@ class NexusData(object):
         try:
             for xs in self.cross_sections:
                 if hasattr(self.cross_sections[xs].configuration, param):
-                    if not getattr(self.cross_sections[xs].configuration, param) == value:
+                    if (
+                        not getattr(self.cross_sections[xs].configuration, param)
+                        == value
+                    ):
                         setattr(self.cross_sections[xs].configuration, param, value)
                         has_changed = True
         except:
@@ -190,7 +201,10 @@ class NexusData(object):
             direct_beam = CrossSectionData("none", self.configuration, "none")
 
         logging.info(
-            "%s Reduction with DB: %s [config: %s]", self.number, direct_beam.number, self.configuration.normalization
+            "%s Reduction with DB: %s [config: %s]",
+            self.number,
+            direct_beam.number,
+            self.configuration.normalization,
         )
         angle_offset = 0  # Offset from dangle0, in radians
 
@@ -203,12 +217,16 @@ class NexusData(object):
         if apply_norm and direct_beam._event_workspace is not None:
             ws_norm = direct_beam._event_workspace
 
-        ws_list = [self.cross_sections[xs]._event_workspace for xs in self.cross_sections]
+        ws_list = [
+            self.cross_sections[xs]._event_workspace for xs in self.cross_sections
+        ]
         conf = self.cross_sections[self.main_cross_section].configuration
         wsg = api.GroupWorkspaces(InputWorkspaces=ws_list)
 
         _dirpix = conf.direct_pixel_overwrite if conf.set_direct_pixel else None
-        _dangle0 = conf.direct_angle_offset_overwrite if conf.set_direct_angle_offset else None
+        _dangle0 = (
+            conf.direct_angle_offset_overwrite if conf.set_direct_angle_offset else None
+        )
 
         ws = api.MagnetismReflectometryReduction(
             InputWorkspace=wsg,
@@ -264,22 +282,31 @@ class NexusData(object):
         norm_y_min = run_object.getProperty("norm_low_res_min").value
         norm_y_max = run_object.getProperty("norm_low_res_max").value + 1.0
         tth = run_object.getProperty("two_theta").value * math.pi / 360.0
-        quicknxs_scale = (float(norm_x_max) - float(norm_x_min)) * (float(norm_y_max) - float(norm_y_min))
-        quicknxs_scale /= (float(peak_max) - float(peak_min)) * (float(low_res_max) - float(low_res_min))
+        quicknxs_scale = (float(norm_x_max) - float(norm_x_min)) * (
+            float(norm_y_max) - float(norm_y_min)
+        )
+        quicknxs_scale /= (float(peak_max) - float(peak_min)) * (
+            float(low_res_max) - float(low_res_min)
+        )
         logging.warning("Scale size = %s", str(quicknxs_scale))
         logging.warning("Alpha_i = %s", str(tth))
         _scale = 0.005 / math.sin(tth) if tth > 0.0002 else 1.0
         quicknxs_scale *= _scale
 
         ws = api.Scale(
-            InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
+            InputWorkspace=output_ws,
+            OutputWorkspace=output_ws,
+            factor=quicknxs_scale,
+            Operation="Multiply",
         )
         _ws = ws if len(ws_list) > 1 else [ws]
         for xs in _ws:
             xs_id = xs.getRun().getProperty("cross_section_id").value
             self.cross_sections[xs_id].q = xs.readX(0)[:].copy()
             self.cross_sections[xs_id]._r = np.ma.masked_equal(xs.readY(0)[:].copy(), 0)
-            self.cross_sections[xs_id]._dr = np.ma.masked_equal(xs.readE(0)[:].copy(), 0)
+            self.cross_sections[xs_id]._dr = np.ma.masked_equal(
+                xs.readE(0)[:].copy(), 0
+            )
             self.cross_sections[xs_id]._reflectivity_workspace = str(xs)
 
     def calculate_gisans(self, direct_beam, progress=None):
@@ -295,13 +322,20 @@ class NexusData(object):
                 self.cross_sections[xs].gisans(direct_beam=direct_beam)
             except:
                 has_errors = True
-                detailed_msg += "Could not calculate GISANS reflectivity for %s\n  %s\n\n" % (
-                    xs,
-                    traceback.format_exc(),
+                detailed_msg += (
+                    "Could not calculate GISANS reflectivity for %s\n  %s\n\n"
+                    % (
+                        xs,
+                        traceback.format_exc(),
+                    )
                 )
                 logging.exception("Could not calculate GISANS reflectivity for %s", xs)
             if progress:
-                progress(i, message="Computed GISANS %s" % xs, out_of=len(self.cross_sections))
+                progress(
+                    i,
+                    message="Computed GISANS %s" % xs,
+                    out_of=len(self.cross_sections),
+                )
         if has_errors:
             raise RuntimeError(detailed_msg)
         if progress is not None:
@@ -337,9 +371,12 @@ class NexusData(object):
                 self.cross_sections[xs].offspec(direct_beam=direct_beam)
             except Exception:
                 has_errors = True
-                detailed_msg += "Could not calculate off-specular reflectivity for %s\n  %s\n\n" % (
-                    xs,
-                    traceback.format_exc(),
+                detailed_msg += (
+                    "Could not calculate off-specular reflectivity for %s\n  %s\n\n"
+                    % (
+                        xs,
+                        traceback.format_exc(),
+                    )
                 )
                 logging.exception(detailed_msg)
         if has_errors:
@@ -378,10 +415,14 @@ class NexusData(object):
             progress(5, "Filtering data...", out_of=100.0)
 
         try:
-            xs_list = self.configuration.instrument.load_data(self.file_path, self.configuration)
+            xs_list = self.configuration.instrument.load_data(
+                self.file_path, self.configuration
+            )
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
         except RuntimeError as run_err:
-            logging.exception("Could not load file(s) {}\n   {}".format(str(self.file_path), run_err))
+            logging.exception(
+                "Could not load file(s) {}\n   {}".format(str(self.file_path), run_err)
+            )
             return self.cross_sections
 
         progress_value = 0
@@ -399,13 +440,19 @@ class NexusData(object):
             # Get rid of empty workspaces
             logging.info("Loading %s: %s events", str(channel), ws.getNumberEvents())
             if ws.getNumberEvents() < N_EVENTS_CUTOFF:
-                logging.warning("Too few events for %s: %s", channel, ws.getNumberEvents())
+                logging.warning(
+                    "Too few events for %s: %s", channel, ws.getNumberEvents()
+                )
                 continue
 
             name = ws.getRun().getProperty("cross_section_id").value
-            cross_section = CrossSectionData(name, self.configuration, entry_name=channel, workspace=ws)
+            cross_section = CrossSectionData(
+                name, self.configuration, entry_name=channel, workspace=ws
+            )
             self.cross_sections[name] = cross_section
-            self.number = cross_section.number  # e.g '1234:1238+1239' if more than one run made up this cross section
+            self.number = (
+                cross_section.number
+            )  # e.g '1234:1238+1239' if more than one run made up this cross section
             if cross_section.total_counts > _max_counts:
                 _max_counts = cross_section.total_counts
                 _max_xs = name
@@ -413,14 +460,18 @@ class NexusData(object):
         # Now that we know which cross section has the most data,
         # use that one to get the reduction parameters
         self.main_cross_section = _max_xs
-        self.cross_sections[_max_xs].get_reduction_parameters(update_parameters=update_parameters)
+        self.cross_sections[_max_xs].get_reduction_parameters(
+            update_parameters=update_parameters
+        )
 
         # Push the configuration (reduction options and peak regions) from the
         # cross-section with the most data to all other cross-sections.
         for xs in self.cross_sections:
             if xs == _max_xs:
                 continue
-            self.cross_sections[xs].update_configuration(self.cross_sections[_max_xs].configuration)
+            self.cross_sections[xs].update_configuration(
+                self.cross_sections[_max_xs].configuration
+            )
 
         if progress is not None:
             progress(100, "Complete", out_of=100.0)
@@ -592,7 +643,8 @@ class CrossSectionData(object):
         if self._dr is None:
             return None
         return np.sqrt(
-            (self._dr * self.configuration.scaling_factor) ** 2 + (self.configuration.scaling_error * self._r) ** 2
+            (self._dr * self.configuration.scaling_factor) ** 2
+            + (self.configuration.scaling_error * self._r) ** 2
         )
 
     @property
@@ -665,11 +717,17 @@ class CrossSectionData(object):
                     # self.log_minmax[motor] = (item.value, item.value)
                 elif item.type == "number":
                     self.logs[motor] = np.float64(item.value)
-                    self.log_minmax[motor] = (np.float64(item.value), np.float64(item.value))
+                    self.log_minmax[motor] = (
+                        np.float64(item.value),
+                        np.float64(item.value),
+                    )
                 else:
                     stats = item.getStatistics()
                     self.logs[motor] = np.float64(stats.mean)
-                    self.log_minmax[motor] = (np.float64(stats.minimum), np.float64(stats.maximum))
+                    self.log_minmax[motor] = (
+                        np.float64(stats.minimum),
+                        np.float64(stats.maximum),
+                    )
             except:
                 logging.exception("Error reading DASLogs %s", motor)
 
@@ -689,7 +747,9 @@ class CrossSectionData(object):
         Process loaded data
         :param bool update_parameters: If true, we will determine reduction parameters
         """
-        self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
+        self.scattering_angle = (
+            self.configuration.instrument.scattering_angle_from_data(self)
+        )
 
         # Determine binning
         # TODO: only the TOF binning is implemented
@@ -705,14 +765,19 @@ class CrossSectionData(object):
             elif self.configuration.tof_bin_type == 2:  # constant 1/wavelength
                 tof_edges = self.configuration.tof_range[0] * (
                     (
-                        (self.configuration.tof_range[1] / self.configuration.tof_range[0])
+                        (
+                            self.configuration.tof_range[1]
+                            / self.configuration.tof_range[0]
+                        )
                         ** (1.0 / self.configuration.tof_bins)
                     )
                     ** np.arange(self.configuration.tof_bins + 1)
                 )
             else:
                 tof_edges = np.arange(
-                    self.configuration.tof_range[0], self.configuration.tof_range[1], self.configuration.tof_bins
+                    self.configuration.tof_range[0],
+                    self.configuration.tof_range[1],
+                    self.configuration.tof_bins,
                 )
         self.tof_edges = tof_edges
 
@@ -723,8 +788,12 @@ class CrossSectionData(object):
         workspace = api.mtd[self._event_workspace]
         if self.xtofdata is None:
             t_0 = time.time()
-            binning_ws = api.CreateWorkspace(DataX=self.tof_edges, DataY=np.zeros(len(self.tof_edges) - 1))
-            data_rebinned = api.RebinToWorkspace(WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws)
+            binning_ws = api.CreateWorkspace(
+                DataX=self.tof_edges, DataY=np.zeros(len(self.tof_edges) - 1)
+            )
+            data_rebinned = api.RebinToWorkspace(
+                WorkspaceToRebin=workspace, WorkspaceToMatch=binning_ws
+            )
             Ixyt, Ixyt_error = getIxyt(data_rebinned)
 
             # Create projections for the 2D datasets
@@ -812,7 +881,9 @@ class CrossSectionData(object):
             self.configuration.low_res_roi[0] : self.configuration.low_res_roi[1],
             :,
         ]
-        counts_roi_error = np.linalg.norm(raw_error_roi, axis=(0, 1))  # square root of sum of squares
+        counts_roi_error = np.linalg.norm(
+            raw_error_roi, axis=(0, 1)
+        )  # square root of sum of squares
         if self.proton_charge > 0.0:
             counts_roi_normalized = counts_roi / self.proton_charge
             counts_roi_normalized_error = counts_roi_error / self.proton_charge
@@ -847,14 +918,24 @@ class CrossSectionData(object):
         dims = self.data.shape
         indices = [
             (i >= self.configuration.bck_roi[0] and i < self.configuration.bck_roi[1])
-            and not (i >= self.configuration.peak_roi[0] and i < self.configuration.peak_roi[1])
+            and not (
+                i >= self.configuration.peak_roi[0]
+                and i < self.configuration.peak_roi[1]
+            )
             for i in range(dims[0])
         ]
         indices = np.asarray(indices)
         n_bins = len(indices[indices == True])
-        raw_bck = self.data[indices, self.configuration.low_res_roi[0] : self.configuration.low_res_roi[1], :]
+        raw_bck = self.data[
+            indices,
+            self.configuration.low_res_roi[0] : self.configuration.low_res_roi[1],
+            :,
+        ]
         summed_bck = raw_bck.sum(axis=0).sum(axis=0)
-        size_bck = float(n_bins * (self.configuration.low_res_roi[1] - self.configuration.low_res_roi[0]))
+        size_bck = float(
+            n_bins
+            * (self.configuration.low_res_roi[1] - self.configuration.low_res_roi[0])
+        )
 
         return summed_bck / math.fabs(size_bck)
 
@@ -862,7 +943,9 @@ class CrossSectionData(object):
         """
         Update parameters that are calculated from the configuration
         """
-        self.scattering_angle = self.configuration.instrument.scattering_angle_from_data(self)
+        self.scattering_angle = (
+            self.configuration.instrument.scattering_angle_from_data(self)
+        )
 
     def update_configuration(self, configuration):
         """
@@ -923,8 +1006,16 @@ class CrossSectionData(object):
             str(_as_ints(self.configuration.low_res_roi)),
         )
 
-        _dirpix = configuration.direct_pixel_overwrite if configuration.set_direct_pixel else None
-        _dangle0 = configuration.direct_angle_offset_overwrite if configuration.set_direct_angle_offset else None
+        _dirpix = (
+            configuration.direct_pixel_overwrite
+            if configuration.set_direct_pixel
+            else None
+        )
+        _dangle0 = (
+            configuration.direct_angle_offset_overwrite
+            if configuration.set_direct_angle_offset
+            else None
+        )
 
         ws = api.MagnetismReflectometryReduction(
             InputWorkspace=self._event_workspace,
@@ -975,12 +1066,19 @@ class CrossSectionData(object):
         norm_y_min = run_object.getProperty("norm_low_res_min").value
         norm_y_max = run_object.getProperty("norm_low_res_max").value
         tth = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
-        quicknxs_scale = (float(norm_x_max) - float(norm_x_min)) * (float(norm_y_max) - float(norm_y_min))
-        quicknxs_scale /= (float(peak_max) - float(peak_min)) * (float(low_res_max) - float(low_res_min))
+        quicknxs_scale = (float(norm_x_max) - float(norm_x_min)) * (
+            float(norm_y_max) - float(norm_y_min)
+        )
+        quicknxs_scale /= (float(peak_max) - float(peak_min)) * (
+            float(low_res_max) - float(low_res_min)
+        )
         quicknxs_scale *= 0.005 / math.sin(tth)
 
         ws = api.Scale(
-            InputWorkspace=output_ws, OutputWorkspace=output_ws, factor=quicknxs_scale, Operation="Multiply"
+            InputWorkspace=output_ws,
+            OutputWorkspace=output_ws,
+            factor=quicknxs_scale,
+            Operation="Multiply",
         )
 
         self.q = ws.readX(0)[:].copy()

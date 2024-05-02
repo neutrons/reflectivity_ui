@@ -1,7 +1,8 @@
 # pylint: disable=too-many-locals, too-many-arguments
 """
-    Class to execute and hold the off-specular reflectivity calculation.
+Class to execute and hold the off-specular reflectivity calculation.
 """
+
 import logging
 import numpy as np
 import scipy.stats
@@ -49,11 +50,17 @@ class OffSpecular(object):
         # Range in low-res direction
         y_min, y_max = self.data_set.configuration.low_res_roi
 
-        rad_per_pixel = self.data_set.det_size_x / self.data_set.dist_sam_det / self.data_set.xydata.shape[1]
+        rad_per_pixel = (
+            self.data_set.det_size_x
+            / self.data_set.dist_sam_det
+            / self.data_set.xydata.shape[1]
+        )
 
         xtth = (
             self.data_set.direct_pixel
-            - np.arange(self.data_set.data.shape[0])[self.data_set.active_area_x[0] : self.data_set.active_area_x[1]]
+            - np.arange(self.data_set.data.shape[0])[
+                self.data_set.active_area_x[0] : self.data_set.active_area_x[1]
+            ]
         )
         pix_offset_spec = self.data_set.direct_pixel - x_pos
         delta_dangle = self.data_set.dangle - self.data_set.angle_offset
@@ -81,7 +88,9 @@ class OffSpecular(object):
 
         # calculate ROI intensities and normalize by number of points
         raw_multi_dim = self.data_set.data[
-            self.data_set.active_area_x[0] : self.data_set.active_area_x[1], y_min:y_max, :
+            self.data_set.active_area_x[0] : self.data_set.active_area_x[1],
+            y_min:y_max,
+            :,
         ]
         raw = raw_multi_dim.sum(axis=1)
         d_raw = np.sqrt(raw)
@@ -101,23 +110,37 @@ class OffSpecular(object):
         self.dS *= self.data_set.configuration.scaling_factor
 
         if direct_beam is not None:
-            if not direct_beam.configuration.tof_bins == self.data_set.configuration.tof_bins:
-                logging.error("Trying to normalize with a direct beam data set with different binning")
+            if (
+                not direct_beam.configuration.tof_bins
+                == self.data_set.configuration.tof_bins
+            ):
+                logging.error(
+                    "Trying to normalize with a direct beam data set with different binning"
+                )
 
             norm_y_min, norm_y_max = direct_beam.configuration.low_res_roi
             norm_x_min, norm_x_max = direct_beam.configuration.peak_roi
-            norm_raw_multi_dim = direct_beam.data[norm_x_min:norm_x_max, norm_y_min:norm_y_max, :]
+            norm_raw_multi_dim = direct_beam.data[
+                norm_x_min:norm_x_max, norm_y_min:norm_y_max, :
+            ]
 
             norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
             norm_d_raw = np.sqrt(norm_raw)
-            norm_scale = (float(norm_x_max) - float(norm_x_min)) * (float(norm_y_max) - float(norm_y_min))
+            norm_scale = (float(norm_x_max) - float(norm_x_min)) * (
+                float(norm_y_max) - float(norm_y_min)
+            )
             norm_raw /= norm_scale * direct_beam.proton_charge
             norm_d_raw /= norm_scale * direct_beam.proton_charge
 
             idxs = norm_raw > 0.0
             self.dS[:, idxs] = np.sqrt(
                 (self.dS[:, idxs] / norm_raw[idxs][np.newaxis, :]) ** 2
-                + (self.S[:, idxs] / norm_raw[idxs][np.newaxis, :] ** 2 * norm_d_raw[idxs][np.newaxis, :]) ** 2
+                + (
+                    self.S[:, idxs]
+                    / norm_raw[idxs][np.newaxis, :] ** 2
+                    * norm_d_raw[idxs][np.newaxis, :]
+                )
+                ** 2
             )
             self.S[:, idxs] /= norm_raw[idxs][np.newaxis, :]
             self.S[:, np.logical_not(idxs)] = 0.0
@@ -145,7 +168,14 @@ def merge(reduction_list, pol_state):
 
     for item in reduction_list:
         offspec = item.cross_sections[pol_state].off_spec
-        Qx, Qz, ki_z, kf_z, S, dS = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z, offspec.S, offspec.dS)
+        Qx, Qz, ki_z, kf_z, S, dS = (
+            offspec.Qx,
+            offspec.Qz,
+            offspec.ki_z,
+            offspec.kf_z,
+            offspec.S,
+            offspec.dS,
+        )
 
         n_total = len(S[0])
         p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
@@ -225,12 +255,22 @@ def rebin_extract(
         # - Weighted sum
         _r = S / dS**2
         statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(
-            x_values, y_values, _r, statistic="sum", range=[[x_min, x_max], [y_min, y_max]], bins=_bins
+            x_values,
+            y_values,
+            _r,
+            statistic="sum",
+            range=[[x_min, x_max], [y_min, y_max]],
+            bins=_bins,
         )
         # - Sum of weights
         _w = 1 / dS**2
         w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(
-            x_values, y_values, _w, statistic="sum", range=[[x_min, x_max], [y_min, y_max]], bins=[x_edge, y_edge]
+            x_values,
+            y_values,
+            _w,
+            statistic="sum",
+            range=[[x_min, x_max], [y_min, y_max]],
+            bins=[x_edge, y_edge],
         )
 
         result = statistic / w_statistic
@@ -241,17 +281,32 @@ def rebin_extract(
     else:
         # Compute the simple average, with errors
         statistic, x_edge, y_edge, _ = scipy.stats.binned_statistic_2d(
-            x_values, y_values, S, statistic="mean", range=[[x_min, x_max], [y_min, y_max]], bins=_bins
+            x_values,
+            y_values,
+            S,
+            statistic="mean",
+            range=[[x_min, x_max], [y_min, y_max]],
+            bins=_bins,
         )
         # Compute the errors
         _w = dS**2
         w_statistic, _, _, _ = scipy.stats.binned_statistic_2d(
-            x_values, y_values, _w, statistic="sum", range=[[x_min, x_max], [y_min, y_max]], bins=[x_edge, y_edge]
+            x_values,
+            y_values,
+            _w,
+            statistic="sum",
+            range=[[x_min, x_max], [y_min, y_max]],
+            bins=[x_edge, y_edge],
         )
 
         _c = np.ones(len(x_values))
         counts, _, _, _ = scipy.stats.binned_statistic_2d(
-            x_values, y_values, _c, statistic="sum", range=[[x_min, x_max], [y_min, y_max]], bins=[x_edge, y_edge]
+            x_values,
+            y_values,
+            _c,
+            statistic="sum",
+            range=[[x_min, x_max], [y_min, y_max]],
+            bins=[x_edge, y_edge],
         )
 
         result = statistic.T
@@ -340,9 +395,13 @@ def _smooth_data(
                     continue
                 ssigmaxi = ssigmax / xysigma0 * xyij
                 ssigmayi = ssigmay / xysigma0 * xyij
-                rij = (x - xij) ** 2 / ssigmaxi + (y - yij) ** 2 / ssigmayi  # normalized distance^2
+                rij = (x - xij) ** 2 / ssigmaxi + (
+                    y - yij
+                ) ** 2 / ssigmayi  # normalized distance^2
             else:
-                rij = (x - xij) ** 2 / ssigmax + (y - yij) ** 2 / ssigmay  # normalized distance^2
+                rij = (x - xij) ** 2 / ssigmax + (
+                    y - yij
+                ) ** 2 / ssigmay  # normalized distance^2
             take = np.where(rij < sigmas**2)  # take points up to 3 sigma distance
             if len(take[0]) == 0:
                 continue

@@ -1,4 +1,3 @@
-
 from reflectivity_ui.interfaces.event_handlers.progress_reporter import ProgressReporter
 from reflectivity_ui.interfaces.main_window import MainWindow
 
@@ -20,7 +19,10 @@ class TestStatusBar:
         window_main = MainWindow()
         qtbot.addWidget(window_main)
         progress_reporter = ProgressReporter(
-            100, None, window_main.file_handler.status_bar_handler, window_main.file_handler.progress_bar
+            100,
+            None,
+            window_main.file_handler.status_bar_handler,
+            window_main.file_handler.progress_bar,
         )
         assert window_main.ui.statusbar.currentMessage() == ""
         # Test that progress reporter update function updates the status bar message

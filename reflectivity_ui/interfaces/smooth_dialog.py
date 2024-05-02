@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-   Dialog to let the user select smoothing options
-   This code was taken as-is from QuickNXS v1
+Dialog to let the user select smoothing options
+This code was taken as-is from QuickNXS v1
 """
 # pylint: disable=bare-except
 
@@ -62,12 +62,22 @@ class SmoothDialog(QtWidgets.QDialog):
         # Get it the way that the plot manager does.
         for item in self.data_manager.reduction_list:
             offspec = item.cross_sections[first_state].off_spec
-            Qx, Qz, ki_z, kf_z, I, _ = (offspec.Qx, offspec.Qz, offspec.ki_z, offspec.kf_z, offspec.S, offspec.dS)
+            Qx, Qz, ki_z, kf_z, I, _ = (
+                offspec.Qx,
+                offspec.Qz,
+                offspec.ki_z,
+                offspec.kf_z,
+                offspec.S,
+                offspec.dS,
+            )
 
             n_total = len(I[0])
             # P_0 and P_N are the number of points to cut in TOF on each side
             p_0 = item.cross_sections[first_state].configuration.cut_first_n_points
-            p_n = n_total - item.cross_sections[first_state].configuration.cut_last_n_points
+            p_n = (
+                n_total
+                - item.cross_sections[first_state].configuration.cut_last_n_points
+            )
             Qx = Qx[:, p_0:p_n]
             Qz = Qz[:, p_0:p_n]
             ki_z = ki_z[:, p_0:p_n]
@@ -76,11 +86,23 @@ class SmoothDialog(QtWidgets.QDialog):
 
             Qzmax = max(ki_z.max() * 2.0, Qzmax)
             if self.ui.kizmkfzVSqz.isChecked():
-                plot.pcolormesh((ki_z - kf_z), Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+                plot.pcolormesh(
+                    (ki_z - kf_z),
+                    Qz,
+                    I,
+                    log=True,
+                    imin=1e-6,
+                    imax=1.0,
+                    shading="gouraud",
+                )
             elif self.ui.qxVSqz.isChecked():
-                plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+                plot.pcolormesh(
+                    Qx, Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud"
+                )
             else:
-                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+                plot.pcolormesh(
+                    ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud"
+                )
 
         if self.ui.kizmkfzVSqz.isChecked():
             qz_max = max(Qz[I > 0].max(), qz_max)
@@ -113,7 +135,6 @@ class SmoothDialog(QtWidgets.QDialog):
             self.ui.sigmaY.setValue(sigma_y)
 
         elif self.ui.qxVSqz.isChecked():
-
             qz_max = max(Qz[I > 0].max(), qz_max)
             qz_min = min(Qz[I > 0].min(), qz_min)
             qx_min = min(qx_min, Qx[I > 0].min())
@@ -176,13 +197,25 @@ class SmoothDialog(QtWidgets.QDialog):
             plot.cplot.set_clim([1e-6, 1.0])
         self.rect_region = Line2D([x1, x1, x2, x2, x1], [y1, y2, y2, y1, y1])
         self.sigma_1 = Ellipse(
-            sigma_pos, self.ui.sigmaX.value() * 2, self.ui.sigmaY.value() * 2, sigma_ang, fill=False
+            sigma_pos,
+            self.ui.sigmaX.value() * 2,
+            self.ui.sigmaY.value() * 2,
+            sigma_ang,
+            fill=False,
         )
         self.sigma_2 = Ellipse(
-            sigma_pos, self.ui.sigmaX.value() * 4, self.ui.sigmaY.value() * 4, sigma_ang, fill=False
+            sigma_pos,
+            self.ui.sigmaX.value() * 4,
+            self.ui.sigmaY.value() * 4,
+            sigma_ang,
+            fill=False,
         )
         self.sigma_3 = Ellipse(
-            sigma_pos, self.ui.sigmaX.value() * 6, self.ui.sigmaY.value() * 6, sigma_ang, fill=False
+            sigma_pos,
+            self.ui.sigmaX.value() * 6,
+            self.ui.sigmaY.value() * 6,
+            sigma_ang,
+            fill=False,
         )
         plot.canvas.ax.add_line(self.rect_region)
         plot.canvas.ax.add_artist(self.sigma_1)

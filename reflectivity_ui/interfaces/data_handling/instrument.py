@@ -1,10 +1,9 @@
 """
-    This instrument description contains information
-    that is instrument-specific and abstracts out how we obtain
-    information from the data file
+This instrument description contains information
+that is instrument-specific and abstracts out how we obtain
+information from the data file
 """
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, bare-except
-
 
 # local
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
@@ -71,7 +70,9 @@ def get_cross_section_label(ws, entry_name):
 
 def mantid_algorithm_exec(algorithm_class, **kwargs):
     algorithm_instance = algorithm_class()
-    assert algorithm_instance.PyInit, "str(algorithm_class) is not a Mantid Python algorithm"
+    assert (
+        algorithm_instance.PyInit
+    ), "str(algorithm_class) is not a Mantid Python algorithm"
     algorithm_instance.PyInit()
     for name, value in kwargs.items():
         algorithm_instance.setProperty(name, value)
@@ -117,7 +118,9 @@ def apply_dead_time_correction(ws, configuration, error_ws=None):
     if "dead_time_applied" not in ws.getRun():
         corr_ws = get_dead_time_correction(ws, configuration)
         ws = api.Multiply(ws, corr_ws, OutputWorkspace=str(ws))
-        api.AddSampleLog(Workspace=ws, LogName="dead_time_applied", LogText="1", LogType="Number")
+        api.AddSampleLog(
+            Workspace=ws, LogName="dead_time_applied", LogText="1", LogType="Number"
+        )
     return ws
 
 
@@ -145,7 +148,9 @@ class Instrument(object):
         self.ana_veto = "AnalyzerVeto"
 
     @staticmethod
-    def dummy_filter_cross_sections(ws: EventWorkspace, name_prefix: str = None) -> WorkspaceGroup:
+    def dummy_filter_cross_sections(
+        ws: EventWorkspace, name_prefix: str = None
+    ) -> WorkspaceGroup:
         r"""Filter events according to an aggregated state log.
 
         Examples:
@@ -183,7 +188,11 @@ class Instrument(object):
                 _ws.getRun()["cross_section_id"] = pol_state
                 cross_sections.append(_ws)
             except RuntimeError as run_err:
-                logging.error("Could not filter {}: {}\nError: {}".format(pol_state, sys.exc_info()[1], run_err))
+                logging.error(
+                    "Could not filter {}: {}\nError: {}".format(
+                        pol_state, sys.exc_info()[1], run_err
+                    )
+                )
 
         return cross_sections
 
@@ -200,7 +209,9 @@ class Instrument(object):
         fp_instance = FilePath(file_path)
         xs_list = list()
         err_list = list()
-        temp_workspace_root_name = "".join(random.sample(string.ascii_letters, 12))  # random string of 12 characters
+        temp_workspace_root_name = "".join(
+            random.sample(string.ascii_letters, 12)
+        )  # random string of 12 characters
         workspace_root_name = fp_instance.run_numbers(string_representation="short")
         for path in fp_instance.single_paths:
             is_legacy = path.endswith(".nxs")
@@ -222,7 +233,8 @@ class Instrument(object):
                         AnaState=self.ana_state,
                         PolVeto=self.pol_veto,
                         AnaVeto=self.ana_veto,
-                        CrossSectionWorkspaces="%s_err_entry" % temp_workspace_root_name,
+                        CrossSectionWorkspaces="%s_err_entry"
+                        % temp_workspace_root_name,
                     )
                     path_xs_list = []
                     for ws in _path_xs_list:
@@ -231,25 +243,39 @@ class Instrument(object):
                             # Find the related workspace in with error events
                             for err_ws in _err_list:
                                 if err_ws.getRun()["cross_section_id"].value == xs_name:
-                                    _ws = apply_dead_time_correction(ws, configuration, error_ws=err_ws)
+                                    _ws = apply_dead_time_correction(
+                                        ws, configuration, error_ws=err_ws
+                                    )
                                     path_xs_list.append(_ws)
                 else:
                     path_xs_list = [
-                        ws for ws in _path_xs_list if not ws.getRun()["cross_section_id"].value == "unfiltered"
+                        ws
+                        for ws in _path_xs_list
+                        if not ws.getRun()["cross_section_id"].value == "unfiltered"
                     ]
 
             else:
                 ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
-                path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
+                path_xs_list = self.dummy_filter_cross_sections(
+                    ws, name_prefix=temp_workspace_root_name
+                )
 
-            if len(xs_list) == 0:  # initialize xs_list with the cross sections of the first data file
+            if (
+                len(xs_list) == 0
+            ):  # initialize xs_list with the cross sections of the first data file
                 xs_list = path_xs_list
                 for ws in xs_list:  # replace the temporary names with the run number(s)
-                    name_new = str(ws).replace(temp_workspace_root_name, workspace_root_name)
+                    name_new = str(ws).replace(
+                        temp_workspace_root_name, workspace_root_name
+                    )
                     api.RenameWorkspace(str(ws), name_new)
             else:
                 for i, ws in enumerate(xs_list):
-                    api.Plus(LHSWorkspace=str(ws), RHSWorkspace=str(path_xs_list[i]), OutputWorkspace=str(ws))
+                    api.Plus(
+                        LHSWorkspace=str(ws),
+                        RHSWorkspace=str(path_xs_list[i]),
+                        OutputWorkspace=str(ws),
+                    )
 
         # Insert a log indicating which run numbers contributed to this cross-section
         for ws in xs_list:
@@ -279,7 +305,9 @@ class Instrument(object):
         @param data_object: CrossSectionData object
         """
         _dirpix = (
-            data_object.configuration.direct_pixel_overwrite if data_object.configuration.set_direct_pixel else None
+            data_object.configuration.direct_pixel_overwrite
+            if data_object.configuration.set_direct_pixel
+            else None
         )
         _dangle0 = (
             data_object.configuration.direct_angle_offset_overwrite
@@ -312,12 +340,17 @@ class Instrument(object):
         """
         Verify whether two data sets are compatible.
         """
-        if math.fabs(scattering.lambda_center - direct_beam.lambda_center) < self.tolerance and (
+        if math.fabs(
+            scattering.lambda_center - direct_beam.lambda_center
+        ) < self.tolerance and (
             skip_slits
             or (
-                math.fabs(scattering.slit1_width - direct_beam.slit1_width) < self.tolerance
-                and math.fabs(scattering.slit2_width - direct_beam.slit2_width) < self.tolerance
-                and math.fabs(scattering.slit3_width - direct_beam.slit3_width) < self.tolerance
+                math.fabs(scattering.slit1_width - direct_beam.slit1_width)
+                < self.tolerance
+                and math.fabs(scattering.slit2_width - direct_beam.slit2_width)
+                < self.tolerance
+                and math.fabs(scattering.slit3_width - direct_beam.slit3_width)
+                < self.tolerance
             )
         ):
             return True
@@ -350,15 +383,28 @@ class Instrument(object):
             data_object.sangle = data["SANGLE"].getStatistics().mean
 
         data_object.dist_sam_det = data["SampleDetDis"].value[0] * 1e-3
-        data_object.dist_mod_det = data["ModeratorSamDis"].value[0] * 1e-3 + data_object.dist_sam_det
+        data_object.dist_mod_det = (
+            data["ModeratorSamDis"].value[0] * 1e-3 + data_object.dist_sam_det
+        )
         data_object.dist_mod_mon = data["ModeratorSamDis"].value[0] * 1e-3 - 2.75
 
         # Get these from instrument
-        data_object.pixel_width = float(workspace.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
-        data_object.n_det_size_x = int(workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0])  # 304
-        data_object.n_det_size_y = int(workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0])  # 256
-        data_object.det_size_x = data_object.n_det_size_x * data_object.pixel_width  # horizontal size of detector [m]
-        data_object.det_size_y = data_object.n_det_size_y * data_object.pixel_width  # vertical size of detector [m]
+        data_object.pixel_width = (
+            float(workspace.getInstrument().getNumberParameter("pixel-width")[0])
+            / 1000.0
+        )
+        data_object.n_det_size_x = int(
+            workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0]
+        )  # 304
+        data_object.n_det_size_y = int(
+            workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0]
+        )  # 256
+        data_object.det_size_x = (
+            data_object.n_det_size_x * data_object.pixel_width
+        )  # horizontal size of detector [m]
+        data_object.det_size_y = (
+            data_object.n_det_size_y * data_object.pixel_width
+        )  # vertical size of detector [m]
 
         # The following active area used to be taken from instrument.DETECTOR_REGION
         data_object.active_area_x = (8, 295)
@@ -369,7 +415,9 @@ class Instrument(object):
         data_object.angle_offset = data["DANGLE0"].getStatistics().mean
 
         # Get proper cross-section label
-        data_object.cross_section_label = get_cross_section_label(workspace, data_object.entry_name)
+        data_object.cross_section_label = get_cross_section_label(
+            workspace, data_object.entry_name
+        )
         try:
             data_object.is_direct_beam = data["data_type"].value[0] == 1
         except:

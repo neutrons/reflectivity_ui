@@ -75,11 +75,20 @@ def stitching_reduction_list():
     class _MockCrossSectionData(object):
         """Test class to use instead of CrossSectionData, which requires EventWorkspaces"""
 
-        def __init__(self, xs: str, config: Configuration, data_x: list, data_y: list, ws_name: str):
+        def __init__(
+            self,
+            xs: str,
+            config: Configuration,
+            data_x: list,
+            data_y: list,
+            ws_name: str,
+        ):
             self.name = xs
             self.configuration = copy.deepcopy(config)
             data_e = [0.1 * y for y in data_y]
-            workspace = api.CreateWorkspace(DataX=data_x, DataY=data_y, DataE=data_e, OutputWorkspace=ws_name)
+            workspace = api.CreateWorkspace(
+                DataX=data_x, DataY=data_y, DataE=data_e, OutputWorkspace=ws_name
+            )
             self.ws = workspace
             self.q = self.ws.readX(0)[:].copy()
             self._r = np.ma.masked_equal(self.ws.readY(0)[:].copy(), 0)
@@ -91,22 +100,34 @@ def stitching_reduction_list():
 
     # create curve 1
     data_x = [1.0, 2.0, 3.0, 4.0]
-    xs1_on_on = _MockCrossSectionData("On_On", configuration, data_x, [5.0, 5.0, 5.0, 5.0], "run1_on_on")
-    xs1_on_off = _MockCrossSectionData("On_Off", configuration, data_x, [7.0, 7.0, 7.0, 7.0], "run1_on_off")
+    xs1_on_on = _MockCrossSectionData(
+        "On_On", configuration, data_x, [5.0, 5.0, 5.0, 5.0], "run1_on_on"
+    )
+    xs1_on_off = _MockCrossSectionData(
+        "On_Off", configuration, data_x, [7.0, 7.0, 7.0, 7.0], "run1_on_off"
+    )
     curve1 = NexusData("path", configuration)
     curve1.cross_sections = {"On_On": xs1_on_on, "On_Off": xs1_on_off}
 
     # create curve 2
     data_x = [4.0, 5.0, 6.0, 7.0]
-    xs2_on_on = _MockCrossSectionData("On_On", configuration, data_x, [3.0, 3.0, 3.0, 3.0], "run2_on_on")
-    xs2_on_off = _MockCrossSectionData("On_Off", configuration, data_x, [2.0, 2.0, 2.0, 2.0], "run2_on_off")
+    xs2_on_on = _MockCrossSectionData(
+        "On_On", configuration, data_x, [3.0, 3.0, 3.0, 3.0], "run2_on_on"
+    )
+    xs2_on_off = _MockCrossSectionData(
+        "On_Off", configuration, data_x, [2.0, 2.0, 2.0, 2.0], "run2_on_off"
+    )
     curve2 = NexusData("path", configuration)
     curve2.cross_sections = {"On_On": xs2_on_on, "On_Off": xs2_on_off}
 
     # create curve 3
     data_x = [7.0, 8.0, 9.0, 10.0]
-    xs3_on_on = _MockCrossSectionData("On_On", configuration, data_x, [1.0, 1.0, 1.0, 1.0], "run3_on_on")
-    xs3_on_off = _MockCrossSectionData("On_Off", configuration, data_x, [1.0, 1.0, 1.0, 1.0], "run3_on_off")
+    xs3_on_on = _MockCrossSectionData(
+        "On_On", configuration, data_x, [1.0, 1.0, 1.0, 1.0], "run3_on_on"
+    )
+    xs3_on_off = _MockCrossSectionData(
+        "On_Off", configuration, data_x, [1.0, 1.0, 1.0, 1.0], "run3_on_off"
+    )
     curve3 = NexusData("path", configuration)
     curve3.cross_sections = {"On_On": xs3_on_on, "On_Off": xs3_on_off}
 
@@ -115,12 +136,18 @@ def stitching_reduction_list():
 
 class TestDataManipulation(object):
     @pytest.mark.skipif(not SNS_REFM_MOUNTED, reason="/SNS/REF_M/ is not mounted")
-    def test_smart_stitch_reflectivity(self, data_server, mocker_file_open, stitching_config):
+    def test_smart_stitch_reflectivity(
+        self, data_server, mocker_file_open, stitching_config
+    ):
         manager = DataManager(data_server.directory)
-        manager.load_data_from_reduced_file("note: file read is mocked", stitching_config)
+        manager.load_data_from_reduced_file(
+            "note: file read is mocked", stitching_config
+        )
         if len(manager.reduction_list) < 1:
             raise IOError("Files missing.")
-        scaling_factors, scaling_errors = smart_stitch_reflectivity(manager.reduction_list, "Off_On", False, 0.008)
+        scaling_factors, scaling_errors = smart_stitch_reflectivity(
+            manager.reduction_list, "Off_On", False, 0.008
+        )
         assert scaling_factors == pytest.approx([1.0, 0.1809, 0.1556], abs=0.001)
         assert scaling_errors == pytest.approx([0.0, 0.003, 0.005], abs=0.001)
 
@@ -153,7 +180,12 @@ class TestDataManipulation(object):
         """
         q_cutoff = 1.5
         scaling_factors, scaling_errors = smart_stitch_reflectivity(
-            stitching_reduction_list, "On_On", normalize_to_unity, q_cutoff, global_fit, polynom_degree
+            stitching_reduction_list,
+            "On_On",
+            normalize_to_unity,
+            q_cutoff,
+            global_fit,
+            polynom_degree,
         )
         assert scaling_factors == pytest.approx(expected_scaling_factors, abs=0.001)
         # higher tolerance because the polynomial fit to a constant value is ill-conditioned
@@ -182,7 +214,10 @@ class TestDataManipulation(object):
         # wrong order
         with pytest.raises(ValueError) as error_info:
             xmin, xmax = _get_stitching_overlap_region(ws2, ws1, 1)
-        assert str(error_info.value) == "x-range for ws_lo must not be higher than x-range for ws_hi"
+        assert (
+            str(error_info.value)
+            == "x-range for ws_lo must not be higher than x-range for ws_hi"
+        )
 
         # delete workspaces
         api.mtd.clear()
@@ -205,14 +240,20 @@ class TestDataManipulation(object):
 
         # test expected output
         fit_output = _get_polynomial_fit_stitching_scaling_factor(ws1, ws2, 3, 3)
-        assert fit_output["scale_factor_value"] == pytest.approx(expected_scale_factor, abs=1e-3)
+        assert fit_output["scale_factor_value"] == pytest.approx(
+            expected_scale_factor, abs=1e-3
+        )
         assert fit_output["scale_factor_error"] == pytest.approx(0.26968, abs=1e-3)
-        assert fit_output["polynomial_coeff"] == pytest.approx([0.0, 0.0, 1.0, 0.0], abs=1e-2)
+        assert fit_output["polynomial_coeff"] == pytest.approx(
+            [0.0, 0.0, 1.0, 0.0], abs=1e-2
+        )
 
         # test exception due to not enough points
         with pytest.raises(RuntimeError) as error_info:
             _get_polynomial_fit_stitching_scaling_factor(ws1, ws2, 5, 3)
-        assert "Levenberg-Marquardt minimizer failed to initialize" in str(error_info.value)
+        assert "Levenberg-Marquardt minimizer failed to initialize" in str(
+            error_info.value
+        )
 
     def test_smart_stitch_normalize_to_unity_error(self, stitching_reduction_list):
         """Test that error is raised when the normalize to unity Q cutoff is too low"""

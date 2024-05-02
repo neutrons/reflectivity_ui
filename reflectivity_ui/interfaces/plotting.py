@@ -96,7 +96,9 @@ class PlotManager(object):
             phi_range = xy.shape[0] * rad_per_pixel * 180.0 / np.pi
             tth_range = xy.shape[1] * rad_per_pixel * 180.0 / np.pi
             phi0 = main_window.ui.refYPos.value() * rad_per_pixel * 180.0 / np.pi
-            tth0 = (data.dangle - data.angle_offset) - (xy.shape[1] - data.dpix) * rad_per_pixel * 180.0 / np.pi
+            tth0 = (data.dangle - data.angle_offset) - (
+                xy.shape[1] - data.dpix
+            ) * rad_per_pixel * 180.0 / np.pi
             main_window.ui.xy_overview.imshow(
                 xy,
                 log=main_window.ui.logarithmic_colorscale.isChecked(),
@@ -121,13 +123,25 @@ class PlotManager(object):
             main_window.ui.xy_overview.cplot.set_clim([xy_imin, xy_imax])
 
             if self.xy_x1 is None:
-                self.xy_x1 = main_window.ui.xy_overview.canvas.ax.axvline(x_peak - (x_width / 2.0), color="#aa0000")
-                self.xy_x2 = main_window.ui.xy_overview.canvas.ax.axvline(x_peak + (x_width / 2.0), color="#aa0000")
-                self.xy_y1 = main_window.ui.xy_overview.canvas.ax.axhline(y_pos - (y_width / 2.0), color="#00aa00")
-                self.xy_y2 = main_window.ui.xy_overview.canvas.ax.axhline(y_pos + (y_width / 2.0), color="#00aa00")
+                self.xy_x1 = main_window.ui.xy_overview.canvas.ax.axvline(
+                    x_peak - (x_width / 2.0), color="#aa0000"
+                )
+                self.xy_x2 = main_window.ui.xy_overview.canvas.ax.axvline(
+                    x_peak + (x_width / 2.0), color="#aa0000"
+                )
+                self.xy_y1 = main_window.ui.xy_overview.canvas.ax.axhline(
+                    y_pos - (y_width / 2.0), color="#00aa00"
+                )
+                self.xy_y2 = main_window.ui.xy_overview.canvas.ax.axhline(
+                    y_pos + (y_width / 2.0), color="#00aa00"
+                )
             else:
-                self.xy_x1.set_xdata([x_peak - (x_width / 2.0), x_peak - (x_width / 2.0)])
-                self.xy_x2.set_xdata([x_peak + (x_width / 2.0), x_peak + (x_width / 2.0)])
+                self.xy_x1.set_xdata(
+                    [x_peak - (x_width / 2.0), x_peak - (x_width / 2.0)]
+                )
+                self.xy_x2.set_xdata(
+                    [x_peak + (x_width / 2.0), x_peak + (x_width / 2.0)]
+                )
                 self.xy_y1.set_ydata([y_pos - (y_width / 2.0), y_pos - (y_width / 2.0)])
                 self.xy_y2.set_ydata([y_pos + (y_width / 2.0), y_pos + (y_width / 2.0)])
 
@@ -138,7 +152,12 @@ class PlotManager(object):
                 log=main_window.ui.logarithmic_colorscale.isChecked(),
                 aspect="auto",
                 cmap=self.color,
-                extent=[data.wavelength[0], data.wavelength[-1], 0, data.x.shape[0] - 1],
+                extent=[
+                    data.wavelength[0],
+                    data.wavelength[-1],
+                    0,
+                    data.x.shape[0] - 1,
+                ],
             )
             main_window.ui.xtof_overview.set_xlabel("$\\lambda{}$ [Å]")
         else:
@@ -147,30 +166,54 @@ class PlotManager(object):
                 log=main_window.ui.logarithmic_colorscale.isChecked(),
                 aspect="auto",
                 cmap=self.color,
-                extent=[data.tof[0] * 1e-3, data.tof[-1] * 1e-3, 0, data.x.shape[0] - 1],
+                extent=[
+                    data.tof[0] * 1e-3,
+                    data.tof[-1] * 1e-3,
+                    0,
+                    data.x.shape[0] - 1,
+                ],
             )
             main_window.ui.xtof_overview.set_xlabel("ToF [ms]")
         main_window.ui.xtof_overview.set_ylabel("x [pix]")
 
         if self.xtof_x1 is None:
-            self.xtof_x1 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak - (x_width / 2.0), color="#aa0000")
-            self.xtof_x2 = main_window.ui.xtof_overview.canvas.ax.axhline(x_peak + (x_width / 2.0), color="#aa0000")
-            self.xtof_bck1 = main_window.ui.xtof_overview.canvas.ax.axhline(bg_pos - (bg_width / 2.0), color="black")
-            self.xtof_bck2 = main_window.ui.xtof_overview.canvas.ax.axhline(bg_pos + (bg_width / 2.0), color="black")
+            self.xtof_x1 = main_window.ui.xtof_overview.canvas.ax.axhline(
+                x_peak - (x_width / 2.0), color="#aa0000"
+            )
+            self.xtof_x2 = main_window.ui.xtof_overview.canvas.ax.axhline(
+                x_peak + (x_width / 2.0), color="#aa0000"
+            )
+            self.xtof_bck1 = main_window.ui.xtof_overview.canvas.ax.axhline(
+                bg_pos - (bg_width / 2.0), color="black"
+            )
+            self.xtof_bck2 = main_window.ui.xtof_overview.canvas.ax.axhline(
+                bg_pos + (bg_width / 2.0), color="black"
+            )
         else:
             self.xtof_x1.set_ydata([x_peak - (x_width / 2.0), x_peak - (x_width / 2.0)])
             self.xtof_x2.set_ydata([x_peak + (x_width / 2.0), x_peak + (x_width / 2.0)])
-            self.xtof_bck1.set_ydata([bg_pos - (bg_width / 2.0), bg_pos - (bg_width / 2.0)])
-            self.xtof_bck2.set_ydata([bg_pos + (bg_width / 2.0), bg_pos + (bg_width / 2.0)])
+            self.xtof_bck1.set_ydata(
+                [bg_pos - (bg_width / 2.0), bg_pos - (bg_width / 2.0)]
+            )
+            self.xtof_bck2.set_ydata(
+                [bg_pos + (bg_width / 2.0), bg_pos + (bg_width / 2.0)]
+            )
 
         main_window.ui.xtof_overview.cplot.set_clim([tof_imin, tof_imax])
 
-        if main_window.ui.show_colorbars.isChecked() and main_window.ui.xy_overview.cbar is None:
-            main_window.ui.xy_overview.cbar = main_window.ui.xy_overview.canvas.fig.colorbar(
-                main_window.ui.xy_overview.cplot
+        if (
+            main_window.ui.show_colorbars.isChecked()
+            and main_window.ui.xy_overview.cbar is None
+        ):
+            main_window.ui.xy_overview.cbar = (
+                main_window.ui.xy_overview.canvas.fig.colorbar(
+                    main_window.ui.xy_overview.cplot
+                )
             )
-            main_window.ui.xtof_overview.cbar = main_window.ui.xtof_overview.canvas.fig.colorbar(
-                main_window.ui.xtof_overview.cplot
+            main_window.ui.xtof_overview.cbar = (
+                main_window.ui.xtof_overview.canvas.fig.colorbar(
+                    main_window.ui.xtof_overview.cplot
+                )
             )
         main_window.ui.xy_overview.draw()
         main_window.ui.xtof_overview.draw()
@@ -181,7 +224,12 @@ class PlotManager(object):
         """
         main_window = self.main_window
         data_set_keys = list(main_window.data_manager.data_sets.keys())
-        plots = [main_window.ui.xy_pp, main_window.ui.xy_mm, main_window.ui.xy_pm, main_window.ui.xy_mp]
+        plots = [
+            main_window.ui.xy_pp,
+            main_window.ui.xy_mm,
+            main_window.ui.xy_pm,
+            main_window.ui.xy_mp,
+        ]
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].clear()
@@ -220,7 +268,9 @@ class PlotManager(object):
                 continue
             if main_window.ui.tthPhi.isChecked():
                 plots[i].clear()
-                rad_per_pixel = dataset.det_size_x / dataset.dist_sam_det / dataset.xydata.shape[1]
+                rad_per_pixel = (
+                    dataset.det_size_x / dataset.dist_sam_det / dataset.xydata.shape[1]
+                )
                 phi_range = datai.shape[0] * rad_per_pixel * 180.0 / np.pi
                 tth_range = datai.shape[1] * rad_per_pixel * 180.0 / np.pi
                 phi0 = main_window.ui.refYPos.value() * rad_per_pixel * 180.0 / np.pi
@@ -254,7 +304,11 @@ class PlotManager(object):
             plots[i].set_title(data_set_keys[i])
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([imin, imax])
-            if plots[i].cplot is not None and main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+            if (
+                plots[i].cplot is not None
+                and main_window.ui.show_colorbars.isChecked()
+                and plots[i].cbar is None
+            ):
                 plots[i].cbar = plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
         progress(100, message="Ready", out_of=100)
@@ -295,7 +349,12 @@ class PlotManager(object):
         wavelength = main_window.data_manager.active_channel.wavelength
         tof = main_window.data_manager.active_channel.tof
 
-        plots = [main_window.ui.xtof_pp, main_window.ui.xtof_mm, main_window.ui.xtof_pm, main_window.ui.xtof_mp]
+        plots = [
+            main_window.ui.xtof_pp,
+            main_window.ui.xtof_mm,
+            main_window.ui.xtof_pm,
+            main_window.ui.xtof_mp,
+        ]
         for i in range(len(data_set_keys), 4):
             if plots[i].cplot is not None:
                 plots[i].clear()
@@ -339,7 +398,11 @@ class PlotManager(object):
             plots[i].set_ylabel("x [pix]")
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([imin, imax])
-            if plots[i].cplot is not None and main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+            if (
+                plots[i].cplot is not None
+                and main_window.ui.show_colorbars.isChecked()
+                and plots[i].cbar is None
+            ):
                 plots[i].cbar = plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()
         progress(100, message="Ready", out_of=100)
@@ -383,25 +446,49 @@ class PlotManager(object):
         yxlim = (0, len(yproj) - 1)
         yylim = (yproj[yproj > 0].min(), yproj.max() * 2)
 
-        if self._x_projection is None or len(self._x_projection.get_xdata()) != xproj.shape[0]:
+        if (
+            self._x_projection is None
+            or len(self._x_projection.get_xdata()) != xproj.shape[0]
+        ):
             main_window.ui.x_project.clear_fig()
             main_window.ui.y_project.clear_fig()
             x_projection = main_window.ui.x_project.plot(xproj, color="blue")[0]
             # main_window.ui.x_project.set_xlabel(u'x [pix]')
             # main_window.ui.x_project.set_ylabel(u'I$_{max}$')
             xpos = main_window.ui.x_project.canvas.ax.axvline(x_peak, color="black")
-            xleft = main_window.ui.x_project.canvas.ax.axvline(x_peak - x_width / 2.0, color="red")
-            xright = main_window.ui.x_project.canvas.ax.axvline(x_peak + x_width / 2.0, color="red")
-            xleft_bg = main_window.ui.x_project.canvas.ax.axvline(bg_pos - bg_width / 2.0, color="black")
-            xright_bg = main_window.ui.x_project.canvas.ax.axvline(bg_pos + bg_width / 2.0, color="black")
+            xleft = main_window.ui.x_project.canvas.ax.axvline(
+                x_peak - x_width / 2.0, color="red"
+            )
+            xright = main_window.ui.x_project.canvas.ax.axvline(
+                x_peak + x_width / 2.0, color="red"
+            )
+            xleft_bg = main_window.ui.x_project.canvas.ax.axvline(
+                bg_pos - bg_width / 2.0, color="black"
+            )
+            xright_bg = main_window.ui.x_project.canvas.ax.axvline(
+                bg_pos + bg_width / 2.0, color="black"
+            )
 
             self._y_projection = main_window.ui.y_project.plot(yproj, color="blue")[0]
             # main_window.ui.y_project.set_xlabel(u'y [pix]')
             # main_window.ui.y_project.set_ylabel(u'I$_{max}$')
-            yreg_left = main_window.ui.y_project.canvas.ax.axvline(y_pos - y_width / 2.0, color="green")
-            yreg_right = main_window.ui.y_project.canvas.ax.axvline(y_pos + y_width / 2.0, color="green")
+            yreg_left = main_window.ui.y_project.canvas.ax.axvline(
+                y_pos - y_width / 2.0, color="green"
+            )
+            yreg_right = main_window.ui.y_project.canvas.ax.axvline(
+                y_pos + y_width / 2.0, color="green"
+            )
             ybg = main_window.ui.y_project.canvas.ax.axhline(self.y_bg, color="black")
-            self.proj_lines = (xleft, xpos, xright, xleft_bg, xright_bg, yreg_left, yreg_right, ybg)
+            self.proj_lines = (
+                xleft,
+                xpos,
+                xright,
+                xleft_bg,
+                xright_bg,
+                yreg_left,
+                yreg_right,
+                ybg,
+            )
             self._x_projection = x_projection
         else:
             self._x_projection.set_ydata(xproj)
@@ -479,23 +566,38 @@ class PlotManager(object):
         progress = self.main_window.file_handler.new_progress_reporter()
         n_total = len(self.main_window.data_manager.reduction_list)
         if n_total == 0:
-            progress(100, message="No data to reduce: add data to the reduction list", out_of=100)
+            progress(
+                100,
+                message="No data to reduce: add data to the reduction list",
+                out_of=100,
+            )
             return
         progress(0.1, message="Computing off-specular", out_of=n_total)
         final_msg = "Off-specular calculation complete"
-        for i_run, nexus_data in enumerate(self.main_window.data_manager.reduction_list):
+        for i_run, nexus_data in enumerate(
+            self.main_window.data_manager.reduction_list
+        ):
             for i, channel in enumerate(data_set_keys):
                 plot = plots[i]
                 plot.show()
                 selected_data = nexus_data.cross_sections[channel]
                 progress(
-                    i_run + i / 4.0, message="Processed run %s %s" % (selected_data.number, channel), out_of=n_total
+                    i_run + i / 4.0,
+                    message="Processed run %s %s" % (selected_data.number, channel),
+                    out_of=n_total,
                 )
 
-                PN = len(selected_data.tof) - selected_data.configuration.cut_first_n_points
+                PN = (
+                    len(selected_data.tof)
+                    - selected_data.configuration.cut_first_n_points
+                )
                 P0 = selected_data.configuration.cut_last_n_points
                 ki_z, kf_z = selected_data.off_spec.ki_z, selected_data.off_spec.kf_z
-                Qx, Qz, S = selected_data.off_spec.Qx, selected_data.off_spec.Qz, selected_data.off_spec.S
+                Qx, Qz, S = (
+                    selected_data.off_spec.Qx,
+                    selected_data.off_spec.Qz,
+                    selected_data.off_spec.S,
+                )
                 try:
                     qz_max = max(Qz[S > 0].max(), qz_max)
                     qz_min = min(Qz[S > 0].min(), qz_min)
@@ -562,7 +664,10 @@ class PlotManager(object):
             plot.set_title(channel)
             if plot.cplot is not None:
                 plot.cplot.set_clim([i_min, i_max])
-                if self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+                if (
+                    self.main_window.ui.show_colorbars.isChecked()
+                    and plots[i].cbar is None
+                ):
                     plots[i].cbar = plots[i].canvas.fig.colorbar(plots[i].cplot)
                 if xlim is not None and ylim is not None:
                     plot.canvas.ax.set_xlim(*xlim)
@@ -596,7 +701,10 @@ class PlotManager(object):
             return False
 
         P0 = self.main_window.ui.rangeStart.value()
-        PN = len(self.main_window.data_manager.active_channel.q) - self.main_window.ui.rangeEnd.value()
+        PN = (
+            len(self.main_window.data_manager.active_channel.q)
+            - self.main_window.ui.rangeEnd.value()
+        )
 
         self.main_window.ui.refl.clear()
         data = self.main_window.data_manager.active_channel
@@ -641,7 +749,9 @@ class PlotManager(object):
             for i, refli in enumerate(self.main_window.data_manager.reduction_list):
                 if refli.cross_sections[channel_name].q is None:
                     continue
-                P0i = refli.cross_sections[channel_name].configuration.cut_first_n_points
+                P0i = refli.cross_sections[
+                    channel_name
+                ].configuration.cut_first_n_points
                 PNi = (
                     len(refli.cross_sections[channel_name].q)
                     - refli.cross_sections[channel_name].configuration.cut_last_n_points
@@ -720,6 +830,10 @@ class PlotManager(object):
             plots[i].set_title(channel)
             if plots[i].cplot is not None:
                 plots[i].cplot.set_clim([Imin, Imax])
-            if plots[i].cplot is not None and self.main_window.ui.show_colorbars.isChecked() and plots[i].cbar is None:
+            if (
+                plots[i].cplot is not None
+                and self.main_window.ui.show_colorbars.isChecked()
+                and plots[i].cbar is None
+            ):
                 plots[i].cbar = plots[i].canvas.fig.colorbar(plots[i].cplot)
             plots[i].draw()

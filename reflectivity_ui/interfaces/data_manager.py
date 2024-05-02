@@ -1,7 +1,7 @@
 # pylint: disable=bare-except
 """
-    Data manager. Holds information about the current data location
-    and manages the data cache.
+Data manager. Holds information about the current data location
+and manages the data cache.
 """
 
 import glob
@@ -136,7 +136,9 @@ class DataManager(object):
         if not len(self.reduction_states) == len(self.data_sets.keys()):
             logging.error(
                 "Active data cross-sections ({}) different than those of the"
-                " reduction list ({})".format(self.reduction_states, self.data_sets.keys())
+                " reduction list ({})".format(
+                    self.reduction_states, self.data_sets.keys()
+                )
             )
             return False
 
@@ -206,7 +208,9 @@ class DataManager(object):
                     self.reduction_list.append(self._nexus_data)
                 return True
             else:
-                logging.error("The data you are trying to add has different cross-sections")
+                logging.error(
+                    "The data you are trying to add has different cross-sections"
+                )
         return False
 
     def add_active_to_normalization(self):
@@ -237,11 +241,20 @@ class DataManager(object):
         """
         self.direct_beam_list = []
 
-    def _loading_progress(self, call_back, start_value, stop_value, value, message=None):
+    def _loading_progress(
+        self, call_back, start_value, stop_value, value, message=None
+    ):
         _value = start_value + (stop_value - start_value) * value
         call_back(_value, message)
 
-    def load(self, file_path, configuration, force=False, update_parameters=True, progress=None):
+    def load(
+        self,
+        file_path,
+        configuration,
+        force=False,
+        update_parameters=True,
+        progress=None,
+    ):
         # type: (str, Configuration, Optional[bool], Optional[bool], Optional[ProgressReporter]) -> bool
         r"""
         @brief Load one ore more Nexus data files
@@ -265,7 +278,9 @@ class DataManager(object):
         is_from_cache = False  # if True, the file has been loaded before
         reduction_list_id = None
         direct_beam_list_id = None
-        file_path = FilePath(file_path, sort=True).path  # force sorting by increasing run number
+        file_path = FilePath(
+            file_path, sort=True
+        ).path  # force sorting by increasing run number
 
         if progress is not None:
             progress(10, "Loading data...")
@@ -276,7 +291,9 @@ class DataManager(object):
                 if force:
                     # Check whether the data is in the reduction list before removing it
                     reduction_list_id = self.find_data_in_reduction_list(self._cache[i])
-                    direct_beam_list_id = self.find_data_in_direct_beam_list(self._cache[i])
+                    direct_beam_list_id = self.find_data_in_direct_beam_list(
+                        self._cache[i]
+                    )
                     self._cache.pop(i)
                 else:
                     nexus_data = self._cache[i]
@@ -361,13 +378,18 @@ class DataManager(object):
             # All the cross sections should have the same direct beam file.
             data_keys = list(nexus_data.cross_sections.keys())
             if len(data_keys) == 0:
-                logging.error("DataManager._find_direct_beam: no data available in NexusData object")
+                logging.error(
+                    "DataManager._find_direct_beam: no data available in NexusData object"
+                )
                 return
             data_xs = nexus_data.cross_sections[data_keys[0]]
         else:
             data_xs = nexus_data
 
-        if data_xs.configuration is not None and data_xs.configuration.normalization is not None:
+        if (
+            data_xs.configuration is not None
+            and data_xs.configuration.normalization is not None
+        ):
             for item in self.direct_beam_list:
                 # convert _run_number to int if it can be
                 try:
@@ -383,7 +405,9 @@ class DataManager(object):
                     keys = list(item.cross_sections.keys())
                     if len(keys) >= 1:
                         if len(keys) > 1:
-                            logging.error("More than one cross-section for the direct beam, using the first one")
+                            logging.error(
+                                "More than one cross-section for the direct beam, using the first one"
+                            )
                         direct_beam = item.cross_sections[keys[0]]
             if direct_beam is None:
                 logging.error("The specified direct beam is not available: skipping")
@@ -406,7 +430,11 @@ class DataManager(object):
                 if progress is not None:
                     progress(100.0 / len(self.reduction_list) * (i + 1))
             except:
-                logging.error("Could not compute GISANS for %s\n  %s", nexus_data.number, sys.exc_info()[1])
+                logging.error(
+                    "Could not compute GISANS for %s\n  %s",
+                    nexus_data.number,
+                    sys.exc_info()[1],
+                )
         if progress is not None:
             progress(100)
 
@@ -426,7 +454,9 @@ class DataManager(object):
             raise RuntimeError("Please select a direct beam data set for your data.")
 
         nexus_data.calculate_gisans(direct_beam=direct_beam, progress=progress)
-        logging.info("Calculate GISANS: %s %s sec", nexus_data.number, (time.time() - t_0))
+        logging.info(
+            "Calculate GISANS: %s %s sec", nexus_data.number, (time.time() - t_0)
+        )
 
     def is_offspec_available(self):
         """
@@ -463,9 +493,15 @@ class DataManager(object):
             try:
                 self.calculate_reflectivity(nexus_data=nexus_data, specular=False)
             except:
-                logging.error("Could not compute reflectivity for %s\n  %s", nexus_data.number, sys.exc_info()[1])
+                logging.error(
+                    "Could not compute reflectivity for %s\n  %s",
+                    nexus_data.number,
+                    sys.exc_info()[1],
+                )
 
-    def rebin_gisans(self, pol_state, wl_min=0, wl_max=100, qy_npts=50, qz_npts=50, use_pf=False):
+    def rebin_gisans(
+        self, pol_state, wl_min=0, wl_max=100, qy_npts=50, qz_npts=50, use_pf=False
+    ):
         """
         Merge all the off-specular reflectivity data and rebin.
         """
@@ -480,7 +516,9 @@ class DataManager(object):
         )
 
     # TODO 67 FInd out whether it can work with merged data
-    def calculate_reflectivity(self, configuration=None, active_only=False, nexus_data=None, specular=True):
+    def calculate_reflectivity(
+        self, configuration=None, active_only=False, nexus_data=None, specular=True
+    ):
         """
         Calculate reflectivity using the current configuration
         """
@@ -494,9 +532,13 @@ class DataManager(object):
         if not specular:
             nexus_data.calculate_offspec(direct_beam=direct_beam)
         elif active_only:
-            self.active_channel.reflectivity(direct_beam=direct_beam, configuration=configuration)
+            self.active_channel.reflectivity(
+                direct_beam=direct_beam, configuration=configuration
+            )
         else:
-            nexus_data.calculate_reflectivity(direct_beam=direct_beam, configuration=configuration)
+            nexus_data.calculate_reflectivity(
+                direct_beam=direct_beam, configuration=configuration
+            )
 
     def find_best_direct_beam(self):
         """
@@ -513,10 +555,14 @@ class DataManager(object):
             xs_keys = list(item.cross_sections.keys())
             if len(xs_keys) > 0:
                 channel = item.cross_sections[list(item.cross_sections.keys())[0]]
-                if self.active_channel.configuration.instrument.direct_beam_match(self.active_channel, channel):
+                if self.active_channel.configuration.instrument.direct_beam_match(
+                    self.active_channel, channel
+                ):
                     if closest is None:
                         closest = item_number
-                    elif abs(item_number - active_channel_number) < abs(closest - active_channel_number):
+                    elif abs(item_number - active_channel_number) < abs(
+                        closest - active_channel_number
+                    ):
                         closest = item_number
 
         if closest is None:
@@ -530,7 +576,9 @@ class DataManager(object):
                     ):
                         if closest is None:
                             closest = item_number
-                        elif abs(item_number - active_channel_number) < abs(closest - active_channel_number):
+                        elif abs(item_number - active_channel_number) < abs(
+                            closest - active_channel_number
+                        ):
                             closest = item_number
         if closest is not None:
             return self._nexus_data.set_parameter("normalization", closest)
@@ -566,21 +614,30 @@ class DataManager(object):
         measurements.
         """
         if len(self.reduction_list) < 2:
-            logging.error("You need to have at least two datasets in the reduction table")
+            logging.error(
+                "You need to have at least two datasets in the reduction table"
+            )
             return
         xs = self.active_channel.name
         for idx, item in enumerate(self.reduction_list[:-1]):
             next_item = self.reduction_list[idx + 1]
             end_idx = next_item.cross_sections[xs].configuration.cut_first_n_points
 
-            overlap_idx = np.where(item.cross_sections[xs].q >= next_item.cross_sections[xs].q[end_idx])
+            overlap_idx = np.where(
+                item.cross_sections[xs].q >= next_item.cross_sections[xs].q[end_idx]
+            )
             logging.error(overlap_idx[0])
             if len(overlap_idx[0]) > 0:
                 n_points = len(item.cross_sections[xs].q) - overlap_idx[0][0]
                 item.set_parameter("cut_last_n_points", n_points)
 
     def stitch_data_sets(
-        self, normalize_to_unity=True, q_cutoff=0.01, global_stitching=False, poly_degree=None, poly_points=3
+        self,
+        normalize_to_unity=True,
+        q_cutoff=0.01,
+        global_stitching=False,
+        poly_degree=None,
+        poly_points=3,
     ):
         """
         Determine scaling factors for each data set
@@ -665,7 +722,10 @@ class DataManager(object):
         p_state, m_state = self.determine_asymmetry_states()
 
         # Get the list of workspaces
-        if p_state in self.final_merged_reflectivity and m_state in self.final_merged_reflectivity:
+        if (
+            p_state in self.final_merged_reflectivity
+            and m_state in self.final_merged_reflectivity
+        ):
             p_ws = self.final_merged_reflectivity[p_state]
             m_ws = self.final_merged_reflectivity[m_state]
             ratio_ws = (p_ws - m_ws) / (p_ws + m_ws)
@@ -681,7 +741,9 @@ class DataManager(object):
             return data_manipulation.extract_meta_data(
                 file_path=file_path, configuration=self.active_channel.configuration
             )
-        return data_manipulation.extract_meta_data(cross_section_data=self.active_channel)
+        return data_manipulation.extract_meta_data(
+            cross_section_data=self.active_channel
+        )
 
     def load_data_from_reduced_file(self, file_path, configuration=None, progress=None):
         """
@@ -697,7 +759,9 @@ class DataManager(object):
         n_loaded = 0
         n_total = len(db_files) + len(data_files)
         if progress and n_total > 0:
-            progress.set_value(1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total)
+            progress.set_value(
+                1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total
+            )
         for r_id, run_file, conf in db_files:
             t_i = time.time()
             if os.path.isfile(run_file):
@@ -706,13 +770,23 @@ class DataManager(object):
                     configuration.normalization = None
                     self._nexus_data.update_configuration(conf)
                 self.add_active_to_normalization()
-                logging.info("%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0)
+                logging.info(
+                    "%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0
+                )
                 if progress:
-                    progress.set_value(n_loaded, message="%s loaded" % os.path.basename(run_file), out_of=n_total)
+                    progress.set_value(
+                        n_loaded,
+                        message="%s loaded" % os.path.basename(run_file),
+                        out_of=n_total,
+                    )
             else:
                 logging.error("File does not exist: %s", run_file)
                 if progress:
-                    progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
+                    progress.set_value(
+                        n_loaded,
+                        message="ERROR: %s does not exist" % run_file,
+                        out_of=n_total,
+                    )
             n_loaded += 1
 
         for r_id, run_file, conf in data_files:
@@ -728,13 +802,23 @@ class DataManager(object):
                     self._nexus_data.update_configuration(conf)
                     self.calculate_reflectivity()
                 self.add_active_to_reduction()
-                logging.info("%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0)
+                logging.info(
+                    "%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0
+                )
                 if progress:
-                    progress.set_value(n_loaded, message="%s loaded" % os.path.basename(run_file), out_of=n_total)
+                    progress.set_value(
+                        n_loaded,
+                        message="%s loaded" % os.path.basename(run_file),
+                        out_of=n_total,
+                    )
             else:
                 logging.error("File does not exist: %s", run_file)
                 if progress:
-                    progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
+                    progress.set_value(
+                        n_loaded,
+                        message="ERROR: %s does not exist" % run_file,
+                        out_of=n_total,
+                    )
             n_loaded += 1
 
         if progress:

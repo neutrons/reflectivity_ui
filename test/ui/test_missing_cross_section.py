@@ -1,6 +1,8 @@
 # local imports
 from reflectivity_ui.interfaces.main_window import MainWindow
-from reflectivity_ui.interfaces.data_handling.data_set import REFLECTIVITY_THRESHOLD_VALUE
+from reflectivity_ui.interfaces.data_handling.data_set import (
+    REFLECTIVITY_THRESHOLD_VALUE,
+)
 from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
 

@@ -1,4 +1,3 @@
-
 import mantid.simpleapi as api
 
 import numpy as np
@@ -67,8 +66,12 @@ def quicknxs_scale(theta, peak, low_res, norm_peak, norm_low_res):
     """
     Scaling factor to multiply by to be compatible with QuickNXS 1.0.
     """
-    quicknxs_scale = (float(norm_peak[1]) - float(norm_peak[0])) * (float(norm_low_res[1]) - float(norm_low_res[0]))
-    quicknxs_scale /= (float(peak[1]) - float(peak[0])) * (float(low_res[1]) - float(low_res[0]))
+    quicknxs_scale = (float(norm_peak[1]) - float(norm_peak[0])) * (
+        float(norm_low_res[1]) - float(norm_low_res[0])
+    )
+    quicknxs_scale /= (float(peak[1]) - float(peak[0])) * (
+        float(low_res[1]) - float(low_res[0])
+    )
     _scale = 0.005 / np.sin(theta) if theta > 0.0002 else 1.0
     quicknxs_scale *= _scale
     return quicknxs_scale
@@ -176,10 +179,17 @@ class EventReflectivity(object):
 
     def extract_meta_data(self):
         # Set up basic data
-        self.n_x = int(self._ws_sc.getInstrument().getNumberParameter("number-of-x-pixels")[0])
-        self.n_y = int(self._ws_sc.getInstrument().getNumberParameter("number-of-y-pixels")[0])
+        self.n_x = int(
+            self._ws_sc.getInstrument().getNumberParameter("number-of-x-pixels")[0]
+        )
+        self.n_y = int(
+            self._ws_sc.getInstrument().getNumberParameter("number-of-y-pixels")[0]
+        )
 
-        self.pixel_width = float(self._ws_sc.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
+        self.pixel_width = (
+            float(self._ws_sc.getInstrument().getNumberParameter("pixel-width")[0])
+            / 1000.0
+        )
 
         if self.instrument == self.INSTRUMENT_4B:
             self.extract_meta_data_4B()
@@ -193,7 +203,10 @@ class EventReflectivity(object):
         if self.tof_range is None:
             self.wl_range = get_wl_range(self._ws_sc)
         else:
-            self.wl_range = [self.tof_range[0] / self.constant, self.tof_range[1] / self.constant]
+            self.wl_range = [
+                self.tof_range[0] / self.constant,
+                self.tof_range[1] / self.constant,
+            ]
 
         if self.q_min is None:
             self.q_min = 4.0 * np.pi / self.wl_range[1] * np.sin(self.theta)
@@ -265,7 +278,8 @@ class EventReflectivity(object):
 
         refl[db_bins] = refl[db_bins] / norm[db_bins]
         d_refl[db_bins] = np.sqrt(
-            d_refl[db_bins] ** 2 / norm[db_bins] ** 2 + refl[db_bins] ** 2 * d_norm[db_bins] ** 2 / norm[db_bins] ** 4
+            d_refl[db_bins] ** 2 / norm[db_bins] ** 2
+            + refl[db_bins] ** 2 * d_norm[db_bins] ** 2 / norm[db_bins] ** 4
         )
 
         self.refl = refl
@@ -304,12 +318,23 @@ class EventReflectivity(object):
             q_summing=False,
         )
 
-        _pixel_area = (self.norm_bck[1] - self.norm_bck[0] + 1.0) / (self.norm_peak[1] - self.norm_peak[0] + 1.0)
+        _pixel_area = (self.norm_bck[1] - self.norm_bck[0] + 1.0) / (
+            self.norm_peak[1] - self.norm_peak[0] + 1.0
+        )
         norm_bck /= _pixel_area
         d_norm_bck /= _pixel_area
         return norm_bck, d_norm_bck
 
-    def slice(self, x_min=0.002, x_max=0.004, x_bins=None, z_bins=None, refl=None, d_refl=None, normalize=False):
+    def slice(
+        self,
+        x_min=0.002,
+        x_max=0.004,
+        x_bins=None,
+        z_bins=None,
+        refl=None,
+        d_refl=None,
+        normalize=False,
+    ):
         x_bins = self._offspec_x_bins if x_bins is None else x_bins
         z_bins = self._offspec_z_bins if z_bins is None else z_bins
         refl = self._offspec_refl if refl is None else refl
@@ -327,7 +352,9 @@ class EventReflectivity(object):
 
         return z_bins, _spec, _d_spec
 
-    def _reflectivity(self, ws, peak_position, peak, low_res, theta, q_bins=None, q_summing=False):
+    def _reflectivity(
+        self, ws, peak_position, peak, low_res, theta, q_bins=None, q_summing=False
+    ):
         """
         Assumes that the input workspace is normalized by proton charge.
         """
@@ -350,7 +377,13 @@ class EventReflectivity(object):
                 wl_list = evt_list.getTofs() / self.constant
                 x_distance = _pixel_width * (peak_position - j)
                 delta_theta_f = np.arctan(x_distance / self.det_distance) / 2.0
-                qz = 4.0 * np.pi / wl_list * np.sin(theta + delta_theta_f) * np.cos(delta_theta_f)
+                qz = (
+                    4.0
+                    * np.pi
+                    / wl_list
+                    * np.sin(theta + delta_theta_f)
+                    * np.cos(delta_theta_f)
+                )
 
                 _counts, _ = np.histogram(qz, bins=_q_bins)
                 refl += _counts
@@ -379,7 +412,15 @@ class EventReflectivity(object):
         return wl_events
 
     def off_specular(
-        self, x_axis=None, x_min=-0.015, x_max=0.015, x_npts=50, z_min=None, z_max=None, z_npts=-120, bck_in_q=None
+        self,
+        x_axis=None,
+        x_min=-0.015,
+        x_max=0.015,
+        x_npts=50,
+        z_min=None,
+        z_max=None,
+        z_npts=-120,
+        bck_in_q=None,
     ):
         """
         Compute off-specular
@@ -395,7 +436,9 @@ class EventReflectivity(object):
         qz_bins = self.q_bins
         if z_min is not None and z_max is not None:
             if z_npts < 0:
-                qz_bins = np.logspace(np.log10(z_min), np.log10(z_max), num=np.abs(z_npts))
+                qz_bins = np.logspace(
+                    np.log10(z_min), np.log10(z_max), num=np.abs(z_npts)
+                )
             else:
                 qz_bins = np.linspace(z_min, z_max, num=z_npts)
 
@@ -407,10 +450,19 @@ class EventReflectivity(object):
 
         wl_events = self._get_events(self._ws_db, self.norm_peak, self.norm_low_res)
         wl_dist, wl_bins = np.histogram(wl_events, bins=60)
-        wl_middle = [(wl_bins[i + 1] + wl_bins[i]) / 2.0 for i in range(len(wl_bins) - 1)]
+        wl_middle = [
+            (wl_bins[i + 1] + wl_bins[i]) / 2.0 for i in range(len(wl_bins) - 1)
+        ]
 
         _refl, _d_refl = self._off_specular(
-            self._ws_sc, wl_dist, wl_middle, qx_bins, qz_bins, self.specular_pixel, self.theta, x_axis=x_axis
+            self._ws_sc,
+            wl_dist,
+            wl_middle,
+            qx_bins,
+            qz_bins,
+            self.specular_pixel,
+            self.theta,
+            x_axis=x_axis,
         )
         db_charge = self._ws_db.getRun()["gd_prtn_chrg"].value
         _refl *= db_charge * (wl_bins[1] - wl_bins[0])
@@ -442,7 +494,9 @@ class EventReflectivity(object):
 
         return qx_bins, qz_bins, _refl, _d_refl
 
-    def _off_specular(self, ws, wl_dist, wl_bins, x_bins, z_bins, peak_position, theta, x_axis=None):
+    def _off_specular(
+        self, ws, wl_dist, wl_bins, x_bins, z_bins, peak_position, theta, x_axis=None
+    ):
         charge = ws.getRun()["gd_prtn_chrg"].value
         refl = np.zeros([len(x_bins) - 1, len(z_bins) - 1])
         counts = np.zeros([len(x_bins) - 1, len(z_bins) - 1])
@@ -479,7 +533,9 @@ class EventReflectivity(object):
                 _z = kf_z
 
             histo_weigths = wl_weights * _z / wl_list
-            _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins], weights=histo_weigths)
+            _counts, _, _ = np.histogram2d(
+                _x, _z, bins=[x_bins, z_bins], weights=histo_weigths
+            )
             refl += _counts
             _counts, _, _ = np.histogram2d(_x, _z, bins=[x_bins, z_bins])
             counts += _counts

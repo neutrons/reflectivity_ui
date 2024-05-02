@@ -1,6 +1,7 @@
 """
-    Dead time correction algorithm for single-readout detectors.
+Dead time correction algorithm for single-readout detectors.
 """
+
 from mantid.api import (
     AlgorithmFactory,
     PythonAlgorithm,
@@ -33,19 +34,35 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
             "Input workspace use to compute dead time correction",
         )
         self.declareProperty(
-            IEventWorkspaceProperty("InputErrorEventsWorkspace", "", Direction.Input, PropertyMode.Optional),
+            IEventWorkspaceProperty(
+                "InputErrorEventsWorkspace", "", Direction.Input, PropertyMode.Optional
+            ),
             "Input workspace with error events use to compute dead time correction",
         )
         self.declareProperty("DeadTime", 4.2, doc="Dead time in microseconds")
-        self.declareProperty("TOFStep", 100.0, doc="TOF bins to compute deadtime correction for, in microseconds")
         self.declareProperty(
-            "Paralyzable", False, doc="If true, paralyzable correction will be applied, non-paralyzing otherwise"
+            "TOFStep",
+            100.0,
+            doc="TOF bins to compute deadtime correction for, in microseconds",
         )
         self.declareProperty(
-            FloatArrayProperty("TOFRange", [0.0, 0.0], FloatArrayLengthValidator(2), direction=Direction.Input),
+            "Paralyzable",
+            False,
+            doc="If true, paralyzable correction will be applied, non-paralyzing otherwise",
+        )
+        self.declareProperty(
+            FloatArrayProperty(
+                "TOFRange",
+                [0.0, 0.0],
+                FloatArrayLengthValidator(2),
+                direction=Direction.Input,
+            ),
             "TOF range to use",
         )
-        self.declareProperty(MatrixWorkspaceProperty("OutputWorkspace", "", Direction.Output), "Output workspace")
+        self.declareProperty(
+            MatrixWorkspaceProperty("OutputWorkspace", "", Direction.Output),
+            "Output workspace",
+        )
 
     def PyExec(self):
         # Event data must include error events (all triggers on the detector)
@@ -63,7 +80,9 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
             tof_max = ws_event_data.getTofMax()
         logger.notice("TOF range: %f %f" % (tof_min, tof_max))
         _ws_sc = Rebin(
-            InputWorkspace=ws_event_data, Params="%s,%s,%s" % (tof_min, tof_step, tof_max), PreserveEvents=False
+            InputWorkspace=ws_event_data,
+            Params="%s,%s,%s" % (tof_min, tof_step, tof_max),
+            PreserveEvents=False,
         )
 
         # Get the total number of counts on the detector for each TOF bin per pulse
@@ -72,7 +91,9 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
         # If we have error events, add them since those are also detector triggers
         if ws_error_events is not None:
             _errors = Rebin(
-                InputWorkspace=ws_error_events, Params="%s,%s,%s" % (tof_min, tof_step, tof_max), PreserveEvents=False
+                InputWorkspace=ws_error_events,
+                Params="%s,%s,%s" % (tof_min, tof_step, tof_max),
+                PreserveEvents=False,
             )
             counts_ws += _errors
 
@@ -83,7 +104,9 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
 
         # Compute the dead time correction for each TOF bin
         if paralyzing:
-            true_rate = -scipy.special.lambertw(-rate * dead_time / tof_step).real / dead_time
+            true_rate = (
+                -scipy.special.lambertw(-rate * dead_time / tof_step).real / dead_time
+            )
             corr = true_rate / (rate / tof_step)
             # If we have no events, set the correction to 1 otherwise we will get a nan
             # from the equation above.

@@ -1,6 +1,6 @@
 """
-   Dialog to select reduction options to choose which outputs are needed
-   and in which formats to write them.
+Dialog to select reduction options to choose which outputs are needed
+and in which formats to write them.
 """
 # pylint: disable=bare-except
 
@@ -23,21 +23,31 @@ class ReductionDialog(QtWidgets.QDialog):
 
         self.settings = QtCore.QSettings(".refredm")
 
-        self.ui.directoryEntry.setText(self.settings.value("output_directory", os.path.expanduser("~")))
-        self.ui.fileNameEntry.setText(self.settings.value("output_file_template", ReductionDialog.default_template))
+        self.ui.directoryEntry.setText(
+            self.settings.value("output_directory", os.path.expanduser("~"))
+        )
+        self.ui.fileNameEntry.setText(
+            self.settings.value(
+                "output_file_template", ReductionDialog.default_template
+            )
+        )
 
         # Outputs
         self.ui.exportSpecular.setChecked(self._verify_true("export_specular", True))
         self.ui.export_SA.setChecked(self._verify_true("export_asym", True))
         self.ui.exportGISANS.setChecked(self._verify_true("export_gisans", False))
         self.ui.exportOffSpecular.setChecked(self._verify_true("export_offspec", False))
-        self.ui.exportOffSpecularSmoothed.setChecked(self._verify_true("export_offspec_smooth", False))
+        self.ui.exportOffSpecularSmoothed.setChecked(
+            self._verify_true("export_offspec_smooth", False)
+        )
 
         # Formats
         self.ui.genx.setChecked(self._verify_true("format_genx", False))
         self.ui.matlab.setChecked(self._verify_true("format_matlab", False))
         self.ui.numpy.setChecked(self._verify_true("format_numpy", False))
-        self.ui.mantid_script_checkbox.setChecked(self._verify_true("format_mantid", False))
+        self.ui.mantid_script_checkbox.setChecked(
+            self._verify_true("format_mantid", False)
+        )
         self.ui.five_cols_checkbox.setChecked(self._verify_true("format_5cols", True))
 
         # Emails
@@ -113,12 +123,16 @@ class ReductionDialog(QtWidgets.QDialog):
         self.settings.setValue("export_asym", self.ui.export_SA.isChecked())
         self.settings.setValue("export_gisans", self.ui.exportGISANS.isChecked())
         self.settings.setValue("export_offspec", self.ui.exportOffSpecular.isChecked())
-        self.settings.setValue("export_offspec_smooth", self.ui.exportOffSpecularSmoothed.isChecked())
+        self.settings.setValue(
+            "export_offspec_smooth", self.ui.exportOffSpecularSmoothed.isChecked()
+        )
 
         self.settings.setValue("format_genx", self.ui.genx.isChecked())
         self.settings.setValue("format_matlab", self.ui.matlab.isChecked())
         self.settings.setValue("format_numpy", self.ui.numpy.isChecked())
-        self.settings.setValue("format_mantid", self.ui.mantid_script_checkbox.isChecked())
+        self.settings.setValue(
+            "format_mantid", self.ui.mantid_script_checkbox.isChecked()
+        )
         self.settings.setValue("format_5cols", self.ui.five_cols_checkbox.isChecked())
 
         self.settings.setValue("email_send", self.ui.emailSend.isChecked())

@@ -77,7 +77,9 @@ class ConfigurationHandler:
                 is_checkbox = True
                 signal_name = "stateChanged"
             else:
-                raise ValueError(f"{type(widget)} not supported by ConfigurationHandler")
+                raise ValueError(
+                    f"{type(widget)} not supported by ConfigurationHandler"
+                )
             signal = getattr(widget, signal_name)
             # connect the signal to the updater
             signal.connect(self.config_setter_factory(config_name, is_checkbox))

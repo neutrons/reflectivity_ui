@@ -2,17 +2,22 @@
 # pylint: disable=invalid-name, line-too-long, too-many-public-methods, too-many-instance-attributes, wrong-import-order, \
 # bare-except, protected-access, too-many-arguments, too-many-statements
 """
-    Manage file-related and UI events
+Manage file-related and UI events
 """
+
 import numpy as np
 
 # package imports
 from reflectivity_ui.interfaces.configuration import Configuration
-from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
+from reflectivity_ui.interfaces.data_handling.data_manipulation import (
+    NormalizeToUnityQCutoffError,
+)
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
 from reflectivity_ui.interfaces.event_handlers.progress_reporter import ProgressReporter
-from reflectivity_ui.interfaces.event_handlers.status_bar_handler import StatusBarHandler
+from reflectivity_ui.interfaces.event_handlers.status_bar_handler import (
+    StatusBarHandler,
+)
 from reflectivity_ui.interfaces.event_handlers.widgets import AcceptRejectDialog
 from reflectivity_ui.config import Settings
 
@@ -40,12 +45,16 @@ class MainHandler(object):
         self._data_manager = main_window.data_manager
 
         # Update file list when changes are made
-        self._path_watcher = QtCore.QFileSystemWatcher([self._data_manager.current_directory], self.main_window)
+        self._path_watcher = QtCore.QFileSystemWatcher(
+            [self._data_manager.current_directory], self.main_window
+        )
         self._path_watcher.directoryChanged.connect(self.update_file_list)
 
         self.cache_indicator = QtWidgets.QLabel("Files loaded: 0")
         self.cache_indicator.setMargin(5)
-        self.cache_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        self.cache_indicator.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred
+        )
         self.cache_indicator.setMinimumWidth(110)
         self.ui.statusbar.addPermanentWidget(self.cache_indicator)
         button = QtWidgets.QPushButton("Empty Cache")
@@ -64,7 +73,9 @@ class MainHandler(object):
 
     def new_progress_reporter(self):
         """Return a progress reporter"""
-        return ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_bar_handler)
+        return ProgressReporter(
+            progress_bar=self.progress_bar, status_bar=self.status_bar_handler
+        )
 
     def empty_cache(self):
         """
@@ -111,7 +122,8 @@ class MainHandler(object):
             if not os.path.isfile(single_file_path):
                 self.report_message(
                     "File does not exist",
-                    detailed_message="The following file does not exist:\n  %s" % single_file_path,
+                    detailed_message="The following file does not exist:\n  %s"
+                    % single_file_path,
                     pop_up=True,
                     is_error=True,
                 )
@@ -121,14 +133,22 @@ class MainHandler(object):
         self.main_window.auto_change_active = True
         try:
             self.report_message("Loading file(s) %s" % file_path)
-            prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_bar_handler)
+            prog = ProgressReporter(
+                progress_bar=self.progress_bar, status_bar=self.status_bar_handler
+            )
             configuration = self.get_configuration()
-            self._data_manager.load(file_path, configuration, force=force, progress=prog)
-            self.report_message("Loaded file(s) %s" % self._data_manager.current_file_name)
+            self._data_manager.load(
+                file_path, configuration, force=force, progress=prog
+            )
+            self.report_message(
+                "Loaded file(s) %s" % self._data_manager.current_file_name
+            )
         except RuntimeError as run_err:
             # FIXME - need to find out what kind of error it could have
             self.report_message(
-                "Error loading file(s) {} due to {}".format(self._data_manager.current_file_name, run_err),
+                "Error loading file(s) {} due to {}".format(
+                    self._data_manager.current_file_name, run_err
+                ),
                 detailed_message=str(traceback.format_exc()),
                 pop_up=False,
                 is_error=True,
@@ -150,8 +170,14 @@ class MainHandler(object):
         for i, channel in enumerate(channels):
             getattr(self.ui, "selectedChannel%i" % i).show()
             good_label = channel.replace("_", "-")
-            if not good_label == self._data_manager.data_sets[channel].cross_section_label:
-                good_label = "%s: %s" % (good_label, self._data_manager.data_sets[channel].cross_section_label)
+            if (
+                not good_label
+                == self._data_manager.data_sets[channel].cross_section_label
+            ):
+                good_label = "%s: %s" % (
+                    good_label,
+                    self._data_manager.data_sets[channel].cross_section_label,
+                )
             getattr(self.ui, "selectedChannel%i" % i).setText(good_label)
         for i in range(len(channels), 12):
             getattr(self.ui, "selectedChannel%i" % i).hide()
@@ -161,7 +187,9 @@ class MainHandler(object):
         self.main_window.initiate_reflectivity_plot.emit(False)
         self.main_window.initiate_projection_plot.emit(False)
 
-        self.cache_indicator.setText("Files loaded: %s" % (self._data_manager.get_cachesize()))
+        self.cache_indicator.setText(
+            "Files loaded: %s" % (self._data_manager.get_cachesize())
+        )
 
     def active_channel_changed(self):
         """
@@ -196,7 +224,9 @@ class MainHandler(object):
         @param file_paths : List of Nexus files (full paths)
         @returns str : Error message; empty string if no error is found,
         """
-        assert len(file_paths) > 1, "We require more than one data file in order to compare their metadata"
+        assert (
+            len(file_paths) > 1
+        ), "We require more than one data file in order to compare their metadata"
         # Log names validation and collect tolerances
         tolerances = dict()  # store the tolerance value for each log name
         all_tolerances = Settings()["OpenSum"]["Tolerances"]  # type: List[float]
@@ -214,10 +244,20 @@ class MainHandler(object):
         # simple data structure to collect the log values from all files
         log_values = {name: list() for name in log_names}
         for file_path in file_paths:
-            for entry in ["", "-Off_Off", "-On_Off", "-Off_On", "-On_On"]:  # for new and old nexus files
+            for entry in [
+                "",
+                "-Off_Off",
+                "-On_Off",
+                "-Off_On",
+                "-On_On",
+            ]:  # for new and old nexus files
                 workspace = None
                 try:
-                    workspace = LoadEventNexus(Filename=file_path, NXentryName="entry" + entry, MetaDataOnly=True)
+                    workspace = LoadEventNexus(
+                        Filename=file_path,
+                        NXentryName="entry" + entry,
+                        MetaDataOnly=True,
+                    )
                     break
                 except RuntimeError:
                     continue
@@ -236,9 +276,15 @@ class MainHandler(object):
         message = ""
         for log_name, values in log_values.items():
             if max(values) - min(values) > tolerances[log_name]:
-                runs = FilePath(file_paths).run_numbers(string_representation="statement")
+                runs = FilePath(file_paths).run_numbers(
+                    string_representation="statement"
+                )
                 message_template = "Runs {0} contain values for log {1} that differ above tolerance {2}"
-                message = message + message_template.format(runs, log_name, tolerances[log_name]) + "\n"
+                message = (
+                    message
+                    + message_template.format(runs, log_name, tolerances[log_name])
+                    + "\n"
+                )
 
         return message  # empty string if no failures
 
@@ -270,23 +316,33 @@ class MainHandler(object):
             wl_min, wl_max = d.wavelength_range
         except ZeroDivisionError:
             wl_min, wl_max = float("NaN"), float("NaN")
-        self.ui.datasetLambda.setText("%.2f (%.2f-%.2f) Å" % (d.lambda_center, wl_min, wl_max))
+        self.ui.datasetLambda.setText(
+            "%.2f (%.2f-%.2f) Å" % (d.lambda_center, wl_min, wl_max)
+        )
 
         # DIRPIX and DANGLE0 overwrite
         if self.ui.set_dangle0_checkbox.isChecked():
-            dangle0 = "%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d._angle_offset)
+            dangle0 = "%.3f° (%.3f°)" % (
+                float(self.ui.dangle0Overwrite.text()),
+                d._angle_offset,
+            )
         else:
             dangle0 = "%.3f°" % (d.angle_offset)
         self.ui.datasetDangle0.setText(dangle0)
 
         if self.ui.set_dirpix_checkbox.isChecked():
-            dpix = "%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d._direct_pixel)
+            dpix = "%.1f (%.1f)" % (
+                float(self.ui.directPixelOverwrite.value()),
+                d._direct_pixel,
+            )
         else:
             dpix = "%.1f" % d.direct_pixel
         self.ui.datasetDirectPixel.setText(dpix)
 
         if d.configuration.normalization is not None:
-            self.ui.matched_direct_beam_label.setText("%s" % d.configuration.normalization)
+            self.ui.matched_direct_beam_label.setText(
+                "%s" % d.configuration.normalization
+            )
         else:
             self.ui.matched_direct_beam_label.setText("None")
 
@@ -301,17 +357,25 @@ class MainHandler(object):
         QtWidgets.QApplication.instance().processEvents()
 
         if self.ui.set_dangle0_checkbox.isChecked():
-            dangle0 = "%.3f° (%.3f°)" % (float(self.ui.dangle0Overwrite.text()), d.angle_offset)
+            dangle0 = "%.3f° (%.3f°)" % (
+                float(self.ui.dangle0Overwrite.text()),
+                d.angle_offset,
+            )
         else:
             dangle0 = "%.3f°" % (d.angle_offset)
 
         if self.ui.set_dirpix_checkbox.isChecked():
-            dpix = "%.1f (%.1f)" % (float(self.ui.directPixelOverwrite.value()), d.direct_pixel)
+            dpix = "%.1f (%.1f)" % (
+                float(self.ui.directPixelOverwrite.value()),
+                d.direct_pixel,
+            )
         else:
             dpix = "%.1f" % d.direct_pixel
 
         wl_min, wl_max = d.wavelength_range
-        self.ui.datasetLambda.setText("%.2f (%.2f-%.2f) Å" % (d.lambda_center, wl_min, wl_max))
+        self.ui.datasetLambda.setText(
+            "%.2f (%.2f-%.2f) Å" % (d.lambda_center, wl_min, wl_max)
+        )
         self.ui.datasetPCharge.setText("%.3e" % d.proton_charge)
         self.ui.datasetTime.setText("%i s" % d.total_time)
         self.ui.datasetTotCounts.setText("%.4e" % d.total_counts)
@@ -397,7 +461,9 @@ class MainHandler(object):
         def _reset_ui_file_list(fresh_list):
             r"""reset widget self.ui.file_list and highlight the current file_name"""
             self.ui.file_list.clear()  # Reset ui.file_list, a QtWidgets.QListWidget object
-            assert isinstance(fresh_list, list), "fresh_list must be list but not {}".format(type(fresh_list))
+            assert isinstance(
+                fresh_list, list
+            ), "fresh_list must be list but not {}".format(type(fresh_list))
             for item in fresh_list:
                 listitem = QtWidgets.QListWidgetItem(item, self.ui.file_list)
                 if item == self._data_manager.current_file_name:
@@ -433,15 +499,21 @@ class MainHandler(object):
             # Use case 2.2: the composite is made up of files in a new directory
             else:
                 _update_current_directory(file_dir)
-                new_list = sorted(self._data_manager.current_event_files + [file_path.basename])
+                new_list = sorted(
+                    self._data_manager.current_event_files + [file_path.basename]
+                )
         # Use case 3: a single path pointing to a file or a directory
         else:
             # Use case 3.1: a single path pointing to a new directory
             if os.path.isdir(query_path):
                 file_dir = query_path
-                if file_dir != self._data_manager.current_directory:  # User changed directory
+                if (
+                    file_dir != self._data_manager.current_directory
+                ):  # User changed directory
                     _update_current_directory(file_dir)
-                    self._data_manager.current_file_name = self._data_manager.current_event_files[0]
+                    self._data_manager.current_file_name = (
+                        self._data_manager.current_event_files[0]
+                    )
                     new_list = self._data_manager.current_event_files
                 else:
                     # TODO FIXME discovered from #93.  This path is not checked and thus problematic
@@ -450,7 +522,9 @@ class MainHandler(object):
             else:
                 file_dir, file_name = file_path.split()
                 self._data_manager.current_file_name = file_name
-                if file_dir == self._data_manager.current_directory:  # User selected a new file in the directory
+                if (
+                    file_dir == self._data_manager.current_directory
+                ):  # User selected a new file in the directory
                     new_list = _updated_current_list()
                 else:  # User selected a new file in a new directory
                     _update_current_directory(file_dir)
@@ -467,8 +541,12 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         # Update the list of files
-        event_file_list = glob.glob(os.path.join(self._data_manager.current_directory, "*event.nxs"))
-        h5_file_list = glob.glob(os.path.join(self._data_manager.current_directory, "*.nxs.h5"))
+        event_file_list = glob.glob(
+            os.path.join(self._data_manager.current_directory, "*event.nxs")
+        )
+        h5_file_list = glob.glob(
+            os.path.join(self._data_manager.current_directory, "*.nxs.h5")
+        )
         event_file_list.extend(h5_file_list)
         event_file_list.sort()
         event_file_list = [os.path.basename(name) for name in event_file_list]
@@ -495,12 +573,18 @@ class MainHandler(object):
                 n_count += 1
                 meta_data = self._data_manager.extract_meta_data(file_path)
 
-                if q_current <= meta_data.mid_q and is_direct_beam == meta_data.is_direct_beam:
+                if (
+                    q_current <= meta_data.mid_q
+                    and is_direct_beam == meta_data.is_direct_beam
+                ):
                     q_current = meta_data.mid_q
                     self.open_file(file_path, silent=True)
                     d = self._data_manager.active_channel
                     # If we find data of another type, stop here
-                    if not is_direct_beam == self._data_manager.active_channel.is_direct_beam:
+                    if (
+                        not is_direct_beam
+                        == self._data_manager.active_channel.is_direct_beam
+                    ):
                         break
                     self.main_window.auto_change_active = True
                     self.populate_from_configuration(d.configuration)
@@ -524,9 +608,14 @@ class MainHandler(object):
         """
         # Open file dialog
         filter_ = "QuickNXS files (*.dat);;All (*.*)"
-        output_dir = self.main_window.settings.value("output_directory", os.path.expanduser("~"))
+        output_dir = self.main_window.settings.value(
+            "output_directory", os.path.expanduser("~")
+        )
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self.main_window, "Open reduced file...", directory=output_dir, filter=filter_
+            self.main_window,
+            "Open reduced file...",
+            directory=output_dir,
+            filter=filter_,
         )
 
         t_0 = time.time()
@@ -536,7 +625,9 @@ class MainHandler(object):
             self.clear_reflectivity()
             configuration = self.get_configuration()
             prog = self.new_progress_reporter()
-            self._data_manager.load_data_from_reduced_file(file_path, configuration=configuration, progress=prog)
+            self._data_manager.load_data_from_reduced_file(
+                file_path, configuration=configuration, progress=prog
+            )
 
             # Update output directory
             file_dir, _ = os.path.split(str(file_path))
@@ -553,13 +644,17 @@ class MainHandler(object):
                 self._data_manager.set_active_data_from_reduction_list(idx)
                 self.update_reduction_table(idx, self._data_manager.active_channel)
 
-            direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
+            direct_beam_ids = [
+                str(r.number) for r in self._data_manager.direct_beam_list
+            ]
             self.ui.normalization_list_label.setText(", ".join(direct_beam_ids))
 
             self.file_loaded()
 
             if self._data_manager.active_channel is not None:
-                self.populate_from_configuration(self._data_manager.active_channel.configuration)
+                self.populate_from_configuration(
+                    self._data_manager.active_channel.configuration
+                )
                 self.update_file_list(self._data_manager.current_file)
             self.main_window.auto_change_active = False
 
@@ -573,7 +668,10 @@ class MainHandler(object):
         @returns absolute path to the selected file
         """
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self.main_window, "Open NXS file...", directory=self._data_manager.current_directory, filter=filter_
+            self.main_window,
+            "Open NXS file...",
+            directory=self._data_manager.current_directory,
+            filter=filter_,
         )
         return file_path
 
@@ -639,7 +737,9 @@ class MainHandler(object):
         @param message: message to show in the dialog box
         """
         message += ".\nProceed with Open Sum?"
-        dialog = AcceptRejectDialog(self.main_window, title="Open Sum Confirmation", message=message)
+        dialog = AcceptRejectDialog(
+            self.main_window, title="Open Sum Confirmation", message=message
+        )
         proceed = dialog.exec_()
         return proceed
 
@@ -650,7 +750,9 @@ class MainHandler(object):
         """
         self.main_window.auto_change_active = True
         if number is None:
-            number = str(self.ui.numberSearchEntry.text())  # cast from unicode to string
+            number = str(
+                self.ui.numberSearchEntry.text()
+            )  # cast from unicode to string
         QtWidgets.QApplication.instance().processEvents()
         run_numbers = RunNumbers(number)
         file_list = list()
@@ -660,14 +762,22 @@ class MainHandler(object):
             search_string = configuration.instrument.file_search_template % run_number
             matches = glob.glob(search_string + ".nxs.h5")  # type: Optional[List[str]]
             if not matches:  # Look for old-style nexus file name
-                search_string = configuration.instrument.legacy_search_template % run_number
+                search_string = (
+                    configuration.instrument.legacy_search_template % run_number
+                )
                 matches = glob.glob(search_string + "_event.nxs")
-            file_list.append(matches[0])  # there should be only one match, since we query with one run number
+            file_list.append(
+                matches[0]
+            )  # there should be only one match, since we query with one run number
 
-        self.ui.numberSearchEntry.setText("")  # empty the contents of in the LineEdit widget
+        self.ui.numberSearchEntry.setText(
+            ""
+        )  # empty the contents of in the LineEdit widget
         success = False
         if len(file_list) > 0:
-            file_path = FilePath(file_list).path  # single path or a composite of file paths
+            file_path = FilePath(
+                file_list
+            ).path  # single path or a composite of file paths
             # If opening more than one file, check whether files can be merged
             if len(file_list) > 1:
                 message = self._congruency_fail_report(file_list, log_names=None)
@@ -677,7 +787,10 @@ class MainHandler(object):
             self.open_file(file_path)
             success = True
         else:
-            self.report_message("Could not locate one or more of file(s) %s" % run_numbers.short, pop_up=True)
+            self.report_message(
+                "Could not locate one or more of file(s) %s" % run_numbers.short,
+                pop_up=True,
+            )
 
         self.main_window.auto_change_active = False
         return success
@@ -691,19 +804,32 @@ class MainHandler(object):
         table.setRowCount(0)
         table.sortItems(-1)
         table.setColumnCount(len(self._data_manager.data_sets) + 2)
-        table.setHorizontalHeaderLabels(["Name"] + list(self._data_manager.data_sets.keys()) + ["Unit"])
-        for j, key in enumerate(sorted(self._data_manager.active_channel.logs.keys(), key=lambda s: s.lower())):
+        table.setHorizontalHeaderLabels(
+            ["Name"] + list(self._data_manager.data_sets.keys()) + ["Unit"]
+        )
+        for j, key in enumerate(
+            sorted(
+                self._data_manager.active_channel.logs.keys(), key=lambda s: s.lower()
+            )
+        ):
             table.insertRow(j)
             table.setItem(j, 0, QtWidgets.QTableWidgetItem(key))
             table.setItem(
                 j,
                 len(self._data_manager.data_sets) + 1,
-                QtWidgets.QTableWidgetItem(self._data_manager.active_channel.log_units[key]),
+                QtWidgets.QTableWidgetItem(
+                    self._data_manager.active_channel.log_units[key]
+                ),
             )
             i = 0
             for xs in self._data_manager.data_sets:
-                item = QtWidgets.QTableWidgetItem("%g" % self._data_manager.data_sets[xs].logs[key])
-                item.setToolTip("MIN: %g   MAX: %g" % (self._data_manager.data_sets[xs].log_minmax[key]))
+                item = QtWidgets.QTableWidgetItem(
+                    "%g" % self._data_manager.data_sets[xs].logs[key]
+                )
+                item.setToolTip(
+                    "MIN: %g   MAX: %g"
+                    % (self._data_manager.data_sets[xs].log_minmax[key])
+                )
                 table.setItem(j, i + 1, item)
                 i += 1
         table.resizeColumnsToContents()
@@ -722,16 +848,23 @@ class MainHandler(object):
         # and apply then to all cross-sections.
         if self.ui.action_use_common_ranges.isChecked():
             config = self.get_configuration()
-            self._data_manager.update_configuration(configuration=config, active_only=False)
+            self._data_manager.update_configuration(
+                configuration=config, active_only=False
+            )
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_reduction():
             if not silent:
-                self.report_message("(Add reflectivity) Data incompatible or already in the list.", pop_up=True)
+                self.report_message(
+                    "(Add reflectivity) Data incompatible or already in the list.",
+                    pop_up=True,
+                )
             return False
         self.main_window.auto_change_active = True
 
-        idx = self._data_manager.find_data_in_reduction_list(self._data_manager._nexus_data)
+        idx = self._data_manager.find_data_in_reduction_list(
+            self._data_manager._nexus_data
+        )
         if idx is None:
             raise RuntimeError("It could be None but not likely")
         self.ui.reductionTable.insertRow(idx)
@@ -754,23 +887,41 @@ class MainHandler(object):
             item.setBackground(QtGui.QColor(255, 255, 255))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
         self.ui.reductionTable.setItem(idx, 0, item)
-        self.ui.reductionTable.setItem(idx, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor)))
-        self.ui.reductionTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.cut_first_n_points)))
-        self.ui.reductionTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
+        self.ui.reductionTable.setItem(
+            idx,
+            1,
+            QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor)),
+        )
+        self.ui.reductionTable.setItem(
+            idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.cut_first_n_points))
+        )
+        self.ui.reductionTable.setItem(
+            idx, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points))
+        )
         item = QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.reductionTable.setItem(idx, 4, item)
-        self.ui.reductionTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+        self.ui.reductionTable.setItem(
+            idx, 5, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width))
+        )
         item = QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.reductionTable.setItem(idx, 6, item)
-        self.ui.reductionTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+        self.ui.reductionTable.setItem(
+            idx, 7, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width))
+        )
         item = QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.reductionTable.setItem(idx, 8, item)
-        self.ui.reductionTable.setItem(idx, 9, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
-        self.ui.reductionTable.setItem(idx, 10, QtWidgets.QTableWidgetItem(str(d.direct_pixel)))
-        self.ui.reductionTable.setItem(idx, 11, QtWidgets.QTableWidgetItem("%.4f" % d.scattering_angle))
+        self.ui.reductionTable.setItem(
+            idx, 9, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width))
+        )
+        self.ui.reductionTable.setItem(
+            idx, 10, QtWidgets.QTableWidgetItem(str(d.direct_pixel))
+        )
+        self.ui.reductionTable.setItem(
+            idx, 11, QtWidgets.QTableWidgetItem("%.4f" % d.scattering_angle)
+        )
         norma = "none"
         if d.configuration.normalization is not None:
             norma = d.configuration.normalization
@@ -880,7 +1031,8 @@ class MainHandler(object):
                 self._data_manager.calculate_reflectivity(nexus_data=refl)
             except:
                 self.report_message(
-                    "Could not compute reflectivity for %s" % self._data_manager.current_file_name,
+                    "Could not compute reflectivity for %s"
+                    % self._data_manager.current_file_name,
                     detailed_message=str(traceback.format_exc()),
                     pop_up=False,
                     is_error=False,
@@ -896,12 +1048,17 @@ class MainHandler(object):
         # Update all cross-section parameters as needed.
         if self.ui.action_use_common_ranges.isChecked():
             config = self.get_configuration()
-            self._data_manager.update_configuration(configuration=config, active_only=False)
+            self._data_manager.update_configuration(
+                configuration=config, active_only=False
+            )
 
         # Verify that the new data is consistent with existing data in the table
         if not self._data_manager.add_active_to_normalization():
             if not silent:
-                self.report_message("(Add direct beam) Data incompatible or already in the list.", pop_up=True)
+                self.report_message(
+                    "(Add direct beam) Data incompatible or already in the list.",
+                    pop_up=True,
+                )
             return False
 
         self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
@@ -933,15 +1090,21 @@ class MainHandler(object):
         item = QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.normalizeTable.setItem(idx, 1, QtWidgets.QTableWidgetItem(item))
-        self.ui.normalizeTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+        self.ui.normalizeTable.setItem(
+            idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width))
+        )
         item = QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.normalizeTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(item))
-        self.ui.normalizeTable.setItem(idx, 4, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+        self.ui.normalizeTable.setItem(
+            idx, 4, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width))
+        )
         item = QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
         self.ui.normalizeTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(item))
-        self.ui.normalizeTable.setItem(idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
+        self.ui.normalizeTable.setItem(
+            idx, 6, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width))
+        )
         self.main_window.auto_change_active = False
 
     def active_data_changed(self):
@@ -1001,14 +1164,19 @@ class MainHandler(object):
         Save run data to file
         :param NexusData nexus_data: run data object
         """
-        path = QtWidgets.QFileDialog.getExistingDirectory(self.main_window, "Select directory")
+        path = QtWidgets.QFileDialog.getExistingDirectory(
+            self.main_window, "Select directory"
+        )
         if not path:
             return
         # ask user for base name for files (one file for each cross-section, e.g. "REF_M_1234_data_Off-Off.dat")
         default_basename = f"REF_M_{nexus_data.number}_data"
         while True:  # to ask again for new basename if the user does not want to overwrite existing files
             basename, ok = QtWidgets.QInputDialog.getText(
-                self.main_window, "Base name", "Save file base name:", text=default_basename
+                self.main_window,
+                "Base name",
+                "Save file base name:",
+                text=default_basename,
             )
             if not (ok and basename):
                 # user cancels
@@ -1043,7 +1211,9 @@ class MainHandler(object):
         if force or has_changed_values >= 0 or not offspec_data_exists:
             logging.info("Updating....")
             config = self.get_configuration()
-            self._data_manager.update_configuration(configuration=config, active_only=False)
+            self._data_manager.update_configuration(
+                configuration=config, active_only=False
+            )
             self._data_manager.reduce_offspec(progress=prog)
 
     def compute_gisans_on_change(self, force=False, active_only=True):
@@ -1052,12 +1222,16 @@ class MainHandler(object):
         """
         prog = self.new_progress_reporter()
         has_changed_values = self.check_region_values_changed()
-        gisans_data_exists = self._data_manager.is_gisans_available(active_only=active_only)
+        gisans_data_exists = self._data_manager.is_gisans_available(
+            active_only=active_only
+        )
         logging.info("Exists %s %s %s", force, has_changed_values, gisans_data_exists)
         if force or has_changed_values >= 0 or not gisans_data_exists:
             logging.info("Updating....")
             config = self.get_configuration()
-            self._data_manager.update_configuration(configuration=config, active_only=False)
+            self._data_manager.update_configuration(
+                configuration=config, active_only=False
+            )
             if active_only:
                 self._data_manager.calculate_gisans(progress=prog)
             else:
@@ -1098,15 +1272,21 @@ class MainHandler(object):
         bck_width = self.ui.bgWidth.value()
 
         valid_change = (
-            valid_change or not configuration.peak_position == x_pos or not configuration.peak_width == x_width
+            valid_change
+            or not configuration.peak_position == x_pos
+            or not configuration.peak_width == x_width
         )
 
         valid_change = (
-            valid_change or not configuration.low_res_position == y_pos or not configuration.low_res_width == y_width
+            valid_change
+            or not configuration.low_res_position == y_pos
+            or not configuration.low_res_width == y_width
         )
 
         valid_change = (
-            valid_change or not configuration.bck_position == bck_pos or not configuration.bck_width == bck_width
+            valid_change
+            or not configuration.bck_position == bck_pos
+            or not configuration.bck_width == bck_width
         )
 
         try:
@@ -1115,36 +1295,68 @@ class MainHandler(object):
             scale = 1
         replot_change = replot_change or not configuration.scaling_factor == scale
 
-        replot_change = replot_change or not configuration.cut_first_n_points == self.ui.rangeStart.value()
+        replot_change = (
+            replot_change
+            or not configuration.cut_first_n_points == self.ui.rangeStart.value()
+        )
 
-        replot_change = replot_change or not configuration.cut_last_n_points == self.ui.rangeEnd.value()
-
-        valid_change = valid_change or not configuration.subtract_background == self.ui.bgActive.isChecked()
-
-        valid_change = valid_change or not configuration.use_constant_q == self.ui.fanReflectivity.isChecked()
-
-        valid_change = valid_change or not configuration.use_dangle == self.ui.trustDANGLE.isChecked()
-
-        valid_change = valid_change or not configuration.set_direct_pixel == self.ui.set_dirpix_checkbox.isChecked()
+        replot_change = (
+            replot_change
+            or not configuration.cut_last_n_points == self.ui.rangeEnd.value()
+        )
 
         valid_change = (
-            valid_change or not configuration.set_direct_angle_offset == self.ui.set_dangle0_checkbox.isChecked()
+            valid_change
+            or not configuration.subtract_background == self.ui.bgActive.isChecked()
+        )
+
+        valid_change = (
+            valid_change
+            or not configuration.use_constant_q == self.ui.fanReflectivity.isChecked()
+        )
+
+        valid_change = (
+            valid_change
+            or not configuration.use_dangle == self.ui.trustDANGLE.isChecked()
+        )
+
+        valid_change = (
+            valid_change
+            or not configuration.set_direct_pixel
+            == self.ui.set_dirpix_checkbox.isChecked()
+        )
+
+        valid_change = (
+            valid_change
+            or not configuration.set_direct_angle_offset
+            == self.ui.set_dangle0_checkbox.isChecked()
         )
 
         if configuration.set_direct_pixel:
             valid_change = (
-                valid_change or not configuration.direct_pixel_overwrite == self.ui.directPixelOverwrite.value()
+                valid_change
+                or not configuration.direct_pixel_overwrite
+                == self.ui.directPixelOverwrite.value()
             )
 
         if configuration.set_direct_angle_offset:
             valid_change = (
-                valid_change or not configuration.direct_angle_offset_overwrite == self.ui.dangle0Overwrite.value()
+                valid_change
+                or not configuration.direct_angle_offset_overwrite
+                == self.ui.dangle0Overwrite.value()
             )
 
         # Final rebin
-        valid_change = valid_change or not configuration.do_final_rebin == self.ui.final_rebin_checkbox.isChecked()
+        valid_change = (
+            valid_change
+            or not configuration.do_final_rebin
+            == self.ui.final_rebin_checkbox.isChecked()
+        )
 
-        valid_change = valid_change or not configuration.final_rebin_step == self.ui.q_rebin_spinbox.value()
+        valid_change = (
+            valid_change
+            or not configuration.final_rebin_step == self.ui.q_rebin_spinbox.value()
+        )
 
         if valid_change:
             return 1
@@ -1202,12 +1414,22 @@ class MainHandler(object):
         configuration.scaling_factor = scale
         configuration.cut_first_n_points = self.ui.rangeStart.value()
         configuration.cut_last_n_points = self.ui.rangeEnd.value()
-        Configuration.normalize_to_unity = self.ui.normalize_to_unity_checkbox.isChecked()
-        Configuration.total_reflectivity_q_cutoff = self.ui.normalization_q_cutoff_spinbox.value()
+        Configuration.normalize_to_unity = (
+            self.ui.normalize_to_unity_checkbox.isChecked()
+        )
+        Configuration.total_reflectivity_q_cutoff = (
+            self.ui.normalization_q_cutoff_spinbox.value()
+        )
         Configuration.global_stitching = self.ui.global_fit_checkbox.isChecked()
-        Configuration.polynomial_stitching = self.ui.polynomial_stitching_checkbox.isChecked()
-        Configuration.polynomial_stitching_degree = self.ui.polynomial_stitching_degree_spinbox.value()
-        Configuration.polynomial_stitching_points = self.ui.polynomial_stitching_points_spinbox.value()
+        Configuration.polynomial_stitching = (
+            self.ui.polynomial_stitching_checkbox.isChecked()
+        )
+        Configuration.polynomial_stitching_degree = (
+            self.ui.polynomial_stitching_degree_spinbox.value()
+        )
+        Configuration.polynomial_stitching_points = (
+            self.ui.polynomial_stitching_points_spinbox.value()
+        )
         Configuration.wl_bandwidth = self.ui.bandwidth_spinbox.value()
 
         Configuration.use_constant_q = self.ui.fanReflectivity.isChecked()
@@ -1243,7 +1465,9 @@ class MainHandler(object):
         #        configuration.off_spec_qz_list = [float(x) for x in self.ui.offspec_qz_list_edit.text().split(',')]
         # except:
         #    logging.error("Could not parse off_spec_qz_list: %s", configuration.off_spec_qz_list)
-        configuration.off_spec_err_weight = self.ui.offspec_err_weight_checkbox.isChecked()
+        configuration.off_spec_err_weight = (
+            self.ui.offspec_err_weight_checkbox.isChecked()
+        )
         configuration.off_spec_nxbins = self.ui.offspec_rebin_x_bins_spinbox.value()
         configuration.off_spec_nybins = self.ui.offspec_rebin_y_bins_spinbox.value()
         configuration.off_spec_x_min = self.ui.offspec_x_min_spinbox.value()
@@ -1312,11 +1536,19 @@ class MainHandler(object):
         self.ui.rangeStart.setValue(configuration.cut_first_n_points)
         self.ui.rangeEnd.setValue(configuration.cut_last_n_points)
         self.ui.normalize_to_unity_checkbox.setChecked(configuration.normalize_to_unity)
-        self.ui.normalization_q_cutoff_spinbox.setValue(configuration.total_reflectivity_q_cutoff)
+        self.ui.normalization_q_cutoff_spinbox.setValue(
+            configuration.total_reflectivity_q_cutoff
+        )
         self.ui.global_fit_checkbox.setChecked(configuration.global_stitching)
-        self.ui.polynomial_stitching_checkbox.setChecked(configuration.polynomial_stitching)
-        self.ui.polynomial_stitching_degree_spinbox.setValue(configuration.polynomial_stitching_degree)
-        self.ui.polynomial_stitching_points_spinbox.setValue(configuration.polynomial_stitching_points)
+        self.ui.polynomial_stitching_checkbox.setChecked(
+            configuration.polynomial_stitching
+        )
+        self.ui.polynomial_stitching_degree_spinbox.setValue(
+            configuration.polynomial_stitching_degree
+        )
+        self.ui.polynomial_stitching_points_spinbox.setValue(
+            configuration.polynomial_stitching_points
+        )
         self.ui.bandwidth_spinbox.setValue(configuration.wl_bandwidth)
 
         self.ui.fanReflectivity.setChecked(configuration.use_constant_q)
@@ -1347,7 +1579,9 @@ class MainHandler(object):
         # self.ui.offspec_qz_list_edit.setText(','.join([str(x) for x in configuration.off_spec_qz_list]))
         self.ui.slice_qz_min_spinbox.setValue(configuration.off_spec_slice_qz_min)
         self.ui.slice_qz_max_spinbox.setValue(configuration.off_spec_slice_qz_max)
-        self.ui.offspec_err_weight_checkbox.setChecked(configuration.off_spec_err_weight)
+        self.ui.offspec_err_weight_checkbox.setChecked(
+            configuration.off_spec_err_weight
+        )
         self.ui.offspec_rebin_x_bins_spinbox.setValue(configuration.off_spec_nxbins)
         self.ui.offspec_rebin_y_bins_spinbox.setValue(configuration.off_spec_nybins)
         self.ui.offspec_x_min_spinbox.setValue(configuration.off_spec_x_min)
@@ -1408,7 +1642,11 @@ class MainHandler(object):
                 xs = self._data_manager.active_channel.name
                 d = self._data_manager.reduction_list[i].cross_sections[xs]
                 self.ui.reductionTable.setItem(
-                    i, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor))
+                    i,
+                    1,
+                    QtWidgets.QTableWidgetItem(
+                        "%.4f" % (d.configuration.scaling_factor)
+                    ),
                 )
 
             self.main_window.initiate_reflectivity_plot.emit(False)
@@ -1437,11 +1675,20 @@ class MainHandler(object):
         for i in range(len(self._data_manager.reduction_list)):
             xs = self._data_manager.active_channel.name
             d = self._data_manager.reduction_list[i].cross_sections[xs]
-            self.ui.reductionTable.setItem(i, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
+            self.ui.reductionTable.setItem(
+                i, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points))
+            )
 
         self.main_window.initiate_reflectivity_plot.emit(False)
 
-    def report_message(self, message, informative_message=None, detailed_message=None, pop_up=False, is_error=False):
+    def report_message(
+        self,
+        message,
+        informative_message=None,
+        detailed_message=None,
+        pop_up=False,
+        is_error=False,
+    ):
         r"""
         Report an error.
         :param str message: message string to be reported

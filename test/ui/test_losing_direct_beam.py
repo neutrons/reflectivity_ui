@@ -31,7 +31,9 @@ def test_losing_direct_beam(qtbot):
     direct_beam_run = 40786
 
     # load file list
-    ui_utilities.setText(main_window.numberSearchEntry, str(direct_beam_run), press_enter=True)
+    ui_utilities.setText(
+        main_window.numberSearchEntry, str(direct_beam_run), press_enter=True
+    )
 
     # select run in the file list
     ui_utilities.set_current_file_by_run_number(main_window, direct_beam_run)

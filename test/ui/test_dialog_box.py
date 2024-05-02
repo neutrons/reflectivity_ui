@@ -27,7 +27,9 @@ def test_customized_dialog(qtbot):
     window.show()
     qtbot.wait(wait)
 
-    qtbot.mouseClick(window.buttonBox.button(window.buttonBox.Cancel), QtCore.Qt.LeftButton)
+    qtbot.mouseClick(
+        window.buttonBox.button(window.buttonBox.Cancel), QtCore.Qt.LeftButton
+    )
     qtbot.wait(wait)
 
     assert window.is_accepted() is False

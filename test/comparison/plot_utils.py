@@ -4,7 +4,15 @@ from functools import reduce
 py.init_notebook_mode(connected=True)
 
 
-def plot1d(data_list, data_names=None, x_title="", y_title="", x_log=False, y_log=False, show_dx=True):
+def plot1d(
+    data_list,
+    data_names=None,
+    x_title="",
+    y_title="",
+    x_log=False,
+    y_log=False,
+    show_dx=True,
+):
     """
     Produce a 1D plot
     @param data_list: list of traces [ [x1, y1], [x2, y2], ...]
@@ -39,7 +47,15 @@ def plot1d(data_list, data_names=None, x_title="", y_title="", x_log=False, y_lo
                 err_x = dict(type="data", array=data_list[i][3], visible=True)
                 if show_dx is False:
                     err_x["thickness"] = 0
-            data.append(go.Scatter(name=label, x=data_list[i][0], y=data_list[i][1], error_x=err_x, error_y=err_y))
+            data.append(
+                go.Scatter(
+                    name=label,
+                    x=data_list[i][0],
+                    y=data_list[i][1],
+                    error_x=err_x,
+                    error_y=err_y,
+                )
+            )
 
     x_layout = dict(
         title=x_title,
@@ -82,7 +98,9 @@ def plot1d(data_list, data_names=None, x_title="", y_title="", x_log=False, y_lo
     py.iplot(fig, show_link=False)
 
 
-def plot_heatmap(x, y, z, x_title="", y_title="", surface=False, x_log=False, y_log=False):
+def plot_heatmap(
+    x, y, z, x_title="", y_title="", surface=False, x_log=False, y_log=False
+):
     """
     Produce a 2D plot
     """
@@ -136,7 +154,12 @@ def plot_heatmap(x, y, z, x_title="", y_title="", surface=False, x_log=False, y_
     ]
     plot_type = "surface" if surface else "heatmap"
     trace = go.Heatmap(
-        z=z, x=x, y=y, autocolorscale=False, hoverinfo="x+y+z", colorscale=colorscale  # type=plot_type,
+        z=z,
+        x=x,
+        y=y,
+        autocolorscale=False,
+        hoverinfo="x+y+z",
+        colorscale=colorscale,  # type=plot_type,
     )
     fig = go.Figure(data=[trace], layout=layout)
     py.iplot(fig, show_link=False)
@@ -193,7 +216,11 @@ def read_settings(file_path):
         "File",
     ]
 
-    reduction_settings = {"direct_beam_runs": [], "data_runs": [], "process_type": "Specular"}
+    reduction_settings = {
+        "direct_beam_runs": [],
+        "data_runs": [],
+        "process_type": "Specular",
+    }
 
     fd = open(file_path, "r")
     current_block = DATA_BLOCK
@@ -272,7 +299,9 @@ def find_peaks(workspace, x_min=50, x_max=250):
 def process_run(run_number, settings, direct_beam=True):
     """Process a run"""
     ws = LoadEventNexus(
-        Filename="REF_M%s" % run_number, NXentryName="entry-Off_Off", OutputWorkspace="%s_%s" % ("REF_M", run_number)
+        Filename="REF_M%s" % run_number,
+        NXentryName="entry-Off_Off",
+        OutputWorkspace="%s_%s" % ("REF_M", run_number),
     )
     dirpix = ws.getRun()["DIRPIX"].value[0]
     x_max = 250 if direct_beam else dirpix - 30
@@ -282,5 +311,11 @@ def process_run(run_number, settings, direct_beam=True):
     low_max = settings["y_pos"] + settings["y_width"] / 2.0
     low_min = settings["y_pos"] - settings["y_width"] / 2.0
 
-    print("r%s - PEAK: [%s %s]   Input: [%s %s]" % (run_number, x_peak[0], x_peak[1], r_min, r_max))
-    print("r%s - LOW:  [%s %s]   Input: [%s %s]" % (run_number, y_peak[0], y_peak[1], low_min, low_max))
+    print(
+        "r%s - PEAK: [%s %s]   Input: [%s %s]"
+        % (run_number, x_peak[0], x_peak[1], r_min, r_max)
+    )
+    print(
+        "r%s - LOW:  [%s %s]   Input: [%s %s]"
+        % (run_number, y_peak[0], y_peak[1], low_min, low_max)
+    )

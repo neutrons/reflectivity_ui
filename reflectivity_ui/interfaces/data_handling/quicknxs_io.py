@@ -1,6 +1,6 @@
 # pylint: disable=bare-except, too-many-locals, too-many-statements, too-many-branches, wrong-import-order, too-many-arguments
 """
-    Read and write quicknxs reduced files
+Read and write quicknxs reduced files
 """
 
 import sys
@@ -32,7 +32,9 @@ def _find_h5_data(filename):
     return filename
 
 
-def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol_states):
+def write_reflectivity_header(
+    reduction_list, direct_beam_list, output_path, pol_states
+):
     """
     Write out reflectivity header in a format readable by QuickNXS
     :param str output_path: output file path
@@ -97,7 +99,9 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
     # Direct beam section
     i_direct_beam = 0
     for data_set in reduction_list:
-        run_object = data_set.cross_sections[pol_list[0]].reflectivity_workspace.getRun()
+        run_object = data_set.cross_sections[
+            pol_list[0]
+        ].reflectivity_workspace.getRun()
         normalization_run = run_object.getProperty("normalization_run").value
         if normalization_run == "None":
             continue
@@ -166,10 +170,17 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
 
         # Get pixel size from instrument properties
         if ws.getInstrument().hasParameter("pixel-width"):
-            pixel_width = float(ws.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
+            pixel_width = (
+                float(ws.getInstrument().getNumberParameter("pixel-width")[0]) / 1000.0
+            )
         else:
             pixel_width = 0.0007
-        tth -= ((direct_beam_pix - scatt_pos) * pixel_width) / det_distance * 180.0 / math.pi
+        tth -= (
+            ((direct_beam_pix - scatt_pos) * pixel_width)
+            / det_distance
+            * 180.0
+            / math.pi
+        )
 
         normalization_run = run_object.getProperty("normalization_run").value
         if normalization_run == "None":
@@ -268,7 +279,9 @@ def read_reduced_file(file_path, configuration=None):
         _file_start = True
         for line in file_content.readlines():
             if _file_start and not line.startswith("# Datafile created by QuickNXS"):
-                raise RuntimeError("The selected file does not conform to the QuickNXS format")
+                raise RuntimeError(
+                    "The selected file does not conform to the QuickNXS format"
+                )
             _file_start = False
             if "Input file indices" in line:
                 data_file_indicies = line
@@ -313,7 +326,9 @@ def read_reduced_file(file_path, configuration=None):
                     run_file = _find_h5_data(run_file)
                     direct_beam_runs.append([run_number, run_file, conf])
                 except:
-                    logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
+                    logging.error(
+                        "Could not parse reduced data file:\n %s", sys.exc_info()[1]
+                    )
                     logging.error(line)
 
             # Process data runs
@@ -346,17 +361,23 @@ def read_reduced_file(file_path, configuration=None):
                         # conf.cut_first_n_points = 0
                         # conf.cut_last_n_points = 0
                     run_file = _find_h5_data(run_file)
-                    run_file = determine_which_files_to_sum(run_file, data_file_indicies)
+                    run_file = determine_which_files_to_sum(
+                        run_file, data_file_indicies
+                    )
                     data_runs.append([run_number, run_file, conf])
                 except:
-                    logging.error("Could not parse reduced data file:\n %s", sys.exc_info()[1])
+                    logging.error(
+                        "Could not parse reduced data file:\n %s", sys.exc_info()[1]
+                    )
                     logging.error(line)
 
             # Options
             if _in_section == 3:
                 if line.startswith("# sample_length"):
                     try:
-                        conf.sample_size = float((line[len("# sample_length") :]).strip())
+                        conf.sample_size = float(
+                            (line[len("# sample_length") :]).strip()
+                        )
                     except:
                         logging.error("Could not extract sample size: %s" % line)
 

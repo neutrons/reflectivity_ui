@@ -6,7 +6,15 @@ py.init_notebook_mode(connected=True)
 
 
 def plot1d(
-    data_list, data_names=None, x_title="", y_title="", x_log=False, y_log=False, show_dx=True, width=600, height=400
+    data_list,
+    data_names=None,
+    x_title="",
+    y_title="",
+    x_log=False,
+    y_log=False,
+    show_dx=True,
+    width=600,
+    height=400,
 ):
     """
     Produce a 1D plot
@@ -41,7 +49,15 @@ def plot1d(
                 err_x = dict(type="data", array=data_list[i][3], visible=True)
                 if show_dx is False:
                     err_x["thickness"] = 0
-            data.append(go.Scatter(name=label, x=data_list[i][0], y=data_list[i][1], error_x=err_x, error_y=err_y))
+            data.append(
+                go.Scatter(
+                    name=label,
+                    x=data_list[i][0],
+                    y=data_list[i][1],
+                    error_x=err_x,
+                    error_y=err_y,
+                )
+            )
 
     x_layout = dict(
         title=x_title,
@@ -84,7 +100,18 @@ def plot1d(
     py.iplot(fig, show_link=False)
 
 
-def plot_heatmap(x, y, z, x_title="", y_title="", surface=False, x_log=False, y_log=False, z_min=None, z_max=None):
+def plot_heatmap(
+    x,
+    y,
+    z,
+    x_title="",
+    y_title="",
+    surface=False,
+    x_log=False,
+    y_log=False,
+    z_min=None,
+    z_max=None,
+):
     """
     Produce a 2D plot
     """
@@ -203,7 +230,11 @@ def read_settings(file_path):
         "File",
     ]
 
-    reduction_settings = {"direct_beam_runs": [], "data_runs": [], "process_type": "Specular"}
+    reduction_settings = {
+        "direct_beam_runs": [],
+        "data_runs": [],
+        "process_type": "Specular",
+    }
 
     fd = open(file_path, "r")
     current_block = DATA_BLOCK

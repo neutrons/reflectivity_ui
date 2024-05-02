@@ -1,6 +1,9 @@
 # local imports
 from reflectivity_ui.interfaces.configuration import Configuration
-from reflectivity_ui.interfaces.data_handling.data_set import CrossSectionData, NexusData
+from reflectivity_ui.interfaces.data_handling.data_set import (
+    CrossSectionData,
+    NexusData,
+)
 from reflectivity_ui.interfaces.main_window import MainWindow
 from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
@@ -37,9 +40,18 @@ class TestMainGui:
     def test_active_channel(self, mocker, qtbot):
         """Test that selecting a cross-section radio button updates the active channel"""
         # mock updating the plots
-        mocker.patch("reflectivity_ui.interfaces.main_window.MainWindow.plotActiveTab", return_value=True)
-        mocker.patch("reflectivity_ui.interfaces.plotting.PlotManager.plot_refl", return_value=True)
-        mocker.patch("reflectivity_ui.interfaces.plotting.PlotManager.plot_projections", return_value=True)
+        mocker.patch(
+            "reflectivity_ui.interfaces.main_window.MainWindow.plotActiveTab",
+            return_value=True,
+        )
+        mocker.patch(
+            "reflectivity_ui.interfaces.plotting.PlotManager.plot_refl",
+            return_value=True,
+        )
+        mocker.patch(
+            "reflectivity_ui.interfaces.plotting.PlotManager.plot_projections",
+            return_value=True,
+        )
 
         # create the SUT
         window_main = MainWindow()
@@ -71,8 +83,12 @@ class TestMainGui:
         )
         window_main = MainWindow()
         qtbot.addWidget(window_main)
-        window_main.data_manager.reduction_list = [NexusData("filepath", Configuration())]
-        window_main.data_manager.direct_beam_list = [NexusData("filepath", Configuration())]
+        window_main.data_manager.reduction_list = [
+            NexusData("filepath", Configuration())
+        ]
+        window_main.data_manager.direct_beam_list = [
+            NexusData("filepath", Configuration())
+        ]
         table = getattr(window_main.ui, table_widget)
         table.insertRow(0)
 
@@ -93,9 +109,18 @@ class TestMainGui:
         """Test the global vs per run reduction variables"""
 
         # mock updating the plots
-        mocker.patch("reflectivity_ui.interfaces.main_window.MainWindow.plotActiveTab", return_value=True)
-        mocker.patch("reflectivity_ui.interfaces.plotting.PlotManager.plot_refl", return_value=True)
-        mocker.patch("reflectivity_ui.interfaces.plotting.PlotManager.plot_projections", return_value=True)
+        mocker.patch(
+            "reflectivity_ui.interfaces.main_window.MainWindow.plotActiveTab",
+            return_value=True,
+        )
+        mocker.patch(
+            "reflectivity_ui.interfaces.plotting.PlotManager.plot_refl",
+            return_value=True,
+        )
+        mocker.patch(
+            "reflectivity_ui.interfaces.plotting.PlotManager.plot_projections",
+            return_value=True,
+        )
 
         window_main = MainWindow()
         qtbot.addWidget(window_main)

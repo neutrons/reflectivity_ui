@@ -1,6 +1,9 @@
 # local imports
 from reflectivity_ui.interfaces.configuration import Configuration
-from reflectivity_ui.interfaces.data_handling.data_set import NexusData, CrossSectionData
+from reflectivity_ui.interfaces.data_handling.data_set import (
+    NexusData,
+    CrossSectionData,
+)
 from reflectivity_ui.interfaces.main_window import MainWindow
 
 # third party imports
@@ -24,7 +27,10 @@ def _initialize_test_data(main_window):
 
 def _assert_configuration_value(main_window, param_name, gold_value):
     """Check parameter value through the data hierarchy"""
-    assert getattr(main_window.data_manager.active_channel.configuration, param_name) is gold_value
+    assert (
+        getattr(main_window.data_manager.active_channel.configuration, param_name)
+        is gold_value
+    )
     for nexus_data in main_window.data_manager.reduction_list:
         assert getattr(nexus_data.configuration, param_name) is gold_value
         for xs_data in nexus_data.cross_sections.values():
@@ -33,11 +39,17 @@ def _assert_configuration_value(main_window, param_name, gold_value):
 
 def _assert_configuration_float_value(main_window, param_name, gold_value):
     """Check float parameter value through the data hierarchy"""
-    assert getattr(main_window.data_manager.active_channel.configuration, param_name) == pytest.approx(gold_value)
+    assert getattr(
+        main_window.data_manager.active_channel.configuration, param_name
+    ) == pytest.approx(gold_value)
     for nexus_data in main_window.data_manager.reduction_list:
-        assert getattr(nexus_data.configuration, param_name) == pytest.approx(gold_value)
+        assert getattr(nexus_data.configuration, param_name) == pytest.approx(
+            gold_value
+        )
         for xs_data in nexus_data.cross_sections.values():
-            assert getattr(xs_data.configuration, param_name) == pytest.approx(gold_value)
+            assert getattr(xs_data.configuration, param_name) == pytest.approx(
+                gold_value
+            )
 
 
 @pytest.mark.parametrize(

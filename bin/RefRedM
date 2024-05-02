@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
-    Start script for reduction application
+Start script for reduction application
 """
+
 import sys
 import os
 import types
@@ -16,7 +17,9 @@ logging.getLogger().setLevel(logging.INFO)
 ft = logging.Formatter("%(levelname)s:%(asctime)-15s %(message)s")
 # Create a log file handler
 fh = logging.handlers.TimedRotatingFileHandler(
-    os.path.join(os.path.expanduser("~"), "refred_m.log"), when="midnight", backupCount=15
+    os.path.join(os.path.expanduser("~"), "refred_m.log"),
+    when="midnight",
+    backupCount=15,
 )
 fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
