@@ -3,7 +3,6 @@
     Application configuration, including reduction options
 """
 
-import sys
 import logging
 from .data_handling.instrument import Instrument
 

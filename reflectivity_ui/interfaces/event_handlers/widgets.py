@@ -1,7 +1,7 @@
 """
 Zoo for customized simple widgets
 """
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QPushButton
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 
 class AcceptRejectDialog(QDialog):

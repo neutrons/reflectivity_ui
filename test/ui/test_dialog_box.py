@@ -1,6 +1,5 @@
 from reflectivity_ui.interfaces.event_handlers.widgets import AcceptRejectDialog
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QPushButton
 
 wait = 100
 

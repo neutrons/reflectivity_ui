@@ -3,7 +3,6 @@
 """
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
 
-import sys
 import logging
 import h5py
 import math

@@ -4,7 +4,6 @@
 # pylint: disable=bare-except
 
 import logging
-import numpy as np
 from PyQt5 import QtCore, QtWidgets
 import reflectivity_ui.ui.mplwidget as mpl
 from reflectivity_ui.interfaces import load_ui

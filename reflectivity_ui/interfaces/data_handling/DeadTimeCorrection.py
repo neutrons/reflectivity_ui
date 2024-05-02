@@ -7,7 +7,6 @@ from mantid.api import (
     PropertyMode,
     IEventWorkspaceProperty,
     MatrixWorkspaceProperty,
-    mtd,
 )
 from mantid.simpleapi import Rebin, logger, SumSpectra
 from mantid.kernel import Direction, FloatArrayProperty, FloatArrayLengthValidator

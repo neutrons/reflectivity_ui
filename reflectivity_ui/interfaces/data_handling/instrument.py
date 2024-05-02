@@ -19,7 +19,6 @@ import mantid.simpleapi as api
 # standard
 import logging
 import math
-import os
 import random
 import sys
 import string
@@ -115,7 +114,7 @@ def apply_dead_time_correction(ws, configuration, error_ws=None):
     :param ws: workspace with raw data to compute correction for
     :param template_data: reduction parameters
     """
-    if not "dead_time_applied" in ws.getRun():
+    if "dead_time_applied" not in ws.getRun():
         corr_ws = get_dead_time_correction(ws, configuration)
         ws = api.Multiply(ws, corr_ws, OutputWorkspace=str(ws))
         api.AddSampleLog(Workspace=ws, LogName="dead_time_applied", LogText="1", LogType="Number")

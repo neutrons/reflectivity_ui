@@ -2,7 +2,7 @@ r"""
 Fixtures for pytest
 """
 
-from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
+from reflectivity_ui.interfaces.data_handling.filepath import RunNumbers
 from reflectivity_ui.interfaces.data_handling.instrument import Instrument
 
 # 3rd-party imports

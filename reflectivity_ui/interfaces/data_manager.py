@@ -14,7 +14,6 @@ from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from reflectivity_ui.interfaces.data_handling.filepath import RunNumbers, FilePath
 from .data_handling import data_manipulation
 from .data_handling import quicknxs_io
-from .data_handling import off_specular
 from .data_handling import gisans
 
 
@@ -214,7 +213,7 @@ class DataManager(object):
         """
         Add active data set to the direct beam list
         """
-        if not self._nexus_data in self.direct_beam_list:
+        if self._nexus_data not in self.direct_beam_list:
             self.direct_beam_list.append(self._nexus_data)
             return True
         return False

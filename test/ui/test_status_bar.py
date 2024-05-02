@@ -1,4 +1,3 @@
-import pytest
 
 from reflectivity_ui.interfaces.event_handlers.progress_reporter import ProgressReporter
 from reflectivity_ui.interfaces.main_window import MainWindow

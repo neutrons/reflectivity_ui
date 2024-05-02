@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from PyQt5 import QtWidgets
 from numpy.testing import assert_allclose
 from matplotlib.collections import LineCollection

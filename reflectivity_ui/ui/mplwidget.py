@@ -15,7 +15,6 @@ from reflectivity_ui.config import plotting
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-from matplotlib.cbook import Stack
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.figure import Figure
 import numpy as np

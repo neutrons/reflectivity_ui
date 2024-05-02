@@ -23,7 +23,6 @@ from PyQt5 import QtCore, QtWidgets
 # standard imports
 import logging
 import os
-import sys
 
 
 class MainWindow(QtWidgets.QMainWindow):

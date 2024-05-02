@@ -6,7 +6,6 @@ from test.ui import ui_utilities
 
 # third party imports
 import numpy as np
-from PyQt5 import QtCore
 import pytest
 
 # standard library imports

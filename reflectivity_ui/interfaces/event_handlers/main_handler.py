@@ -9,7 +9,7 @@ import numpy as np
 # package imports
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import NormalizeToUnityQCutoffError
-from reflectivity_ui.interfaces.data_handling.data_set import NexusData, CrossSectionData
+from reflectivity_ui.interfaces.data_handling.data_set import NexusData
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath, RunNumbers
 from reflectivity_ui.interfaces.event_handlers.progress_reporter import ProgressReporter
 from reflectivity_ui.interfaces.event_handlers.status_bar_handler import StatusBarHandler
@@ -25,7 +25,6 @@ import glob
 import logging
 import math
 import os
-import sys
 import time
 import traceback
 
@@ -876,7 +875,7 @@ class MainHandler(object):
             self.update_direct_beam_table(idx, refl.cross_sections[channels[0]])
 
         # Only recalculate if we need to, otherwise just replot
-        if not column in [1, 2, 3]:
+        if column not in [1, 2, 3]:
             try:
                 self._data_manager.calculate_reflectivity(nexus_data=refl)
             except:
