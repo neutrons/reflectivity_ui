@@ -3,26 +3,25 @@ Data processing workflow, taking results and writing them to files.
 """
 # pylint: disable=bare-except, too-many-locals
 
-import sys
-import os
-import math
 import copy
+import io
 import logging
+import math
+import os
+import smtplib
+import sys
 import time
+import zipfile
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 import numpy as np
 
-import smtplib
-from email import encoders
-from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-import zipfile
-import io
-
 from ..configuration import Configuration
-from . import quicknxs_io, data_manipulation, off_specular, gisans
-
+from . import data_manipulation, gisans, off_specular, quicknxs_io
 
 DEFAULT_OPTIONS = dict(
     export_specular=True,
@@ -76,10 +75,7 @@ class ProcessingWorkflow(object):
                 progress(10, "Computing reflectivity")
             self.specular_reflectivity()
 
-        if (
-            self.output_options["export_offspec"]
-            or self.output_options["export_offspec_smooth"]
-        ):
+        if self.output_options["export_offspec"] or self.output_options["export_offspec_smooth"]:
             if progress is not None:
                 progress(20, "Computing off-specular reflectivity")
             self.offspec(
@@ -99,9 +95,7 @@ class ProcessingWorkflow(object):
         if progress is not None:
             progress(100, "Complete")
 
-    def get_file_name(
-        self, run_list=None, pol_state=None, data_type="dat", process_type="Specular"
-    ):
+    def get_file_name(self, run_list=None, pol_state=None, data_type="dat", process_type="Specular"):
         """
         Construct a file name according to the measurement type.
         :param list run_list: list of run numbers
@@ -111,9 +105,7 @@ class ProcessingWorkflow(object):
         """
         if run_list is None:
             run_list = []
-        base_name = self.output_options["output_file_template"].replace(
-            "{numbers}", "+".join(run_list)
-        )
+        base_name = self.output_options["output_file_template"].replace("{numbers}", "+".join(run_list))
         base_name = base_name.replace(
             "{instrument}",
             self.data_manager.active_channel.configuration.instrument.instrument_name,
@@ -153,11 +145,7 @@ class ProcessingWorkflow(object):
         for pol_state in output_states:
             # The cross-sections might have different names
             if pol_state in self.data_manager.reduction_list[0].cross_sections:
-                _pol_state = (
-                    self.data_manager.reduction_list[0]
-                    .cross_sections[pol_state]
-                    .cross_section_label
-                )
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
             else:
                 _pol_state = pol_state
             # We might not have data for a given cross-section
@@ -171,9 +159,7 @@ class ProcessingWorkflow(object):
                 state_output_path,
                 _pol_state,
             )
-            quicknxs_io.write_reflectivity_data(
-                state_output_path, output_data[pol_state], col_names, as_5col=five_cols
-            )
+            quicknxs_io.write_reflectivity_data(state_output_path, output_data[pol_state], col_names, as_5col=five_cols)
             self.exported_data_files.append(state_output_path)
 
     def write_genx(self, output_data, output_path):
@@ -182,8 +168,8 @@ class ProcessingWorkflow(object):
         and the reflectivity data already included for convenience.
         """
         try:
-            import zipfile
             import pickle
+            import zipfile
         except:
             logging.error("Problem importing modules: %s", sys.exc_info([1]))
             return
@@ -207,9 +193,7 @@ class ProcessingWorkflow(object):
         model_data = pickle.loads(zip_template.read("data"))
         for i, channel in enumerate(self.data_manager.reduction_states):
             if channel not in output_data:
-                logging.error(
-                    "Cross-section %s not in %s", channel, str(output_data.keys())
-                )
+                logging.error("Cross-section %s not in %s", channel, str(output_data.keys()))
                 continue
             model_data[i].x_raw = output_data[channel][:, 0]
             model_data[i].y_raw = output_data[channel][:, 1]
@@ -250,9 +234,7 @@ class ProcessingWorkflow(object):
             try:
                 from scipy.io import savemat
 
-                output_file = self.get_file_name(
-                    run_list, data_type="mat", pol_state="all"
-                )
+                output_file = self.get_file_name(run_list, data_type="mat", pol_state="all")
                 savemat(output_file, output_data, oned_as="column")
                 self.exported_data_files.append(output_file)
             except:
@@ -265,9 +247,7 @@ class ProcessingWorkflow(object):
 
         if self.output_options["format_mantid"]:
             output_file = self.get_file_name(run_list, data_type="py", pol_state="all")
-            script = data_manipulation.generate_short_script(
-                self.data_manager.reduction_list
-            )
+            script = data_manipulation.generate_short_script(self.data_manager.reduction_list)
             with open(output_file, "w") as file_object:
                 file_object.write(script)
             self.exported_data_files.append(output_file)
@@ -295,9 +275,7 @@ class ProcessingWorkflow(object):
             progress(90, "Writing data")
 
         output_file_base = self.get_file_name(run_list, process_type="GISANS")
-        self.write_quicknxs(
-            data_dict, output_file_base, xs=data_dict["cross_sections"].keys()
-        )
+        self.write_quicknxs(data_dict, output_file_base, xs=data_dict["cross_sections"].keys())
 
         # Write out slice data
         if slice_data_dict is not None and "cross_sections" in slice_data_dict:
@@ -337,17 +315,10 @@ class ProcessingWorkflow(object):
                 # "Smooth" version
                 try:
                     smooth_output, slice_data_dict = self.smooth_offspec(output_data)
-                    output_file_base = self.get_file_name(
-                        run_list, process_type="OffSpecSmooth"
-                    )
+                    output_file_base = self.get_file_name(run_list, process_type="OffSpecSmooth")
                     self.write_quicknxs(smooth_output, output_file_base)
-                    if (
-                        slice_data_dict is not None
-                        and "cross_sections" in slice_data_dict
-                    ):
-                        output_file_base = self.get_file_name(
-                            run_list, process_type="OffSpecSmoothSlice"
-                        )
+                    if slice_data_dict is not None and "cross_sections" in slice_data_dict:
+                        output_file_base = self.get_file_name(run_list, process_type="OffSpecSmoothSlice")
                         self.write_quicknxs(
                             slice_data_dict,
                             output_file_base,
@@ -361,14 +332,10 @@ class ProcessingWorkflow(object):
                 # Binned version
                 binned_data, slice_data_dict = self.get_rebinned_offspec_data()
                 # QuickNXS format ['smooth' is an odd name but we keep it for backward compatibility]
-                output_file_base = self.get_file_name(
-                    run_list, process_type="OffSpecBinned"
-                )
+                output_file_base = self.get_file_name(run_list, process_type="OffSpecBinned")
                 self.write_quicknxs(binned_data, output_file_base)
                 if slice_data_dict is not None and "cross_sections" in slice_data_dict:
-                    output_file_base = self.get_file_name(
-                        run_list, process_type="OffSpecSlice"
-                    )
+                    output_file_base = self.get_file_name(run_list, process_type="OffSpecSlice")
                     self.write_quicknxs(
                         slice_data_dict,
                         output_file_base,
@@ -420,20 +387,14 @@ class ProcessingWorkflow(object):
             rdata = np.array([x_tiled, y_tiled, r, dr]).transpose((1, 2, 0))
 
             if pol_state in self.data_manager.reduction_list[0].cross_sections:
-                _pol_state = (
-                    self.data_manager.reduction_list[0]
-                    .cross_sections[pol_state]
-                    .cross_section_label
-                )
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
             else:
                 _pol_state = pol_state
             data_dict[pol_state] = [np.nan_to_num(rdata)]
             data_dict["cross_sections"][pol_state] = _pol_state
 
             # Slices
-            slice_data_dict = self.get_slice_output_data(
-                x, y, r, dr, pol_state, labels[1], **slice_data_dict
-            )
+            slice_data_dict = self.get_slice_output_data(x, y, r, dr, pol_state, labels[1], **slice_data_dict)
 
         return data_dict, slice_data_dict
 
@@ -456,10 +417,7 @@ class ProcessingWorkflow(object):
             data_dict["columns"] = ["Qy", "Qz", "I", "dI"]
 
         # Extract common information
-        if (
-            not self.data_manager.reduction_states
-            or not self.data_manager.reduction_list
-        ):
+        if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
             logging.error("List of cross-sections is empty")
             return data_dict
 
@@ -486,28 +444,20 @@ class ProcessingWorkflow(object):
                 if _parallel:
                     _intensity, _qy, _qz_axis, _intensity_err = binned_data[i]
                 else:
-                    _intensity, _qy, _qz_axis, _intensity_err = (
-                        self.data_manager.rebin_gisans(
-                            pol_state,
-                            wl_min=_wl_min,
-                            wl_max=_wl_max,
-                            qy_npts=qy_npts,
-                            qz_npts=qz_npts,
-                            use_pf=use_pf,
-                        )
+                    _intensity, _qy, _qz_axis, _intensity_err = self.data_manager.rebin_gisans(
+                        pol_state,
+                        wl_min=_wl_min,
+                        wl_max=_wl_max,
+                        qy_npts=qy_npts,
+                        qz_npts=qz_npts,
+                        use_pf=use_pf,
                     )
 
                 qz, qy = np.meshgrid(_qz_axis, _qy)
-                rdata = np.array([qy, qz, _intensity, _intensity_err]).transpose(
-                    (1, 2, 0)
-                )
+                rdata = np.array([qy, qz, _intensity, _intensity_err]).transpose((1, 2, 0))
 
                 if pol_state in self.data_manager.reduction_list[0].cross_sections:
-                    _pol_state = (
-                        self.data_manager.reduction_list[0]
-                        .cross_sections[pol_state]
-                        .cross_section_label
-                    )
+                    _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
                 else:
                     _pol_state = pol_state
 
@@ -543,10 +493,7 @@ class ProcessingWorkflow(object):
         )
 
         # Extract common information
-        if (
-            not self.data_manager.reduction_states
-            or not self.data_manager.reduction_list
-        ):
+        if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
             logging.error("List of cross-sections is empty")
             return data_dict
 
@@ -581,10 +528,7 @@ class ProcessingWorkflow(object):
                 n_total = len(S[0])
                 # P_0 and P_N are the number of points to cut in TOF on each side
                 p_0 = item.cross_sections[pol_state].configuration.cut_first_n_points
-                p_n = (
-                    n_total
-                    - item.cross_sections[pol_state].configuration.cut_last_n_points
-                )
+                p_n = n_total - item.cross_sections[pol_state].configuration.cut_last_n_points
 
                 rdata = np.array(
                     [
@@ -601,11 +545,7 @@ class ProcessingWorkflow(object):
                 ki_max = max(ki_max, ki_z.max())
 
             if pol_state in self.data_manager.reduction_list[0].cross_sections:
-                _pol_state = (
-                    self.data_manager.reduction_list[0]
-                    .cross_sections[pol_state]
-                    .cross_section_label
-                )
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
             else:
                 _pol_state = pol_state
             data_dict[pol_state] = combined_data
@@ -677,14 +617,10 @@ class ProcessingWorkflow(object):
                 xysigma0=xysigma0,
             )
             output_data[channel] = [np.array([x, y, I]).transpose((1, 2, 0))]
-            output_data["cross_sections"][channel] = data_dict["cross_sections"][
-                channel
-            ]
+            output_data["cross_sections"][channel] = data_dict["cross_sections"][channel]
 
             # Slices
-            slice_data_dict = self.get_slice_output_data(
-                x[0], y.T[0], I, None, channel, y_label, **slice_data_dict
-            )
+            slice_data_dict = self.get_slice_output_data(x[0], y.T[0], I, None, channel, y_label, **slice_data_dict)
 
         output_data["ki_max"] = data_dict["ki_max"]
         return output_data, slice_data_dict
@@ -713,9 +649,7 @@ class ProcessingWorkflow(object):
         slice_data_dict[slice_label] = _to_save
         return slice_data_dict
 
-    def get_gisans_slice_output_data(
-        self, qy, qz, r, dr, pol_state, label, **slice_data_dict
-    ):
+    def get_gisans_slice_output_data(self, qy, qz, r, dr, pol_state, label, **slice_data_dict):
         """
         Produce a data dictionary with a slice of the data.
         """
@@ -754,10 +688,7 @@ class ProcessingWorkflow(object):
         )
 
         # Extract common information
-        if (
-            not self.data_manager.reduction_states
-            or not self.data_manager.reduction_list
-        ):
+        if not self.data_manager.reduction_states or not self.data_manager.reduction_list:
             logging.error("List of cross-sections is empty")
             return data_dict
         first_state = self.data_manager.reduction_states[0]
@@ -773,9 +704,7 @@ class ProcessingWorkflow(object):
         for pol_state in self.data_manager.reduction_states:
             # The scaling factors should have been determined at this point. Just use them
             # to merge the different runs in a set.
-            ws_list = data_manipulation.get_scaled_workspaces(
-                self.data_manager.reduction_list, pol_state
-            )
+            ws_list = data_manipulation.get_scaled_workspaces(self.data_manager.reduction_list, pol_state)
 
             # If the reflectivity calculation failed, we may not have data to work with
             # for this cross-section.
@@ -791,9 +720,7 @@ class ProcessingWorkflow(object):
                 dy = ws.readE(0)[p_0[i] : n_total - p_n[i]]
                 dx = ws.readDx(0)[p_0[i] : n_total - p_n[i]]
                 # This should be actual theta calculated
-                tth_value = (
-                    ws.getRun().getProperty("two_theta").value / 2.0 * np.pi / 180.0
-                )
+                tth_value = ws.getRun().getProperty("two_theta").value / 2.0 * np.pi / 180.0
                 # tth_value = ws.getRun().getProperty("SANGLE").getStatistics().mean * math.pi / 180.0
                 tth = np.ones(len(x)) * tth_value
                 combined_data.append(np.vstack((x, y, dy, dx, tth)).transpose())
@@ -803,11 +730,7 @@ class ProcessingWorkflow(object):
             output_data = _output_data[ordered]
 
             if pol_state in self.data_manager.reduction_list[0].cross_sections:
-                _pol_state = (
-                    self.data_manager.reduction_list[0]
-                    .cross_sections[pol_state]
-                    .cross_section_label
-                )
+                _pol_state = self.data_manager.reduction_list[0].cross_sections[pol_state].cross_section_label
             else:
                 _pol_state = pol_state
             data_dict[pol_state] = output_data
@@ -823,23 +746,16 @@ class ProcessingWorkflow(object):
                     # Sometimes the number of points may be different if the last few points had no signal.
                     for i in range(len(data_dict[p_state])):
                         p_point = data_dict[p_state][i]
-                        i_m = len(
-                            data_dict[m_state][data_dict[m_state].T[0] < p_point[0]]
-                        )
+                        i_m = len(data_dict[m_state][data_dict[m_state].T[0] < p_point[0]])
                         if i_m < len(data_dict[m_state]):
                             m_point = data_dict[m_state][i_m]
                             if p_point[1] > 0 and m_point[1] > 0:
-                                ratio = (p_point[1] - m_point[1]) / (
-                                    p_point[1] + m_point[1]
-                                )
+                                ratio = (p_point[1] - m_point[1]) / (p_point[1] + m_point[1])
                                 d_ratio = 2.0 / (p_point[1] + m_point[1]) ** 2
                                 d_ratio *= math.sqrt(
-                                    m_point[1] ** 2 * p_point[2] ** 2
-                                    + p_point[1] ** 2 * m_point[2] ** 2
+                                    m_point[1] ** 2 * p_point[2] ** 2 + p_point[1] ** 2 * m_point[2] ** 2
                                 )
-                                asym_data.append(
-                                    [p_point[0], ratio, d_ratio, p_point[3], p_point[4]]
-                                )
+                                asym_data.append([p_point[0], ratio, d_ratio, p_point[3], p_point[4]])
                     data_dict["SA"] = np.asarray(asym_data)
                 else:
                     logging.error(
@@ -920,12 +836,8 @@ class ProcessingWorkflow(object):
                         mitem.set_payload(open(item, "r").read())
                         encoders.encode_base64(mitem)
                 except:
-                    logging.error(
-                        "Could not package files for email: %s", sys.exc_info()[1]
-                    )
-                mitem.add_header(
-                    "Content-Disposition", "attachment", filename=os.path.basename(item)
-                )
+                    logging.error("Could not package files for email: %s", sys.exc_info()[1])
+                mitem.add_header("Content-Disposition", "attachment", filename=os.path.basename(item))
                 msg.attach(mitem)
 
         try:

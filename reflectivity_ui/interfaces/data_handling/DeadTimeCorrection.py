@@ -2,17 +2,17 @@
 Dead time correction algorithm for single-readout detectors.
 """
 
-from mantid.api import (
-    AlgorithmFactory,
-    PythonAlgorithm,
-    PropertyMode,
-    IEventWorkspaceProperty,
-    MatrixWorkspaceProperty,
-)
-from mantid.simpleapi import Rebin, logger, SumSpectra
-from mantid.kernel import Direction, FloatArrayProperty, FloatArrayLengthValidator
 import numpy as np
 import scipy
+from mantid.api import (
+    AlgorithmFactory,
+    IEventWorkspaceProperty,
+    MatrixWorkspaceProperty,
+    PropertyMode,
+    PythonAlgorithm,
+)
+from mantid.kernel import Direction, FloatArrayLengthValidator, FloatArrayProperty
+from mantid.simpleapi import Rebin, SumSpectra, logger
 
 
 class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
@@ -34,9 +34,7 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
             "Input workspace use to compute dead time correction",
         )
         self.declareProperty(
-            IEventWorkspaceProperty(
-                "InputErrorEventsWorkspace", "", Direction.Input, PropertyMode.Optional
-            ),
+            IEventWorkspaceProperty("InputErrorEventsWorkspace", "", Direction.Input, PropertyMode.Optional),
             "Input workspace with error events use to compute dead time correction",
         )
         self.declareProperty("DeadTime", 4.2, doc="Dead time in microseconds")
@@ -104,9 +102,7 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
 
         # Compute the dead time correction for each TOF bin
         if paralyzing:
-            true_rate = (
-                -scipy.special.lambertw(-rate * dead_time / tof_step).real / dead_time
-            )
+            true_rate = -scipy.special.lambertw(-rate * dead_time / tof_step).real / dead_time
             corr = true_rate / (rate / tof_step)
             # If we have no events, set the correction to 1 otherwise we will get a nan
             # from the equation above.

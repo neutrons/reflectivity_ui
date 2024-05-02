@@ -53,9 +53,7 @@ MagnetismReflectometryReduction(
     OutputWorkspace="r30806",
 )
 Scale(InputWorkspace="r30806", OutputWorkspace="r30806", Factor=1.6068516739750773)
-Scale(
-    InputWorkspace="r30806", OutputWorkspace="r30806_scaled", Factor=2.4266100000000002
-)
+Scale(InputWorkspace="r30806", OutputWorkspace="r30806_scaled", Factor=2.4266100000000002)
 AddSampleLog(
     Workspace="r30806_scaled",
     LogName="scaling_factor",
@@ -117,9 +115,7 @@ MagnetismReflectometryReduction(
     OutputWorkspace="r30807",
 )
 Scale(InputWorkspace="r30807", OutputWorkspace="r30807", Factor=0.57943431658725553)
-Scale(
-    InputWorkspace="r30807", OutputWorkspace="r30807_scaled", Factor=0.61799999999999999
-)
+Scale(InputWorkspace="r30807", OutputWorkspace="r30807_scaled", Factor=0.61799999999999999)
 AddSampleLog(
     Workspace="r30807_scaled",
     LogName="scaling_factor",
@@ -180,9 +176,7 @@ MagnetismReflectometryReduction(
     OutputWorkspace="r30808",
 )
 Scale(InputWorkspace="r30808", OutputWorkspace="r30808", Factor=0.19100143649212772)
-Scale(
-    InputWorkspace="r30808", OutputWorkspace="r30808_scaled", Factor=0.72276980360217025
-)
+Scale(InputWorkspace="r30808", OutputWorkspace="r30808_scaled", Factor=0.72276980360217025)
 AddSampleLog(
     Workspace="r30808_scaled",
     LogName="scaling_factor",

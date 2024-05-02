@@ -1,10 +1,10 @@
 # local imports
-from reflectivity_ui.interfaces.data_manager import DataManager
-from reflectivity_ui.interfaces.configuration import Configuration
-import reflectivity_ui.interfaces.data_handling.data_manipulation as dm
-
 # 3rd-party imports
 import pytest
+
+import reflectivity_ui.interfaces.data_handling.data_manipulation as dm
+from reflectivity_ui.interfaces.configuration import Configuration
+from reflectivity_ui.interfaces.data_manager import DataManager
 
 
 class TestDataManagerTest(object):
@@ -50,9 +50,7 @@ class TestDataManagerTest(object):
                 manager.load(file_path, config)
                 manager.add_active_to_reduction()
         except IOError:
-            pytest.skip(
-                "Cannot find required datafiles, probably not being run on the cluster."
-            )
+            pytest.skip("Cannot find required datafiles, probably not being run on the cluster.")
 
         assert len(manager.reduction_list) == 3
 
@@ -66,9 +64,7 @@ class TestDataManagerTest(object):
 
     def test_load_reduced(self, data_server):
         manager = DataManager(data_server.directory)
-        manager.load_data_from_reduced_file(
-            data_server.path_to("REF_M_29160_Specular_++.dat")
-        )
+        manager.load_data_from_reduced_file(data_server.path_to("REF_M_29160_Specular_++.dat"))
 
 
 if __name__ == "__main__":

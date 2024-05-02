@@ -7,6 +7,7 @@ Most of those come straight from QuickNXS.
 """
 
 import time
+
 from PyQt5 import QtWidgets
 
 
@@ -95,29 +96,19 @@ class PlotHandler(object):
         # self.ui.refl.canvas.mpl_connect('scroll_event', self.scale_on_plot)
         self.ui.xy_overview.canvas.mpl_connect("button_press_event", self.plot_pick_xy)
         # self.ui.xy_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xy)
-        self.ui.xy_overview.canvas.mpl_connect(
-            "button_release_event", self.plot_release
-        )
-        self.ui.xtof_overview.canvas.mpl_connect(
-            "button_press_event", self.plot_pick_xtof
-        )
+        self.ui.xy_overview.canvas.mpl_connect("button_release_event", self.plot_release)
+        self.ui.xtof_overview.canvas.mpl_connect("button_press_event", self.plot_pick_xtof)
         # self.ui.xtof_overview.canvas.mpl_connect('motion_notify_event', self.plot_pick_xtof)
-        self.ui.xtof_overview.canvas.mpl_connect(
-            "button_release_event", self.plot_release
-        )
+        self.ui.xtof_overview.canvas.mpl_connect("button_release_event", self.plot_release)
 
         # Status bar indicator
         self.x_position_indicator = QtWidgets.QLabel(" x=%g" % 0.0)
-        self.x_position_indicator.setSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred
-        )
+        self.x_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         self.x_position_indicator.setMaximumWidth(100)
         self.x_position_indicator.setMinimumWidth(100)
         self.ui.statusbar.addPermanentWidget(self.x_position_indicator)
         self.y_position_indicator = QtWidgets.QLabel(" y=%g" % 0.0)
-        self.y_position_indicator.setSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred
-        )
+        self.y_position_indicator.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         self.y_position_indicator.setMaximumWidth(100)
         self.y_position_indicator.setMinimumWidth(100)
         self.ui.statusbar.addPermanentWidget(self.y_position_indicator)
@@ -174,13 +165,9 @@ class PlotHandler(object):
             if canv.cplot is None:
                 continue
             if self.control_down:
-                canv.cplot.set_clim(
-                    min(clim[1] / _scale, clim[0] * 10 ** (_step * event.step)), clim[1]
-                )
+                canv.cplot.set_clim(min(clim[1] / _scale, clim[0] * 10 ** (_step * event.step)), clim[1])
             else:
-                canv.cplot.set_clim(
-                    clim[0], max(clim[0] * _scale, clim[1] * 10 ** (_step * event.step))
-                )
+                canv.cplot.set_clim(clim[0], max(clim[0] * _scale, clim[1] * 10 ** (_step * event.step)))
             canv.draw()
 
     def plot_release(self, event):
@@ -227,9 +214,7 @@ class PlotHandler(object):
                     self.ui.refXPos.setValue(event.xdata)
                     self._picked_line = "xpos"
             elif event.button == 3:
-                self.ui.refXWidth.setValue(
-                    abs(self.ui.refXPos.value() - event.xdata) * 2.0
-                )
+                self.ui.refXWidth.setValue(abs(self.ui.refXPos.value() - event.xdata) * 2.0)
             self.main_window.auto_change_active = False
             self.change_region_values()
 
@@ -246,9 +231,7 @@ class PlotHandler(object):
             yl = ypos - yw / 2.0
             yr = ypos + yw / 2.0
             pl = self._picked_line
-            if pl == "yl" or (
-                pl is None and abs(event.xdata - yl) < abs(event.xdata - yr)
-            ):
+            if pl == "yl" or (pl is None and abs(event.xdata - yl) < abs(event.xdata - yr)):
                 yl = event.xdata
                 self._picked_line = "yl"
             else:
@@ -276,9 +259,7 @@ class PlotHandler(object):
             yl = ypos - yw / 2.0
             yr = ypos + yw / 2.0
             pl = self._picked_line
-            if pl == "yl" or (
-                pl is None and abs(event.ydata - yl) < abs(event.ydata - yr)
-            ):
+            if pl == "yl" or (pl is None and abs(event.ydata - yl) < abs(event.ydata - yr)):
                 yl = event.ydata
                 self._picked_line = "yl"
             else:
@@ -347,9 +328,7 @@ class PlotHandler(object):
                     Inew = Ival * 10 ** (0.05 * steps)
                 else:
                     Inew = Ival * 10 ** (0.01 * steps)
-                self.ui.reductionTable.setItem(
-                    i, 1, QtWidgets.QTableWidgetItem("%.4f" % (Inew))
-                )
+                self.ui.reductionTable.setItem(i, 1, QtWidgets.QTableWidgetItem("%.4f" % (Inew)))
 
     def change_region_values(self):
         """
@@ -379,32 +358,16 @@ class PlotHandler(object):
         self.ui.y_project.draw()
 
         if not self.ui.tthPhi.isChecked():
-            self.plot_manager.xy_x1.set_xdata(
-                [x_peak - x_width / 2.0, x_peak - x_width / 2.0]
-            )
-            self.plot_manager.xy_x2.set_xdata(
-                [x_peak + x_width / 2.0, x_peak + x_width / 2.0]
-            )
-            self.plot_manager.xy_y1.set_ydata(
-                [y_pos - y_width / 2.0, y_pos - y_width / 2.0]
-            )
-            self.plot_manager.xy_y2.set_ydata(
-                [y_pos + y_width / 2.0, y_pos + y_width / 2.0]
-            )
+            self.plot_manager.xy_x1.set_xdata([x_peak - x_width / 2.0, x_peak - x_width / 2.0])
+            self.plot_manager.xy_x2.set_xdata([x_peak + x_width / 2.0, x_peak + x_width / 2.0])
+            self.plot_manager.xy_y1.set_ydata([y_pos - y_width / 2.0, y_pos - y_width / 2.0])
+            self.plot_manager.xy_y2.set_ydata([y_pos + y_width / 2.0, y_pos + y_width / 2.0])
             self.ui.xy_overview.draw()
 
-        self.plot_manager.xtof_x1.set_ydata(
-            [x_peak - x_width / 2.0, x_peak - x_width / 2.0]
-        )
-        self.plot_manager.xtof_x2.set_ydata(
-            [x_peak + x_width / 2.0, x_peak + x_width / 2.0]
-        )
-        self.plot_manager.xtof_bck1.set_ydata(
-            [bg_pos - bg_width / 2.0, bg_pos - bg_width / 2.0]
-        )
-        self.plot_manager.xtof_bck2.set_ydata(
-            [bg_pos + bg_width / 2.0, bg_pos + bg_width / 2.0]
-        )
+        self.plot_manager.xtof_x1.set_ydata([x_peak - x_width / 2.0, x_peak - x_width / 2.0])
+        self.plot_manager.xtof_x2.set_ydata([x_peak + x_width / 2.0, x_peak + x_width / 2.0])
+        self.plot_manager.xtof_bck1.set_ydata([bg_pos - bg_width / 2.0, bg_pos - bg_width / 2.0])
+        self.plot_manager.xtof_bck2.set_ydata([bg_pos + bg_width / 2.0, bg_pos + bg_width / 2.0])
         self.ui.xtof_overview.draw()
 
         # TODO: refactor this

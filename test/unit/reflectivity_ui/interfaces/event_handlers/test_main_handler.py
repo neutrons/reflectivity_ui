@@ -1,26 +1,26 @@
 # package imports
+# standard imports
+import os
+import sys
+
 import numpy as np
-from qtpy import QtWidgets, QtCore
+import pytest
+from PyQt5.QtCore import QTimer
+
+# 3rd-party imports
+from PyQt5.QtWidgets import QApplication
+from qtpy import QtCore, QtWidgets
 
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_manipulation import (
     NormalizeToUnityQCutoffError,
 )
 from reflectivity_ui.interfaces.data_handling.data_set import (
-    NexusData,
     CrossSectionData,
+    NexusData,
 )
-from reflectivity_ui.interfaces.main_window import MainWindow
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
-
-# 3rd-party imports
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QTimer
-import pytest
-
-# standard imports
-import os
-import sys
+from reflectivity_ui.interfaces.main_window import MainWindow
 
 this_module_path = sys.modules[__name__].__file__
 

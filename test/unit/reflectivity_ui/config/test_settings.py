@@ -1,8 +1,8 @@
 # local imports
-from reflectivity_ui.config import Settings
-
 # 3rd-party imports
 import pytest
+
+from reflectivity_ui.config import Settings
 
 
 class TestConfiguration(object):

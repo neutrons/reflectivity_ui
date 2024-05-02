@@ -6,19 +6,20 @@ Plotting widget taken from QuickNXS
 #TODO: refactor this or replace it with a standard solution
 """
 
-import os
 import inspect
+import os
 import tempfile
-from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
+
 import matplotlib.cm
 import matplotlib.colors
-from reflectivity_ui.config import plotting
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.figure import Figure
-import numpy as np
+from PyQt5 import QtCore, QtGui, QtPrintSupport, QtWidgets
+
+from reflectivity_ui.config import plotting
 
 try:
     import matplotlib.backends.qt5_editor.figureoptions as figureoptions
@@ -83,9 +84,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.locLabel = QtWidgets.QLabel("", self)
         self.locLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
         self.locLabel.setSizePolicy(
-            QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored
-            )
+            QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
         )
         self.labelAction = self.addWidget(self.locLabel)
         if self.coordinates:
@@ -147,9 +146,7 @@ class NavigationToolbar(NavigationToolbar2QT):
                 filters.append(filter_)
         filters = ";;".join(filters)
 
-        fname = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Choose a filename to save to", start, filters
-        )
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, "Choose a filename to save to", start, filters)
         if fname:
             try:
                 self.canvas.print_figure((fname[0]))
@@ -173,22 +170,16 @@ class NavigationToolbar(NavigationToolbar2QT):
                 for i in range(0, int(len(ax.lines)), 3):
                     xdata_from_plot = ax.lines[i].get_xdata()
                     ydata_from_plot = ax.lines[i].get_ydata()
-                    err_from_plot = (
-                        ax.lines[i + 2].get_ydata() - ax.lines[i + 1].get_ydata()
-                    ) / 2.0
+                    err_from_plot = (ax.lines[i + 2].get_ydata() - ax.lines[i + 1].get_ydata()) / 2.0
                     data_to_save = np.append(
                         data_to_save,
-                        np.array(
-                            [xdata_from_plot, ydata_from_plot, err_from_plot]
-                        ).transpose(),
+                        np.array([xdata_from_plot, ydata_from_plot, err_from_plot]).transpose(),
                         axis=0,
                     )
         else:
             data_to_save = ax.get_array()
 
-        fname = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Choose a filename to save to"
-        )
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, "Choose a filename to save to")
 
         if type(fname[0]) == str:
             try:
@@ -217,9 +208,7 @@ class NavigationToolbarGeneric(NavigationToolbar):
 
     def toggle_log(self, *args):
         ax = self.canvas.ax
-        if len(ax.images) == 0 and all(
-            [c.__class__.__name__ != "QuadMesh" for c in ax.collections]
-        ):
+        if len(ax.images) == 0 and all([c.__class__.__name__ != "QuadMesh" for c in ax.collections]):
             logstate = ax.get_yscale()
             if logstate == "linear":
                 ax.set_yscale("log")
@@ -227,9 +216,7 @@ class NavigationToolbarGeneric(NavigationToolbar):
                 ax.set_yscale("linear")
             self.canvas.draw()
         else:
-            imgs = ax.images + [
-                c for c in ax.collections if c.__class__.__name__ == "QuadMesh"
-            ]
+            imgs = ax.images + [c for c in ax.collections if c.__class__.__name__ == "QuadMesh"]
             norm = imgs[0].norm
             if norm.__class__ is LogNorm:
                 for img in imgs:
@@ -379,9 +366,7 @@ class MplCanvas(FigureCanvas):
         self.yaxis_style = "linear"
         self.format_labels()
         FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(
-            self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
-        )
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
     def format_labels(self):
@@ -412,9 +397,7 @@ class MPLWidget(QtWidgets.QWidget):
         self.vbox.addWidget(self.canvas)
         if with_toolbar:
             self.stacked_toolbars = QtWidgets.QStackedWidget(self.canvas)
-            self.stacked_toolbars.setSizePolicy(
-                QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum
-            )
+            self.stacked_toolbars.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
             toolbar_generic = NavigationToolbarGeneric(self.canvas, self)
             toolbar_generic.coordinates = coordinates
             toolbar_refl = NavigationToolbarReflectivity(self.canvas, self)
@@ -490,17 +473,13 @@ class MPLWidget(QtWidgets.QWidget):
 
         return self.canvas.ax.errorbar(*args, **opts)
 
-    def pcolormesh(
-        self, datax, datay, dataz, log=False, imin=None, imax=None, update=False, **opts
-    ):
+    def pcolormesh(self, datax, datay, dataz, log=False, imin=None, imax=None, update=False, **opts):
         """
         Convenience wrapper for self.canvas.ax.plot
         """
         if self.cplot is None or not update:
             if log:
-                self.cplot = self.canvas.ax.pcolormesh(
-                    datax, datay, dataz, norm=LogNorm(imin, imax), **opts
-                )
+                self.cplot = self.canvas.ax.pcolormesh(datax, datay, dataz, norm=LogNorm(imin, imax), **opts)
             else:
                 self.cplot = self.canvas.ax.pcolormesh(datax, datay, dataz, **opts)
         else:
@@ -513,9 +492,7 @@ class MPLWidget(QtWidgets.QWidget):
         """
         if self.cplot is None or not update:
             if log:
-                self.cplot = self.canvas.ax.imshow(
-                    data, norm=LogNorm(imin, imax), **opts
-                )
+                self.cplot = self.canvas.ax.imshow(data, norm=LogNorm(imin, imax), **opts)
             else:
                 self.cplot = self.canvas.ax.imshow(data, **opts)
         else:

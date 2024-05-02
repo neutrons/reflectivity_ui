@@ -35,9 +35,7 @@ class RunNumbers(object):
             else:
                 self._numbers = [int(numbers)]  # just one run number
         else:
-            raise ValueError(
-                "Constructor requires a list or a string of run numbers as input"
-            )
+            raise ValueError("Constructor requires a list or a string of run numbers as input")
 
     def _uncompress(self, numbers):
         # type: (str) ->  List[int]
@@ -46,9 +44,7 @@ class RunNumbers(object):
         @details Example: '1:3+6' becomes [1, 2, 3, 6]
         """
         run_numbers = list()
-        for run_range in numbers.split(
-            self.merge_symbol
-        ):  # e.g. 1:3+6' becomes ['1:3', '6']
+        for run_range in numbers.split(self.merge_symbol):  # e.g. 1:3+6' becomes ['1:3', '6']
             if self.range_symbol in run_range:  # e.g '2:7'
                 first, last = [int(n) for n in run_range.split(self.range_symbol)]
                 run_numbers.extend(list(range(first, last + 1)))
@@ -86,11 +82,7 @@ class RunNumbers(object):
             lambda i_run_number: i_run_number[0] - i_run_number[1],
         ):
             runs = list(map(operator.itemgetter(1), g))  # e.g. [3,4,5]
-            run_range = (
-                str(runs[0])
-                if len(runs) == 1
-                else "{}{}{}".format(runs[0], self.range_symbol, runs[-1])
-            )
+            run_range = str(runs[0]) if len(runs) == 1 else "{}{}{}".format(runs[0], self.range_symbol, runs[-1])
             ranges.append(run_range)
         return self.merge_symbol.join(ranges)
 
@@ -154,9 +146,7 @@ class FilePath(object):
         if isinstance(file_path, list):
             file_path = self.merge_symbol.join(file_path)
         if not self.unique_dirname(file_path):
-            raise ValueError(
-                "files in {} reside in different directories".format(file_path)
-            )
+            raise ValueError("files in {} reside in different directories".format(file_path))
         if self.merge_symbol in file_path:
             if sort:
                 paths = sorted(file_path.split(self.merge_symbol))
@@ -193,10 +183,7 @@ class FilePath(object):
     @property
     def basename(self):
         if self.merge_symbol in self._file_path:
-            names = [
-                os.path.basename(name)
-                for name in self._file_path.split(self.merge_symbol)
-            ]
+            names = [os.path.basename(name) for name in self._file_path.split(self.merge_symbol)]
             return self.merge_symbol.join(names)
         return os.path.basename(self._file_path)
 
@@ -223,9 +210,7 @@ class FilePath(object):
         for path in self.single_paths:
             match = re.search(r"REF_M_(\d+)", path)
             if match is None:
-                raise ValueError(
-                    "Could not extract run number in file path {}".format(path)
-                )
+                raise ValueError("Could not extract run number in file path {}".format(path))
             numbers.append(int(match.groups()[0]))
         numbers.sort()  # this should be unnecessary, though, since self._file_path is already sorted
         if string_representation is None:
@@ -233,6 +218,4 @@ class FilePath(object):
         elif string_representation in ("long", "short", "statement"):
             return getattr(RunNumbers(numbers), string_representation)
         else:
-            raise ValueError(
-                'parameter string_representation must be one of [None, "long", "short"]'
-            )
+            raise ValueError('parameter string_representation must be one of [None, "long", "short"]')

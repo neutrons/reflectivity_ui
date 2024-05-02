@@ -9,9 +9,7 @@ class ProgressReporter(object):
     Progress reporter class that allows for sub-tasks.
     """
 
-    def __init__(
-        self, max_value=100, call_back=None, status_bar=None, progress_bar=None
-    ):
+    def __init__(self, max_value=100, call_back=None, status_bar=None, progress_bar=None):
         """
 
         Parameters

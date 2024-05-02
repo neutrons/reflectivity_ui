@@ -5,13 +5,13 @@ This code was taken as-is from QuickNXS v1
 """
 # pylint: disable=bare-except
 
-from PyQt5 import QtWidgets
-
 from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse
+from PyQt5 import QtWidgets
+
+from reflectivity_ui.interfaces import load_ui
 
 from .configuration import Configuration
-from reflectivity_ui.interfaces import load_ui
 
 
 class SmoothDialog(QtWidgets.QDialog):
@@ -74,10 +74,7 @@ class SmoothDialog(QtWidgets.QDialog):
             n_total = len(I[0])
             # P_0 and P_N are the number of points to cut in TOF on each side
             p_0 = item.cross_sections[first_state].configuration.cut_first_n_points
-            p_n = (
-                n_total
-                - item.cross_sections[first_state].configuration.cut_last_n_points
-            )
+            p_n = n_total - item.cross_sections[first_state].configuration.cut_last_n_points
             Qx = Qx[:, p_0:p_n]
             Qz = Qz[:, p_0:p_n]
             ki_z = ki_z[:, p_0:p_n]
@@ -96,13 +93,9 @@ class SmoothDialog(QtWidgets.QDialog):
                     shading="gouraud",
                 )
             elif self.ui.qxVSqz.isChecked():
-                plot.pcolormesh(
-                    Qx, Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud"
-                )
+                plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
             else:
-                plot.pcolormesh(
-                    ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud"
-                )
+                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
 
         if self.ui.kizmkfzVSqz.isChecked():
             qz_max = max(Qz[I > 0].max(), qz_max)

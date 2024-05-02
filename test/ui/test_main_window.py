@@ -1,10 +1,4 @@
 # local imports
-from reflectivity_ui.interfaces.configuration import Configuration
-from reflectivity_ui.interfaces.data_handling.data_set import (
-    CrossSectionData,
-    NexusData,
-)
-from reflectivity_ui.interfaces.main_window import MainWindow
 from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
 
@@ -12,6 +6,12 @@ from test.ui import ui_utilities
 import pytest
 from qtpy import QtCore, QtWidgets
 
+from reflectivity_ui.interfaces.configuration import Configuration
+from reflectivity_ui.interfaces.data_handling.data_set import (
+    CrossSectionData,
+    NexusData,
+)
+from reflectivity_ui.interfaces.main_window import MainWindow
 
 # standard library imports
 
@@ -83,12 +83,8 @@ class TestMainGui:
         )
         window_main = MainWindow()
         qtbot.addWidget(window_main)
-        window_main.data_manager.reduction_list = [
-            NexusData("filepath", Configuration())
-        ]
-        window_main.data_manager.direct_beam_list = [
-            NexusData("filepath", Configuration())
-        ]
+        window_main.data_manager.reduction_list = [NexusData("filepath", Configuration())]
+        window_main.data_manager.direct_beam_list = [NexusData("filepath", Configuration())]
         table = getattr(window_main.ui, table_widget)
         table.insertRow(0)
 

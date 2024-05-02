@@ -6,25 +6,26 @@ Main application window
 """
 
 # package imports
-from .data_manager import DataManager
-from .plotting import PlotManager
-from .reduction_dialog import ReductionDialog
-from .smooth_dialog import SmoothDialog
-import reflectivity_ui
-from reflectivity_ui.interfaces.data_handling.filepath import FilePath
-from reflectivity_ui.interfaces.event_handlers.configuration_handler import (
-    ConfigurationHandler,
-)
-from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
-from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
-from reflectivity_ui.interfaces import load_ui
+# standard imports
+import logging
+import os
 
 # 3rd-party
 from PyQt5 import QtCore, QtWidgets
 
-# standard imports
-import logging
-import os
+import reflectivity_ui
+from reflectivity_ui.interfaces import load_ui
+from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.event_handlers.configuration_handler import (
+    ConfigurationHandler,
+)
+from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
+from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
+
+from .data_manager import DataManager
+from .plotting import PlotManager
+from .reduction_dialog import ReductionDialog
+from .smooth_dialog import SmoothDialog
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -50,19 +51,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # Initialize the UI widgets
         self.reduction_table_menu = None
         self.ui = load_ui("ui_main_window.ui", baseinstance=self)
-        version = (
-            reflectivity_ui.__version__
-            if reflectivity_ui.__version__.lower() != "unknown"
-            else ""
-        )
+        version = reflectivity_ui.__version__ if reflectivity_ui.__version__.lower() != "unknown" else ""
         self.setWindowTitle(f"QuickNXS Magnetic Reflectivity {version}")
 
         # Application settings
         self.settings = QtCore.QSettings(".refredm")
         # Object managers
-        self.data_manager = DataManager(
-            self.settings.value("current_directory", os.path.expanduser("~"))
-        )
+        self.data_manager = DataManager(self.settings.value("current_directory", os.path.expanduser("~")))
         self.plot_manager = PlotManager(self)
 
         r"""Setting `auto_change_active = True` bypasses execution of:
@@ -132,10 +127,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Hide what we don't support
         """
         # Hide event filtering (which is not really event filtering)
-        for i in range(
-            self.ui.event_filtering_layout.rowCount()
-            * self.ui.event_filtering_layout.columnCount()
-        ):
+        for i in range(self.ui.event_filtering_layout.rowCount() * self.ui.event_filtering_layout.columnCount()):
             if self.ui.event_filtering_layout.itemAt(i):
                 self.ui.event_filtering_layout.itemAt(i).widget().hide()
 
@@ -172,9 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         QtWidgets.QApplication.instance().processEvents()
         item = self.ui.file_list.currentItem()  # type: QListWidgetItem
-        name = str(
-            item.text()
-        )  # e.g 'REF_M_38199.nxs.h5' or 'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
+        name = str(item.text())  # e.g 'REF_M_38199.nxs.h5' or 'REF_M_38198.nxs.h5+REF_M_38199.nxs.h5'
         filepath = FilePath.join(self.data_manager.current_directory, name)
         self.file_handler.open_file(filepath)
 
@@ -283,9 +273,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if self.data_manager.active_channel is not None:
                 active_only = not self.ui.action_use_common_ranges.isChecked()
-                self.data_manager.update_configuration(
-                    configuration=configuration, active_only=active_only
-                )
+                self.data_manager.update_configuration(configuration=configuration, active_only=active_only)
                 self.plot_handler.change_region_values()
                 self.file_handler.update_calculated_data()
 
@@ -295,17 +283,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QApplication.instance().processEvents()
                 if change_type > 0:
                     try:
-                        self.data_manager.calculate_reflectivity(
-                            configuration=configuration, active_only=active_only
-                        )
+                        self.data_manager.calculate_reflectivity(configuration=configuration, active_only=active_only)
                     except Exception:
                         self.file_handler.report_message(
                             "There was a problem updating the reflectivity",
                             pop_up=False,
                         )
-                        logging.exception(
-                            "There was a problem updating the reflectivity"
-                        )
+                        logging.exception("There was a problem updating the reflectivity")
                 self.plot_manager.plot_refl()
                 self.update_specular_viewer.emit()
 
@@ -394,9 +378,7 @@ class MainWindow(QtWidgets.QMainWindow):
             try:
                 self.data_manager.calculate_reflectivity()
             except Exception:
-                self.file_handler.report_message(
-                    "There was a problem updating the reflectivity", pop_up=False
-                )
+                self.file_handler.report_message("There was a problem updating the reflectivity", pop_up=False)
                 logging.exception("There was a problem updating the reflectivity")
             self.initiate_reflectivity_plot.emit(True)
 
@@ -464,10 +446,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.file_handler.get_configuration()
 
             # Show smoothing dialog as needed
-            if (
-                output_options["export_offspec_smooth"]
-                and self.ui.offspec_smooth_checkbox.isChecked()
-            ):
+            if output_options["export_offspec_smooth"] and self.ui.offspec_smooth_checkbox.isChecked():
                 # Make sure the off-specular has been calculated
                 self.file_handler.compute_offspec_on_change()
                 dia = SmoothDialog(self, self.data_manager)

@@ -1,6 +1,7 @@
-import plotly.offline as py
-import plotly.graph_objs as go
 from functools import reduce
+
+import plotly.graph_objs as go
+import plotly.offline as py
 
 py.init_notebook_mode(connected=True)
 

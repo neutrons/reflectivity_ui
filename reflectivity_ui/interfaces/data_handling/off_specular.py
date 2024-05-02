@@ -4,12 +4,13 @@ Class to execute and hold the off-specular reflectivity calculation.
 """
 
 import logging
-import numpy as np
-import scipy.stats
+from functools import reduce
 from multiprocessing import Pool
 
+import numpy as np
+import scipy.stats
+
 from reflectivity_ui.interfaces.configuration import Configuration
-from functools import reduce
 
 H_OVER_M_NEUTRON = 3.956034e-7  # h/m_n [m^2/s]
 
@@ -50,17 +51,11 @@ class OffSpecular(object):
         # Range in low-res direction
         y_min, y_max = self.data_set.configuration.low_res_roi
 
-        rad_per_pixel = (
-            self.data_set.det_size_x
-            / self.data_set.dist_sam_det
-            / self.data_set.xydata.shape[1]
-        )
+        rad_per_pixel = self.data_set.det_size_x / self.data_set.dist_sam_det / self.data_set.xydata.shape[1]
 
         xtth = (
             self.data_set.direct_pixel
-            - np.arange(self.data_set.data.shape[0])[
-                self.data_set.active_area_x[0] : self.data_set.active_area_x[1]
-            ]
+            - np.arange(self.data_set.data.shape[0])[self.data_set.active_area_x[0] : self.data_set.active_area_x[1]]
         )
         pix_offset_spec = self.data_set.direct_pixel - x_pos
         delta_dangle = self.data_set.dangle - self.data_set.angle_offset
@@ -110,37 +105,23 @@ class OffSpecular(object):
         self.dS *= self.data_set.configuration.scaling_factor
 
         if direct_beam is not None:
-            if (
-                not direct_beam.configuration.tof_bins
-                == self.data_set.configuration.tof_bins
-            ):
-                logging.error(
-                    "Trying to normalize with a direct beam data set with different binning"
-                )
+            if not direct_beam.configuration.tof_bins == self.data_set.configuration.tof_bins:
+                logging.error("Trying to normalize with a direct beam data set with different binning")
 
             norm_y_min, norm_y_max = direct_beam.configuration.low_res_roi
             norm_x_min, norm_x_max = direct_beam.configuration.peak_roi
-            norm_raw_multi_dim = direct_beam.data[
-                norm_x_min:norm_x_max, norm_y_min:norm_y_max, :
-            ]
+            norm_raw_multi_dim = direct_beam.data[norm_x_min:norm_x_max, norm_y_min:norm_y_max, :]
 
             norm_raw = norm_raw_multi_dim.sum(axis=0).sum(axis=0)
             norm_d_raw = np.sqrt(norm_raw)
-            norm_scale = (float(norm_x_max) - float(norm_x_min)) * (
-                float(norm_y_max) - float(norm_y_min)
-            )
+            norm_scale = (float(norm_x_max) - float(norm_x_min)) * (float(norm_y_max) - float(norm_y_min))
             norm_raw /= norm_scale * direct_beam.proton_charge
             norm_d_raw /= norm_scale * direct_beam.proton_charge
 
             idxs = norm_raw > 0.0
             self.dS[:, idxs] = np.sqrt(
                 (self.dS[:, idxs] / norm_raw[idxs][np.newaxis, :]) ** 2
-                + (
-                    self.S[:, idxs]
-                    / norm_raw[idxs][np.newaxis, :] ** 2
-                    * norm_d_raw[idxs][np.newaxis, :]
-                )
-                ** 2
+                + (self.S[:, idxs] / norm_raw[idxs][np.newaxis, :] ** 2 * norm_d_raw[idxs][np.newaxis, :]) ** 2
             )
             self.S[:, idxs] /= norm_raw[idxs][np.newaxis, :]
             self.S[:, np.logical_not(idxs)] = 0.0
@@ -395,13 +376,9 @@ def _smooth_data(
                     continue
                 ssigmaxi = ssigmax / xysigma0 * xyij
                 ssigmayi = ssigmay / xysigma0 * xyij
-                rij = (x - xij) ** 2 / ssigmaxi + (
-                    y - yij
-                ) ** 2 / ssigmayi  # normalized distance^2
+                rij = (x - xij) ** 2 / ssigmaxi + (y - yij) ** 2 / ssigmayi  # normalized distance^2
             else:
-                rij = (x - xij) ** 2 / ssigmax + (
-                    y - yij
-                ) ** 2 / ssigmay  # normalized distance^2
+                rij = (x - xij) ** 2 / ssigmax + (y - yij) ** 2 / ssigmay  # normalized distance^2
             take = np.where(rij < sigmas**2)  # take points up to 3 sigma distance
             if len(take[0]) == 0:
                 continue

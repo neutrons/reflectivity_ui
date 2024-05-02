@@ -1,5 +1,6 @@
-import plotly.offline as py
 from functools import reduce
+
+import plotly.offline as py
 
 py.init_notebook_mode(connected=True)
 
@@ -98,9 +99,7 @@ def plot1d(
     py.iplot(fig, show_link=False)
 
 
-def plot_heatmap(
-    x, y, z, x_title="", y_title="", surface=False, x_log=False, y_log=False
-):
+def plot_heatmap(x, y, z, x_title="", y_title="", surface=False, x_log=False, y_log=False):
     """
     Produce a 2D plot
     """
@@ -311,11 +310,5 @@ def process_run(run_number, settings, direct_beam=True):
     low_max = settings["y_pos"] + settings["y_width"] / 2.0
     low_min = settings["y_pos"] - settings["y_width"] / 2.0
 
-    print(
-        "r%s - PEAK: [%s %s]   Input: [%s %s]"
-        % (run_number, x_peak[0], x_peak[1], r_min, r_max)
-    )
-    print(
-        "r%s - LOW:  [%s %s]   Input: [%s %s]"
-        % (run_number, y_peak[0], y_peak[1], low_min, low_max)
-    )
+    print("r%s - PEAK: [%s %s]   Input: [%s %s]" % (run_number, x_peak[0], x_peak[1], r_min, r_max))
+    print("r%s - LOW:  [%s %s]   Input: [%s %s]" % (run_number, y_peak[0], y_peak[1], low_min, low_max))

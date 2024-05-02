@@ -1,10 +1,11 @@
 # local imports
-from reflectivity_ui.interfaces.main_window import MainWindow
 from test import SNS_REFM_MOUNTED
 from test.ui import ui_utilities
 
 # third party imports
 import pytest
+
+from reflectivity_ui.interfaces.main_window import MainWindow
 
 # standard library imports
 
@@ -23,17 +24,13 @@ def test_losing_direct_beam(qtbot):
             the run number of the direct beam
         """
         return (
-            main_window.data_manager.reduction_list[reduction_list_index]
-            .cross_sections[xs]
-            .configuration.normalization
+            main_window.data_manager.reduction_list[reduction_list_index].cross_sections[xs].configuration.normalization
         )
 
     direct_beam_run = 40786
 
     # load file list
-    ui_utilities.setText(
-        main_window.numberSearchEntry, str(direct_beam_run), press_enter=True
-    )
+    ui_utilities.setText(main_window.numberSearchEntry, str(direct_beam_run), press_enter=True)
 
     # select run in the file list
     ui_utilities.set_current_file_by_run_number(main_window, direct_beam_run)

@@ -3,11 +3,10 @@
 Start script for reduction application
 """
 
-import sys
-import os
-
 import logging
 import logging.handlers
+import os
+import sys
 
 # Set log level
 logging.getLogger().setLevel(logging.INFO)
@@ -40,6 +39,7 @@ import matplotlib
 matplotlib.use("Qt5Agg")
 
 import mantid
+
 import reflectivity_ui
 
 print("##################################################")
@@ -48,6 +48,7 @@ print("#    with Mantid: %s " % mantid.__version__)
 print("##################################################")
 
 from PyQt5.QtWidgets import QApplication
+
 from reflectivity_ui.interfaces.main_window import MainWindow
 
 

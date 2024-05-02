@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSpinBox, QCheckBox, QDoubleSpinBox
+from PyQt5.QtWidgets import QCheckBox, QDoubleSpinBox, QSpinBox
 
 from reflectivity_ui.interfaces.configuration import Configuration
 
@@ -77,9 +77,7 @@ class ConfigurationHandler:
                 is_checkbox = True
                 signal_name = "stateChanged"
             else:
-                raise ValueError(
-                    f"{type(widget)} not supported by ConfigurationHandler"
-                )
+                raise ValueError(f"{type(widget)} not supported by ConfigurationHandler")
             signal = getattr(widget, signal_name)
             # connect the signal to the updater
             signal.connect(self.config_setter_factory(config_name, is_checkbox))

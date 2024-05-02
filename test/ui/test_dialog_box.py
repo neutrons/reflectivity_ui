@@ -1,5 +1,6 @@
-from reflectivity_ui.interfaces.event_handlers.widgets import AcceptRejectDialog
 from PyQt5 import QtCore
+
+from reflectivity_ui.interfaces.event_handlers.widgets import AcceptRejectDialog
 
 wait = 100
 
@@ -27,9 +28,7 @@ def test_customized_dialog(qtbot):
     window.show()
     qtbot.wait(wait)
 
-    qtbot.mouseClick(
-        window.buttonBox.button(window.buttonBox.Cancel), QtCore.Qt.LeftButton
-    )
+    qtbot.mouseClick(window.buttonBox.button(window.buttonBox.Cancel), QtCore.Qt.LeftButton)
     qtbot.wait(wait)
 
     assert window.is_accepted() is False

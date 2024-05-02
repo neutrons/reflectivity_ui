@@ -4,16 +4,16 @@ Methods used to process data, usually calling Mantid
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
 
 import logging
-import h5py
 import math
 import time
 
-import mantid.simpleapi as api
+import h5py
 import mantid
+import mantid.simpleapi as api
 import numpy as np
 
-from .instrument import Instrument
 from .data_set import NexusMetaData
+from .instrument import Instrument
 
 
 class NormalizeToUnityQCutoffError(Exception):
@@ -57,9 +57,7 @@ def generate_short_script(reduction_list):
             contain_single_crosssection = True
             logging.info("  single cross sectoin in %s (Workspace2D)", ws_name)
         # short-hand it
-        ws_iterable = (
-            [api.mtd[ws_name]] if contain_single_crosssection else api.mtd[ws_name]
-        )
+        ws_iterable = [api.mtd[ws_name]] if contain_single_crosssection else api.mtd[ws_name]
 
         script += "# Run:%s\n" % reduction_list[i].cross_sections[xs].number
         script_text = api.GeneratePythonScript(ws_iterable[0])
@@ -68,11 +66,7 @@ def generate_short_script(reduction_list):
         script += "# Crop points on each end\n"
         q = ws_iterable[0].readX(0)
         p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
-        p_f = (
-            len(q)
-            - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points
-            - 1
-        )
+        p_f = len(q) - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points - 1
         q0 = q[p_0]
         qf = q[p_f]
         logging.info("%s %s %s %s", q0, qf, p_0, p_f)
@@ -85,10 +79,7 @@ def generate_short_script(reduction_list):
             )
             script += "OutputWorkspace='%s')\n" % str(item)
             script += "Scale(InputWorkspace='%s', Operation='Multiply', " % str(item)
-            script += (
-                "Factor=%s, "
-                % reduction_list[i].cross_sections[xs].configuration.scaling_factor
-            )
+            script += "Factor=%s, " % reduction_list[i].cross_sections[xs].configuration.scaling_factor
             script += "OutputWorkspace='%s')\n\n" % str(item)
 
     return script
@@ -117,9 +108,7 @@ def generate_script(reduction_list, pol_state):
     return script
 
 
-def stitch_reflectivity(
-    reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01
-):
+def stitch_reflectivity(reduction_list, xs=None, normalize_to_unity=True, q_cutoff=0.01):
     """
     Stitch and normalize data sets
 
@@ -148,9 +137,7 @@ def stitch_reflectivity(
             scaling_factor = weights / total
         reduction_list[0].set_parameter("scaling_factor", scaling_factor)
     else:
-        scaling_factor = (
-            reduction_list[0].cross_sections[xs].configuration.scaling_factor
-        )
+        scaling_factor = reduction_list[0].cross_sections[xs].configuration.scaling_factor
 
     # Stitch the data sets together
     _previous_ws = None
@@ -160,10 +147,7 @@ def stitch_reflectivity(
     for i in range(len(reduction_list)):
         n_total = len(reduction_list[i].cross_sections[xs].q)
         p_0 = reduction_list[i].cross_sections[xs].configuration.cut_first_n_points
-        p_n = (
-            n_total
-            - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points
-        )
+        p_n = n_total - reduction_list[i].cross_sections[xs].configuration.cut_last_n_points
         ws = api.CreateWorkspace(
             DataX=reduction_list[i].cross_sections[xs].q[p_0:p_n],
             DataY=reduction_list[i].cross_sections[xs]._r[p_0:p_n],
@@ -252,9 +236,7 @@ def _get_stitching_overlap_region(ws_lo, ws_hi, n_points_outside_overlap=3):
     return xmin, xmax
 
 
-def _get_polynomial_fit_stitching_scaling_factor(
-    ws_lo, ws_hi, n_polynom, n_points_outside_overlap=3
-):
+def _get_polynomial_fit_stitching_scaling_factor(ws_lo, ws_hi, n_polynom, n_points_outside_overlap=3):
     """Get the scaling factor for stitching two curves by fitting a polynomial and a scaling factor
 
     For example, if the polynomial degree is 3, the scaling factor is obtained by minimizing the function
@@ -286,17 +268,12 @@ def _get_polynomial_fit_stitching_scaling_factor(
         initial_val_str += f", A{i}=1"  # "A0=1, A1=1, ..."
         ties_str += f",f1.A{i}=f0.A{i}"  # "f1.A0=f0.A0, f1.A1=f0.A1, ..."
 
-    poly_func = (
-        f";name=UserFunction, Formula={formula_str}, {initial_val_str}, $domains=0"
+    poly_func = f";name=UserFunction, Formula={formula_str}, {initial_val_str}, $domains=0"
+    scaled_poly_func = (
+        f";name=UserFunction, Formula=poly_scale*({formula_str}), poly_scale=1, {initial_val_str}, $domains=1"
     )
-    scaled_poly_func = f";name=UserFunction, Formula=poly_scale*({formula_str}), poly_scale=1, {initial_val_str}, $domains=1"
     ties = f";ties=({ties_str})"
-    multi_func = (
-        "composite=MultiDomainFunction, NumDeriv=1"
-        + poly_func
-        + scaled_poly_func
-        + ties
-    )
+    multi_func = "composite=MultiDomainFunction, NumDeriv=1" + poly_func + scaled_poly_func + ties
 
     # fit MultiDomain function to the low-Q and high-Q workspaces
     fit = api.Fit(
@@ -384,9 +361,7 @@ def smart_stitch_reflectivity(
         reduction_list[0].set_parameter("scaling_factor", scaling_factor)
         reduction_list[0].set_parameter("scaling_error", scaling_error)
     else:
-        scaling_factor = (
-            reduction_list[0].cross_sections[xs].configuration.scaling_factor
-        )
+        scaling_factor = reduction_list[0].cross_sections[xs].configuration.scaling_factor
 
     # Stitch the data sets together
     running_scale = scaling_factor
@@ -400,26 +375,18 @@ def smart_stitch_reflectivity(
             reduction_list[i].cross_sections, xs, global_fit, "low_q_workspace"
         )
         # High-Q data set
-        ws = _prepare_workspace_for_stitching(
-            reduction_list[i + 1].cross_sections, xs, global_fit, "high_q_workspace"
-        )
+        ws = _prepare_workspace_for_stitching(reduction_list[i + 1].cross_sections, xs, global_fit, "high_q_workspace")
 
         if isinstance(poly_degree, int) and poly_degree > 0:
-            output_poly = _get_polynomial_fit_stitching_scaling_factor(
-                _previous_ws, ws, poly_degree, poly_points
-            )
+            output_poly = _get_polynomial_fit_stitching_scaling_factor(_previous_ws, ws, poly_degree, poly_points)
             scale = output_poly["scale_factor_value"]
             scale_error = output_poly["scale_factor_error"]
         else:
-            _, scale = api.Stitch1D(
-                _previous_ws, ws, OutputScalingWorkspace="ws_stitching_scale"
-            )
+            _, scale = api.Stitch1D(_previous_ws, ws, OutputScalingWorkspace="ws_stitching_scale")
             scale_error = api.mtd["ws_stitching_scale"].readE(0)[0]
 
         # Calculate the error in the product of two scaling factors, f1 * f2, as \sqrt{(df2 * f1)^2 + (df1 * f2)^2}
-        running_error = np.sqrt(
-            (scale_error * running_scale) ** 2 + (running_error * scale) ** 2
-        )
+        running_error = np.sqrt((scale_error * running_scale) ** 2 + (running_error * scale) ** 2)
         scaling_errors.append(running_error)
         reduction_list[i + 1].set_parameter("scaling_error", running_error)
         running_scale *= scale
@@ -455,21 +422,13 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
             api.Scale(
                 InputWorkspace=ws_name,
                 OutputWorkspace=ws_name + "_histo",
-                factor=reduction_list[i]
-                .cross_sections[xs]
-                .configuration.scaling_factor,
+                factor=reduction_list[i].cross_sections[xs].configuration.scaling_factor,
                 Operation="Multiply",
             )
-            api.ConvertToHistogram(
-                InputWorkspace=ws_name + "_histo", OutputWorkspace=ws_name + "_histo"
-            )
+            api.ConvertToHistogram(InputWorkspace=ws_name + "_histo", OutputWorkspace=ws_name + "_histo")
         else:
-            scaling_factors.append(
-                reduction_list[i].cross_sections[xs].configuration.scaling_factor
-            )
-            api.ConvertToHistogram(
-                InputWorkspace=ws_name, OutputWorkspace=ws_name + "_histo"
-            )
+            scaling_factors.append(reduction_list[i].cross_sections[xs].configuration.scaling_factor)
+            api.ConvertToHistogram(InputWorkspace=ws_name, OutputWorkspace=ws_name + "_histo")
         ws_list.append(ws_name + "_histo")
         params = "%s, %s, %s" % (q_min, q_step, q_max)
 
@@ -482,9 +441,7 @@ def merge_reflectivity(reduction_list, xs, q_min=0.001, q_step=-0.01):
             OutputWorkspace=ws_name + "_merged",
         )
         # sort WorkspaceGroup by theta
-        merged_ws = sorted(
-            merged_ws, key=lambda ws: ws.getRun().getProperty("two_theta").value
-        )
+        merged_ws = sorted(merged_ws, key=lambda ws: ws.getRun().getProperty("two_theta").value)
     elif len(ws_list) == 1:
         merged_ws = api.CloneWorkspace(ws_list[0], OutputWorkspace=ws_name + "_merged")
     else:
@@ -521,9 +478,7 @@ def get_scaled_workspaces(reduction_list, xs):
         api.AddSampleLog(
             Workspace=ws_tmp,
             LogName="scaling_factor",
-            LogText=str(
-                reduction_list[i].cross_sections[xs].configuration.scaling_factor
-            ),
+            LogText=str(reduction_list[i].cross_sections[xs].configuration.scaling_factor),
             LogType="Number",
             LogUnit="",
         )
@@ -556,9 +511,7 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         return meta_data
 
     try:
-        ws = api.LoadEventNexus(
-            str(file_path), MetaDataOnly=True, NXentryName=str(keys[0])
-        )
+        ws = api.LoadEventNexus(str(file_path), MetaDataOnly=True, NXentryName=str(keys[0]))
         meta_data.mid_q = Instrument.mid_q_value(ws)
         meta_data.is_direct_beam = Instrument.check_direct_beam(ws)
     except:

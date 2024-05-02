@@ -14,6 +14,7 @@ All rights reserved.
 """
 
 import math
+
 import numpy as np
 
 __all__ = ["peak_prominences", "peak_widths", "find_peaks"]
@@ -176,9 +177,7 @@ def find_peaks(
     if threshold is not None:
         # Evaluate threshold condition
         tmin, tmax = _unpack_condition_args(threshold, x, peaks)
-        keep, left_thresholds, right_thresholds = _select_by_peak_threshold(
-            x, peaks, tmin, tmax
-        )
+        keep, left_thresholds, right_thresholds = _select_by_peak_threshold(x, peaks, tmin, tmax)
         peaks = peaks[keep]
         properties["left_thresholds"] = left_thresholds
         properties["right_thresholds"] = right_thresholds
@@ -330,15 +329,8 @@ def _peak_widths(x, peaks, rel_height, prominences, left_bases, right_bases):
 
     if rel_height < 0:
         raise ValueError("`rel_height` must be greater or equal to 0.0")
-    if not (
-        peaks.shape[0]
-        == prominences.shape[0]
-        == left_bases.shape[0]
-        == right_bases.shape[0]
-    ):
-        raise ValueError(
-            "arrays in `prominence_data` must have the same shape " "as `peaks`"
-        )
+    if not (peaks.shape[0] == prominences.shape[0] == left_bases.shape[0] == right_bases.shape[0]):
+        raise ValueError("arrays in `prominence_data` must have the same shape " "as `peaks`")
 
     show_warning = False
     widths = np.empty(peaks.shape[0], dtype=np.float64)

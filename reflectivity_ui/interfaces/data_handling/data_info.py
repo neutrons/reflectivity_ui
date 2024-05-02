@@ -3,18 +3,18 @@ Meta-data information for MR reduction
 """
 # pylint: disable=too-few-public-methods, wrong-import-position, too-many-instance-attributes, wrong-import-order
 
-import sys
-import time
+import copy
 import logging
 import math
-import copy
-
-import numpy as np
-from scipy import ndimage
-import scipy.optimize as opt
-from .peak_finding import find_peaks, peak_prominences, peak_widths
+import sys
+import time
 
 import mantid.simpleapi as api
+import numpy as np
+import scipy.optimize as opt
+from scipy import ndimage
+
+from .peak_finding import find_peaks, peak_prominences, peak_widths
 
 NX_PIXELS = 304
 NY_PIXELS = 256
@@ -104,24 +104,8 @@ class DataInfo(object):
         wl_offset = 0
         cst = source_detector_distance / h * m
         half_width = self.wl_bandwidth / 2.0
-        tof_min = (
-            cst
-            * (
-                wl
-                + wl_offset * 60.0 / chopper_speed
-                - half_width * 60.0 / chopper_speed
-            )
-            * 1e-4
-        )
-        tof_max = (
-            cst
-            * (
-                wl
-                + wl_offset * 60.0 / chopper_speed
-                + half_width * 60.0 / chopper_speed
-            )
-            * 1e-4
-        )
+        tof_min = cst * (wl + wl_offset * 60.0 / chopper_speed - half_width * 60.0 / chopper_speed) * 1e-4
+        tof_max = cst * (wl + wl_offset * 60.0 / chopper_speed + half_width * 60.0 / chopper_speed) * 1e-4
 
         self.tof_range = [tof_min, tof_max]
         return [tof_min, tof_max]
@@ -243,13 +227,8 @@ class DataInfo(object):
 
         self.found_peak = copy.copy(peak)
         self.found_low_res = copy.copy(low_res)
-        logging.info(
-            "Run %s [%s]: Peak found %s" % (self.run_number, self.cross_section, peak)
-        )
-        logging.info(
-            "Run %s [%s]: Low-res found %s"
-            % (self.run_number, self.cross_section, str(low_res))
-        )
+        logging.info("Run %s [%s]: Peak found %s" % (self.run_number, self.cross_section, peak))
+        logging.info("Run %s [%s]: Low-res found %s" % (self.run_number, self.cross_section, str(low_res)))
 
         # Process the ROI information
         try:
@@ -263,9 +242,7 @@ class DataInfo(object):
         # If we were asked to use the ROI but no peak is in it, use the peak we found
         # If we were asked to use the ROI and there's a peak in it, use the ROI
         if self.use_roi and not self.update_peak_range and not self.roi_peak == [0, 0]:
-            logging.info(
-                "Using ROI peak range: [%s %s]" % (self.roi_peak[0], self.roi_peak[1])
-            )
+            logging.info("Using ROI peak range: [%s %s]" % (self.roi_peak[0], self.roi_peak[1]))
             self.use_roi_actual = True
             peak = copy.copy(self.roi_peak)
             if not self.roi_low_res == [0, 0]:
@@ -291,9 +268,7 @@ class DataInfo(object):
         self.background = [int(max(0, bck_range[0])), int(min(bck_range[1], NY_PIXELS))]
 
         # Computed scattering angle
-        self.calculated_scattering_angle = api.MRGetTheta(
-            ws, SpecularPixel=self.peak_position
-        )
+        self.calculated_scattering_angle = api.MRGetTheta(ws, SpecularPixel=self.peak_position)
         self.calculated_scattering_angle *= 180.0 / math.pi
 
         # Determine whether we have a direct beam
@@ -325,12 +300,8 @@ class Fitter2(object):
         Read in the data and create arrays for fitting
         """
         # Prepare data to fit
-        self.n_x = int(
-            self.workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0]
-        )
-        self.n_y = int(
-            self.workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0]
-        )
+        self.n_x = int(self.workspace.getInstrument().getNumberParameter("number-of-x-pixels")[0])
+        self.n_y = int(self.workspace.getInstrument().getNumberParameter("number-of-y-pixels")[0])
 
         _integrated = api.Integration(InputWorkspace=self.workspace)
         signal = _integrated.extractY()
@@ -357,13 +328,8 @@ class Fitter2(object):
         quality_pos = np.exp(-((mid_point - peaks) ** 2.0) / 2000.0)
         low_peaks = peaks < delta
         high_peaks = peaks > nx - delta
-        quality_pos[low_peaks] = (
-            quality_pos[low_peaks] * (1 - np.abs(delta - peaks[low_peaks]) / delta) ** 3
-        )
-        quality_pos[high_peaks] = (
-            quality_pos[high_peaks]
-            * (1 - np.abs(nx - delta - peaks[high_peaks]) / delta) ** 3
-        )
+        quality_pos[low_peaks] = quality_pos[low_peaks] * (1 - np.abs(delta - peaks[low_peaks]) / delta) ** 3
+        quality_pos[high_peaks] = quality_pos[high_peaks] * (1 - np.abs(nx - delta - peaks[high_peaks]) / delta) ** 3
         quality = -peaks_w * prom * quality_pos
 
         zipped = zip(peaks, peaks_w, quality, prom)
@@ -418,9 +384,9 @@ class Fitter2(object):
         mu_right = center_x + width_x / 2.0
         mu_left = center_x - width_x / 2.0
         A = np.abs(A)
-        values = A * np.exp(
-            -((value - mu_left) ** 2) / (2.0 * edge_width**2)
-        ) - A * np.exp(-((value - mu_right) ** 2) / (2.0 * edge_width**2))
+        values = A * np.exp(-((value - mu_left) ** 2) / (2.0 * edge_width**2)) - A * np.exp(
+            -((value - mu_right) ** 2) / (2.0 * edge_width**2)
+        )
         values += background
         return values
 
@@ -447,9 +413,7 @@ class Fitter2(object):
             p0 = [np.max(derivative), 140, 60, 5, 0]
 
         # p = A, center_x, width_x, edge_width, background
-        _coef, _ = opt.curve_fit(
-            self.peak_derivative, y_d, derivative, p0=p0, sigma=derivative_err
-        )
+        _coef, _ = opt.curve_fit(self.peak_derivative, y_d, derivative, p0=p0, sigma=derivative_err)
         return _coef
 
     def fit_beam_width(self):
@@ -459,13 +423,9 @@ class Fitter2(object):
         peak_min = 0
         peak_max = self.n_x
         try:
-            _integral = [
-                np.sum(self.y_vs_counts[:i]) for i in range(len(self.y_vs_counts))
-            ]
+            _integral = [np.sum(self.y_vs_counts[:i]) for i in range(len(self.y_vs_counts))]
             _running = 0.1 * np.convolve(self.y_vs_counts, np.ones(10), mode="valid")
-            _deriv = np.asarray(
-                [_running[i + 1] - _running[i] for i in range(len(_running) - 1)]
-            )
+            _deriv = np.asarray([_running[i + 1] - _running[i] for i in range(len(_running) - 1)])
             _deriv_err = np.sqrt(_running)[:-1]
             _deriv_err[_deriv_err < 1] = 1
             _y = np.arange(len(self.y_vs_counts))[5:-5]
@@ -476,9 +436,7 @@ class Fitter2(object):
             if peak_max - peak_min < 10:
                 logging.error("Low statisting: trying again")
                 _y_running = self.y[5:-4]
-                _coef = self._perform_beam_fit(
-                    _y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True
-                )
+                _coef = self._perform_beam_fit(_y, _deriv, _deriv_err, _y_running, _running, gaussian_first=True)
 
             self.guess_y = _coef[1]
             self.guess_wy = (peak_max - peak_min) / 2.0

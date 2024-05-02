@@ -1,8 +1,8 @@
 # local imports
-from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
-
 # 3rd-party imports
 import pytest
+
+from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
 
 
 class TestDataLoader(object):
@@ -12,9 +12,7 @@ class TestDataLoader(object):
         self.file = data_server.path_to
 
     def test_simple_load(self):
-        file_path = self.file(
-            "REF_M_28613+28614+28615+28616+28617+28618+28619_Specular_++.dat"
-        )
+        file_path = self.file("REF_M_28613+28614+28615+28616+28617+28618+28619_Specular_++.dat")
         db_list, data_list = read_reduced_file(file_path)
         assert len(db_list) == 7
         assert len(data_list) == 7
