@@ -507,7 +507,7 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         meta_data.mid_q = Instrument.mid_q_value(ws)
         meta_data.is_direct_beam = Instrument.check_direct_beam(ws)
     except:
-        logging.exception("Exception extracting metadata")
+        logging.error("Exception extracting metadata")
         raise RuntimeError("Could not load file %s [%s]" % (file_path, keys[0]))
 
     return meta_data
