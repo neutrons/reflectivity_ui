@@ -171,7 +171,7 @@ class NexusData(object):
                         setattr(self.cross_sections[xs].configuration, param, value)
                         has_changed = True
         except:
-            logging.exception("Could not set parameter %s %s", param, value)
+            logging.error("Could not set parameter %s %s", param, value)
         return has_changed
 
     def calculate_reflectivity(self, direct_beam=None, configuration=None):

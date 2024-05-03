@@ -1024,7 +1024,7 @@ class MainHandler(object):
                     existing_filenames.append(filename)
             newline = "\n"
             if len(existing_filenames) == 0 or self.ask_question(
-                f"Overwrite existing file(s):\n{newline.join(existing_filenames)}?"
+                "Overwrite existing file(s):\n{}?".format(newline.join(existing_filenames))
             ):
                 break
         # save one file per cross-section

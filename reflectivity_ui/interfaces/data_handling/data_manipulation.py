@@ -261,15 +261,15 @@ def _get_polynomial_fit_stitching_scaling_factor(ws_lo, ws_hi, n_polynom, n_poin
     initial_val_str = "A0=1"
     ties_str = "f1.A0=f0.A0"
     for i in range(1, n_polynom + 1):
-        formula_str += f"+A{i}*x^{i}"  # "A0 + A1*x + A2*x^2 + ..."
-        initial_val_str += f", A{i}=1"  # "A0=1, A1=1, ..."
-        ties_str += f",f1.A{i}=f0.A{i}"  # "f1.A0=f0.A0, f1.A1=f0.A1, ..."
+        formula_str += "+A{}*x^{}".format(i, i)  # "A0 + A1*x + A2*x^2 + ..."
+        initial_val_str += ", A{}=1".format(i)  # "A0=1, A1=1, ..."
+        ties_str += ",f1.A{}=f0.A{}".format(i, i)  # "f1.A0=f0.A0, f1.A1=f0.A1, ..."
 
-    poly_func = f";name=UserFunction, Formula={formula_str}, {initial_val_str}, $domains=0"
-    scaled_poly_func = (
-        f";name=UserFunction, Formula=poly_scale*({formula_str}), poly_scale=1, {initial_val_str}, $domains=1"
+    poly_func = ";name=UserFunction, Formula={}, {}, $domains=0".format(formula_str, initial_val_str)
+    scaled_poly_func = ";name=UserFunction, Formula=poly_scale*({}), poly_scale=1, {}, $domains=1".format(
+        formula_str, initial_val_str
     )
-    ties = f";ties=({ties_str})"
+    ties = ";ties=({})".format(ties_str)
     multi_func = "composite=MultiDomainFunction, NumDeriv=1" + poly_func + scaled_poly_func + ties
 
     # fit MultiDomain function to the low-Q and high-Q workspaces

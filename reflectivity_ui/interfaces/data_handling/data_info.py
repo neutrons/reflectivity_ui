@@ -428,5 +428,5 @@ class Fitter2(object):
             peak_min = max(peak_min, self.DEAD_PIXELS)
             peak_max = min(peak_max, self.n_x - self.DEAD_PIXELS)
         except:
-            logging.exception("Could not fit the beam width")
+            logging.error("Could not fit the beam width")
         return [peak_min, peak_max]
