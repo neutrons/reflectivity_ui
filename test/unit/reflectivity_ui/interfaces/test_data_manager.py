@@ -36,6 +36,7 @@ class TestDataManagerTest(object):
         dm.get_scaled_workspaces(manager.reduction_list, manager.reduction_states[0])
         dm.stitch_reflectivity(manager.reduction_list)
 
+    @pytest.mark.datarepo
     def test_add_ordermanager(self, data_server):
         # load up files for testing
         manager = DataManager(data_server.directory)
