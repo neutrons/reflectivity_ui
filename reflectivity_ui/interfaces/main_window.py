@@ -374,7 +374,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.data_manager.calculate_reflectivity()
             except Exception:
                 self.file_handler.report_message("There was a problem updating the reflectivity", pop_up=False)
-                logging.exception("There was a problem updating the reflectivity")
+                logging.error("There was a problem updating the reflectivity")
             self.initiate_reflectivity_plot.emit(True)
 
     def openByNumber(self):

@@ -300,7 +300,7 @@ class NexusData(object):
                     xs,
                     traceback.format_exc(),
                 )
-                logging.exception("Could not calculate GISANS reflectivity for %s", xs)
+                logging.error("Could not calculate GISANS reflectivity for %s", xs)
             if progress:
                 progress(i, message="Computed GISANS %s" % xs, out_of=len(self.cross_sections))
         if has_errors:
@@ -342,7 +342,7 @@ class NexusData(object):
                     xs,
                     traceback.format_exc(),
                 )
-                logging.exception(detailed_msg)
+                logging.error(detailed_msg)
         if has_errors:
             raise RuntimeError(detailed_msg)
 
@@ -355,7 +355,7 @@ class NexusData(object):
             try:
                 self.cross_sections[xs].update_configuration(configuration)
             except:
-                logging.exception("Could not update configuration for %s", xs)
+                logging.error("Could not update configuration for %s", xs)
 
     def update_calculated_values(self):
         """
@@ -382,7 +382,7 @@ class NexusData(object):
             xs_list = self.configuration.instrument.load_data(self.file_path)
             logging.info("%s loaded: %s xs", self.file_path, len(xs_list))
         except RuntimeError as run_err:
-            logging.exception("Could not load file(s) {}\n   {}".format(str(self.file_path), run_err))
+            logging.error("Could not load file(s) {}\n   {}".format(str(self.file_path), run_err))
             return self.cross_sections
 
         progress_value = 0
@@ -672,7 +672,7 @@ class CrossSectionData(object):
                     self.logs[motor] = np.float64(stats.mean)
                     self.log_minmax[motor] = (np.float64(stats.minimum), np.float64(stats.maximum))
             except:
-                logging.exception("Error reading DASLogs %s", motor)
+                logging.error("Error reading DASLogs %s", motor)
 
         self.proton_charge = data["gd_prtn_chrg"].value
         self.total_counts = workspace.getNumberEvents()
