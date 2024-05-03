@@ -330,9 +330,11 @@ def smart_stitch_reflectivity(
         idx_list = reduction_list[0].cross_sections[xs].q < q_cutoff
         if not any(idx_list):
             raise NormalizeToUnityQCutoffError(
-                f"No data below Q cutoff.\n"
-                f"Critical Q cutoff: {q_cutoff}\n"
-                f"Smallest Q value: {reduction_list[0].cross_sections[xs].q.min():.5f}"
+                """No data below Q cutoff.\n
+                Critical Q cutoff: {}\n
+                Smallest Q value: {:.5f}""".format(
+                    q_cutoff, reduction_list[0].cross_sections[xs].q.min()
+                )
             )
         total = 0
         weights = 0
