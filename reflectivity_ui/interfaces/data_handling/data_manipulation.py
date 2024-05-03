@@ -266,8 +266,8 @@ def _get_polynomial_fit_stitching_scaling_factor(ws_lo, ws_hi, n_polynom, n_poin
         ties_str += ",f1.A{}=f0.A{}".format(i, i)  # "f1.A0=f0.A0, f1.A1=f0.A1, ..."
 
     poly_func = ";name=UserFunction, Formula={}, {}, $domains=0".format(formula_str, initial_val_str)
-    scaled_poly_func = (
-        ";name=UserFunction, Formula=poly_scale*({}), poly_scale=1, {}, $domains=1".format(formula_str, initial_val_str)
+    scaled_poly_func = ";name=UserFunction, Formula=poly_scale*({}), poly_scale=1, {}, $domains=1".format(
+        formula_str, initial_val_str
     )
     ties = ";ties=({})".format(ties_str)
     multi_func = "composite=MultiDomainFunction, NumDeriv=1" + poly_func + scaled_poly_func + ties
@@ -332,7 +332,9 @@ def smart_stitch_reflectivity(
             raise NormalizeToUnityQCutoffError(
                 """No data below Q cutoff.\n
                 Critical Q cutoff: {}\n
-                Smallest Q value: {:.5f}""".format(q_cutoff, reduction_list[0].cross_sections[xs].q.min())
+                Smallest Q value: {:.5f}""".format(
+                    q_cutoff, reduction_list[0].cross_sections[xs].q.min()
+                )
             )
         total = 0
         weights = 0
@@ -507,7 +509,7 @@ def extract_meta_data(file_path=None, cross_section_data=None, configuration=Non
         meta_data.mid_q = Instrument.mid_q_value(ws)
         meta_data.is_direct_beam = Instrument.check_direct_beam(ws)
     except:
-        logging.exception("Exception extracting metadata")
+        logging.error("Exception extracting metadata")
         raise RuntimeError("Could not load file %s [%s]" % (file_path, keys[0]))
 
     return meta_data
