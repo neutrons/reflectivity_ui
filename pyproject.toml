@@ -19,3 +19,5 @@ file = "reflectivity_ui/_version.py"
 
 [tool.pytest.ini_options]
 testpaths = ["test/"]
+
+markers = ["datarepo: mark a test as using reflection_ui-data repository"]

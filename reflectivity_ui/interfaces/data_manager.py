@@ -694,7 +694,6 @@ class DataManager(object):
         t_0 = time.time()
         db_files, data_files = quicknxs_io.read_reduced_file(file_path, configuration)
         logging.info("Reduced file loaded: %s sec", time.time() - t_0)
-
         n_loaded = 0
         n_total = len(db_files) + len(data_files)
         if progress and n_total > 0:
