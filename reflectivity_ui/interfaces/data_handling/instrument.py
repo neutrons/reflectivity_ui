@@ -114,7 +114,7 @@ def apply_dead_time_correction(ws, configuration, error_ws=None):
     :param template_data: reduction parameters
     """
     if "dead_time_applied" not in ws.getRun():
-        corr_ws = get_dead_time_correction(ws, configuration)
+        corr_ws = get_dead_time_correction(ws, configuration, error_ws=error_ws)
         ws = api.Multiply(ws, corr_ws, OutputWorkspace=str(ws))
         api.AddSampleLog(Workspace=ws, LogName="dead_time_applied", LogText="1", LogType="Number")
     return ws
@@ -228,10 +228,16 @@ class Instrument(object):
                         xs_name = ws.getRun()["cross_section_id"].value
                         if not xs_name == "unfiltered":
                             # Find the related workspace in with error events
+                            is_found = False
                             for err_ws in _err_list:
                                 if err_ws.getRun()["cross_section_id"].value == xs_name:
+                                    is_found = True
                                     _ws = apply_dead_time_correction(ws, configuration, error_ws=err_ws)
                                     path_xs_list.append(_ws)
+                            if not is_found:
+                                print("Could not find eeror events for [%s]" % xs_name)
+                                _ws = apply_dead_time_correction(ws, configuration, error_ws=None)
+                                path_xs_list.append(_ws)
                 else:
                     path_xs_list = [
                         ws for ws in _path_xs_list if not ws.getRun()["cross_section_id"].value == "unfiltered"
