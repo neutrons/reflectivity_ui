@@ -99,7 +99,7 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
         non_zero = t_series > 0
         n_pulses = np.count_nonzero(non_zero)
 
-        # If we skip pulses, we need to account for them when computing the 
+        # If we skip pulses, we need to account for them when computing the
         # instantaneous rate
         chopper_speed = _ws_sc.getRun()["SpeedRequest1"].value[0]
         n_pulses = n_pulses * chopper_speed / 60.0
