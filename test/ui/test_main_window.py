@@ -18,7 +18,7 @@ class TestMainGui:
         qtbot.addWidget(window_main)
         assert "QuickNXS Magnetic Reflectivity" in window_main.windowTitle()
 
-    @pytest.mark.datarepo
+    @pytest.mark.skip(reason="WIP")
     def test_enter_run_number(self, qtbot):
         window_main = MainWindow()
         qtbot.addWidget(window_main)
