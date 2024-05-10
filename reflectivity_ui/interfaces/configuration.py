@@ -360,3 +360,20 @@ class Configuration(object):
         self.gisans_slice = _verify_true("gisans_slice", self.gisans_slice)
         self.gisans_slice_qz_min = float(settings.value("gisans_slice_qz_min", self.gisans_slice_qz_min))
         self.gisans_slice_qz_max = float(settings.value("gisans_slice_qz_max", self.gisans_slice_qz_max))
+
+    @classmethod
+    def setup_default_values(cls):
+        cls.QX_VS_QZ = 0
+        cls.KZI_VS_KZF = 1
+        cls.DELTA_KZ_VS_QZ = 3
+        cls.wl_bandwidth = 3.2
+        cls.use_constant_q = False
+        cls.sample_size = 10
+        cls.do_final_rebin = True
+        cls.final_rebin_step = -0.01
+        cls.normalize_to_unity = True
+        cls.total_reflectivity_q_cutoff = 0.01
+        cls.global_stitching = False
+        cls.polynomial_stitching = False
+        cls.polynomial_stitching_degree = 3
+        cls.polynomial_stitching_points = 3
