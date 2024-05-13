@@ -61,6 +61,7 @@ def stitching_config():
         "final_rebin_step": -0.01,
         "match_direct_beam": True,
     }
+    Configuration.setup_default_values()
     config = Configuration()
     for key in settings:
         setattr(config, key, settings[key])

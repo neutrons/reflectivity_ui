@@ -23,6 +23,9 @@ def DATA_DIR():
     return Path(__file__).parent / "data"
 
 
+Instrument.file_search_template = str(Path(__file__).parent / "data" / "reflectivity_ui-data" / "REF_M_%s")
+
+
 @pytest.fixture(scope="module")
 def data_server(DATA_DIR):
     r"""Object containing info and functionality for data files"""

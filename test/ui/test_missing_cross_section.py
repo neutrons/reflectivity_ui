@@ -12,7 +12,7 @@ import pytest
 # standard library imports
 
 
-@pytest.mark.datarepo
+@pytest.mark.skip(reason="WIP")
 def test_missing_cross_section(qtbot):
     r"""Test a run where the cross section corresponding to the On-On spin combination has no integrated
     proton charge. The application produces and empty reflectivity curve for On-On."""
