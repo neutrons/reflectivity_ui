@@ -10,6 +10,8 @@ import pytest
 
 TEST_REFLECTIVITY_THRESHOLD_VALUE = 1.4e-6
 TEST_DESIRED_VALUE = 210
+
+
 @pytest.mark.datarepo
 def test_missing_cross_section(qtbot):
     r"""Test a run where the crossection corresponding to the On-On spin combination has no integrated
