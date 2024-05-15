@@ -1,12 +1,29 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSpinBox, QCheckBox, QDoubleSpinBox
-
+# local imports
 from reflectivity_ui.interfaces.configuration import Configuration
+
+# third party imports
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QSpinBox, QCheckBox, QDoubleSpinBox, QWidget
+
+# standard imports
+from dataclasses import dataclass
+
+
+@dataclass
+class ConfigWidget:
+    widget_name: str
+    config_name: str
+    recalc_reflectivity: bool = False
 
 
 class ConfigurationHandler:
     """
-    Handles updating the configuration state upon changes in the UI
+    Handles events upon changes in the configuration
+
+    Configuration state that is global to all runs is stored as class variables in the class
+    `Configuration`. This class handles updating the configuration state upon changes in the UI
+    configuration elements, as well as triggering any recalculation and replotting needed as a
+    consequence of the changed configuration.
     """
 
     def __init__(self, main_window):
@@ -14,7 +31,7 @@ class ConfigurationHandler:
         self.ui = main_window.ui
         self.connect_config_events()
 
-    def config_setter_factory(self, config_name: str, is_checkbox: bool):
+    def config_setter_factory(self, qwidget: QWidget, config_name: str):
         """
         Generate anonymous functions to serve as callback when any of the global configurations
         (`Configuration` class variables) are updated in the UI.
@@ -30,54 +47,53 @@ class ConfigurationHandler:
             True if the widget type is QCheckBox
         """
 
-        def config_setter(value: int | float):
-            if is_checkbox:
+        def config_setter():
+            if isinstance(qwidget, QCheckBox):
+                value = qwidget.checkState()
                 bool_value = value == Qt.CheckState.Checked
                 setattr(Configuration, config_name, bool_value)
             else:
+                value = qwidget.value()
                 setattr(Configuration, config_name, value)
 
         return config_setter
 
+    def global_reflectivity_updater(self):
+        """
+        Recalculate and replot reflectivity upon change in global reflectivity configuration
+        """
+        self.main_window.global_reflectivity_config_changed()
+
     def connect_config_events(self):
-        widget_names = [
-            "final_rebin_checkbox",
-            "q_rebin_spinbox",
-            "normalize_to_unity_checkbox",
-            "normalization_q_cutoff_spinbox",
-            "global_fit_checkbox",
-            "polynomial_stitching_degree_spinbox",
-            "polynomial_stitching_points_spinbox",
-            "polynomial_stitching_checkbox",
-            "fanReflectivity",
-            "sample_size_spinbox",
-            "bandwidth_spinbox",
-        ]
-        config_names = [
-            "do_final_rebin",
-            "final_rebin_step",
-            "normalize_to_unity",
-            "total_reflectivity_q_cutoff",
-            "global_stitching",
-            "polynomial_stitching_degree",
-            "polynomial_stitching_points",
-            "polynomial_stitching",
-            "use_constant_q",
-            "sample_size",
-            "wl_bandwidth",
+        """Connect configuration widget events"""
+
+        config_widgets = [
+            ConfigWidget("final_rebin_checkbox", "do_final_rebin", recalc_reflectivity=True),
+            ConfigWidget("q_rebin_spinbox", "final_rebin_step", recalc_reflectivity=True),
+            ConfigWidget("normalize_to_unity_checkbox", "normalize_to_unity"),
+            ConfigWidget("normalization_q_cutoff_spinbox", "total_reflectivity_q_cutoff"),
+            ConfigWidget("global_fit_checkbox", "global_stitching"),
+            ConfigWidget("polynomial_stitching_degree_spinbox", "polynomial_stitching_degree"),
+            ConfigWidget("polynomial_stitching_points_spinbox", "polynomial_stitching_points"),
+            ConfigWidget("polynomial_stitching_checkbox", "polynomial_stitching"),
+            ConfigWidget("fanReflectivity", "use_constant_q", recalc_reflectivity=True),
+            ConfigWidget("sample_size_spinbox", "sample_size"),
+            ConfigWidget("bandwidth_spinbox", "wl_bandwidth"),
         ]
 
-        for widget_name, config_name in zip(widget_names, config_names):
+        for config_widget in config_widgets:
             # get the widget signal to connect
-            widget = getattr(self.ui, widget_name)
-            is_checkbox = False
-            if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
-                signal_name = "valueChanged"
-            elif isinstance(widget, QCheckBox):
-                is_checkbox = True
+            qwidget = getattr(self.ui, config_widget.widget_name)
+            if isinstance(qwidget, (QSpinBox, QDoubleSpinBox)):
+                signal_name = "editingFinished"
+            elif isinstance(qwidget, QCheckBox):
                 signal_name = "stateChanged"
             else:
-                raise ValueError(f"{type(widget)} not supported by ConfigurationHandler")
-            signal = getattr(widget, signal_name)
-            # connect the signal to the updater
-            signal.connect(self.config_setter_factory(config_name, is_checkbox))
+                raise ValueError(f"{type(qwidget)} not supported by ConfigurationHandler")
+            signal = getattr(qwidget, signal_name)
+
+            # connect config setter
+            signal.connect(self.config_setter_factory(qwidget, config_widget.config_name))
+            # connect reflectivity recalculation (order matters, must be connected after config setter)
+            if config_widget.recalc_reflectivity:
+                signal.connect(self.global_reflectivity_updater)

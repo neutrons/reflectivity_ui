@@ -452,6 +452,16 @@ class DataManager(object):
                 return False
         return True
 
+    def reduce_spec(self):
+        """
+        Calculate reflectivity for all runs in the reduction list
+        """
+        for nexus_data in self.reduction_list:
+            try:
+                self.calculate_reflectivity(nexus_data=nexus_data)
+            except:
+                logging.error("Could not compute reflectivity for %s\n  %s", nexus_data.number, sys.exc_info()[1])
+
     def reduce_offspec(self, progress=None):
         """
         Since the specular reflectivity is prominently displayed, it is updated as
