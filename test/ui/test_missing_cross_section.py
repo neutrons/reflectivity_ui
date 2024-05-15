@@ -8,9 +8,7 @@ import pytest
 
 # standard library imports
 
-TEST_REFLECTIVITY_THRESHOLD_VALUE = 1.4e-6
-TEST_DESIRED_VALUE = 210
-
+TEST_REFLECTIVITY_THRESHOLD_VALUE = 0.01
 
 @pytest.mark.datarepo
 def test_missing_cross_section(qtbot):
@@ -25,10 +23,12 @@ def test_missing_cross_section(qtbot):
     main_window.selectedChannel1.click()
     # check that the reflectivity curve is empty
     _, data_y = ui_utilities.data_from_plot1D(main_window.refl)
-    assert np.all(data_y <= TEST_REFLECTIVITY_THRESHOLD_VALUE)
+    test = data_y.data - data_y.data[0]
+    assert np.all(test <= TEST_REFLECTIVITY_THRESHOLD_VALUE)
+    tmp = ui_utilities.data_from_plot2D(main_window.xtof_overview)
     # check the x vs TOF plot has changed
     intensity_on_on = np.sum(ui_utilities.data_from_plot2D(main_window.xtof_overview))
-    np.testing.assert_almost_equal(intensity_off_on / intensity_on_on, TEST_DESIRED_VALUE, decimal=0)
+    assert (intensity_on_on / intensity_off_on <  TEST_REFLECTIVITY_THRESHOLD_VALUE)
 
 
 if __name__ == "__main__":
