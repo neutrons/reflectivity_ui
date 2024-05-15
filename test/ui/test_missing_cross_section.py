@@ -10,6 +10,7 @@ import pytest
 
 TEST_REFLECTIVITY_THRESHOLD_VALUE = 0.01
 
+
 @pytest.mark.datarepo
 def test_missing_cross_section(qtbot):
     r"""Test a run where the crossection corresponding to the On-On spin combination has no integrated
@@ -28,7 +29,7 @@ def test_missing_cross_section(qtbot):
     tmp = ui_utilities.data_from_plot2D(main_window.xtof_overview)
     # check the x vs TOF plot has changed
     intensity_on_on = np.sum(ui_utilities.data_from_plot2D(main_window.xtof_overview))
-    assert (intensity_on_on / intensity_off_on <  TEST_REFLECTIVITY_THRESHOLD_VALUE)
+    assert intensity_on_on / intensity_off_on < TEST_REFLECTIVITY_THRESHOLD_VALUE
 
 
 if __name__ == "__main__":
