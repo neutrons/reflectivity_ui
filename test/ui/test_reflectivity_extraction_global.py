@@ -88,13 +88,15 @@ def test_global_spinboxes(qtbot, widget, config_param, gold_value):
 
 @pytest.mark.datarepo
 def test_reflectivity_recalculated_on_config_change(mocker, qtbot):
-    '''Test that changing global binning configuration triggers recalculating reflectivity for all runs'''
+    """Test that changing global binning configuration triggers recalculating reflectivity for all runs"""
     main_window = MainWindow()
     qtbot.addWidget(main_window)
 
     # use mock and wrap to call function while also getting call count
     data_manager = main_window.data_manager
-    mock_calculate_reflectivity = mocker.patch.object(data_manager, 'calculate_reflectivity', wraps=data_manager.calculate_reflectivity)
+    mock_calculate_reflectivity = mocker.patch.object(
+        data_manager, "calculate_reflectivity", wraps=data_manager.calculate_reflectivity
+    )
 
     # add two runs to the reduction table
     ui_utilities.setText(main_window.numberSearchEntry, str(40785), press_enter=True)
@@ -104,7 +106,7 @@ def test_reflectivity_recalculated_on_config_change(mocker, qtbot):
     ui_utilities.set_current_file_by_run_number(main_window, 40782)
     main_window.actionAddPlot.triggered.emit()
     assert mock_calculate_reflectivity.call_count == 2
-    
+
     # check that all reflectivity curves are recalculated when global binning configuration is changed
 
     num_runs = 2
