@@ -82,7 +82,8 @@ def test_global_spinboxes(qtbot, widget, config_param, gold_value):
     qtbot.addWidget(main_window)
     _initialize_test_data(main_window)
 
-    getattr(main_window.ui, widget).setValue(gold_value)
+    qwidget = getattr(main_window.ui, widget)
+    ui_utilities.setValue(qwidget, gold_value)
     _assert_configuration_float_value(main_window, config_param, gold_value)
 
 
