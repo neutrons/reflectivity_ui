@@ -292,6 +292,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Perform action upon change in global reflectivity configuration.
         """
+        if self.auto_change_active:
+            return
+
         self.data_manager.reduce_spec()
         self.initiate_reflectivity_plot.emit(True)
         self.update_specular_viewer.emit()

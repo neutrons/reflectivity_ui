@@ -9,13 +9,6 @@ from PyQt5.QtWidgets import QSpinBox, QCheckBox, QDoubleSpinBox, QWidget
 from dataclasses import dataclass
 
 
-@dataclass
-class ConfigWidget:
-    widget_name: str
-    config_name: str
-    recalc_reflectivity: bool = False
-
-
 class ConfigurationHandler:
     """
     Handles events upon changes in the configuration
@@ -41,10 +34,10 @@ class ConfigurationHandler:
 
         Parameters
         ----------
+        qwidget: QWidget
+            UI widget
         config_name: str
             Name of the Configuration variable to update
-        is_checkbox: bool
-            True if the widget type is QCheckBox
         """
 
         def config_setter():
@@ -66,6 +59,23 @@ class ConfigurationHandler:
 
     def connect_config_events(self):
         """Connect configuration widget events"""
+
+        @dataclass
+        class ConfigWidget:
+            """Class to help connect UI configuration widgets to events
+
+            Holds widget name and the `Configuration` class variable it represents, as well
+            as information about any events the widget triggers
+
+            Args:
+                widget_name (str): name of a QWidget
+                config_name (str): name of a `Configuration` class variable
+                recalc_reflectivity (bool): if True, trigger global reflectivity recalculation
+            """
+
+            widget_name: str
+            config_name: str
+            recalc_reflectivity: bool = False
 
         config_widgets = [
             ConfigWidget("final_rebin_checkbox", "do_final_rebin", recalc_reflectivity=True),

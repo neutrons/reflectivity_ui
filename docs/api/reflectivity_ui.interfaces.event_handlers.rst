@@ -10,6 +10,14 @@ reflectivity\_ui.interfaces.event\_handlers package
 Submodules
 ----------
 
+reflectivity\_ui.interfaces.event\_handlers.configuration\_handler module
+-------------------------------------------------------------------------
+
+.. automodule:: reflectivity_ui.interfaces.event_handlers.configuration_handler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 reflectivity\_ui.interfaces.event\_handlers.main\_handler module
 ----------------------------------------------------------------
 
