@@ -2,6 +2,8 @@
 from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.data_set import NexusData, CrossSectionData
 from reflectivity_ui.interfaces.main_window import MainWindow
+from test.ui import ui_utilities
+
 
 # third party imports
 import pytest
@@ -80,5 +82,49 @@ def test_global_spinboxes(qtbot, widget, config_param, gold_value):
     qtbot.addWidget(main_window)
     _initialize_test_data(main_window)
 
-    getattr(main_window.ui, widget).setValue(gold_value)
+    qwidget = getattr(main_window.ui, widget)
+    ui_utilities.setValue(qwidget, gold_value)
     _assert_configuration_float_value(main_window, config_param, gold_value)
+
+
+@pytest.mark.datarepo
+def test_reflectivity_recalculated_on_config_change(mocker, qtbot):
+    """Test that changing global binning configuration triggers recalculating reflectivity for all runs"""
+    main_window = MainWindow()
+    qtbot.addWidget(main_window)
+
+    # use mock and wrap to call function while also getting call count
+    data_manager = main_window.data_manager
+    mock_calculate_reflectivity = mocker.patch.object(
+        data_manager, "calculate_reflectivity", wraps=data_manager.calculate_reflectivity
+    )
+
+    # add two runs to the reduction table
+    ui_utilities.setText(main_window.numberSearchEntry, str(40785), press_enter=True)
+    ui_utilities.set_current_file_by_run_number(main_window, 40785)
+    main_window.actionAddPlot.triggered.emit()
+    assert mock_calculate_reflectivity.call_count == 1
+    ui_utilities.set_current_file_by_run_number(main_window, 40782)
+    main_window.actionAddPlot.triggered.emit()
+    assert mock_calculate_reflectivity.call_count == 2
+
+    # check that all reflectivity curves are recalculated when global binning configuration is changed
+
+    num_runs = 2
+
+    # test toggling `fanReflectivity`
+    prev_call_count = mock_calculate_reflectivity.call_count
+    main_window.ui.fanReflectivity.nextCheckState()
+    assert mock_calculate_reflectivity.call_count == prev_call_count + num_runs
+
+    # test toggling `final_rebin_checkbox`
+    prev_call_count = mock_calculate_reflectivity.call_count
+    main_window.ui.final_rebin_checkbox.nextCheckState()
+    assert mock_calculate_reflectivity.call_count == prev_call_count + num_runs
+
+    # test editing `q_rebin_spinbox`
+    prev_call_count = mock_calculate_reflectivity.call_count
+    q_spinbox = main_window.ui.q_rebin_spinbox
+    q_delta = q_spinbox.singleStep() if q_spinbox.value() < 0 else -q_spinbox.singleStep()
+    ui_utilities.setValue(q_spinbox, q_spinbox.value() + q_delta, editing_finished=True)
+    assert mock_calculate_reflectivity.call_count == prev_call_count + num_runs

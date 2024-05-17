@@ -5695,22 +5695,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>fanReflectivity</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>changeRegionValues()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>168</x>
-     <y>727</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>85</x>
-     <y>839</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>normalizeXTof</sender>
    <signal>stateChanged(int)</signal>
    <receiver>MainWindow</receiver>
@@ -6266,38 +6250,6 @@
     </hint>
     <hint type="destinationlabel">
      <x>921</x>
-     <y>503</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>final_rebin_checkbox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>changeRegionValues()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>58</x>
-     <y>753</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>934</x>
-     <y>503</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>q_rebin_spinbox</sender>
-   <signal>editingFinished()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>changeRegionValues()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>315</x>
-     <y>757</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>934</x>
      <y>503</y>
     </hint>
    </hints>

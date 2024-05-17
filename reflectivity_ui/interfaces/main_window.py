@@ -288,6 +288,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.plot_manager.plot_refl()
                 self.update_specular_viewer.emit()
 
+    def global_reflectivity_config_changed(self):
+        """
+        Perform action upon change in global reflectivity configuration.
+        """
+        if self.auto_change_active:
+            return
+
+        self.data_manager.reduce_spec()
+        self.initiate_reflectivity_plot.emit(True)
+        self.update_specular_viewer.emit()
+
     def reductionTableChanged(self, item):
         """
         Perform action upon change in data reduction list.

@@ -17,6 +17,14 @@ def setText(widget, text, press_enter=True):
         widget.returnPressed.emit()
 
 
+def setValue(widget, value, editing_finished=True):
+    r"""Set the value of a widget and optionally emit editing finished signal."""
+    assert getattr(widget, "setValue", None) is not None
+    widget.setValue(value)
+    if editing_finished:
+        widget.editingFinished.emit()
+
+
 def data_from_plot1D(widget: "MplWidget", line_number=0) -> tuple:
     r"""Get the data from an MplWidget representing a 1D plot
     Returns
