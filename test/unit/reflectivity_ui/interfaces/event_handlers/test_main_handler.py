@@ -36,7 +36,7 @@ class TestMainHandler(object):
     application = MainWindow()
     handler = MainHandler(application)
 
-    @pytest.mark.skip(reason="Data file is missing: REF_M_24945_event.nxs")
+    @pytest.mark.datarepo
     def test_congruency_fail_report(self, data_server):
         # Selected subset of log names with an invalid one
         message = self.handler._congruency_fail_report(
@@ -56,7 +56,7 @@ class TestMainHandler(object):
         message = self.handler._congruency_fail_report(
             [data_server.path_to("REF_M_24945_event.nxs"), data_server.path_to("REF_M_24949_event.nxs")]
         )
-        assert "values for log S3Vheight that differ above tolerance 0.01" in message
+        assert "contain values for log S3Vheight that differ above tolerance 0.01" in message
 
         # New files
         message = self.handler._congruency_fail_report(

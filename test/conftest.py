@@ -40,15 +40,22 @@ def data_server(DATA_DIR):
             r"""Directory where to find the data es"""
             return self._directory
 
+        @property
+        def h5_path(self):
+            r"""Directory where to find h5 data files"""
+            return self._h5_path
+
         def path_to(self, basename):
             r"""Absolute path to a data file. If it doesn't exist, try to find it in the remote repository"""
-            file_path = os.path.join(self._directory, self._h5_path)
-            file_path = os.path.join(file_path, basename)
-            for ext in [".nxs.h5"]:
-                if os.path.isfile(file_path + ext):
-                    return file_path + ext
+            # looking in test/data
             file_path = os.path.join(self._directory, basename)
-            for ext in ["", "_event.nxs"]:
+            if os.path.isfile(file_path):
+                return file_path
+            # looking in test/data/reflectivity_ui-data
+            file_path = os.path.join(self.directory, self.h5_path)
+            file_path = os.path.join(file_path, basename)
+
+            for ext in [".nxs.h5", "", "_event.nxs"]:
                 if os.path.isfile(file_path + ext):
                     return file_path + ext
             raise IOError("File {0} not found in data directory {1}".format(basename, self._directory))
