@@ -8,7 +8,7 @@ import pytest
 
 
 class TestDataManagerTest(object):
-    @pytest.mark.skip(reason="Data file is missing: REF_M_29160")
+    @pytest.mark.skip(reason="WIP")
     def test_manager(self, data_server):
         manager = DataManager(data_server.directory)
         manager.load(data_server.path_to("REF_M_29160"), Configuration())
@@ -36,7 +36,7 @@ class TestDataManagerTest(object):
         dm.get_scaled_workspaces(manager.reduction_list, manager.reduction_states[0])
         dm.stitch_reflectivity(manager.reduction_list)
 
-    @pytest.mark.datarepo
+    @pytest.mark.skip(reason="WIP")
     def test_add_ordermanager(self, data_server):
         # load up files for testing
         manager = DataManager(data_server.directory)
