@@ -24,8 +24,6 @@ import sys
 import string
 
 
-
-
 # Constants
 h = 6.626e-34  # m^2 kg s^-1
 m = 1.675e-27  # kg
@@ -85,6 +83,7 @@ class Instrument(object):
     legacy_search_template = "/SNS/REF_M/*/data/REF_M_%s"
     # Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
     USE_SLOW_FLIPPER_LOG = False
+
     def __init__(self):
         # Filtering
         self.pol_state = "PolarizerState"
