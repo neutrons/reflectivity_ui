@@ -318,8 +318,8 @@ class DataManager(object):
                 # Compute reflectivity
                 try:
                     self.calculate_reflectivity()
-                except:
-                    logging.error("Reflectivity calculation failed for %s", file_name)
+                except Exception as e:
+                    logging.error("Reflectivity calculation failed for %s exception %s", file_name, e)
 
                 # if cached reduced data exceeds maximum cache size, remove the oldest reduced data
                 while len(self._cache) >= self.MAX_CACHE:

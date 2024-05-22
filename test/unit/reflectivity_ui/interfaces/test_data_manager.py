@@ -2,14 +2,22 @@
 from reflectivity_ui.interfaces.data_manager import DataManager
 from reflectivity_ui.interfaces.configuration import Configuration
 import reflectivity_ui.interfaces.data_handling.data_manipulation as dm
+from reflectivity_ui.interfaces.data_handling.instrument import Instrument
 
 # 3rd-party imports
 import pytest
 
 
+@pytest.fixture()
+def setup_method():
+    Instrument.USE_SLOW_FLIPPER_LOG = True
+    yield
+    Instrument.USE_SLOW_FLIPPER_LOG = False
+
+
 class TestDataManagerTest(object):
-    @pytest.mark.skip(reason="WIP")
-    def test_manager(self, data_server):
+    @pytest.mark.datarepo
+    def test_manager(self, data_server, setup_method):
         manager = DataManager(data_server.directory)
         manager.load(data_server.path_to("REF_M_29160"), Configuration())
 
