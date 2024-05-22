@@ -24,8 +24,7 @@ import sys
 import string
 
 
-# Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
-USE_SLOW_FLIPPER_LOG = False
+
 
 # Constants
 h = 6.626e-34  # m^2 kg s^-1
@@ -84,7 +83,8 @@ class Instrument(object):
     instrument_dir = "/SNS/REF_M"
     file_search_template = "/SNS/REF_M/*/nexus/REF_M_%s"
     legacy_search_template = "/SNS/REF_M/*/data/REF_M_%s"
-
+    # Option to use the slow flipper logs rather than the Analyzer/Polarizer logs
+    USE_SLOW_FLIPPER_LOG = False
     def __init__(self):
         # Filtering
         self.pol_state = "PolarizerState"
@@ -151,7 +151,7 @@ class Instrument(object):
         workspace_root_name = fp_instance.run_numbers(string_representation="short")
         for path in fp_instance.single_paths:
             is_legacy = path.endswith(".nxs")
-            if is_legacy or not USE_SLOW_FLIPPER_LOG:
+            if is_legacy or not self.USE_SLOW_FLIPPER_LOG:
                 _path_xs_list = api.MRFilterCrossSections(
                     Filename=path,
                     PolState=self.pol_state,
