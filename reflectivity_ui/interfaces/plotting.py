@@ -611,6 +611,7 @@ class PlotManager(object):
                 transform=self.main_window.ui.refl.canvas.ax.transAxes,
             )
         else:
+
             def _set_ymax(ymax, ynormed):
                 _ymax = max(ymax, ynormed.max())
                 if _ymax == np.inf:
