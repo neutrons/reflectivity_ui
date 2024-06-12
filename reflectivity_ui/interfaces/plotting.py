@@ -611,12 +611,19 @@ class PlotManager(object):
                 transform=self.main_window.ui.refl.canvas.ax.transAxes,
             )
         else:
+            def set_ymax(ymax, ynormed):
+                _ymax = max(ymax, ynormed.max())
+                if _ymax == np.inf:
+                    _ymax = np.ma.array(ynormed, mask=~np.isfinite(ynormed)).max()
+                    _ymax = max(ymax, _ymax)
+                return _ymax
+
             ymin = 1.5
             ymax = 1e-7
             ynormed = self.main_window.data_manager.active_channel.r[P0:PN]
             if len(ynormed[ynormed > 0]) >= 2:
                 ymin = min(ymin, ynormed[ynormed > 0].min())
-                ymax = max(ymax, ynormed.max())
+                ymax = set_ymax(ymax, ynormed)
                 self.main_window.ui.refl.errorbar(
                     self.main_window.data_manager.active_channel.q[P0:PN],
                     ynormed,
@@ -652,7 +659,7 @@ class PlotManager(object):
                 except ValueError:
                     pass
                 try:
-                    ymax = max(ymax, ynormed.max())
+                    ymax = set_ymax(ymax, ynormed)
                 except ValueError:
                     pass
                 self.main_window.ui.refl.errorbar(
