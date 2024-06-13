@@ -42,7 +42,7 @@ class SmoothDialog(QtWidgets.QDialog):
         # percentage offset of the grid area inside the whole plot area
         grid_percentage = 0.05
         # percentage of the sigma spot from the whole plot area
-        sigma_percentage = 0.015
+        sigma_percentage = 0.005
         # default-minimum sigma x,y size
         min_sigma_size = 0.0001
         k_diff_min = 0.01
@@ -68,6 +68,7 @@ class SmoothDialog(QtWidgets.QDialog):
             # P_0 and P_N are the number of points to cut in TOF on each side
             p_0 = item.cross_sections[first_state].configuration.cut_first_n_points
             p_n = n_total - item.cross_sections[first_state].configuration.cut_last_n_points
+
             Qx = Qx[:, p_0:p_n]
             Qz = Qz[:, p_0:p_n]
             ki_z = ki_z[:, p_0:p_n]
@@ -76,11 +77,11 @@ class SmoothDialog(QtWidgets.QDialog):
 
             Qzmax = max(ki_z.max() * 2.0, Qzmax)
             if self.ui.kizmkfzVSqz.isChecked():
-                plot.pcolormesh((ki_z - kf_z), Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+                plot.pcolormesh((ki_z - kf_z), Qz, I, log=True, imin=1e-6, imax=1.0, cmap='jet', shading="gouraud")
             elif self.ui.qxVSqz.isChecked():
-                plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+                plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, cmap='jet', shading="gouraud")
             else:
-                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, shading="gouraud")
+                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, cmap='jet', shading="gouraud")
 
         if self.ui.kizmkfzVSqz.isChecked():
             qz_max = max(Qz[I > 0].max(), qz_max)
