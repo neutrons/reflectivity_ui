@@ -77,11 +77,11 @@ class SmoothDialog(QtWidgets.QDialog):
 
             Qzmax = max(ki_z.max() * 2.0, Qzmax)
             if self.ui.kizmkfzVSqz.isChecked():
-                plot.pcolormesh((ki_z - kf_z), Qz, I, log=True, imin=1e-6, imax=1.0, cmap='jet', shading="gouraud")
+                plot.pcolormesh((ki_z - kf_z), Qz, I, log=True, imin=1e-6, imax=1.0, cmap="jet", shading="gouraud")
             elif self.ui.qxVSqz.isChecked():
-                plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, cmap='jet', shading="gouraud")
+                plot.pcolormesh(Qx, Qz, I, log=True, imin=1e-6, imax=1.0, cmap="jet", shading="gouraud")
             else:
-                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, cmap='jet', shading="gouraud")
+                plot.pcolormesh(ki_z, kf_z, I, log=True, imin=1e-6, imax=1.0, cmap="jet", shading="gouraud")
 
         if self.ui.kizmkfzVSqz.isChecked():
             qz_max = max(Qz[I > 0].max(), qz_max)
