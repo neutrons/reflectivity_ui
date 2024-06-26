@@ -233,6 +233,12 @@ class Configuration(object):
         settings.setValue("do_final_rebin", self.do_final_rebin)
         settings.setValue("final_rebin_step", self.final_rebin_step)
 
+        # Dead time options
+        settings.setValue("apply_deadtime", self.apply_deadtime)
+        settings.setValue("paralyzable_deadtime", self.paralyzable_deadtime)
+        settings.setValue("deadtime_value", self.deadtime_value)
+        settings.setValue("deadtime_tof_step", self.deadtime_tof_step)
+
         # Off-specular options
         settings.setValue("off_spec_x_axis", self.off_spec_x_axis)
         settings.setValue("off_spec_slice", self.off_spec_slice)
@@ -330,6 +336,12 @@ class Configuration(object):
         Configuration.sample_size = float(settings.value("sample_size", self.sample_size))
         Configuration.do_final_rebin = _verify_true("do_final_rebin", self.do_final_rebin)
         Configuration.final_rebin_step = float(settings.value("final_rebin_step", self.final_rebin_step))
+
+        # Dead time options
+        Configuration.apply_deadtime = _verify_true("apply_deadtime", self.apply_deadtime)
+        Configuration.paralyzable_deadtime = _verify_true("paralyzable_deadtime", self.paralyzable_deadtime)
+        Configuration.deadtime_value = float(settings.value("deadtime_value", self.deadtime_value))
+        Configuration.deadtime_tof_step = float(settings.value("deadtime_tof_step", self.deadtime_tof_step))
 
         # Off-specular options
         self.off_spec_x_axis = int(settings.value("off_spec_x_axis", self.off_spec_x_axis))

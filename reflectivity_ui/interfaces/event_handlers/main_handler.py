@@ -1221,6 +1221,11 @@ class MainHandler(object):
         Configuration.do_final_rebin = self.ui.final_rebin_checkbox.isChecked()
         Configuration.final_rebin_step = self.ui.q_rebin_spinbox.value()
 
+        Configuration.apply_deadtime = self.ui.deadtime_entry.applyCheckBox.isChecked()
+        Configuration.paralyzable_deadtime = self.main_window.deadtime_settings.paralyzable
+        Configuration.deadtime_value = self.main_window.deadtime_settings.dead_time
+        Configuration.deadtime_tof_step = self.main_window.deadtime_settings.tof_step
+
         # UI elements
         configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
         configuration.x_wl_map = self.ui.xLamda.isChecked()
@@ -1329,6 +1334,11 @@ class MainHandler(object):
         self.ui.sample_size_spinbox.setValue(configuration.sample_size)
         self.ui.final_rebin_checkbox.setChecked(configuration.do_final_rebin)
         self.ui.q_rebin_spinbox.setValue(configuration.final_rebin_step)
+
+        self.ui.deadtime_entry.applyCheckBox.setChecked(configuration.apply_deadtime)
+        self.main_window.deadtime_settings.paralyzable = configuration.paralyzable_deadtime
+        self.main_window.deadtime_settings.dead_time = configuration.deadtime_value
+        self.main_window.deadtime_settings.tof_step = configuration.deadtime_tof_step
 
         # UI elements
         self.ui.normalizeXTof.setChecked(configuration.normalize_x_tof)
