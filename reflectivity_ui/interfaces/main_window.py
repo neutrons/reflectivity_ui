@@ -16,7 +16,7 @@ from reflectivity_ui.interfaces.event_handlers.configuration_handler import Conf
 from reflectivity_ui.interfaces.event_handlers.plot_handler import PlotHandler
 from reflectivity_ui.interfaces.event_handlers.main_handler import MainHandler
 from reflectivity_ui.interfaces import load_ui
-from reflectivity_ui.ui.deadtime_settings import DeadTimeSettingsModel, DeadTimeSettingsView
+from reflectivity_ui.ui.deadtime_settings import DeadTimeSettingsView
 
 # 3rd-party
 from PyQt5 import QtCore, QtWidgets
@@ -69,7 +69,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # Object managers
         self.data_manager = DataManager(self.settings.value("current_directory", os.path.expanduser("~")))
         self.plot_manager = PlotManager(self)
-        self.deadtime_settings = DeadTimeSettingsModel()
 
         r"""Setting `auto_change_active = True` bypasses execution of:
         - MainWindow.file_open_from_list()
@@ -96,12 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
 
-        self.ui.deadtime_entry.applyCheckBox.stateChanged.connect(self.apply_deadtime_update)
         self.ui.deadtime_entry.settingsButton.clicked.connect(self.open_deadtime_settings)
-
-    def apply_deadtime_update(self, state):
-        """TODO: Figure out if this is needed"""
-        pass
 
     def closeEvent(self, event):
         """Close UI event"""
@@ -537,14 +531,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_rawdata_dialog(self):
         return NotImplemented
-    
+
     def open_deadtime_settings(self):
         r"""Show the dialog for dead-time options. Update attribue deadtime options upon closing the dialog."""
         view = DeadTimeSettingsView(parent=self)
-        view.set_state(
-            self.deadtime_settings.paralyzable, self.deadtime_settings.dead_time, self.deadtime_settings.tof_step
-        )
         view.exec_()
-        # update the dead time settings of the Main GUI after user has closed the dialog
-        for option in ["paralyzable", "dead_time", "tof_step"]:
-            setattr(self.deadtime_settings, option, view.options[option])

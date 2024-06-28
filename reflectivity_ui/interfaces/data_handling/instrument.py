@@ -246,7 +246,7 @@ class Instrument(object):
                                     _ws = apply_dead_time_correction(ws, configuration, error_ws=err_ws)
                                     path_xs_list.append(_ws)
                             if not is_found:
-                                print("Could not find eeror events for [%s]" % xs_name)
+                                print("Could not find error events for [%s]" % xs_name)
                                 _ws = apply_dead_time_correction(ws, configuration, error_ws=None)
                                 path_xs_list.append(_ws)
                 else:
