@@ -133,7 +133,7 @@ class Instrument(object):
                     LogName="loaded_with_getDI",
                     LogText="True",
                     LogType="String",
-                )  
+                )
                 cross_sections.append(_ws)
             except RuntimeError as run_err:
                 logging.error("Could not filter {}: {}\nError: {}".format(pol_state, sys.exc_info()[1], run_err))
