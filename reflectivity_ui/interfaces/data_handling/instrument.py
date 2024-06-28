@@ -168,7 +168,6 @@ class Instrument(object):
                 # Only keep good workspaces, and get rid of the rejected events
                 if len(_path_xs_list) == 1 and not "cross_section_id" in _path_xs_list[0].getRun():
                     logging.warning("Could not filter data, using getDI")
-                    print("Could not filter data, using getDI")
                     ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
                     path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
                 else:
