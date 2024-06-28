@@ -128,6 +128,12 @@ class Instrument(object):
                     OutputWorkspace="%s_entry-%s" % (name_prefix, pol_state),
                 )
                 _ws.getRun()["cross_section_id"] = pol_state
+                api.AddSampleLog(
+                    Workspace=str(_ws),
+                    LogName="loaded_with_getDI",
+                    LogText="True",
+                    LogType="String",
+                )  
                 cross_sections.append(_ws)
             except RuntimeError as run_err:
                 logging.error("Could not filter {}: {}\nError: {}".format(pol_state, sys.exc_info()[1], run_err))
@@ -160,9 +166,15 @@ class Instrument(object):
                     CrossSectionWorkspaces="%s_entry" % temp_workspace_root_name,
                 )
                 # Only keep good workspaces, and get rid of the rejected events
-                path_xs_list = [
-                    ws for ws in _path_xs_list if not ws.getRun()["cross_section_id"].value == "unfiltered"
-                ]
+                if len(_path_xs_list) == 1 and not "cross_section_id" in _path_xs_list[0].getRun():
+                    logging.warning("Could not filter data, using getDI")
+                    print("Could not filter data, using getDI")
+                    ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
+                    path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
+                else:
+                    path_xs_list = [
+                        ws for ws in _path_xs_list if not ws.getRun()["cross_section_id"].value == "unfiltered"
+                    ]
             else:
                 ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
                 path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
