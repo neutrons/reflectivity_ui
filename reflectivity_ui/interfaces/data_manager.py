@@ -197,6 +197,9 @@ class DataManager(object):
                     self.reduction_states = list(self.data_sets.keys())
                 is_inserted = False
                 q_min, _ = self._nexus_data.get_q_range()
+                if q_min is None:
+                    logging.error("Could not get q range information")
+                    return False
                 for i in range(len(self.reduction_list)):
                     _q_min, _ = self.reduction_list[i].get_q_range()
                     if q_min <= _q_min:
@@ -737,8 +740,10 @@ class DataManager(object):
                     configuration.normalization = None
                     self._nexus_data.update_configuration(conf)
                     self.calculate_reflectivity()
-                self.add_active_to_reduction()
-                logging.info("%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0)
+                if self.add_active_to_reduction():
+                    logging.info("%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0)
+                else:
+                    logging.error("Could not load %s", r_id)
                 if progress:
                     progress.set_value(n_loaded, message="%s loaded" % os.path.basename(run_file), out_of=n_total)
             else:

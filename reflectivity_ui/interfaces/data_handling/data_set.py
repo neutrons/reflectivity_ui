@@ -211,6 +211,8 @@ class NexusData(object):
         _dirpix = conf.direct_pixel_overwrite if conf.set_direct_pixel else None
         _dangle0 = conf.direct_angle_offset_overwrite if conf.set_direct_angle_offset else None
 
+        # The reduced data workspace may be a group or a single
+        # workspace depending on the InputWorkspace parameter
         ws = api.MagnetismReflectometryReduction(
             InputWorkspace=wsg,
             NormalizationWorkspace=ws_norm,
@@ -249,9 +251,10 @@ class NexusData(object):
         )
 
         # If there's an empty reflectivity curve, add a small value to it so that it can be plotted.
+        _xs_ws = [ws] if isinstance(ws, Workspace2D) else ws
         for i in range(len(ws_list)):
-            if _is_empty_reflectivity_curve(ws[i]):
-                _shift_empty_reflectivity_curve(ws[i])
+            if _is_empty_reflectivity_curve(_xs_ws[i]):
+                _shift_empty_reflectivity_curve(_xs_ws[i])
 
         # FOR COMPATIBILITY WITH QUICKNXS #
         _ws = ws[0] if len(ws_list) > 1 else ws
@@ -390,9 +393,12 @@ class NexusData(object):
         # select peak regions
         _max_counts = 0
         _max_xs = None
+        _loaded_with_getDI = False
         for ws in xs_list:
             # Get the unique name for the cross-section, determined by the filtering
             channel = ws.getRun().getProperty("cross_section_id").value
+            if ws.getRun().hasProperty("loaded_with_getDI"):
+                _loaded_with_getDI = True
             if progress is not None:
                 progress_value += int(100.0 / len(xs_list))
                 progress(progress_value, "Loading %s..." % str(channel), out_of=100.0)
@@ -425,6 +431,8 @@ class NexusData(object):
 
         if progress is not None:
             progress(100, "Complete", out_of=100.0)
+            if _loaded_with_getDI:
+                progress(100, "WARNING: Analyzer/polarizer states not available - loaded with getDI", out_of=100.0)
 
         return self.cross_sections
 
