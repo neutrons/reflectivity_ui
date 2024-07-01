@@ -740,8 +740,10 @@ class DataManager(object):
                     configuration.normalization = None
                     self._nexus_data.update_configuration(conf)
                     self.calculate_reflectivity()
-                self.add_active_to_reduction()
-                logging.info("%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0)
+                if self.add_active_to_reduction():
+                    logging.info("%s loaded: %s sec [%s]", r_id, time.time() - t_i, time.time() - t_0)
+                else:
+                    logging.error("Could not load %s", r_id)
                 if progress:
                     progress.set_value(n_loaded, message="%s loaded" % os.path.basename(run_file), out_of=n_total)
             else:
