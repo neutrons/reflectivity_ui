@@ -395,3 +395,7 @@ class Configuration(object):
         cls.polynomial_stitching = False
         cls.polynomial_stitching_degree = 3
         cls.polynomial_stitching_points = 3
+        cls.apply_deadtime = True
+        cls.paralyzable_deadtime = True
+        cls.deadtime_value = 4.2
+        cls.deadtime_tof_step = 100
