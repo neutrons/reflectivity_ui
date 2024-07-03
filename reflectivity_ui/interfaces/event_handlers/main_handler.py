@@ -1446,6 +1446,13 @@ class MainHandler(object):
 
         self.main_window.initiate_reflectivity_plot.emit(False)
 
+    def reload_all_files(self):
+        """
+        Reload all loaded (cached) files
+        """
+        prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_bar_handler)
+        self._data_manager.reload_cached_files(prog)
+
     def report_message(self, message, informative_message=None, detailed_message=None, pop_up=False, is_error=False):
         r"""
         Report an error.

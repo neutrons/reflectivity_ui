@@ -1,9 +1,17 @@
+# package imports
+from reflectivity_ui.interfaces.configuration import Configuration
+from reflectivity_ui.interfaces.event_handlers.widgets import AcceptRejectDialog
+
 # third party imports
+from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QGroupBox, QHBoxLayout, QCheckBox, QPushButton
 
 
 class DeadTimeEntryPoint(QGroupBox):
-    def __init__(self, title='Dead Time Correction'):
+
+    reload_files_signal = Signal()
+
+    def __init__(self, title="Dead Time Correction"):
         super().__init__(title)
         self.initUI()
 
@@ -22,9 +30,9 @@ class DeadTimeEntryPoint(QGroupBox):
             "}"
         )
 
-        self.applyCheckBox = QCheckBox('Apply', self)
+        self.applyCheckBox = self.VerifyChangeCheckBox("Apply", self)
         self.applyCheckBox.stateChanged.connect(self.toggleSettingsButton)
-        self.settingsButton = QPushButton('Settings', self)
+        self.settingsButton = QPushButton("Settings", self)
         self.settingsButton.setEnabled(self.applyCheckBox.isChecked())  # enabled if we use the correction
 
         # Create a horizontal layout for the checkbox and settings button
@@ -36,6 +44,34 @@ class DeadTimeEntryPoint(QGroupBox):
         # Set the layout for the group box
         self.setLayout(hbox)
 
+    class VerifyChangeCheckBox(QCheckBox):
+        """
+        Checkbox that intercepts the state change to ask user to confirm the change in
+        dead-time settings, since it requires reloading all files
+        """
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def ask_user_ok_to_reload_files(self):
+            """Shows dialog asking user to confirm reloading all files"""
+            message = "Change dead-time settings and reload all files?"
+            dialog = AcceptRejectDialog(self, title="Reload files", message=message)
+            proceed = dialog.exec_()
+            return proceed
+
+        def mousePressEvent(self, event):
+            # Ask user to confirm before changing the state
+            if self.ask_user_ok_to_reload_files():
+                # Manually toggle the checkbox state
+                self.setChecked(not self.isChecked())
+            # Ignore the original event since it is handled above
+            event.ignore()
+
     def toggleSettingsButton(self, state):
         # Enable the settings button if the checkbox is checked, disable otherwise
         self.settingsButton.setEnabled(state)
+        # Update the global configuration state
+        Configuration.apply_deadtime = state
+        # Trigger reloading all files to apply the new dead-time settings
+        self.reload_files_signal.emit()

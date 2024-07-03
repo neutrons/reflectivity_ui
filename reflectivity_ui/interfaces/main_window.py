@@ -96,6 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initiate_reflectivity_plot.connect(self.plot_manager.plot_refl)
 
         self.ui.deadtime_entry.settingsButton.clicked.connect(self.open_deadtime_settings)
+        self.ui.deadtime_entry.reload_files_signal.connect(self.reload_all_files)
 
     def closeEvent(self, event):
         """Close UI event"""
@@ -517,6 +518,18 @@ class MainWindow(QtWidgets.QMainWindow):
         width = (off_spec_y_max - off_spec_y_min) / off_spec_nybins
         self.ui.offspec_qz_bin_width_label.setText("%8.6f 1/A" % width)
 
+    def open_deadtime_settings(self):
+        r"""Show the dialog for dead-time options. Update global configuration parameters upon
+        closing the dialog."""
+        view = DeadTimeSettingsView(parent=self)
+        view.reload_files_signal.connect(self.reload_all_files)
+        view.exec_()
+
+    def reload_all_files(self):
+        r"""Reload all previously loaded files upon change in loading configuration"""
+        self.file_handler.reload_all_files()
+        self.file_loaded()
+
     # Un-used UI signals
     # pylint: disable=missing-docstring, multiple-statements, no-self-use
     def change_gisans_colorscale(self):
@@ -531,8 +544,3 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_rawdata_dialog(self):
         return NotImplemented
-
-    def open_deadtime_settings(self):
-        r"""Show the dialog for dead-time options. Update attribue deadtime options upon closing the dialog."""
-        view = DeadTimeSettingsView(parent=self)
-        view.exec_()

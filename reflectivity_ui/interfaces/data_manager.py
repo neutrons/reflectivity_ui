@@ -768,3 +768,22 @@ class DataManager(object):
         h5_file_list = glob.glob(os.path.join(self.current_directory, "*.nxs.h5"))
         event_file_list.extend(h5_file_list)
         return sorted([os.path.basename(name) for name in event_file_list])
+
+    def reload_cached_files(self, progress=None):
+        """
+        Force reload of all files cached by the data manager
+        """
+        n_loaded = 0
+        n_total = self.get_cachesize()
+        for nexus_data in self._cache:
+            file_path = nexus_data.file_path
+            # keep configuration
+            xs_main = nexus_data.cross_sections[nexus_data.main_cross_section]
+            conf = xs_main.configuration
+            self.load(file_path, conf, force=True, update_parameters=False)
+            n_loaded += 1
+            if progress:
+                progress.set_value(n_loaded, message="%s loaded" % os.path.basename(file_path), out_of=n_total)
+
+        if progress:
+            progress.set_value(n_total, message="Done", out_of=n_total)
