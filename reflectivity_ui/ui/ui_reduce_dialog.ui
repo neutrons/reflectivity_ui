@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>512</height>
+    <width>616</width>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Reduction Options</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../icons/icons.qrc">
+   <iconset>
     <normaloff>:/General/logo.png</normaloff>:/General/logo.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -109,13 +109,6 @@
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>ASCII</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="genx">
-            <property name="text">
-             <string>GenX</string>
             </property>
            </widget>
           </item>

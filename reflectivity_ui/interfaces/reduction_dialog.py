@@ -34,7 +34,6 @@ class ReductionDialog(QtWidgets.QDialog):
         self.ui.exportOffSpecularSmoothed.setChecked(self._verify_true("export_offspec_smooth", False))
 
         # Formats
-        self.ui.genx.setChecked(self._verify_true("format_genx", False))
         self.ui.matlab.setChecked(self._verify_true("format_matlab", False))
         self.ui.numpy.setChecked(self._verify_true("format_numpy", False))
         self.ui.mantid_script_checkbox.setChecked(self._verify_true("format_mantid", False))
@@ -74,7 +73,6 @@ class ReductionDialog(QtWidgets.QDialog):
             export_gisans=self.ui.exportGISANS.isChecked(),
             export_offspec=self.ui.exportOffSpecular.isChecked(),
             export_offspec_smooth=self.ui.exportOffSpecularSmoothed.isChecked(),
-            format_genx=self.ui.genx.isChecked(),
             format_matlab=self.ui.matlab.isChecked(),
             format_mantid=self.ui.mantid_script_checkbox.isChecked(),
             format_numpy=self.ui.numpy.isChecked(),
@@ -115,7 +113,6 @@ class ReductionDialog(QtWidgets.QDialog):
         self.settings.setValue("export_offspec", self.ui.exportOffSpecular.isChecked())
         self.settings.setValue("export_offspec_smooth", self.ui.exportOffSpecularSmoothed.isChecked())
 
-        self.settings.setValue("format_genx", self.ui.genx.isChecked())
         self.settings.setValue("format_matlab", self.ui.matlab.isChecked())
         self.settings.setValue("format_numpy", self.ui.numpy.isChecked())
         self.settings.setValue("format_mantid", self.ui.mantid_script_checkbox.isChecked())

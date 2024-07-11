@@ -51,7 +51,6 @@ To-do list:
 - Automated testing
 - Test numpy output
 - Test Matlab output
-- Test Genx output
 
 ## DONE
 - Generate GISANS output
