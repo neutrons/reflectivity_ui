@@ -30,7 +30,6 @@ DEFAULT_OPTIONS = dict(
     export_gisans=False,
     export_offspec=False,
     export_offspec_smooth=False,
-    format_genx=False,
     format_matlab=False,
     format_mantid=True,
     format_numpy=False,
@@ -160,49 +159,6 @@ class ProcessingWorkflow(object):
             )
             self.exported_data_files.append(state_output_path)
 
-    def write_genx(self, output_data, output_path):
-        """
-        Create a Genx .gx model file with the right polarization states
-        and the reflectivity data already included for convenience.
-        """
-        try:
-            import zipfile
-            import pickle
-        except:
-            logging.error("Problem importing modules: %s", sys.exc_info([1]))
-            return
-
-        # Load templates
-        module_dir, _ = os.path.split(__file__)
-        template_dir = os.path.join(module_dir, "genx_templates")
-        logging.error("GENX: %s", template_dir)
-        if len(self.data_manager.reduction_states) == 1:
-            template_path = os.path.join(template_dir, "unpolarized.gx")
-        if len(self.data_manager.reduction_states) == 2:
-            template_path = os.path.join(template_dir, "polarized.gx")
-        else:
-            template_path = os.path.join(template_dir, "spinflip.gx")
-
-        zip_template = zipfile.ZipFile(template_path, "r")
-        zip_output = zipfile.ZipFile(output_path, "w", zip_template.compression)
-        for key in ["script", "parameters", "fomfunction", "config", "optimizer"]:
-            zip_output.writestr(key, zip_template.read(key))
-
-        model_data = pickle.loads(zip_template.read("data"))
-        for i, channel in enumerate(self.data_manager.reduction_states):
-            if channel not in output_data:
-                logging.error("Cross-section %s not in %s", channel, str(output_data.keys()))
-                continue
-            model_data[i].x_raw = output_data[channel][:, 0]
-            model_data[i].y_raw = output_data[channel][:, 1]
-            model_data[i].error_raw = output_data[channel][:, 2]
-            model_data[i].xerror_raw = output_data[channel][:, 3]
-            model_data[i].name = output_data["cross_sections"][channel]
-            model_data[i].run_command()
-        zip_output.writestr("data", pickle.dumps(model_data, 0))
-        zip_template.close()
-        zip_output.close()
-
     def specular_reflectivity(self):
         """
         Retrieve the computed reflectivity and save it to file
@@ -237,11 +193,6 @@ class ProcessingWorkflow(object):
                 self.exported_data_files.append(output_file)
             except:
                 logging.error("Could not save in matlab format: %s", sys.exc_info([1]))
-
-        if self.output_options["format_genx"]:
-            output_path = self.get_file_name(run_list, data_type="gx", pol_state="all")
-            self.write_genx(output_data, output_path)
-            self.exported_data_files.append(output_path)
 
         if self.output_options["format_mantid"]:
             output_file = self.get_file_name(run_list, data_type="py", pol_state="all")
