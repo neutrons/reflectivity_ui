@@ -1,0 +1,23 @@
+version: 2
+
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "mambaforge-4.10"
+  # Specify the branches to build documentation for
+  versions:
+    only:
+      - main
+      - next
+    # Include only tags that match the pattern vX.Y.Z
+    regex: ^v\d+\.\d+\.\d+$
+    # Exclude tags that match the pattern vX.Y.ZrcL
+    exclude:
+      - ^v\d+\.\d+\.\d+rc\d+$
+sphinx:
+  builder: html
+  configuration: docs/conf.py
+  fail_on_warning: true
+
+conda:
+  environment: environment.yml

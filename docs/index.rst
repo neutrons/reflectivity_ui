@@ -10,8 +10,7 @@ Welcome to QuickNXS's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   users/index
-   users/tutorial/index
+   user/index
    api/modules
    developer/index
    releasenotes/index
