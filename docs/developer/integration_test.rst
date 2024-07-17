@@ -1,4 +1,5 @@
-==============================
+.. _integration_test:
+
 How to Write Integration Tests
 ==============================
 

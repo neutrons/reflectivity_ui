@@ -1,5 +1,7 @@
-reflectivity\_ui
-================
+.. _api:
+
+API
+===
 
 .. toctree::
    :maxdepth: 4
