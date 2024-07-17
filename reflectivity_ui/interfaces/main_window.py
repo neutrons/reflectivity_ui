@@ -33,11 +33,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # UI events
     file_loaded_signal = QtCore.pyqtSignal()
+    """Signal emitted when a file is loaded."""
+
     initiate_projection_plot = QtCore.pyqtSignal(bool)
+    """Signal to initiate the projection plot."""
+
     initiate_reflectivity_plot = QtCore.pyqtSignal(bool)
+    """Signal to initiate the reflectivity plot."""
+
     update_specular_viewer = QtCore.pyqtSignal()
+    """Signal to update the specular viewer."""
+
     update_off_specular_viewer = QtCore.pyqtSignal()
+    """Signal to update the off-specular viewer."""
+
     update_gisans_viewer = QtCore.pyqtSignal()
+    """Signal to update the GISANS viewer."""
 
     def __init__(self):
         """
