@@ -7,7 +7,7 @@ Notes for major and minor releases. Notes for Patch releases are deferred.
 
 
 <Next Major or Minor Release>
---------------
+-----------------------------
 (date of release, format YYYY-MM-DD)
 
 **Of interest to the User**:
