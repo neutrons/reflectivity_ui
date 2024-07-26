@@ -1448,10 +1448,53 @@ class MainHandler(object):
 
     def reload_all_files(self):
         """
-        Reload all loaded (cached) files
+        Reload all files upon change in loading configuration
+
+        To speed up reloading, the file cache is first cleared of files that are not used in the
+        reduction list or direct beam list.
         """
+        if self.data_manager.get_cachesize() == 0:
+            return
+
+        # Store the active (plotted) run index
+        active_idx = self._data_manager.find_active_data_id()
+        if active_idx is not None:
+            is_active_data_direct_beam = False
+        else:
+            is_active_data_direct_beam = True
+            active_idx = self._data_manager.find_active_direct_beam_id()
+
+        # Reload files
+        self._data_manager.clear_cached_unused_data()
+        configuration = self.get_configuration()
         prog = ProgressReporter(progress_bar=self.progress_bar, status_bar=self.status_bar_handler)
-        self._data_manager.reload_cached_files(prog)
+        self._data_manager.reload_files(configuration, prog)
+
+        # Update the tables in the UI
+        self.main_window.auto_change_active = True
+
+        self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
+        for idx, _ in enumerate(self._data_manager.direct_beam_list):
+            self._data_manager.set_active_data_from_direct_beam_list(idx)
+            self.update_direct_beam_table(idx, self._data_manager.active_channel)
+        self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
+        for idx, _ in enumerate(self._data_manager.reduction_list):
+            self._data_manager.set_active_data_from_reduction_list(idx)
+            self.update_reduction_table(idx, self._data_manager.active_channel)
+
+        direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
+        self.ui.normalization_list_label.setText(", ".join(direct_beam_ids))
+
+        # Restore the active run
+        if is_active_data_direct_beam:
+            self._data_manager.set_active_data_from_direct_beam_list(active_idx)
+        else:
+            self._data_manager.set_active_data_from_reduction_list(active_idx)
+
+        # Update plots
+        self.file_loaded()
+
+        self.main_window.auto_change_active = False
 
     def report_message(self, message, informative_message=None, detailed_message=None, pop_up=False, is_error=False):
         r"""

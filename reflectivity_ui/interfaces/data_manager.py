@@ -3,7 +3,6 @@
     Data manager. Holds information about the current data location
     and manages the data cache.
 """
-
 import glob
 import sys
 import os
@@ -67,6 +66,18 @@ class DataManager(object):
 
     def clear_cache(self):
         self._cache = []
+
+    def clear_cached_unused_data(self):
+        """
+        Delete cached files that are not in the reduction list or direct beam list
+        """
+
+        def is_used_in_reduction(f: NexusData):
+            return (self.find_data_in_reduction_list(f) is not None) or (
+                self.find_data_in_direct_beam_list(f) is not None
+            )
+
+        self._cache[:] = [file for file in self._cache if is_used_in_reduction(file)]
 
     def set_active_data_from_reduction_list(self, index):
         """
@@ -703,18 +714,38 @@ class DataManager(object):
         Ask the main event handler to update the UI once we are done.
         :param str file_path: reduced file to load
         :param Configuration configuration: configuration to base the loaded data on
+        :param ProgressReporter progress: progress reporter
         """
         t_0 = time.time()
         db_files, data_files = quicknxs_io.read_reduced_file(file_path, configuration)
         logging.info("Reduced file loaded: %s sec", time.time() - t_0)
-        n_loaded = 0
         n_total = len(db_files) + len(data_files)
         if progress and n_total > 0:
             progress.set_value(1, message="Loaded %s" % os.path.basename(file_path), out_of=n_total)
+        self.load_direct_beam_and_data_files(db_files, data_files, configuration, progress, t_0)
+        logging.info("DONE: %s sec", time.time() - t_0)
+
+    def load_direct_beam_and_data_files(
+        self, db_files, data_files, configuration=None, progress=None, force=False, t_0=None
+    ):
+        """
+        Load direct beam and data files and add them to the direct beam list and reduction
+        list, respectively
+        :param list db_files: list of (run_number, run_file, conf) for direct beam files
+        :param list data_files: list of (run_number, run_file, conf) for data files
+        :param Configuration configuration: configuration to base the loaded data on
+        :param ProgressReporter progress: progress reporter
+        :param bool force:
+        :param float t_0: start time for logging data loading time
+        """
+        if not t_0:
+            t_0 = time.time()
+        n_loaded = 0
+        n_total = len(db_files) + len(data_files)
         for r_id, run_file, conf in db_files:
             t_i = time.time()
             if os.path.isfile(run_file):
-                is_from_cache = self.load(run_file, conf, update_parameters=False)
+                is_from_cache = self.load(run_file, conf, force=force, update_parameters=False)
                 if is_from_cache:
                     configuration.normalization = None
                     self._nexus_data.update_configuration(conf)
@@ -727,7 +758,6 @@ class DataManager(object):
                 if progress:
                     progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
             n_loaded += 1
-
         for r_id, run_file, conf in data_files:
             t_i = time.time()
             do_files_exist = []
@@ -735,7 +765,7 @@ class DataManager(object):
                 do_files_exist.append((os.path.isfile(name)))
 
             if all(do_files_exist):
-                is_from_cache = self.load(run_file, conf, update_parameters=False)
+                is_from_cache = self.load(run_file, conf, force=force, update_parameters=False)
                 if is_from_cache:
                     configuration.normalization = None
                     self._nexus_data.update_configuration(conf)
@@ -751,11 +781,8 @@ class DataManager(object):
                 if progress:
                     progress.set_value(n_loaded, message="ERROR: %s does not exist" % run_file, out_of=n_total)
             n_loaded += 1
-
         if progress:
             progress.set_value(n_total, message="Done", out_of=n_total)
-
-        logging.info("DONE: %s sec", time.time() - t_0)
 
     @property
     def current_event_files(self):
@@ -769,21 +796,15 @@ class DataManager(object):
         event_file_list.extend(h5_file_list)
         return sorted([os.path.basename(name) for name in event_file_list])
 
-    def reload_cached_files(self, progress=None):
+    def reload_files(self, configuration=None, progress=None):
         """
-        Force reload of all files cached by the data manager
+        Force reload of files in the reduction list and direct beam list
         """
-        n_loaded = 0
-        n_total = self.get_cachesize()
-        for nexus_data in self._cache:
-            file_path = nexus_data.file_path
-            # keep configuration
-            xs_main = nexus_data.cross_sections[nexus_data.main_cross_section]
-            conf = xs_main.configuration
-            self.load(file_path, conf, force=True, update_parameters=False)
-            n_loaded += 1
-            if progress:
-                progress.set_value(n_loaded, message="%s loaded" % os.path.basename(file_path), out_of=n_total)
-
-        if progress:
-            progress.set_value(n_total, message="Done", out_of=n_total)
+        # Get files to reload
+        db_files = [(nexus.number, nexus.file_path, nexus.configuration) for nexus in self.direct_beam_list]
+        data_files = [(nexus.number, nexus.file_path, nexus.configuration) for nexus in self.reduction_list]
+        # Clear the lists
+        self.reduction_list.clear()
+        self.direct_beam_list.clear()
+        # Reload files and add to reduction and direct beam lists
+        self.load_direct_beam_and_data_files(db_files, data_files, configuration, progress, True)

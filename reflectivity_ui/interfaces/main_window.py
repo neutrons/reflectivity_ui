@@ -527,9 +527,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def reload_all_files(self):
         r"""Reload all previously loaded files upon change in loading configuration"""
-        if self.data_manager.get_cachesize() > 0:
-            self.file_handler.reload_all_files()
-            self.file_loaded()
+        self.file_handler.reload_all_files()
 
     # Un-used UI signals
     # pylint: disable=missing-docstring, multiple-statements, no-self-use

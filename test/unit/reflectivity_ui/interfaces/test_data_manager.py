@@ -75,6 +75,24 @@ class TestDataManagerTest(object):
         manager = DataManager(data_server.directory)
         manager.load_data_from_reduced_file(data_server.path_to("REF_M_29160_Specular_++.dat"))
 
+    def test_clear_cached_unused_data(self, data_server):
+        """Test helper function clear_cached_unused_data"""
+        manager = DataManager(data_server.directory)
+        manager.load(data_server.path_to("REF_M_42112"), Configuration())
+        manager.add_active_to_reduction()
+        manager.load(data_server.path_to("REF_M_42113"), Configuration())
+        manager.add_active_to_reduction()
+        manager.load(data_server.path_to("REF_M_42099"), Configuration())
+        manager.add_active_to_normalization()
+        assert manager.get_cachesize() == 3
+        # Load files without adding them to reduction or normalization
+        manager.load(data_server.path_to("REF_M_42100"), Configuration())
+        manager.load(data_server.path_to("REF_M_42116"), Configuration())
+        assert manager.get_cachesize() == 5
+        # Delete unused files from cache
+        manager.clear_cached_unused_data()
+        assert manager.get_cachesize() == 3
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
