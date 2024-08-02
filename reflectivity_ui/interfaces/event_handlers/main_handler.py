@@ -1453,7 +1453,7 @@ class MainHandler(object):
         To speed up reloading, the file cache is first cleared of files that are not used in the
         reduction list or direct beam list.
         """
-        if self.data_manager.get_cachesize() == 0:
+        if self._data_manager.get_cachesize() == 0:
             return
 
         # Store the active (plotted) run index
