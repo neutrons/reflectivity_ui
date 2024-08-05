@@ -2,6 +2,7 @@
     Loader for event nexus files.
     Uses Mantid Framework
 """
+
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, wrong-import-order, \
 # too-many-locals, too-few-public-methods, wrong-import-position, too-many-public-methods
 

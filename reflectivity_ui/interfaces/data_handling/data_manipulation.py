@@ -1,6 +1,7 @@
 """
     Methods used to process data, usually calling Mantid
 """
+
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, multiple-statements, bare-except, protected-access, wrong-import-position
 
 import sys
