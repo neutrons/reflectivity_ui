@@ -3,6 +3,7 @@
     that is instrument-specific and abstracts out how we obtain
     information from the data file
 """
+
 # pylint: disable=invalid-name, too-many-instance-attributes, line-too-long, bare-except
 
 

@@ -1,6 +1,7 @@
 """
     Data processing workflow, taking results and writing them to files.
 """
+
 # pylint: disable=bare-except, too-many-locals
 
 import sys
