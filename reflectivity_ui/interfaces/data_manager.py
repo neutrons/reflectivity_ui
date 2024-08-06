@@ -800,9 +800,14 @@ class DataManager(object):
         """
         Force reload of files in the reduction list and direct beam list
         """
+
+        def _get_nexus_conf(nexus_data):
+            """Returns the configuration for the main cross-section of the run"""
+            return nexus_data.cross_sections[nexus_data.main_cross_section].configuration
+
         # Get files to reload
-        db_files = [(nexus.number, nexus.file_path, nexus.configuration) for nexus in self.direct_beam_list]
-        data_files = [(nexus.number, nexus.file_path, nexus.configuration) for nexus in self.reduction_list]
+        db_files = [(nexus.number, nexus.file_path, _get_nexus_conf(nexus)) for nexus in self.direct_beam_list]
+        data_files = [(nexus.number, nexus.file_path, _get_nexus_conf(nexus)) for nexus in self.reduction_list]
         # Clear the lists
         self.reduction_list.clear()
         self.direct_beam_list.clear()
