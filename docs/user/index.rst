@@ -4,3 +4,8 @@ User Guide
 ==========
 
 TODO
+
+.. toctree::
+   :maxdepth: 2
+
+   dead_time_correction
