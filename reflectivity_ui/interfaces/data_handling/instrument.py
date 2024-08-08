@@ -11,7 +11,7 @@ from reflectivity_ui.interfaces.data_handling import DeadTimeCorrection
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
 
 # 3rd party
-from mantid.api import WorkspaceGroup
+from mantid.api import WorkspaceGroup, PythonAlgorithm
 from mantid.dataobjects import EventWorkspace
 import numpy as np
 import mantid.simpleapi as api
@@ -68,6 +68,14 @@ def get_cross_section_label(ws, entry_name):
 
 
 def mantid_algorithm_exec(algorithm_class, **kwargs):
+    """
+    Helper function for executing a Mantid-style algorithm
+
+    :param PythonAlgorithm algorithm_class: the algorithm class to execute
+    :param kwargs: keyword arguments
+    :returns Workspace: if ``OutputWorkspace`` is passed as a keyword argument, the value of the
+                       algorithm property ``OutputWorkspace`` will be returned
+    """
     algorithm_instance = algorithm_class()
     assert algorithm_instance.PyInit, "str(algorithm_class) is not a Mantid Python algorithm"
     algorithm_instance.PyInit()
@@ -225,7 +233,9 @@ class Instrument(object):
                     ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
                     _path_xs_list = self.dummy_filter_cross_sections(ws, name_prefix=temp_workspace_root_name)
                 if configuration is not None and configuration.apply_deadtime:
+                    # Load error events from the bank_error_events entry
                     err_ws = api.LoadErrorEventsNexus(path)
+                    # Split error events by cross-section for compatibility with normal events
                     _err_list = api.MRFilterCrossSections(
                         InputWorkspace=err_ws,
                         PolState=self.pol_state,
@@ -235,6 +245,7 @@ class Instrument(object):
                         CrossSectionWorkspaces="%s_err_entry" % temp_workspace_root_name,
                     )
                     path_xs_list = []
+                    # Apply dead-time correction for each cross-section workspace
                     for ws in _path_xs_list:
                         xs_name = ws.getRun()["cross_section_id"].value
                         if not xs_name == "unfiltered":

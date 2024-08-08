@@ -37,7 +37,6 @@ class Configuration(object):
     polynomial_stitching = False
     polynomial_stitching_degree = 3
     polynomial_stitching_points = 3
-
     # Dead time options
     apply_deadtime = False
     paralyzable_deadtime = True
