@@ -78,15 +78,19 @@ Properties
 
 Usage
 -----
-Example using ``SingleReadoutDeadTimeCorrection``
+Example using ``SingleReadoutDeadTimeCorrection`` (requires :any:`test-data` files)
 
-.. code-block:: python
+.. testcode::
 
     import mantid.simpleapi as api
+    import os
+    import sys
+    from pathlib import Path
     from reflectivity_ui.interfaces.data_handling import DeadTimeCorrection
     from reflectivity_ui.interfaces.data_handling.instrument import mantid_algorithm_exec
     # Load events
-    path = "/home/u5z/projects/reflectivity_ui/test/data/reflectivity_ui-data/REF_M_42112.nxs.h5"
+    path = Path().resolve().parent / "test" / "data" / "reflectivity_ui-data" / "REF_M_42112.nxs.h5"
+    path = path.as_posix()
     ws = api.LoadEventNexus(Filename=path, OutputWorkspace="raw_events")
     # Load error events
     err_ws = api.LoadErrorEventsNexus(path)

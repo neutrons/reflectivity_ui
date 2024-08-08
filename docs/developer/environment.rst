@@ -31,6 +31,7 @@ To setup a local development environment, the developers should follow the steps
 The ``environment.yml`` contains all of the dependencies for both the developer and the build servers.
 Update file ``environment.yml`` if dependencies are added to the package.
 
+.. _test-data:
 
 Test Data
 ---------
