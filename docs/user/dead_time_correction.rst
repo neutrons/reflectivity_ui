@@ -22,7 +22,7 @@ for paralyzable detectors, where
 | :math:`t_{\mathrm{dead}}` = dead time
 | :math:`t_{\mathrm{bin}}` = TOF bin width
 | :math:`\mathrm{rate}` = measured count rate
-| :math:`\mathrm{W}` = Lambert W function
+| :math:`\mathrm{W}` = `Lambert W function <https://en.wikipedia.org/wiki/Lambert_W_function>`_
 
 The class ``SingleReadoutDeadTimeCorrection`` is a Mantid-style algorithm for computing the
 dead-time correction for an event workspace. One can optionally include error events in the

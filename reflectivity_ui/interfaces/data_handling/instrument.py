@@ -77,7 +77,7 @@ def mantid_algorithm_exec(algorithm_class, **kwargs):
                        algorithm property ``OutputWorkspace`` will be returned
     """
     algorithm_instance = algorithm_class()
-    assert algorithm_instance.PyInit, "str(algorithm_class) is not a Mantid Python algorithm"
+    assert hasattr(algorithm_instance, "PyInit"), f"{algorithm_class} is not a Mantid Python algorithm"
     algorithm_instance.PyInit()
     for name, value in kwargs.items():
         algorithm_instance.setProperty(name, value)
@@ -98,7 +98,6 @@ def get_dead_time_correction(ws, configuration, error_ws=None):
     tof_min = ws.getTofMin()
     tof_max = ws.getTofMax()
 
-    run_number = ws.getRun().getProperty("run_number").value
     corr_ws = mantid_algorithm_exec(
         DeadTimeCorrection.SingleReadoutDeadTimeCorrection,
         InputWorkspace=ws,
