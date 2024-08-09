@@ -95,14 +95,11 @@ class SingleReadoutDeadTimeCorrection(PythonAlgorithm):
             )
             counts_ws += _errors
 
+        # When operating at a given frequency, the proton charge of the blocked
+        # pulsed is zero in the data file, so we don't have to adjust the number of pulses.
         t_series = np.asarray(_ws_sc.getRun()["proton_charge"].value)
-        non_zero = t_series > 0
-        n_pulses = np.count_nonzero(non_zero)
+        n_pulses = np.count_nonzero(t_series)
 
-        # If we skip pulses, we need to account for them when computing the
-        # instantaneous rate
-        chopper_speed = _ws_sc.getRun()["SpeedRequest1"].value[0]
-        n_pulses = n_pulses * chopper_speed / 60.0
         rate = counts_ws.readY(0) / n_pulses
 
         # Compute the dead time correction for each TOF bin
