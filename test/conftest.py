@@ -45,6 +45,11 @@ def data_server(DATA_DIR):
             r"""Directory where to find h5 data files"""
             return self._h5_path
 
+        @property
+        def h5_full_path(self):
+            r"""Full path to directory where to find h5 data files"""
+            return os.path.join(self.directory, self.h5_path)
+
         def path_to(self, basename):
             r"""Absolute path to a data file. If it doesn't exist, try to find it in the remote repository"""
             # looking in test/data

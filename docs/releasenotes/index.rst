@@ -12,7 +12,7 @@ Notes for major and minor releases. Notes for Patch releases are deferred.
 
 **Of interest to the User**:
 
-- PR #XYZ: one-liner description
+- PR #95: Optional dead-time correction (disabled by default)
 
 **Of interest to the Developer:**
 

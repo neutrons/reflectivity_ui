@@ -11,3 +11,4 @@ Development Guide
    integration_test
    ui_test
    release
+   documentation

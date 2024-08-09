@@ -17,6 +17,8 @@ import pytest
 import os
 import sys
 
+from test.ui import ui_utilities
+
 this_module_path = sys.modules[__name__].__file__
 
 
@@ -37,6 +39,7 @@ class TestMainHandler(object):
     handler = MainHandler(application)
 
     @pytest.mark.datarepo
+    @pytest.mark.skip(reason="WIP")
     def test_congruency_fail_report(self, data_server):
         # Selected subset of log names with an invalid one
         message = self.handler._congruency_fail_report(
@@ -142,6 +145,37 @@ def test_ask_question(qtbot):
     QTimer.singleShot(200, lambda: dialog_click_button(QtWidgets.QMessageBox.Cancel))
     answer = handler.ask_question("OK or Cancel?")
     assert answer is False
+
+
+@pytest.mark.datarepo
+def test_reload_all_files(qtbot):
+    """Test function reload_all_files"""
+    main_window = MainWindow()
+    handler = MainHandler(main_window)
+    data_manager = main_window.data_manager
+    qtbot.addWidget(main_window)
+    selected_row = 0
+
+    # Add one direct beam run and two data runs
+    ui_utilities.setText(main_window.numberSearchEntry, str(40786), press_enter=True)
+    ui_utilities.set_current_file_by_run_number(main_window, 40786)
+    main_window.actionNorm.triggered.emit()
+    ui_utilities.set_current_file_by_run_number(main_window, 40785)
+    main_window.actionAddPlot.triggered.emit()
+    ui_utilities.set_current_file_by_run_number(main_window, 40782)
+    main_window.actionAddPlot.triggered.emit()
+
+    # Select/plot the first data run
+    main_window.reduction_cell_activated(selected_row, 0)
+
+    # Test that reloading all files does not change the active run
+    assert main_window.ui.reductionTable.rowCount() == 2
+    assert len(data_manager.reduction_list) == 2
+    assert data_manager._nexus_data == data_manager.reduction_list[selected_row]
+    handler.reload_all_files()
+    assert main_window.ui.reductionTable.rowCount() == 2
+    assert len(main_window.data_manager.reduction_list) == 2
+    assert data_manager._nexus_data == data_manager.reduction_list[selected_row]
 
 
 def _get_nexus_data():

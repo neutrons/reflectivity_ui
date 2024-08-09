@@ -469,7 +469,14 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1" colspan="2">
+            <item row="11" column="1">
+             <widget class="DeadTimeEntryPoint" name="deadtime_entry">
+              <property name="title">
+               <string>Dead Time Correction</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1" colspan="2">
              <widget class="QCheckBox" name="normalize_to_unity_checkbox">
               <property name="toolTip">
                <string>Normalize the total reflectivity plateau to unity when stitching</string>
@@ -5105,6 +5112,12 @@
    <extends>QWidget</extends>
    <header>reflectivity_ui/ui/compare_plots.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+  <class>DeadTimeEntryPoint</class>
+  <extends>QGroupBox</extends>
+  <header>reflectivity_ui/ui/deadtime_entry.h</header>
+  <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

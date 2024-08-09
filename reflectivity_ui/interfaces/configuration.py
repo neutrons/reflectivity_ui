@@ -37,6 +37,11 @@ class Configuration(object):
     polynomial_stitching = False
     polynomial_stitching_degree = 3
     polynomial_stitching_points = 3
+    # Dead time options
+    apply_deadtime = False
+    paralyzable_deadtime = True
+    deadtime_value = 4.2
+    deadtime_tof_step = 100
 
     def __init__(self, settings=None):
         self.instrument = Instrument()
@@ -227,6 +232,12 @@ class Configuration(object):
         settings.setValue("do_final_rebin", self.do_final_rebin)
         settings.setValue("final_rebin_step", self.final_rebin_step)
 
+        # Dead time options
+        settings.setValue("apply_deadtime", self.apply_deadtime)
+        settings.setValue("paralyzable_deadtime", self.paralyzable_deadtime)
+        settings.setValue("deadtime_value", self.deadtime_value)
+        settings.setValue("deadtime_tof_step", self.deadtime_tof_step)
+
         # Off-specular options
         settings.setValue("off_spec_x_axis", self.off_spec_x_axis)
         settings.setValue("off_spec_slice", self.off_spec_slice)
@@ -325,6 +336,12 @@ class Configuration(object):
         Configuration.do_final_rebin = _verify_true("do_final_rebin", self.do_final_rebin)
         Configuration.final_rebin_step = float(settings.value("final_rebin_step", self.final_rebin_step))
 
+        # Dead time options
+        Configuration.apply_deadtime = _verify_true("apply_deadtime", self.apply_deadtime)
+        Configuration.paralyzable_deadtime = _verify_true("paralyzable_deadtime", self.paralyzable_deadtime)
+        Configuration.deadtime_value = float(settings.value("deadtime_value", self.deadtime_value))
+        Configuration.deadtime_tof_step = float(settings.value("deadtime_tof_step", self.deadtime_tof_step))
+
         # Off-specular options
         self.off_spec_x_axis = int(settings.value("off_spec_x_axis", self.off_spec_x_axis))
         self.off_spec_slice = _verify_true("off_spec_slice", self.off_spec_slice)
@@ -377,3 +394,7 @@ class Configuration(object):
         cls.polynomial_stitching = False
         cls.polynomial_stitching_degree = 3
         cls.polynomial_stitching_points = 3
+        cls.apply_deadtime = False
+        cls.paralyzable_deadtime = True
+        cls.deadtime_value = 4.2
+        cls.deadtime_tof_step = 100
