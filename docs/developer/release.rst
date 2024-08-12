@@ -6,25 +6,22 @@ How to Make a Release
     :local:
 
 
-Overview
---------
+Candidate and Production Releases
+---------------------------------
+- Follow the `Software Maturity Model <https://ornl-neutrons.atlassian.net/wiki/spaces/NDPD/pages/23363585/Software+Maturity+Model>`_
+  for continuous versioning, as well as creating Candidate and Production releases.\
+- Right before a Major or Minor release, update the release notes file ``docs/releasenotes/index.rst```.
+  then create a new Candidate release just to include these changes in the release.
 
-The release of ``reflectivity_ui`` is configured to be done by an automated pipeline via GitHub action.
-However, developers might have to create manual releases in case the automated system fails, the process of which requires a working local development.
-For ``reflectivity_ui`` there are three official release channels, and this document will provide necessary information on how to release ``reflectivity_ui`` to all three.
 
+Conda Package
+-------------
 
-Release to Conda
-----------------
+Candidate and Production releases ``reflectivity_ui`` are automatically released to the project channel
+`neutrons`_ whenever a new tag is pushed to the repository.
 
-Release candidate and stable versions of ``reflectivity_ui`` are automatically released to the project channel, `neutrons`_
-whenever a new tag is pushed to the repository.
-
-To manually build a conda package (for testing puruposes only), the following steps are required:
-
-* Make sure the local development environment has both ``anaconda-client`` and ``conda-build`` installed.
-* Checkout the desired feature branch for testing.
-* Build the package with ``conda build .``.
-* Use ``conda build . --output`` to locate the built package.
+To manually build a conda package (for testing puruposes only),
+replicate locally the steps taken by the GitHub Actions job "Build Conda package" in the workflow file
+``.github/workflows/actions.yml``.
 
 .. _neutrons: https://anaconda.org/neutrons
