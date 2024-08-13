@@ -4,7 +4,7 @@ channels:
     - conda-forge
     - default
 dependencies:
-- mantidworkbench>=6.8.20231103
+- mantidworkbench=6.10.0
 - anaconda-client
 - boa
 - build
