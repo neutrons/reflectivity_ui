@@ -10,7 +10,6 @@ __pycache__/
 .Python
 env/
 build/
-conda.recipe/
 develop-eggs/
 dist/
 downloads/
@@ -25,7 +24,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-conda.recipe/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
