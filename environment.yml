@@ -1,6 +1,6 @@
 name: quicknxs
 channels:
-    - mantid/label/nightly
+    - mantid/label/main
     - conda-forge
     - default
 dependencies:
