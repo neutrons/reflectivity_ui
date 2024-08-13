@@ -34,7 +34,7 @@ requirements:
     - versioningit
 
   run:
-    - mantid>=6.8.20231103
+    - mantid=6.10.0
     - matplotlib
     - qtpy
     - qt>=5.12,<6
