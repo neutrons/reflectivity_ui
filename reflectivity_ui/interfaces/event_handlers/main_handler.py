@@ -35,6 +35,9 @@ class MainHandler(object):
     Event handler for the main application window.
     """
 
+    DIRECT_BEAM_TAB_INDEX = 0
+    MAIN_DATA_TAB_INDEX = 1
+
     def __init__(self, main_window):
         self.ui = main_window.ui
         self.main_window = main_window
@@ -62,6 +65,23 @@ class MainHandler(object):
         self.ui.statusbar.addPermanentWidget(self.progress_bar)
 
         self.status_bar_handler = StatusBarHandler(self.ui.statusbar)
+
+    @property
+    def reduction_table(self):
+        if self.ui.tabWidget.currentIndex == self.DIRECT_BEAM_TAB_INDEX:
+            # get the table for the main data tab
+            current_table = self.ui.tabWidget.widget(self.MAIN_DATA_TAB_INDEX).findChild(QtWidgets.QTableWidget)
+        else:
+            current_table = self.ui.tabWidget.currentWidget().findChild(QtWidgets.QTableWidget)
+        return current_table
+
+    def get_reduction_table_by_index(self, tab_index: int) -> QtWidgets.QTableWidget:
+        """Return the QTableWidget for the data tab with the given index"""
+        return self.ui.tabWidget.widget(tab_index).findChild(QtWidgets.QTableWidget)
+
+    def get_active_reduction_table(self):
+        """Return the QTableWidget for the active data tab"""
+        return self.ui.tabWidget.currentWidget().findChild(QtWidgets.QTableWidget)
 
     def new_progress_reporter(self):
         """Return a progress reporter"""
@@ -251,7 +271,8 @@ class MainHandler(object):
         # Update the reduction table if this data set is in it
         idx = self._data_manager.find_active_data_id()
         if idx is not None:
-            self.update_reduction_table(idx, self._data_manager.active_channel)
+            table_widget = self.get_active_reduction_table()
+            self.update_reduction_table(table_widget, idx, self._data_manager.active_channel)
 
         # Update the direct beam table if this data set is in it
         idx = self._data_manager.find_active_direct_beam_id()
@@ -545,14 +566,20 @@ class MainHandler(object):
 
             self.main_window.auto_change_active = True
 
+            # Update UI direct beam table
             self.ui.normalizeTable.setRowCount(len(self._data_manager.direct_beam_list))
             for idx, _ in enumerate(self._data_manager.direct_beam_list):
                 self._data_manager.set_active_data_from_direct_beam_list(idx)
                 self.update_direct_beam_table(idx, self._data_manager.active_channel)
-            self.ui.reductionTable.setRowCount(len(self._data_manager.reduction_list))
-            for idx, _ in enumerate(self._data_manager.reduction_list):
-                self._data_manager.set_active_data_from_reduction_list(idx)
-                self.update_reduction_table(idx, self._data_manager.active_channel)
+            # Update UI data table(s) with the loaded data
+            for ipeak, peak_data in self._data_manager.peak_reduction_lists.items():
+                self._data_manager.set_active_reduction_list_index(ipeak)
+                self.main_window.add_data_tab_by_index(ipeak)
+                table_widget = self.get_reduction_table_by_index(ipeak)
+                table_widget.setRowCount(len(self._data_manager.reduction_list))
+                for idx, _ in enumerate(self._data_manager.reduction_list):
+                    self._data_manager.set_active_data_from_reduction_list(idx)
+                    self.update_reduction_table(table_widget, idx, self._data_manager.active_channel)
 
             direct_beam_ids = [str(r.number) for r in self._data_manager.direct_beam_list]
             self.ui.normalization_list_label.setText(", ".join(direct_beam_ids))
@@ -565,6 +592,23 @@ class MainHandler(object):
             self.main_window.auto_change_active = False
 
             logging.info("UI updated: %s", time.time() - t_0)
+
+    def initialize_additional_reduction_table(self, tab_index: int):
+        """
+        Initialize new reduction table from the main reduction table
+
+        Parameters
+        ----------
+        tab_index: int
+            Index of the additional tab/peak
+        """
+        if self._data_manager.main_reduction_list:
+            table_widget = self.get_reduction_table_by_index(tab_index)
+            table_widget.setRowCount(len(self._data_manager.main_reduction_list))
+            active_cross_section = self._data_manager.active_channel.name
+            for idx, nexus_data in enumerate(self._data_manager.main_reduction_list):
+                active_channel = nexus_data.cross_sections[active_cross_section]
+                self.update_reduction_table(table_widget, idx, active_channel)
 
     def _file_open_dialog(self, filter_=None):
         # type: (Optional[str]) -> Optional[str]
@@ -743,9 +787,18 @@ class MainHandler(object):
         self.main_window.auto_change_active = False
         return True
 
-    def update_reduction_table(self, idx, d):
+    def update_reduction_table(self, table_widget: QtWidgets.QTableWidget, idx: int, d: CrossSectionData):
         """
-        Update the reduction tale
+        Update the reduction table
+
+        Parameters
+        ----------
+        table_widget: QtWidgets.QTableWidget
+            Table widget of the table to update
+        idx: int
+            Row to update
+        d: CrossSectionData
+            Cross-section data
         """
         self.main_window.auto_change_active = True
         item = QtWidgets.QTableWidgetItem(str(d.number))
@@ -754,28 +807,28 @@ class MainHandler(object):
         else:
             item.setBackground(QtGui.QColor(255, 255, 255))
         item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
-        self.ui.reductionTable.setItem(idx, 0, item)
-        self.ui.reductionTable.setItem(idx, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor)))
-        self.ui.reductionTable.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.cut_first_n_points)))
-        self.ui.reductionTable.setItem(idx, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
+        table_widget.setItem(idx, 0, item)
+        table_widget.setItem(idx, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor)))
+        table_widget.setItem(idx, 2, QtWidgets.QTableWidgetItem(str(d.configuration.cut_first_n_points)))
+        table_widget.setItem(idx, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
         item = QtWidgets.QTableWidgetItem(str(d.configuration.peak_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
-        self.ui.reductionTable.setItem(idx, 4, item)
-        self.ui.reductionTable.setItem(idx, 5, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
+        table_widget.setItem(idx, 4, item)
+        table_widget.setItem(idx, 5, QtWidgets.QTableWidgetItem(str(d.configuration.peak_width)))
         item = QtWidgets.QTableWidgetItem(str(d.configuration.low_res_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
-        self.ui.reductionTable.setItem(idx, 6, item)
-        self.ui.reductionTable.setItem(idx, 7, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
+        table_widget.setItem(idx, 6, item)
+        table_widget.setItem(idx, 7, QtWidgets.QTableWidgetItem(str(d.configuration.low_res_width)))
         item = QtWidgets.QTableWidgetItem(str(d.configuration.bck_position))
         item.setBackground(QtGui.QColor(200, 200, 200))
-        self.ui.reductionTable.setItem(idx, 8, item)
-        self.ui.reductionTable.setItem(idx, 9, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
-        self.ui.reductionTable.setItem(idx, 10, QtWidgets.QTableWidgetItem(str(d.direct_pixel)))
-        self.ui.reductionTable.setItem(idx, 11, QtWidgets.QTableWidgetItem("%.4f" % d.scattering_angle))
+        table_widget.setItem(idx, 8, item)
+        table_widget.setItem(idx, 9, QtWidgets.QTableWidgetItem(str(d.configuration.bck_width)))
+        table_widget.setItem(idx, 10, QtWidgets.QTableWidgetItem(str(d.direct_pixel)))
+        table_widget.setItem(idx, 11, QtWidgets.QTableWidgetItem("%.4f" % d.scattering_angle))
         norma = "none"
         if d.configuration.normalization is not None:
             norma = d.configuration.normalization
-        self.ui.reductionTable.setItem(idx, 12, QtWidgets.QTableWidgetItem(str(norma)))
+        table_widget.setItem(idx, 12, QtWidgets.QTableWidgetItem(str(norma)))
         self.main_window.auto_change_active = False
 
     def clear_reflectivity(self):
@@ -783,7 +836,7 @@ class MainHandler(object):
         Remove all items from the reduction list.
         """
         self._data_manager.reduction_list = []
-        self.ui.reductionTable.setRowCount(0)
+        self.reduction_table.setRowCount(0)
         self.main_window.initiate_reflectivity_plot.emit(False)
 
     def clear_direct_beams(self):
@@ -799,11 +852,11 @@ class MainHandler(object):
         """
         Remove one item from the reduction list.
         """
-        index = self.ui.reductionTable.currentRow()
+        index = self.reduction_table.currentRow()
         if index < 0:
             return
         self._data_manager.reduction_list.pop(index)
-        self.ui.reductionTable.removeRow(index)
+        self.reduction_table.removeRow(index)
         self.main_window.initiate_reflectivity_plot.emit(False)
 
     def remove_direct_beam(self):
@@ -953,8 +1006,8 @@ class MainHandler(object):
         # Highlight it and un-highlight the other ones.
         self.main_window.auto_change_active = True
         idx = self._data_manager.find_active_data_id()
-        for i in range(self.ui.reductionTable.rowCount()):
-            item = self.ui.reductionTable.item(i, 0)
+        for i in range(self.reduction_table.rowCount()):
+            item = self.reduction_table.item(i, 0)
             if item is not None:
                 if i == idx:
                     item.setBackground(QtGui.QColor(246, 213, 16))
@@ -978,7 +1031,7 @@ class MainHandler(object):
         :param bool is_reduction_table: True if the reduction table is active, False if the direct beam table is active
         """
         if is_reduction_table:
-            table_widget = self.ui.reductionTable
+            table_widget = self.get_active_reduction_table()
             data_table = self._data_manager.reduction_list
         else:
             table_widget = self.ui.normalizeTable
@@ -991,10 +1044,42 @@ class MainHandler(object):
                 nexus_data = data_table[row]
                 self.save_run_data(nexus_data)
 
+        def _propagate_run(_pos):
+            """callback function to right-click action: Propagate run to all tabs"""
+            row = table_widget.rowAt(pos.y())
+            if 0 <= row < len(data_table):
+                nexus_data = data_table[row]
+                active_cross_section = self._data_manager.active_channel.name
+                active_channel = nexus_data.cross_sections[active_cross_section]
+                for ipeak, peak_data in self._data_manager.peak_reduction_lists.items():
+                    if self._data_manager.copy_nexus_data_to_reduction(nexus_data, ipeak):
+                        # get widget for target reduction table
+                        target_widget = self.get_reduction_table_by_index(ipeak)
+                        idx = self._data_manager.find_run_number_in_reduction_list(nexus_data.number, peak_data)
+                        if not idx:
+                            raise RuntimeError("Run number not in reduction list")
+                        target_widget.insertRow(idx)
+                        # update UI table widget
+                        self.update_reduction_table(target_widget, idx, active_channel)
+
+        def _remove_run(_pos):
+            """callback function to right-click action: Remove run from this tab"""
+            self.remove_reflectivity()
+
         reduction_table_menu = QtWidgets.QMenu(table_widget)
+
         export_data_action = QtWidgets.QAction("Export data")
         export_data_action.triggered.connect(lambda: _export_data(pos))
         reduction_table_menu.addAction(export_data_action)
+
+        propagate_run_action = QtWidgets.QAction("Propagate run to all tabs")
+        propagate_run_action.triggered.connect(lambda: _propagate_run(pos))
+        reduction_table_menu.addAction(propagate_run_action)
+
+        remove_run_action = QtWidgets.QAction("Remove run from this tab")
+        remove_run_action.triggered.connect(lambda: _remove_run(pos))
+        reduction_table_menu.addAction(remove_run_action)
+
         reduction_table_menu.exec_(table_widget.mapToGlobal(pos))
 
     def save_run_data(self, nexus_data: NexusData):
@@ -1412,7 +1497,7 @@ class MainHandler(object):
             for i in range(len(self._data_manager.reduction_list)):
                 xs = self._data_manager.active_channel.name
                 d = self._data_manager.reduction_list[i].cross_sections[xs]
-                self.ui.reductionTable.setItem(
+                self.reduction_table.setItem(
                     i, 1, QtWidgets.QTableWidgetItem("%.4f" % (d.configuration.scaling_factor))
                 )
 
@@ -1434,7 +1519,7 @@ class MainHandler(object):
 
     def strip_overlap(self):
         """
-        Remove overlapping points in the reflecitviy, cutting always from the lower Qz
+        Remove overlapping points in the reflectivity, cutting always from the lower Qz
         measurements.
         """
         self._data_manager.strip_overlap()
@@ -1442,7 +1527,7 @@ class MainHandler(object):
         for i in range(len(self._data_manager.reduction_list)):
             xs = self._data_manager.active_channel.name
             d = self._data_manager.reduction_list[i].cross_sections[xs]
-            self.ui.reductionTable.setItem(i, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
+            self.reduction_table.setItem(i, 3, QtWidgets.QTableWidgetItem(str(d.configuration.cut_last_n_points)))
 
         self.main_window.initiate_reflectivity_plot.emit(False)
 
