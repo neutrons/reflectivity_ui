@@ -89,6 +89,7 @@ class ConfigurationHandler:
             ConfigWidget("fanReflectivity", "use_constant_q", recalc_reflectivity=True),
             ConfigWidget("sample_size_spinbox", "sample_size"),
             ConfigWidget("bandwidth_spinbox", "wl_bandwidth"),
+            ConfigWidget("direct_beam_y_lock_checkbox", "lock_direct_beam_y", recalc_reflectivity=True),
         ]
 
         for config_widget in config_widgets:
