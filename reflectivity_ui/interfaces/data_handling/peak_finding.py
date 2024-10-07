@@ -13,7 +13,6 @@ Copyright (c) 2003-2017 SciPy Developers.
 All rights reserved.
 """
 
-
 import math
 import numpy as np
 

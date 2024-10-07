@@ -35,6 +35,7 @@ def test_load_data_deadtime(data_server):
 
 def test_mantid_algorithm_exec():
     """Test helper function mantid_algorithm_exec"""
+
     # test wrong type of class
     class TestNotMantidAlgo:
         pass

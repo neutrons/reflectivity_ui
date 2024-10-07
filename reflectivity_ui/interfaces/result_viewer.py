@@ -1,6 +1,7 @@
 """
    Dialog to show final reduced data.
 """
+
 # pylint: disable=bare-except
 
 import logging
