@@ -113,6 +113,7 @@ class TestMainGui:
         Configuration.polynomial_stitching = False
         Configuration.polynomial_stitching_degree = 3
         Configuration.polynomial_stitching_points = 3
+        Configuration.lock_direct_beam_y = False
 
         channel1 = CrossSectionData("On_Off", configuration)
         nexus_data1 = NexusData("filepath1", configuration)
@@ -141,6 +142,7 @@ class TestMainGui:
         assert conf1.use_constant_q is False
         assert conf1.sample_size == 10
         assert conf1.wl_bandwidth == 3.2
+        assert conf1.lock_direct_beam_y is False
 
         # Reflectivity Extraction (Per Run)
 
@@ -174,6 +176,7 @@ class TestMainGui:
         window_main.ui.fanReflectivity.setChecked(True)
         window_main.ui.sample_size_spinbox.setValue(12)
         window_main.ui.bandwidth_spinbox.setValue(2.3)
+        window_main.ui.direct_beam_y_lock_checkbox.setChecked(True)
         # per run
         window_main.ui.refYPos.setValue(120)
         window_main.ui.refYWidth.setValue(30)
@@ -208,6 +211,7 @@ class TestMainGui:
         assert conf1.use_constant_q is True
         assert conf1.sample_size == 12
         assert conf1.wl_bandwidth == 2.3
+        assert conf1.lock_direct_beam_y is True
 
         # Reflectivity Extraction (Per Run)
 
@@ -247,6 +251,7 @@ class TestMainGui:
         assert conf2.use_constant_q is True
         assert conf2.sample_size == 12
         assert conf2.wl_bandwidth == 2.3
+        assert conf2.lock_direct_beam_y is True
 
         # Reflectivity Extraction (Per Run)
 

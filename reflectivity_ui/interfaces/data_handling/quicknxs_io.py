@@ -208,9 +208,10 @@ def write_reflectivity_header(reduction_list, direct_beam_list, output_path, pol
 
     fd.write("#\n")
     fd.write("# [Global Options]\n")
-    fd.write("# name           value\n")
+    fd.write("# name               value\n")
     sample_size = 10 if conf is None else conf.sample_size
-    fd.write("# sample_length  %s\n" % str(sample_size))
+    fd.write("# sample_length      %s\n" % str(sample_size))
+    fd.write("# lock_direct_beam_y %s\n" % str(Configuration.lock_direct_beam_y))
     fd.write("#\n")
     fd.close()
 
@@ -359,6 +360,13 @@ def read_reduced_file(file_path, configuration=None):
                         conf.sample_size = float((line[len("# sample_length") :]).strip())
                     except:
                         logging.error("Could not extract sample size: %s" % line)
+                if line.startswith("# lock_direct_beam_y"):
+                    try:
+                        Configuration.lock_direct_beam_y = (
+                            line[len("# lock_direct_beam_y") :]
+                        ).strip().lower() == "true"
+                    except:
+                        logging.error("Could not extract direct beam y lock: %s" % line)
 
     return direct_beam_runs, data_runs
 
