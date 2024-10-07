@@ -1,6 +1,7 @@
 """
     Meta-data information for MR reduction
 """
+
 # pylint: disable=too-few-public-methods, wrong-import-position, too-many-instance-attributes, wrong-import-order
 
 import sys

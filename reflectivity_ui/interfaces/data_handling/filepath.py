@@ -2,7 +2,6 @@ r"""
 Classes to handle string representations of sets of run numbers and absolute paths to data files
 """
 
-
 # standard imports
 import itertools
 import operator
@@ -15,6 +14,7 @@ class RunNumbers(object):
     A helper class to handle string representations of one or more run numbers. It translates from a
     string representation to a list of run numbers, and viceversa
     """
+
     merge_symbol = "+"
     range_symbol = ":"
 
@@ -110,6 +110,7 @@ class FilePath(object):
 
     NOTE: Paths are sorted
     """
+
     merge_symbol = "+"
 
     @classmethod
