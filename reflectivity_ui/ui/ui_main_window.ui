@@ -476,6 +476,16 @@
               </property>
              </widget>
             </item>
+            <item row="12" column="1" colspan="3">
+             <widget class="QCheckBox" name="direct_beam_y_lock_checkbox" native="true">
+              <property name="text">
+               <string>Lock direct beam y0 and yw to data run</string>
+              </property>
+              <property name="toolTip">
+               <string>The direct beam y0 and yw are taken from the data run instead of from the direct beam table</string>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="1" colspan="2">
              <widget class="QCheckBox" name="normalize_to_unity_checkbox">
               <property name="toolTip">
@@ -5114,10 +5124,10 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-  <class>DeadTimeEntryPoint</class>
-  <extends>QGroupBox</extends>
-  <header>reflectivity_ui/ui/deadtime_entry.h</header>
-  <container>1</container>
+   <class>DeadTimeEntryPoint</class>
+   <extends>QGroupBox</extends>
+   <header>reflectivity_ui/ui/deadtime_entry.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

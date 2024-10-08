@@ -42,6 +42,8 @@ class Configuration(object):
     paralyzable_deadtime = True
     deadtime_value = 4.2
     deadtime_tof_step = 100
+    # Direct beam uses the same low res roi as the data run
+    lock_direct_beam_y = False
 
     def __init__(self, settings=None):
         self.instrument = Instrument()
@@ -231,6 +233,7 @@ class Configuration(object):
         settings.setValue("sample_size", self.sample_size)
         settings.setValue("do_final_rebin", self.do_final_rebin)
         settings.setValue("final_rebin_step", self.final_rebin_step)
+        settings.setValue("lock_direct_beam_y", self.lock_direct_beam_y)
 
         # Dead time options
         settings.setValue("apply_deadtime", self.apply_deadtime)
@@ -335,6 +338,7 @@ class Configuration(object):
         Configuration.sample_size = float(settings.value("sample_size", self.sample_size))
         Configuration.do_final_rebin = _verify_true("do_final_rebin", self.do_final_rebin)
         Configuration.final_rebin_step = float(settings.value("final_rebin_step", self.final_rebin_step))
+        Configuration.lock_direct_beam_y = _verify_true("lock_direct_beam_y", self.lock_direct_beam_y)
 
         # Dead time options
         Configuration.apply_deadtime = _verify_true("apply_deadtime", self.apply_deadtime)
@@ -398,3 +402,34 @@ class Configuration(object):
         cls.paralyzable_deadtime = True
         cls.deadtime_value = 4.2
         cls.deadtime_tof_step = 100
+        cls.lock_direct_beam_y = False
+
+
+def get_direct_beam_low_res_roi(data_conf, direct_beam_conf):
+    """
+    Get the direct beam low res ROI either from the data run or from the direct beam depending on
+    the configuration `lock_direct_beam_y`
+
+    Parameters
+    ----------
+    data_conf: Configuration
+        Configuration for the data run
+    direct_beam_conf: Configuration
+        Configuration for the direct beam run
+
+    Returns
+    -------
+    [int, int]
+        The pixel range of the direct beam ROI in the low res direction (y)
+    """
+
+    def _as_ints(a):
+        return [int(round(a[0])), int(round(a[1]))]
+
+    if data_conf.lock_direct_beam_y:
+        # use same low res ROI as the data run
+        direct_beam_low_res_roi = _as_ints(data_conf.low_res_roi)
+    else:
+        # use ROI from the direct beam table
+        direct_beam_low_res_roi = _as_ints(direct_beam_conf.low_res_roi)
+    return direct_beam_low_res_roi

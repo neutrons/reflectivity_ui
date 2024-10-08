@@ -7,6 +7,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
+from reflectivity_ui.interfaces.configuration import get_direct_beam_low_res_roi
+
 H_OVER_M_NEUTRON = 3.956034e-7  # h/m_n [m^2/s]
 
 
@@ -80,7 +82,9 @@ class GISANS(object):
             if not direct_beam.configuration.tof_bins == self.data_set.configuration.tof_bins:
                 logging.error("Trying to normalize with a direct beam data set with different binning")
 
-            norm_y_min, norm_y_max = direct_beam.configuration.low_res_roi
+            norm_y_min, norm_y_max = get_direct_beam_low_res_roi(
+                self.data_set.configuration, direct_beam.configuration
+            )
             norm_x_min, norm_x_max = direct_beam.configuration.peak_roi
             norm_raw_multi_dim = direct_beam.data[norm_x_min:norm_x_max, norm_y_min:norm_y_max, P0:PN]
 

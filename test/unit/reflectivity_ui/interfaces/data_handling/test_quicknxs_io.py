@@ -1,4 +1,5 @@
 # local imports
+from reflectivity_ui.interfaces.configuration import Configuration
 from reflectivity_ui.interfaces.data_handling.quicknxs_io import read_reduced_file
 
 # 3rd-party imports
@@ -36,6 +37,7 @@ class TestDataLoader(object):
         db_list, data_list = read_reduced_file(file_path)
         assert len(db_list) == 4
         assert len(data_list) == 4
+        assert Configuration.lock_direct_beam_y is False
 
     def test_load_from_mismatch(self):
         file_path = self.file("REF_M_29782_empty_db.dat")
@@ -43,6 +45,13 @@ class TestDataLoader(object):
         assert len(db_list) == 5
         assert len(data_list) == 6
         assert data_list[4][2].normalization is None
+
+    def test_load_global_options(self):
+        file_path = self.file("REF_M_29526_global_options.dat")
+        db_list, data_list = read_reduced_file(file_path)
+        assert len(db_list) == 4
+        assert len(data_list) == 4
+        assert Configuration.lock_direct_beam_y is True
 
 
 if __name__ == "__main__":

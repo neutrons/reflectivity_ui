@@ -7,7 +7,11 @@
 
 
 # local imports
+from reflectivity_ui.interfaces.configuration import get_direct_beam_low_res_roi
 from reflectivity_ui.interfaces.data_handling.filepath import FilePath
+from reflectivity_ui.interfaces.data_handling.data_info import DataInfo
+from reflectivity_ui.interfaces.data_handling.gisans import GISANS
+from reflectivity_ui.interfaces.data_handling.off_specular import OffSpecular
 
 # 3rd-party imports
 import numpy as np
@@ -27,10 +31,6 @@ from mantid.dataobjects import Workspace2D
 
 # Set Mantid logging level to warnings
 api.ConfigService.setLogLevel(3)
-
-from .data_info import DataInfo
-from . import off_specular
-from . import gisans
 
 # Parameters needed for some calculations.
 H_OVER_M_NEUTRON = 3.956034e-7  # h/m_n [m^2/s]
@@ -211,6 +211,8 @@ class NexusData(object):
         _dirpix = conf.direct_pixel_overwrite if conf.set_direct_pixel else None
         _dangle0 = conf.direct_angle_offset_overwrite if conf.set_direct_angle_offset else None
 
+        direct_beam_low_res_roi = get_direct_beam_low_res_roi(conf, direct_beam.configuration)
+
         # The reduced data workspace may be a group or a single
         # workspace depending on the InputWorkspace parameter
         ws = api.MagnetismReflectometryReduction(
@@ -226,7 +228,7 @@ class NexusData(object):
             CutLowResDataAxis=True,
             LowResDataAxisPixelRange=_as_ints(conf.low_res_roi),
             CutLowResNormAxis=True,
-            LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+            LowResNormAxisPixelRange=direct_beam_low_res_roi,
             CutTimeAxis=True,
             FinalRebin=conf.do_final_rebin,
             QMin=0.001,
@@ -935,6 +937,8 @@ class CrossSectionData(object):
         _dirpix = configuration.direct_pixel_overwrite if configuration.set_direct_pixel else None
         _dangle0 = configuration.direct_angle_offset_overwrite if configuration.set_direct_angle_offset else None
 
+        direct_beam_low_res_roi = get_direct_beam_low_res_roi(conf, direct_beam.configuration)
+
         ws = api.MagnetismReflectometryReduction(
             InputWorkspace=self._event_workspace,
             NormalizationWorkspace=ws_norm,
@@ -948,7 +952,7 @@ class CrossSectionData(object):
             CutLowResDataAxis=True,
             LowResDataAxisPixelRange=_as_ints(self.configuration.low_res_roi),
             CutLowResNormAxis=True,
-            LowResNormAxisPixelRange=_as_ints(direct_beam.configuration.low_res_roi),
+            LowResNormAxisPixelRange=direct_beam_low_res_roi,
             CutTimeAxis=True,
             QMin=0.001,
             QStep=-0.01,
@@ -1013,7 +1017,7 @@ class CrossSectionData(object):
         self.prepare_plot_data()
         if direct_beam:
             direct_beam.prepare_plot_data()
-        self.off_spec = off_specular.OffSpecular(self)
+        self.off_spec = OffSpecular(self)
         return self.off_spec(direct_beam)
 
     def gisans(self, direct_beam=None):
@@ -1025,7 +1029,7 @@ class CrossSectionData(object):
         self.prepare_plot_data()
         if direct_beam:
             direct_beam.prepare_plot_data()
-        self.gisans_data = gisans.GISANS(self)
+        self.gisans_data = GISANS(self)
         self.gisans_data(direct_beam)
 
         self.SGrid = self.gisans_data.SGrid

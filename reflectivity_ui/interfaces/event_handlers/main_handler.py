@@ -1223,6 +1223,8 @@ class MainHandler(object):
 
         Configuration.apply_deadtime = self.ui.deadtime_entry.applyCheckBox.isChecked()
 
+        Configuration.lock_direct_beam_y = self.ui.direct_beam_y_lock_checkbox.isChecked()
+
         # UI elements
         configuration.normalize_x_tof = self.ui.normalizeXTof.isChecked()
         configuration.x_wl_map = self.ui.xLamda.isChecked()
@@ -1333,6 +1335,8 @@ class MainHandler(object):
         self.ui.q_rebin_spinbox.setValue(configuration.final_rebin_step)
 
         self.ui.deadtime_entry.applyCheckBox.setChecked(configuration.apply_deadtime)
+
+        self.ui.direct_beam_y_lock_checkbox.setChecked(configuration.lock_direct_beam_y)
 
         # UI elements
         self.ui.normalizeXTof.setChecked(configuration.normalize_x_tof)

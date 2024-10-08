@@ -50,6 +50,7 @@ def _assert_configuration_float_value(main_window, param_name, gold_value):
         ("global_fit_checkbox", "global_stitching"),
         ("polynomial_stitching_checkbox", "polynomial_stitching"),
         ("fanReflectivity", "use_constant_q"),
+        ("direct_beam_y_lock_checkbox", "lock_direct_beam_y"),
     ],
 )
 def test_global_checkboxes(qtbot, widget, config_param):
