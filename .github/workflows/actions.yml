@@ -13,15 +13,15 @@ on:
 jobs:
 
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash -l {0}
     outputs:
       deploy_enabled: 'false'
     steps:
-      - uses: actions/checkout@v3
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           channels: mantid/label/main,conda-forge,defaults
           python-version: '3.10'
@@ -29,11 +29,21 @@ jobs:
           mamba-version: "*"
           environment-file: environment.yml
 
+      - name: Restore/save LFS files in cache
+        id: cache-lfs
+        uses: actions/cache@v4
+        with:
+          path: test/data/reflectivity_ui-data/
+          key: ${{ runner.os }}-lfs-files
+
+      - name: Pull LFS files for the submodule
+        if: steps.cache-lfs.outputs.cache-hit != 'true'
+        run: git submodule update --init
+
       - name: Unit test with code coverage
         run: |
-            git submodule update --init
-            ls -l test/data/reflectivity_ui-data
-            xvfb-run -a python -m pytest -vv  -m "not datarepo" --cov=reflectivity_ui --cov-report=xml --cov-report=term
+            # run tests requiring git lfs (may need to switch to a self-hosted runner)
+            xvfb-run -a python -m pytest -vv --cov=reflectivity_ui --cov-report=xml --cov-report=term
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
